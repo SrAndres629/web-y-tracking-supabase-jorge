@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Jorge Aguirre Flores</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'luxury-black': '#0a0a0a',
+                        'luxury-gold': '#C5A059',
+                        'luxury-dark': '#121212',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-luxury-black text-gray-200 min-h-screen">
+
+    <!-- Header -->
+    <header class="bg-luxury-dark border-b border-luxury-gold/30 py-4 px-6">
+        <div class="flex justify-between items-center">
+            <h1 class="text-xl font-bold text-luxury-gold">
+                <i class="fas fa-chart-line mr-2"></i> Panel de Administración
+            </h1>
+            <span class="text-gray-500 text-sm">Jorge Aguirre Flores</span>
+        </div>
+    </header>
+
+    <!-- Stats -->
+    <div class="container mx-auto px-6 py-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div class="bg-luxury-dark rounded-lg p-4 border border-gray-800">
+                <div class="text-gray-500 text-sm">Total Visitantes</div>
+                <div class="text-2xl font-bold text-white">{{ visitors|length }}</div>
+            </div>
+            <div class="bg-luxury-dark rounded-lg p-4 border border-gray-800">
+                <div class="text-gray-500 text-sm">Con FBCLID (Ads)</div>
+                <div class="text-2xl font-bold text-green-400">{{ visitors|selectattr('fbclid')|list|length }}</div>
+            </div>
+            <div class="bg-luxury-dark rounded-lg p-4 border border-gray-800">
+                <div class="text-gray-500 text-sm">Última Visita</div>
+                <div class="text-lg font-bold text-luxury-gold">
+                    {% if visitors %}{{ visitors[0].timestamp[:16] }}{% else %}N/A{% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="bg-luxury-dark rounded-lg border border-gray-800 overflow-hidden">
+            <div class="px-4 py-3 border-b border-gray-800">
+                <h2 class="font-bold text-white"><i class="fas fa-users mr-2"></i> Últimos 50 Visitantes</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-900 text-gray-400 text-left">
+                        <tr>
+                            <th class="px-4 py-3">ID</th>
+                            <th class="px-4 py-3">Fecha</th>
+                            <th class="px-4 py-3">Fuente</th>
+                            <th class="px-4 py-3">IP</th>
+                            <th class="px-4 py-3">Dispositivo</th>
+                            <th class="px-4 py-3">FBCLID</th>
+                            <th class="px-4 py-3">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for v in visitors %}
+                        <tr class="border-t border-gray-800 hover:bg-gray-900/50" id="row-{{ v.id }}">
+                            <td class="px-4 py-3 text-gray-500">#{{ v.id }}</td>
+                            <td class="px-4 py-3">{{ v.timestamp[:16] if v.timestamp else 'N/A' }}</td>
+                            <td class="px-4 py-3">
+                                <span class="px-2 py-1 rounded text-xs 
+                                    {% if 'lead' in (v.source or '') %}bg-green-900 text-green-300
+                                    {% elif 'pageview' in (v.source or '') %}bg-blue-900 text-blue-300
+                                    {% else %}bg-gray-800 text-gray-400{% endif %}">
+                                    {{ v.source or 'pageview' }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 text-gray-500">{{ v.ip_address[:15] if v.ip_address else 'N/A' }}...
+                            </td>
+                            <td class="px-4 py-3 text-gray-500 max-w-[200px] truncate">
+                                {{ v.user_agent[:50] if v.user_agent else 'N/A' }}...
+                            </td>
+                            <td class="px-4 py-3">
+                                {% if v.fbclid %}
+                                <span class="text-green-400"><i class="fas fa-check-circle"></i> Sí</span>
+                                {% else %}
+                                <span class="text-gray-600"><i class="fas fa-times-circle"></i> No</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-3">
+                                {% if v.fbclid %}
+                                <button data-visitor-id="{{ v.id }}" id="btn-{{ v.id }}"
+                                    class="confirm-sale-btn px-3 py-1 bg-green-600 hover:bg-green-500 text-white text-xs font-bold rounded transition">
+                                    💰 Confirmar Venta
+                                </button>
+                                {% else %}
+                                <span class="text-gray-600 text-xs">Sin tracking</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% if not visitors %}
+                        <tr>
+                            <td colspan="7" class="px-4 py-8 text-center text-gray-500">
+                                <i class="fas fa-inbox text-4xl mb-2"></i><br>
+                                No hay visitantes registrados aún.
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variable global para evitar errores de lint con Jinja2
+        const ADMIN_KEY = "{{ admin_key }}";
+
+        // Event delegation for confirm sale buttons
+        document.addEventListener('DOMContentLoaded', function () {
+            document.addEventListener('click', function (e) {
+                if (e.target.classList.contains('confirm-sale-btn')) {
+                    const visitorId = e.target.getAttribute('data-visitor-id');
+                    if (visitorId) {
+                        confirmSale(visitorId);
+                    }
+                }
+            });
+        });
+
+        async function confirmSale(visitorId) {
+            const btn = document.getElementById('btn-' + visitorId);
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Enviando...';
+
+            try {
+                const response = await fetch('/admin/confirm/' + visitorId + '?key=' + ADMIN_KEY, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    btn.innerHTML = '✅ Confirmado';
+                    btn.className = 'px-3 py-1 bg-gray-700 text-gray-400 text-xs font-bold rounded cursor-not-allowed';
+                    alert('🎉 ¡Venta registrada en Meta!\n\nEvento Purchase enviado con valor $' + data.value + ' USD');
+                } else {
+                    throw new Error(data.error || 'Error desconocido');
+                }
+            } catch (error) {
+                btn.innerHTML = '❌ Error';
+                btn.className = 'px-3 py-1 bg-red-600 text-white text-xs font-bold rounded';
+                alert('Error: ' + error.message);
+            }
+        }
+    </script>
+</body>
+
+</html>

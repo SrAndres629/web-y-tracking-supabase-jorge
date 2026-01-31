@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/static/images/luxury_logo.svg">
+
+    <!-- Unified Background & Typography Overrides -->
+    <style>
+        .font-serif {
+            font-family: 'Playfair Display', serif;
+        }
+    </style>
+
+    <!-- SEO Core Tags via Block -->
+    <title>{% block title %}Jorge Aguirre Flores | Maquillaje Permanente en Santa Cruz{% endblock %}</title>
+    {% block meta_tags %}
+    <meta name="description"
+        content="Especialista en Microblading, Delineado Permanente y Labios. 30 años de experiencia en Santa Cruz de la Sierra. Resultados naturales garantizados.">
+    <meta name="keywords"
+        content="microblading santa cruz, maquillaje permanente bolivia, cejas permanentes, delineado de ojos permanente, labios permanentes, micropigmentacion santa cruz">
+    <meta name="author" content="Jorge Aguirre Flores">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://jorgeaguirreflores.com/">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Jorge Aguirre Flores | Maquillaje Permanente Premium">
+    <meta property="og:description"
+        content="30 años transformando miradas en Santa Cruz. Microblading, Delineado y Labios.">
+    <meta property="og:url" content="https://jorgeaguirreflores.com/">
+    <meta property="og:image" content="https://jorgeaguirreflores.com/static/images/og-image.webp">
+    <meta property="og:locale" content="es_BO">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Jorge Aguirre Flores | Maquillaje Permanente Premium">
+    <meta name="twitter:description"
+        content="30 años transformando miradas en Santa Cruz. Microblading, Delineado y Labios.">
+    <meta name="twitter:image" content="https://jorgeaguirreflores.com/static/images/og-image.webp">
+    {% endblock %}
+
+    <!-- Google Tag Manager -->
+    <script>(function (w, d, s, l, i) {
+            w[l] = w[l] || []; w[l].push({
+                'gtm.start':
+                    new Date().getTime(), event: 'gtm.js'
+            }); var f = d.getElementsByTagName(s)[0],
+                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+        })(window, document, 'script', 'dataLayer', 'GTM-55HC7GRT');</script>
+    <!-- End Google Tag Manager -->
+
+    <!-- Tailwind CSS (Local Build) -->
+    <link rel="preload" href="/static/css/output.css?v=16" as="style">
+    <link rel="stylesheet" href="/static/css/output.css?v=16">
+
+    <!-- Google Fonts + Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- GSAP (Core Animation Engine) -->
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+    <!-- Lenis Smooth Scroll (Butter Feel) -->
+    <script defer src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
+
+    {% block extra_head %}{% endblock %}
+
+    <!-- Dynamic Configuration (Server-side rendered data) -->
+    <script type="application/json" id="app-config">
+        {
+            "META_PIXEL_ID": "{{ pixel_id }}",
+            "META_EVENT_ID": "{{ pageview_event_id }}",
+            "EXTERNAL_ID": "{{ external_id }}",
+            "SERVICES_CONFIG": {{ services | tojson }},
+            "CONTACT_CONFIG": {{ contact | tojson }}
+        }
+    </script>
+
+    <!-- Initialize config from JSON (lint-safe) -->
+    <script>
+        (function () {
+            try {
+                const configElement = document.getElementById('app-config');
+                if (configElement) {
+                    const config = JSON.parse(configElement.textContent);
+                    window.META_PIXEL_ID = config.META_PIXEL_ID;
+                    window.META_EVENT_ID = config.META_EVENT_ID;
+                    window.EXTERNAL_ID = config.EXTERNAL_ID;
+                    window.SERVICES_CONFIG = config.SERVICES_CONFIG;
+                    window.CONTACT_CONFIG = config.CONTACT_CONFIG;
+                }
+            } catch (e) {
+                console.error("Error loading app-config", e);
+            }
+        })();
+    </script>
+
+    {% block schema %}{% endblock %}
+</head>
+
+<body
+    class="bg-luxury-black text-luxury-text font-sans antialiased selection:bg-luxury-gold selection:text-black relative">
+
+    <!-- Global Ambient Spotlight -->
+    <div id="mouse-spotlight"
+        class="fixed inset-0 pointer-events-none z-0 opacity-40 mix-blend-screen transition-opacity duration-1000">
+    </div>
+
+    <!-- Skip Link for Accessibility -->
+    <a href="#main-content" class="skip-link">Saltar al contenido principal</a>
+
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-55HC7GRT" height="0" width="0"
+            style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager -->
+
+    <!-- Navigation -->
+    {% include 'components/navbar.html' ignore missing %}
+
+    <!-- Main Content -->
+    <main id="main-content" role="main">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    {% include 'components/footer.html' ignore missing %}
+
+    <!-- Global Scripts -->
+    <script defer src="/static/js/tracking.js?v=4.3"></script>
+    <script defer src="/static/js/ui.js?v=3.1"></script>
+    <script defer src="/static/js/motion.js?v=3.2"></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+
+</html>

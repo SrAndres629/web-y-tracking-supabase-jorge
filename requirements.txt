@@ -1,0 +1,24 @@
+﻿# Core Framework
+fastapi==0.109.2
+mangum==0.17.0  # AWS Lambda/Vercel adapter for ASGI
+jinja2==3.1.3
+python-multipart==0.0.7
+
+# Database
+psycopg2-binary==2.9.9
+
+# API Utilities
+slowapi==0.1.9
+pydantic==2.6.0
+orjson==3.9.15
+pydantic-settings==2.1.0
+itsdangerous==2.1.2
+requests==2.31.0
+httpx==0.25.2
+
+# Observability
+sentry-sdk[fastapi]==1.40.0
+
+# Ads & External Integrations
+facebook_business>=18.0.0
+phonenumbers==8.13.30

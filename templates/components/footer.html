@@ -1,0 +1,118 @@
+<!-- ========== FOOTER ========== -->
+<footer class="bg-black py-20 border-t border-white/5 relative overflow-hidden">
+    <!-- Ambience Glow -->
+    <div
+        class="absolute top-0 right-0 w-[400px] h-[400px] bg-luxury-gold/5 blur-[120px] rounded-full pointer-events-none">
+    </div>
+
+    <div class="container mx-auto px-6 relative z-10">
+        <div class="grid md:grid-cols-4 gap-12 text-left mb-16">
+            <!-- Branding -->
+            <div class="md:col-span-2">
+                <p class="text-luxury-gold font-serif text-2xl mb-4">Jorge Aguirre Flores</p>
+                <p class="text-luxury-gray text-sm leading-relaxed max-w-sm mb-6">
+                    Más de 30 años transformando miradas con arte y precisión. El estándar de oro en microblading y
+                    maquillaje permanente en Bolivia.
+                </p>
+                <div class="flex gap-4">
+                    <a href="https://www.facebook.com/jorgeaguirreflores" target="_blank" rel="noopener noreferrer"
+                        class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-gray-500 hover:text-luxury-gold hover:border-luxury-gold transition-all">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="https://www.instagram.com/jorgeaguirreflores" target="_blank" rel="noopener noreferrer"
+                        class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-gray-500 hover:text-luxury-gold hover:border-luxury-gold transition-all">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="https://www.tiktok.com/@jorgeaguirreflores" target="_blank" rel="noopener noreferrer"
+                        class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-gray-500 hover:text-luxury-gold hover:border-luxury-gold transition-all">
+                        <i class="fab fa-tiktok"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Contact -->
+            <div>
+                <h4 class="text-white font-bold text-xs uppercase tracking-widest mb-6">Contacto</h4>
+                <ul class="space-y-4 text-xs">
+                    <li class="flex items-start gap-3 text-gray-500">
+                        <i class="fas fa-location-dot text-luxury-gold mt-1"></i>
+                        <span>{{ contact.address }}</span>
+                    </li>
+                    <li class="flex items-center gap-3 text-gray-500">
+                        <i class="fab fa-whatsapp text-luxury-gold"></i>
+                        <span>+591 647 14 751</span>
+                    </li>
+                    <li class="flex items-center gap-3 text-gray-500">
+                        <i class="far fa-envelope text-luxury-gold"></i>
+                        <span>info@jorgeaguirreflores.com</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Schedule -->
+            <div>
+                <h4 class="text-white font-bold text-xs uppercase tracking-widest mb-6">Horarios</h4>
+                <ul class="space-y-4 text-xs text-gray-500">
+                    <li class="flex justify-between">
+                        <span>Lun - Vie:</span>
+                        <span class="text-white">09:00 - 18:00</span>
+                    </li>
+                    <li class="flex justify-between">
+                        <span>Sábado:</span>
+                        <span class="text-white">09:00 - 14:00</span>
+                    </li>
+                    <li class="flex justify-between">
+                        <span>Domingo:</span>
+                        <span class="text-luxury-gold italic">Cerrado</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p class="text-gray-700 text-[10px] tracking-wider uppercase">
+                © 2025 JORGE AGUIRRE FLORES • ARTE FACIAL & MICROBLADING
+            </p>
+            <div class="flex gap-6 text-[10px] text-gray-700 uppercase tracking-widest font-medium">
+                <a href="#" class="hover:text-luxury-gold">Privacidad</a>
+                <a href="#" class="hover:text-luxury-gold">Términos</a>
+                <a href="#" class="hover:text-luxury-gold">Sitemap</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- ========== MOBILE STICKY CTA (GLASSMORPHISM LUXURY) ========== -->
+<div class="fixed bottom-0 left-0 right-0 z-50 md:hidden p-4 pb-6 backdrop-blur-md"
+    style="background: linear-gradient(to top, rgba(10,10,10,0.95) 0%, rgba(10,10,10,0.8) 60%, transparent 100%);">
+    <button onclick="handleConversion('Sticky Mobile CTA')"
+        class="block w-full text-black font-bold text-center py-4 rounded-2xl uppercase tracking-widest text-sm transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+        style="background: linear-gradient(135deg, #E5C585 0%, #C5A059 50%, #B08D45 100%); 
+                   box-shadow: 0 8px 30px rgba(197,160,89,0.4), 0 4px 15px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.3);
+                   border: 1px solid rgba(255,255,255,0.2);">
+        <span class="flex items-center justify-center gap-2">
+            <i class="fab fa-whatsapp text-lg"></i>
+            Agendar Cita VIP
+        </span>
+    </button>
+</div>
+
+<!-- ========== PREMIUM WHATSAPP & CRO (Dual-Display) ========== -->
+<div class="whatsapp-premium-container">
+    <!-- Experience Badge (Appears near button) -->
+    <div id="experienceBadge" class="experience-mini-badge">
+        <img src="/static/images/jorge_hero_new.webp" alt="Jorge Aguirre Flores">
+        <span>30 Años de Arte</span>
+    </div>
+
+    <!-- Tooltip Bubble -->
+    <div id="whatsappTooltip" class="whatsapp-tooltip">
+        ¿Dudas? Habla con el especialista aquí
+    </div>
+
+    <!-- Premium Button -->
+    <button id="whatsappPremium" onclick="handleConversion('Floating Button')" class="whatsapp-premium-btn"
+        aria-label="Contactar por WhatsApp">
+        <i class="fab fa-whatsapp"></i>
+    </button>
+</div>

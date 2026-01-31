@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+.env
+local_fallback.db
+database/
+
+# Vercel
+.vercel
+
+# IDEs
+.vscode/
+.idea/
+.DS_Store
