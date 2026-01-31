@@ -2,14 +2,14 @@
 # ADMIN.PY - Panel de Administración
 # Jorge Aguirre Flores Web
 # =================================================================
-from fastapi import APIRouter, Request, HTTPException
+from fastapi import APIRouter, Request, HTTPException, BackgroundTasks
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 
 from app.config import settings
 from app.models import ConfirmSaleResponse, ErrorResponse
 from app.database import get_all_visitors, get_visitor_by_id
-from app.tasks import send_meta_event_task
+from app.routes.tracking_routes import bg_send_meta_event
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 templates = Jinja2Templates(directory="templates")
@@ -56,7 +56,7 @@ async def admin_stats(key: str = ""):
 
 
 @router.post("/confirm/{visitor_id}")
-async def confirm_sale(visitor_id: int, key: str = ""):
+async def confirm_sale(visitor_id: int, background_tasks: BackgroundTasks, key: str = ""):
     """
     Confirma una venta y envía evento Purchase a Meta CAPI
     
@@ -84,7 +84,9 @@ async def confirm_sale(visitor_id: int, key: str = ""):
         )
     
     # Enviar Purchase a Meta CAPI (Background)
-    send_meta_event_task.delay(
+    # Using FastAPI BackgroundTasks instead of Celery for Vercel/Serverless
+    background_tasks.add_task(
+        bg_send_meta_event,
         event_name="Purchase",
         event_source_url=f"{settings.HOST}/admin",
         client_ip="127.0.0.1",
