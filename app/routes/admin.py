@@ -41,6 +41,20 @@ async def admin_dashboard(request: Request, key: str = ""):
     })
 
 
+@router.get("/stats")
+async def admin_stats(key: str = ""):
+    """Devuelve JSON con estadísticas para monitoreo externo"""
+    if not verify_admin_key(key):
+        return JSONResponse({"error": "Unauthorized"}, status_code=403)
+    
+    visitors = get_all_visitors(limit=1000)
+    return {
+        "total_visitors": len(visitors),
+        "status": "active",
+        "database": "connected"
+    }
+
+
 @router.post("/confirm/{visitor_id}")
 async def confirm_sale(visitor_id: int, key: str = ""):
     """

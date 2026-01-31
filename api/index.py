@@ -1,5 +1,4 @@
-from mangum import Mangum
 from main import app
+from mangum import Mangum
 
-# Bridge for Vercel Serverless (AWS Lambda)
 handler = Mangum(app)
