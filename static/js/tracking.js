@@ -292,7 +292,7 @@ const TrackingEngine = {
             },
             custom_data: {
                 ...customData,
-                fbclid,
+                fbclid: this.getUTM('fbclid'),
                 fbp,
                 utm_source: this.getUTM('utm_source'),
                 utm_medium: this.getUTM('utm_medium'),

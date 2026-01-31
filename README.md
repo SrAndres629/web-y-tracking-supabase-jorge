@@ -4,8 +4,8 @@ Este es el núcleo independiente de la página web y tracking, diseñado para de
 
 ## 🚀 Estructura del Proyecto
 - `app/`: Lógica central (FastAPI + Pydantic + Supabase).
-- `static/`: Activos estáticos servidos por CDN.
-- `templates/`: Plantillas Jinja2.
+- `static/`: Activos estáticos servidos por CDN (incluye **Tailwind CSS Compiled**).
+- `templates/`: Plantillas Jinja2 con diseño **Tailwind CSS**.
 - `api/index.py`: Adaptador Mangum para Vercel.
 - `main.py`: Punto de entrada de la aplicación.
 
