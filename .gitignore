@@ -1,17 +1,25 @@
-# Python
+# --- Python Bloat ---
 __pycache__/
 *.py[cod]
 *$py.class
 venv/
-.venv/
+env/
 .env
-local_fallback.db
-database/
+.env.local
+.env.production
+.pytest_cache/
+check_db.py
+test_signal.py
 
-# Vercel
-.vercel
-
-# IDEs
+# --- Deployment / IDE Bloat ---
+.vercel/
+.cursor/
 .vscode/
-.idea/
+.ai/
+ENGINEERING_LOG.md
+*.log
+database/local_fallback.db
+
+# --- System Bloat ---
 .DS_Store
+Thumbs.db

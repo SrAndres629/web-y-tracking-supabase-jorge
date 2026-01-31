@@ -17,6 +17,7 @@ pydantic-settings>=2.1.0
 itsdangerous>=2.1.2
 requests>=2.31.0
 httpx[http2]>=0.25.2
+h2>=3.0.0
 
 # Task Queue
 celery>=5.3.6
