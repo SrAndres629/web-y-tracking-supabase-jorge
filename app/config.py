@@ -42,6 +42,9 @@ class Settings(BaseSettings):
     
     # AI Brain (Gemini)
     GOOGLE_API_KEY: Optional[str] = None
+
+    # Observability
+    SENTRY_DSN: Optional[str] = None
     
     # Security: CORS Origins (Loaded manually to avoid Pydantic auto-parsing bugs)
     CORS_ALLOWED_ORIGINS: List[str] = [

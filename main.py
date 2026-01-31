@@ -26,6 +26,18 @@ from app.config import settings
 from app import database
 from app.routes import pages, tracking_routes, admin, health
 
+# Observability (Sentry)
+if settings.SENTRY_DSN:
+    import sentry_sdk
+    from sentry_sdk.integrations.fastapi import FastApiIntegration
+    sentry_sdk.init(
+        dsn=settings.SENTRY_DSN,
+        integrations=[FastApiIntegration()],
+        traces_sample_rate=0.1,
+        profiles_sample_rate=0.1,
+    )
+    logging.info("🛡️ Sentry Monitoring Active")
+
 # Configurar logging
 logging.basicConfig(
     level=logging.INFO,
