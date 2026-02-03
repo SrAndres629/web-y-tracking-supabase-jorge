@@ -46,6 +46,30 @@ class Settings(BaseSettings):
     # Observability
     SENTRY_DSN: Optional[str] = None
     
+    # =================================================================
+    # 🚩 FEATURE FLAGS (Control via Vercel Environment Variables)
+    # =================================================================
+    # These are simple on/off switches you can toggle in Vercel Dashboard
+    # without needing external feature flag providers.
+    
+    # Marketing & UX
+    FLAG_SHOW_TESTIMONIALS: bool = True      # Show/hide testimonials section
+    FLAG_SHOW_GALLERY: bool = True           # Show/hide gallery section
+    FLAG_ENABLE_CHAT_WIDGET: bool = False    # Enable floating chat widget
+    
+    # A/B Testing (Simple)
+    FLAG_CTA_VARIANT: str = "whatsapp"       # "whatsapp" | "form" | "call"
+    FLAG_HERO_STYLE: str = "premium"         # "premium" | "minimal" | "video"
+    
+    # Tracking & Analytics
+    FLAG_META_TRACKING: bool = True          # Master switch for Meta CAPI
+    FLAG_GOOGLE_ANALYTICS: bool = True       # Master switch for GA4
+    FLAG_HEATMAP_ENABLED: bool = False       # Enable heatmap tracking
+    
+    # Maintenance Mode
+    FLAG_MAINTENANCE_MODE: bool = False      # Show maintenance page
+    FLAG_BOOKING_ENABLED: bool = True        # Allow new bookings
+    
     # Security: CORS Origins (Loaded manually to avoid Pydantic auto-parsing bugs)
     CORS_ALLOWED_ORIGINS: List[str] = [
         "https://jorgeaguirreflores.com",

@@ -172,5 +172,16 @@ async def read_root(
         "external_id": external_id,
         "fbclid": fbclid or "",
         "services": SERVICES_CONFIG,
-        "contact": CONTACT_CONFIG
+        "contact": CONTACT_CONFIG,
+        # 🚩 Feature Flags (Control from Vercel Dashboard)
+        "flags": {
+            "show_testimonials": settings.FLAG_SHOW_TESTIMONIALS,
+            "show_gallery": settings.FLAG_SHOW_GALLERY,
+            "enable_chat_widget": settings.FLAG_ENABLE_CHAT_WIDGET,
+            "cta_variant": settings.FLAG_CTA_VARIANT,
+            "hero_style": settings.FLAG_HERO_STYLE,
+            "meta_tracking": settings.FLAG_META_TRACKING,
+            "maintenance_mode": settings.FLAG_MAINTENANCE_MODE,
+            "booking_enabled": settings.FLAG_BOOKING_ENABLED,
+        }
     })
