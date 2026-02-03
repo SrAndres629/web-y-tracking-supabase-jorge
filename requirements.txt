@@ -27,3 +27,8 @@ sentry-sdk[fastapi]>=1.40.0
 # Ads & External Integrations
 facebook_business>=18.0.0
 phonenumbers>=8.13.30
+
+# Caching (Upstash Redis - Serverless)
+upstash-redis>=1.0.0
+python-dotenv>=1.0.0
+

@@ -11,6 +11,16 @@ import logging
 
 from app.config import settings
 
+# 🚀 Redis Cache for Ultra-Fast Deduplication
+try:
+    from app.cache import deduplicate_event, cache_visitor_data, get_cached_visitor
+    CACHE_ENABLED = True
+except ImportError:
+    CACHE_ENABLED = False
+    def deduplicate_event(event_id, event_name="event"): return True
+    def cache_visitor_data(external_id, data, ttl_hours=24): pass
+    def get_cached_visitor(external_id): return None
+
 logger = logging.getLogger(__name__)
 
 # =================================================================
@@ -156,6 +166,11 @@ def send_event(
     custom_data: Optional[Dict[str, Any]] = None
 ) -> bool:
     """Synchronous Sender (For Celery Tasks) - Uses Persistent Connection Pooling"""
+    
+    # 🚀 Redis Deduplication Check (Ultra-fast, <5ms)
+    if not deduplicate_event(event_id, event_name):
+        logger.info(f"🔄 [DEDUP] Skipped duplicate {event_name}: {event_id[:16]}...")
+        return True  # Return True since original was already sent
     
     # Sandbox Check
     if settings.META_SANDBOX_MODE:
