@@ -105,6 +105,27 @@ class Settings(BaseSettings):
     # n8n Integration
     N8N_WEBHOOK_URL: str = "http://n8n:5678/webhook/website-events"
     
+    # =================================================================
+    # 🚀 ELITE TRACKING INFRASTRUCTURE
+    # =================================================================
+    
+    # Upstash Redis (Serverless Cache - for Event Deduplication)
+    # Get credentials at: https://upstash.com
+    UPSTASH_REDIS_REST_URL: Optional[str] = None
+    UPSTASH_REDIS_REST_TOKEN: Optional[str] = None
+    
+    # Microsoft Clarity (Free Heatmaps & Session Recordings)
+    # Get project ID at: https://clarity.microsoft.com
+    CLARITY_PROJECT_ID: Optional[str] = None
+    
+    # Cloudflare (If using Zaraz for ad-blocker bypass)
+    CLOUDFLARE_ZONE_ID: Optional[str] = None
+    
+    @property
+    def redis_enabled(self) -> bool:
+        """Check if Redis is properly configured"""
+        return bool(self.UPSTASH_REDIS_REST_URL and self.UPSTASH_REDIS_REST_TOKEN)
+    
     def validate_critical(self):
         """Valida configuración crítica"""
         if not self.META_PIXEL_ID:

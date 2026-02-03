@@ -14,16 +14,20 @@
 # 4. Add to Vercel Environment Variables
 # =================================================================
 
-import os
 import logging
 from typing import Optional
-import hashlib
 
 logger = logging.getLogger(__name__)
 
-# Upstash Redis REST URL and Token
-UPSTASH_REDIS_REST_URL = os.getenv("UPSTASH_REDIS_REST_URL")
-UPSTASH_REDIS_REST_TOKEN = os.getenv("UPSTASH_REDIS_REST_TOKEN")
+# Import from centralized config
+try:
+    from app.config import settings
+    UPSTASH_REDIS_REST_URL = settings.UPSTASH_REDIS_REST_URL
+    UPSTASH_REDIS_REST_TOKEN = settings.UPSTASH_REDIS_REST_TOKEN
+except ImportError:
+    import os
+    UPSTASH_REDIS_REST_URL = os.getenv("UPSTASH_REDIS_REST_URL")
+    UPSTASH_REDIS_REST_TOKEN = os.getenv("UPSTASH_REDIS_REST_TOKEN")
 
 # Check if Redis is configured
 REDIS_ENABLED = bool(UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN)
