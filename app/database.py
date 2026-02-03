@@ -404,7 +404,9 @@ def get_visitor_fbclid(external_id):
 
 def initialize():
     if init_pool():
-        init_tables()
+        if not init_tables():
+            logger.critical("🔥 FATAL: Table synchronization failed.")
+            return False
         return True
     return False
 

@@ -58,10 +58,17 @@ async def lifespan(app: FastAPI):
     logger.info("🚀 Iniciando Jorge Aguirre Flores Web v2.0")
     
     # Inicializar base de datos
-    if database.initialize():
-        logger.info("✅ Base de datos PostgreSQL conectada")
+    database_ok = database.initialize()
+    if database_ok:
+        logger.info("✅ Base de datos PostgreSQL conectada y sincronizada")
     else:
-        logger.info("ℹ️ Ejecutando sin base de datos")
+        logger.critical("❌ ERROR CRÍTICO: Fallo al inicializar base de datos")
+        # Enforce Architect's Rule: No Placeholders in Production
+        if os.getenv("VERCEL") or os.getenv("ENVIRONMENT") == "production":
+             logger.critical("🚨 PRODUCTION LOCKDOWN: Aborting startup to prevent data consistency issues.")
+             raise RuntimeError("Database Initialization Failed in Production")
+        
+        logger.warning("ℹ️ Ejecutando en modo degradado (Sin BD) - Solo permitido en Desarrollo Local")
     
     logger.info(f"📊 Meta Pixel ID: {settings.META_PIXEL_ID}")
     logger.info(f"🌐 Servidor listo en http://{settings.HOST}:{settings.PORT}")
