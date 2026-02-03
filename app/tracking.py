@@ -74,11 +74,15 @@ def _build_payload(
     external_id: Optional[str] = None,
     phone: Optional[str] = None,
     email: Optional[str] = None,
-    custom_data: Optional[Dict[str, Any]] = None
+    custom_data: Optional[Dict[str, Any]] = None,
+    # 🚀 NEW: Advanced Matching Enhancement
+    country: Optional[str] = None,
+    city: Optional[str] = None,
+    fb_browser_id: Optional[str] = None
 ) -> Dict[str, Any]:
-    """Constructs the JSON payload for Meta CAPI"""
+    """Constructs the JSON payload for Meta CAPI with Enhanced Matching"""
     
-    # User Data
+    # User Data (Advanced Matching)
     user_data = {
         "client_ip_address": client_ip,
         "client_user_agent": user_agent,
@@ -90,11 +94,25 @@ def _build_payload(
         user_data["fbc"] = generate_fbc(fbclid)
     if fbp:
         user_data["fbp"] = fbp
+    if fb_browser_id:
+        user_data["fb_browser_id"] = fb_browser_id
     if phone:
+        # Normalize phone: remove non-digits, ensure country code
         clean_phone = "".join(filter(str.isdigit, phone))
+        if not clean_phone.startswith("591"):
+            clean_phone = "591" + clean_phone  # Bolivia country code
         user_data["ph"] = hash_data(clean_phone)
     if email:
         user_data["em"] = hash_data(email)
+    
+    # 🌍 Geo Data (Improves match quality for local businesses)
+    if country:
+        user_data["country"] = hash_data(country.lower())
+    else:
+        user_data["country"] = hash_data("bo")  # Bolivia default
+    
+    if city:
+        user_data["ct"] = hash_data(city.lower().replace(" ", ""))
     
     # Event Data
     event_data = {
@@ -259,3 +277,121 @@ def track_lead(
         external_id=external_id,
         custom_data=custom_data
     )
+
+
+# =================================================================
+# 🚀 ENHANCED FUNNEL TRACKING
+# =================================================================
+
+def track_view_content(
+    url: str,
+    client_ip: str,
+    user_agent: str,
+    event_id: str,
+    content_name: str,
+    content_category: str = "service",
+    content_id: Optional[str] = None,
+    fbclid: Optional[str] = None,
+    fbp: Optional[str] = None,
+    external_id: Optional[str] = None
+) -> bool:
+    """
+    Track ViewContent - When user views a specific service.
+    Helps Meta know which services are popular.
+    
+    Usage: Fire when user scrolls to service section or clicks service card.
+    """
+    custom_data = {
+        "content_name": content_name,
+        "content_category": content_category,
+        "content_type": "product",
+        "currency": "BOB"
+    }
+    
+    if content_id:
+        custom_data["content_ids"] = [content_id]
+    
+    return send_event(
+        event_name="ViewContent",
+        event_source_url=url,
+        client_ip=client_ip,
+        user_agent=user_agent,
+        event_id=event_id,
+        fbclid=fbclid,
+        fbp=fbp,
+        external_id=external_id,
+        custom_data=custom_data
+    )
+
+
+def track_initiate_contact(
+    url: str,
+    client_ip: str,
+    user_agent: str,
+    event_id: str,
+    contact_method: str = "whatsapp",
+    service_interest: Optional[str] = None,
+    fbclid: Optional[str] = None,
+    fbp: Optional[str] = None,
+    external_id: Optional[str] = None
+) -> bool:
+    """
+    Track InitiateContact - Right before WhatsApp redirect.
+    More specific than Lead, shows clear purchase intent.
+    
+    Usage: Fire when user clicks WhatsApp button.
+    """
+    custom_data = {
+        "contact_method": contact_method,
+        "content_category": "consultation_request"
+    }
+    
+    if service_interest:
+        custom_data["content_name"] = service_interest
+    
+    return send_event(
+        event_name="Contact",  # Standard Meta event
+        event_source_url=url,
+        client_ip=client_ip,
+        user_agent=user_agent,
+        event_id=event_id,
+        fbclid=fbclid,
+        fbp=fbp,
+        external_id=external_id,
+        custom_data=custom_data
+    )
+
+
+def track_scroll_depth(
+    url: str,
+    client_ip: str,
+    user_agent: str,
+    event_id: str,
+    depth_percent: int,
+    time_on_page_seconds: int,
+    fbclid: Optional[str] = None,
+    external_id: Optional[str] = None
+) -> bool:
+    """
+    Track scroll depth and time on page.
+    Meta uses this to find engaged users.
+    
+    Usage: Fire when user scrolls 50%, 75%, or 100%.
+    """
+    custom_data = {
+        "scroll_depth": depth_percent,
+        "time_on_page": time_on_page_seconds,
+        "engagement_level": "high" if depth_percent >= 75 else "medium" if depth_percent >= 50 else "low"
+    }
+    
+    return send_event(
+        event_name="CustomizeProduct",  # Using standard event for engagement
+        event_source_url=url,
+        client_ip=client_ip,
+        user_agent=user_agent,
+        event_id=event_id,
+        fbclid=fbclid,
+        external_id=external_id,
+        custom_data=custom_data
+    )
+

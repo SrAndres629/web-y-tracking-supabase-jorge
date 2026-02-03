@@ -208,7 +208,7 @@ async def track_event(
     )
     
     # 4. Send to n8n (Important events only)
-    IMPORTANT_EVENTS = ['Lead', 'Purchase', 'SliderInteraction']
+    IMPORTANT_EVENTS = ['Lead', 'ViewContent', 'Contact', 'Purchase', 'SliderInteraction']
     if event.event_name in IMPORTANT_EVENTS:
         webhook_payload = event.model_dump()
         webhook_payload['utm_data'] = utm_data
