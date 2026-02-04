@@ -38,7 +38,7 @@ def bg_save_visitor(external_id, fbclid, client_ip, user_agent, source, utm_data
         logger.error(f"❌ [BG] Error saving visitor: {e}")
 
 
-def bg_send_pageview(event_source_url, client_ip, user_agent, event_id, fbclid, fbp, external_id):
+def bg_send_pageview(event_source_url, client_ip, user_agent, event_id, fbclid, fbp, external_id, city=None, state=None, country=None):
     """Sends PageView to Meta CAPI via Official SDK (Elite Service)"""
     try:
         from app.meta_capi import send_elite_event
@@ -59,6 +59,9 @@ def bg_send_pageview(event_source_url, client_ip, user_agent, event_id, fbclid, 
             external_id=external_id,
             fbc=fbc_cookie,
             fbp=fbp,
+            city=city,
+            state=state,
+            country=country,
             custom_data={}
         )
         
@@ -101,9 +104,15 @@ async def read_root(
     """
     event_id = str(int(time.time() * 1000))
     
-    # 🛡️ Real IP Extraction (Cloudflare/Render Proxy Support)
+    # 🛡️ Real IP & Geo Extraction (Cloudflare)
+    # Architecture: Zero-Latency Data Enrichment via Edge Headers
     forwarded = request.headers.get("x-forwarded-for")
     cf_ip = request.headers.get("cf-connecting-ip")
+    
+    # Cloudflare Geo Headers (Free Enterprise-grade IP Intelligence)
+    cf_country = request.headers.get("cf-ipcountry")
+    cf_city = request.headers.get("cf-ipcity")
+    cf_region = request.headers.get("cf-region") or request.headers.get("cf-region-code")
     
     if cf_ip:
         client_ip = cf_ip
@@ -178,7 +187,7 @@ async def read_root(
         }
     )
     
-    # 2. Send PageView to Meta CAPI
+    # 2. Send PageView to Meta CAPI (With Geo Data)
     background_tasks.add_task(
         bg_send_pageview,
         event_source_url=current_url,
@@ -187,7 +196,10 @@ async def read_root(
         event_id=event_id,
         fbclid=fbclid,
         fbp=fbp,
-        external_id=external_id
+        external_id=external_id,
+        city=cf_city,
+        state=cf_region,
+        country=cf_country
     )
     
     # 🚀 INSTANT RESPONSE (Background tasks run after this)
@@ -196,7 +208,7 @@ async def read_root(
         "pixel_id": settings.META_PIXEL_ID,
         "pageview_event_id": event_id,
         "external_id": external_id,
-        "fbclid": fbclid or "",
+        "fbclid": fbclid or "", # Pass to frontend for contact button
         "services": SERVICES_CONFIG,
         "contact": CONTACT_CONFIG,
         # 🚩 Feature Flags (Control from Vercel Dashboard)
