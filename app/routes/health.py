@@ -7,6 +7,7 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse, PlainTextResponse
 
 from app.database import check_connection
+from app.config import settings
 
 router = APIRouter(tags=["Health"])
 
@@ -25,9 +26,20 @@ async def health_check():
     """
     db_status = "connected" if check_connection() else "not configured"
     
+    # Check optional integrations
+    integrations = []
+    if settings.redis_enabled:
+        integrations.append("redis_upstash")
+    if settings.CLARITY_PROJECT_ID:
+        integrations.append("clarity")
+    if settings.SENTRY_DSN:
+        integrations.append("sentry")
+
+    
     return JSONResponse({
         "status": "healthy",
         "database": db_status,
+        "integrations": integrations,
         "timestamp": datetime.now().isoformat(),
         "service": "Jorge Aguirre Flores Web"
     })
