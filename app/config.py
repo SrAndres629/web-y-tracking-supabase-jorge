@@ -102,9 +102,6 @@ class Settings(BaseSettings):
     EVOLUTION_API_URL: str = "http://evolution_api:8080"
     EVOLUTION_INSTANCE: str = "JorgeMain"
 
-    # n8n Integration
-    N8N_WEBHOOK_URL: str = "http://n8n:5678/webhook/website-events"
-    
     # =================================================================
     # 🚀 ELITE TRACKING INFRASTRUCTURE
     # =================================================================

@@ -240,7 +240,7 @@ async def link_whatsapp_phone(
 ):
     """
     Links phone number to previous WhatsApp click session.
-    Called from n8n webhook when user sends first message.
+    Called from external webhook when user sends first message.
     """
     session = _get_session(body.session_id)
     
