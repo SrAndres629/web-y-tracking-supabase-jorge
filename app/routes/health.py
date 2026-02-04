@@ -56,3 +56,11 @@ async def health_check(request: Request):
 async def ping():
     """Ping simple para monitoreo básico"""
     return "pong"
+
+
+@router.get("/perf-test")
+async def perf_test(response: JSONResponse):
+    """Diagnóstico limpio de headers (Phase 9)"""
+    response.headers["Cache-Control"] = "public, s-maxage=1, stale-while-revalidate=59"
+    response.headers["Server-Timing"] = "test;dur=123"
+    return {"message": "Performance headers injected"}
