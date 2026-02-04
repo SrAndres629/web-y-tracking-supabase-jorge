@@ -126,6 +126,10 @@ class Settings(BaseSettings):
     RUDDERSTACK_WRITE_KEY: Optional[str] = None
     RUDDERSTACK_DATA_PLANE_URL: Optional[str] = None
     
+    # Google One Tap (Identity Resolution)
+    # Get Client ID at: https://console.cloud.google.com/apis/credentials
+    GOOGLE_CLIENT_ID: Optional[str] = None
+    
     @property
     def redis_enabled(self) -> bool:
         """Check if Redis is properly configured"""

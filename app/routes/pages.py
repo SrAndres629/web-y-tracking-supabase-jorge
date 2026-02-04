@@ -211,6 +211,9 @@ async def read_root(
         "fbclid": fbclid or "", # Pass to frontend for contact button
         "services": SERVICES_CONFIG,
         "contact": CONTACT_CONFIG,
+        # 🚀 Identity Resolution (Phase 7)
+        "google_client_id": settings.GOOGLE_CLIENT_ID,
+        "clarity_id": settings.CLARITY_PROJECT_ID,
         # 🚩 Feature Flags (Control from Vercel Dashboard)
         "flags": {
             "show_testimonials": settings.FLAG_SHOW_TESTIMONIALS,

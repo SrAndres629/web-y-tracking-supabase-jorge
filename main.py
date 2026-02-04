@@ -24,7 +24,7 @@ import os
 # Módulos internos
 from app.config import settings
 from app import database
-from app.routes import pages, tracking_routes, admin, health
+from app.routes import pages, tracking_routes, admin, health, identity_routes
 
 # Observability (Sentry)
 if settings.SENTRY_DSN:
@@ -157,6 +157,9 @@ app.include_router(admin.router)
 
 # Health checks (/health, /ping)
 app.include_router(health.router)
+
+# Identity Resolution (/api/identity/*)
+app.include_router(identity_routes.router)
 
 # Chat routes (Evolution/Natalia) moved to separate microservice
 

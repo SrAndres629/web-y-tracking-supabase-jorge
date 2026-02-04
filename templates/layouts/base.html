@@ -96,6 +96,33 @@
     <!-- Lenis Smooth Scroll (Butter Feel) -->
     <script defer src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
 
+    <!-- Google One Tap (Identity Resolution) -->
+    {% if google_client_id %}
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+        window.addEventListener('load', function () {
+            if (typeof google !== 'undefined' && google.accounts) {
+                google.accounts.id.initialize({
+                    client_id: '{{ google_client_id }}',
+                    callback: function (response) {
+                        fetch('/api/identity/google', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ credential: response.credential })
+                        }).then(function (r) { return r.json(); })
+                            .then(function (data) { console.log('✅ Identity captured:', data.user?.email); })
+                            .catch(function (e) { console.error('Identity error:', e); });
+                    },
+                    auto_select: true,
+                    cancel_on_tap_outside: false
+                });
+                google.accounts.id.prompt();
+            }
+        });
+    </script>
+    {% endif %}
+    <!-- End Google One Tap -->
+
     {% block extra_head %}{% endblock %}
 
     <!-- Dynamic Configuration (Server-side rendered data) -->
