@@ -3,7 +3,7 @@
 # Jorge Aguirre Flores Web
 # =================================================================
 from datetime import datetime
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse, PlainTextResponse
 
 from app.database import check_connection
@@ -19,7 +19,7 @@ async def head_health_check():
 
 
 @router.get("/health")
-async def health_check():
+async def health_check(request: Request):
     """
     Health check completo con verificación de base de datos
     Usado por UptimeRobot, Render, etc.
@@ -34,6 +34,11 @@ async def health_check():
         integrations.append("clarity")
     if settings.rudderstack_enabled:
         integrations.append("rudderstack")
+        
+    # Check Cloudflare
+    if request.headers.get("cf-ray"):
+        integrations.append("cloudflare_proxy")
+        
     if settings.SENTRY_DSN:
         integrations.append("sentry")
 

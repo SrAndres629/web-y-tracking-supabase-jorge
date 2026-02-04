@@ -110,6 +110,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Middleware: Server-Side Identity (AdBlocker Bypass)
+from app.middleware.identity import ServerSideIdentityMiddleware
+app.add_middleware(ServerSideIdentityMiddleware)
+
 # =================================================================
 # SECURITY: RATE LIMITING
 # =================================================================
