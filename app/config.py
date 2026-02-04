@@ -96,11 +96,8 @@ class Settings(BaseSettings):
     HOST: str = "0.0.0.0"
     PORT: int = 8000
     
-    # WhatsApp / Evolution API
+    # WhatsApp (Click Tracking Only)
     WHATSAPP_NUMBER: str = "59164714751"
-    EVOLUTION_API_KEY: Optional[str] = None
-    EVOLUTION_API_URL: str = "http://evolution_api:8080"
-    EVOLUTION_INSTANCE: str = "JorgeMain"
 
     # =================================================================
     # 🚀 ELITE TRACKING INFRASTRUCTURE

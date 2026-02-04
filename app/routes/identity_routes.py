@@ -177,7 +177,7 @@ async def whatsapp_redirect(
 ):
     """
     Tracks WhatsApp click intent before redirecting.
-    Creates a session ID that can be linked to phone number later.
+    Without external automation (n8n/Evolution), we track the CLICK as the key conversion event.
     """
     # Extract visitor fingerprint
     forwarded = request.headers.get("x-forwarded-for")
@@ -186,26 +186,13 @@ async def whatsapp_redirect(
     user_agent = request.headers.get("user-agent", "")
     
     external_id = generate_external_id(client_ip, user_agent)
-    session_id = str(uuid.uuid4())[:8]
     event_id = f"wa_click_{int(time.time() * 1000)}"
     
     # Cloudflare Geo
     cf_country = request.headers.get("cf-ipcountry")
     cf_city = request.headers.get("cf-ipcity")
     
-    # Store session for later phone linking
-    _store_session(session_id, {
-        "external_id": external_id,
-        "client_ip": client_ip,
-        "user_agent": user_agent,
-        "service": service,
-        "source": source,
-        "cf_city": cf_city,
-        "cf_country": cf_country,
-        "created_at": time.time()
-    })
-    
-    # Send Contact event to Meta CAPI (pre-WhatsApp intent)
+    # Send Contact event to Meta CAPI (High Value Intent)
     background_tasks.add_task(
         send_elite_event,
         event_name="Contact",
@@ -224,52 +211,9 @@ async def whatsapp_redirect(
     )
     
     # Build WhatsApp URL with pre-filled message
-    message = f"Hola, me interesa información sobre {service or 'sus servicios'}. [Ref: {session_id}]"
+    message = f"Hola, me interesa información sobre {service or 'sus servicios'}."
     wa_url = f"https://wa.me/{settings.WHATSAPP_NUMBER}?text={message.replace(' ', '%20')}"
     
-    logger.info(f"📱 [WA REDIRECT] Session {session_id} → Redirecting to WhatsApp")
+    logger.info(f"📱 [WA TRACK] Redirecting IP {client_ip} to WhatsApp")
     
     return RedirectResponse(url=wa_url, status_code=302)
-
-
-@router.post("/whatsapp/link")
-async def link_whatsapp_phone(
-    request: Request,
-    background_tasks: BackgroundTasks,
-    body: WhatsAppLinkRequest
-):
-    """
-    Links phone number to previous WhatsApp click session.
-    Called from external webhook when user sends first message.
-    """
-    session = _get_session(body.session_id)
-    
-    if not session:
-        logger.warning(f"⚠️ [WA LINK] Session {body.session_id} not found")
-        # Still process, just without session data
-        session = {}
-    
-    event_id = f"wa_lead_{int(time.time() * 1000)}"
-    
-    # Send Lead event with phone number
-    background_tasks.add_task(
-        send_elite_event,
-        event_name="Lead",
-        event_id=event_id,
-        url="https://jorgeaguirreflores.com",
-        client_ip=session.get("client_ip", ""),
-        user_agent=session.get("user_agent", ""),
-        external_id=session.get("external_id"),
-        phone=body.phone,
-        city=session.get("cf_city"),
-        country=session.get("cf_country"),
-        custom_data={
-            "content_name": session.get("service", "whatsapp_lead"),
-            "content_category": "whatsapp_conversion",
-            "lead_source": session.get("source", "whatsapp")
-        }
-    )
-    
-    logger.info(f"✅ [WA LINK] Phone {body.phone[-4:]}**** linked to session {body.session_id}")
-    
-    return {"status": "success", "message": "Phone linked to session"}
