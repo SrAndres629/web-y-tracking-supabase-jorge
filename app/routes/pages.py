@@ -105,11 +105,6 @@ async def read_root(
     """
     start_time = time.time()
     timings = {}
-
-    # 🚀 Vercel Edge Caching (Phase 8)
-    # Serves stale while revalidating in background for ultra-speed
-    # s-maxage=1 (Cache 1s in CDN), stale-while-revalidate=59 (Serve stale while background refresh)
-    response.headers["Cache-Control"] = "public, s-maxage=1, stale-while-revalidate=59"
     event_id = str(int(time.time() * 1000))
     
     # 🛡️ Real IP & Geo Extraction (Cloudflare)
@@ -228,10 +223,9 @@ async def read_root(
     # Server-Timing Headers for Debugging
     total_ms = int((time.time() - start_time) * 1000)
     timing_header = f"total;dur={total_ms}, cache;dur={timings.get('cache_ms', 0)}, db;dur={timings.get('db_ms', 0)}"
-    response.headers["Server-Timing"] = timing_header
 
     # 🚀 INSTANT RESPONSE (Background tasks run after this)
-    return templates.TemplateResponse("index.html", {
+    resp = templates.TemplateResponse("index.html", {
         "request": request, 
         "pixel_id": settings.META_PIXEL_ID,
         "pageview_event_id": event_id,
@@ -254,3 +248,9 @@ async def read_root(
             "booking_enabled": settings.FLAG_BOOKING_ENABLED,
         }
     })
+    
+    # Apply Edge Caching & Performance Headers
+    resp.headers["Cache-Control"] = "public, s-maxage=1, stale-while-revalidate=59"
+    resp.headers["Server-Timing"] = timing_header
+    
+    return resp
