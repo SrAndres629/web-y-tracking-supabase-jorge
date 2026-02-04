@@ -13,6 +13,7 @@ from typing import Optional
 from app.config import settings
 from app.database import get_visitor_fbclid, save_visitor
 from app.tracking import generate_external_id, generate_fbc, send_event
+from app.cache import cache_visitor_data, get_cached_visitor
 from app.services import SERVICES_CONFIG, CONTACT_CONFIG
 
 logger = logging.getLogger("BackgroundWorker")
@@ -102,6 +103,13 @@ async def read_root(
     
     SPEED: Template returns INSTANTLY, tracking runs after.
     """
+    start_time = time.time()
+    timings = {}
+
+    # 🚀 Vercel Edge Caching (Phase 8)
+    # Serves stale while revalidating in background for ultra-speed
+    # s-maxage=1 (Cache 1s in CDN), stale-while-revalidate=59 (Serve stale while background refresh)
+    response.headers["Cache-Control"] = "public, s-maxage=1, stale-while-revalidate=59"
     event_id = str(int(time.time() * 1000))
     
     # 🛡️ Real IP & Geo Extraction (Cloudflare)
@@ -143,8 +151,18 @@ async def read_root(
             fbclid = parts[3]
             logger.debug(f"🍪 Recovered fbclid from cookie: {fbclid}")
 
-    # 3. If still not found, try to recover from DB (slower, use async wrapper)
-    # Only do this if we generated a new external_id (returning visitor)
+    # 3. Try Redis Cache (Elite Speed: <10ms)
+    t0_cache = time.time()
+    if not fbclid:
+        cached_data = get_cached_visitor(external_id)
+        if cached_data:
+            fbclid = cached_data.get("fbclid")
+            if fbclid:
+                logger.debug(f"⚡ Recovered fbclid from REDIS: {fbclid}")
+    timings["cache_ms"] = int((time.time() - t0_cache) * 1000)
+
+    # 4. If still not found, try to recover from DB (slower, use async wrapper)
+    t0_db = time.time()
     if not fbclid:
         try:
             # 🚀 ThreadPool to prevent blocking Event Loop
@@ -155,8 +173,9 @@ async def read_root(
         except Exception as e:
             logger.warning(f"⚠️ DB Warning: Could not retrieve fbclid: {e}")
             fbclid = None
+    timings["db_ms"] = int((time.time() - t0_db) * 1000)
     
-    # Link fbc cookie if we found fbclid
+    # 5. Link fbc cookie if we found fbclid
     if fbclid:
         fbc_value = generate_fbc(fbclid)
         response.set_cookie(
@@ -172,7 +191,7 @@ async def read_root(
     # BACKGROUND TASKS (Run AFTER response is sent)
     # =================================================================
     
-    # 1. Save Visitor to DB
+    # 1. Save Visitor to DB & Cache
     background_tasks.add_task(
         bg_save_visitor,
         external_id=external_id,
@@ -187,6 +206,10 @@ async def read_root(
         }
     )
     
+    # Update cache if we have new data
+    if fbclid:
+        background_tasks.add_task(cache_visitor_data, external_id, {"fbclid": fbclid})
+
     # 2. Send PageView to Meta CAPI (With Geo Data)
     background_tasks.add_task(
         bg_send_pageview,
@@ -202,6 +225,11 @@ async def read_root(
         country=cf_country
     )
     
+    # Server-Timing Headers for Debugging
+    total_ms = int((time.time() - start_time) * 1000)
+    timing_header = f"total;dur={total_ms}, cache;dur={timings.get('cache_ms', 0)}, db;dur={timings.get('db_ms', 0)}"
+    response.headers["Server-Timing"] = timing_header
+
     # 🚀 INSTANT RESPONSE (Background tasks run after this)
     return templates.TemplateResponse("index.html", {
         "request": request, 
