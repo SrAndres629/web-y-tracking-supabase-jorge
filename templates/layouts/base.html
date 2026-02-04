@@ -42,8 +42,20 @@
     <meta name="twitter:image" content="https://jorgeaguirreflores.com/static/images/og-image.webp">
     {% endblock %}
 
-    <!-- Google Tag Manager -->
-    <script>(function (w, d, s, l, i) {
+    <!-- Partytown (Web Worker Offloading) -->
+    <script>
+        partytown = {
+            forward: ['dataLayer.push', 'fbq', 'clarity'],
+            lib: "/_partytown/"
+        };
+    </script>
+    <script type="text/javascript" src="https://builder.io/partytown-sandbox-atom.js"></script>
+    <script>
+        /* In-lined Partytown Snippet for CDN usage */
+        !function (t, e, n, i, r, o, a, d, s, c, p, l) { function u() { l || (l = 1, "/" == (a = (o.lib || "/~partytown/") + (o.debug ? "debug/" : ""))[0] && (s = e.querySelectorAll('script[type="text/partytown"]'), i != t ? t.dispatchEvent(new CustomEvent("pt1", { detail: t })) : (d = setTimeout(w, 1e4), e.addEventListener("pt0", f), r ? h(1) : n.serviceWorker ? n.serviceWorker.register(a + (o.swPath || "partytown-sw.js"), { scope: a }).then((function (t) { t.active ? h() : t.installing.addEventListener("statechange", (function (t) { "activated" == t.target.state && h() })) }), console.error) : w()))) } function h(t) { c = e.createElement(t ? "script" : "iframe"), t || (c.setAttribute("style", "display:block;width:0;height:0;border:0;visibility:hidden"), c.setAttribute("aria-hidden", !0)), c.src = a + "partytown-" + (t ? "atom.js?v=2.0.4" : "sandbox-sw.html?" + Date.now()), e.querySelector(o.sandboxParent || "body").appendChild(c) } function w(n, r) { for (f(), n = 0; n < s.length; n++)(r = e.createElement("script")).innerHTML = s[n].innerHTML, r.nonce = o.nonce, e.head.appendChild(r); c && c.parentNode.removeChild(c) } function f() { clearTimeout(d) } o = t.partytown || {}, i == t && (o.forward || []).map((function (e) { p = t, e.split(".").map((function (e, n, i) { p = p[e] = n + 1 < i.length ? "push" == i[n + 1] ? [] : p[e] || {} : function () { (t._ptf = t._ptf || []).push(i, arguments) } })) })), "complete" == e.readyState ? u() : (t.addEventListener("DOMContentLoaded", u), t.addEventListener("load", u)) }(window, document, navigator, top, window.crossOriginIsolated);
+    </script>
+    <!-- Google Tag Manager (Partytown) -->
+    <script type="text/partytown">(function (w, d, s, l, i) {
             w[l] = w[l] || []; w[l].push({
                 'gtm.start':
                     new Date().getTime(), event: 'gtm.js'
@@ -53,9 +65,9 @@
         })(window, document, 'script', 'dataLayer', 'GTM-55HC7GRT');</script>
     <!-- End Google Tag Manager -->
 
-    <!-- Microsoft Clarity - Free Heatmaps & Session Recordings -->
+    <!-- Microsoft Clarity (Partytown) -->
     {% if clarity_id %}
-    <script type="text/javascript">
+    <script type="text/partytown">
         (function (c, l, a, r, i, t, y) {
             c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments) };
             t = l.createElement(r); t.async = 1; t.src = "https://www.clarity.ms/tag/" + i;
