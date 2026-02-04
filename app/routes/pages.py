@@ -155,6 +155,7 @@ async def read_root(
             if fbclid:
                 logger.debug(f"⚡ Recovered fbclid from REDIS: {fbclid}")
     timings["cache_ms"] = int((time.time() - t0_cache) * 1000)
+    logger.info(f"⏱️ [Perf] Cache Lookup: {timings['cache_ms']}ms")
 
     # 4. If still not found, try to recover from DB (slower, use async wrapper)
     t0_db = time.time()
@@ -169,6 +170,7 @@ async def read_root(
             logger.warning(f"⚠️ DB Warning: Could not retrieve fbclid: {e}")
             fbclid = None
     timings["db_ms"] = int((time.time() - t0_db) * 1000)
+    logger.info(f"⏱️ [Perf] DB Lookup: {timings['db_ms']}ms")
     
     # 5. Link fbc cookie if we found fbclid
     if fbclid:
@@ -222,6 +224,7 @@ async def read_root(
     
     # Server-Timing Headers for Debugging
     total_ms = int((time.time() - start_time) * 1000)
+    logger.info(f"⏱️ [Perf] Total Processing: {total_ms}ms (Cache: {timings.get('cache_ms', 0)}ms, DB: {timings.get('db_ms', 0)}ms)")
     timing_header = f"total;dur={total_ms}, cache;dur={timings.get('cache_ms', 0)}, db;dur={timings.get('db_ms', 0)}"
 
     # 🚀 INSTANT RESPONSE (Background tasks run after this)
