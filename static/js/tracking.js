@@ -24,11 +24,11 @@ const TrackingEngine = {
         }
 
         this.persistUTMs(); // Priority: Capture campaign data immediately
-        this.setupPixel();
+        // 🚀 ZARAZ MIGRATION: Pixel setup removed here as it's now handled at the Edge by Cloudflare Zaraz.
         this.setupViewContentObserver();
         this.setupSliderListeners();
 
-        this.log('📊 [Senior Architecture] Tracking Engine Active (Pixel + CAPI + UTMs)');
+        this.log('📊 [Senior Architecture] Tracking Engine Active (CAPI + UTMs + Zaraz Managed Pixel)');
     },
 
     /**
@@ -75,27 +75,6 @@ const TrackingEngine = {
     },
 
     /**
-     * 1. META PIXEL INITIALIZATION
-     */
-    setupPixel() {
-        if (window.fbq) return;
-
-        !function (f, b, e, v, n, t, s) {
-            if (f.fbq) return; n = f.fbq = function () {
-                n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments)
-            }; if (!f._fbq) f._fbq = n;
-            n.push = n; n.loaded = !0; n.version = '2.0'; n.queue = []; t = b.createElement(e); t.async = !0;
-            t.src = v; s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s)
-        }(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
-
-        if (window.META_PIXEL_ID) {
-            const initData = window.EXTERNAL_ID ? { external_id: window.EXTERNAL_ID } : {};
-            fbq('init', window.META_PIXEL_ID, initData);
-            fbq('track', 'PageView', {}, { eventID: window.META_EVENT_ID });
-        }
-    },
-
-    /**
      * 2. VIEWCONTENT OBSERVER (Specific Interest)
      */
     setupViewContentObserver() {
@@ -138,7 +117,8 @@ const TrackingEngine = {
         const serviceData = this.config.services[sectionId] || { name: sectionId, category: 'General', price: 0 };
         const eventId = `vc_${Date.now()}_${sectionId}`;
 
-        // Pixel
+        // 🚀 ZARAZ MIGRATION:
+        // Zaraz will pick up 'fbq' if it's defined, but we'll focus CAPI for high-fidelity signal.
         if (window.fbq) {
             fbq('track', 'ViewContent', {
                 content_name: serviceData.name,
@@ -180,7 +160,7 @@ const TrackingEngine = {
                         content_name: serviceName,
                         content_id: serviceId,
                         interaction_type: 'compare_before_after'
-                    });
+                    }, { eventID: `slider_${Date.now()}_${serviceId}` });
                 }
 
                 this.sendToCAPI('SliderInteraction', {
@@ -219,7 +199,7 @@ const TrackingEngine = {
         // 1. We fire 'Contact' instead of 'Lead' in the frontend to avoid "Click Illusion"
         // 2. The backend will fire the real 'Lead' when the message actually is sent.
 
-        // Pixel
+        // Send to Pixel (via Zaraz if available)
         if (window.fbq) {
             fbq('track', 'Contact', {
                 content_name: data.name,
