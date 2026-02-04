@@ -39,21 +39,35 @@ def bg_save_visitor(external_id, fbclid, client_ip, user_agent, source, utm_data
 
 
 def bg_send_pageview(event_source_url, client_ip, user_agent, event_id, fbclid, fbp, external_id):
-    """Sends PageView to Meta CAPI without blocking"""
+    """Sends PageView to Meta CAPI via Official SDK (Elite Service)"""
     try:
-        success = send_event(
+        from app.meta_capi import send_elite_event
+        
+        # Construct fbc cookie if fbclid is present
+        fbc_cookie = None
+        if fbclid:
+            import time
+            timestamp = int(time.time())
+            fbc_cookie = f"fb.1.{timestamp}.{fbclid}"
+
+        result = send_elite_event(
             event_name="PageView",
-            event_source_url=event_source_url,
+            event_id=event_id,
+            url=event_source_url,
             client_ip=client_ip,
             user_agent=user_agent,
-            event_id=event_id,
-            fbclid=fbclid,
-            fbp=fbp,
             external_id=external_id,
+            fbc=fbc_cookie,
+            fbp=fbp,
             custom_data={}
         )
-        if success:
+        
+        status = result.get("status")
+        if status == "success":
             logger.info(f"✅ [BG] PageView sent to Meta CAPI")
+        else:
+            logger.warning(f"⚠️ [BG] PageView issue: {result}")
+
     except Exception as e:
         logger.error(f"❌ [BG] PageView error: {e}")
 
