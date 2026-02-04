@@ -101,36 +101,48 @@ async def read_root(
     user_agent = request.headers.get('user-agent', '')
     current_url = str(request.url)
     
-    # Capture fbclid from URL (Meta Ads traffic)
+    # =================================================================
+    # ⚡ TTFB OPTIMIZATION (Phase 5)
+    # logic: Check Cookies -> Check URL -> (Only if needed) Check DB
+    # =================================================================
+    # 1. Generate Visitor ID (Determinstic from IP + UA)
+    # =================================================================
+    external_id = generate_external_id(client_ip, user_agent)
+
+    # 1. Try to get fbclid from URL (Highest Priority)
     fbclid = request.query_params.get('fbclid')
     
-    # Generate external_id
-    external_id = generate_external_id(client_ip, user_agent)
-    
-    # Fallback: Try to recover fbclid from DB if not in URL
-    if not fbclid:
-        try:
-            fbclid = get_visitor_fbclid(external_id)
-        except Exception as e:
-            logger.warning(f"⚠️ DB Warning: Could not retrieve fbclid: {e}")
-            fbclid = None
-    
-    # Extract fbclid from _fbc cookie if present
+    # 2. If not in URL, try to get from _fbc cookie (Fastest - No DB)
     fbp = fbp_cookie
     if not fbclid and fbc_cookie and fbc_cookie.startswith("fb.1."):
         parts = fbc_cookie.split(".")
         if len(parts) >= 4:
             fbclid = parts[3]
+            logger.debug(f"🍪 Recovered fbclid from cookie: {fbclid}")
+
+    # 3. If still not found, try to recover from DB (slower, use async wrapper)
+    # Only do this if we generated a new external_id (returning visitor)
+    if not fbclid:
+        try:
+            # 🚀 ThreadPool to prevent blocking Event Loop
+            from starlette.concurrency import run_in_threadpool
+            fbclid = await run_in_threadpool(get_visitor_fbclid, external_id)
+            if fbclid:
+                 logger.debug(f"🔍 Recovered fbclid from DB: {fbclid}")
+        except Exception as e:
+            logger.warning(f"⚠️ DB Warning: Could not retrieve fbclid: {e}")
+            fbclid = None
     
-    # Set _fbc cookie if we have fbclid
+    # Link fbc cookie if we found fbclid
     if fbclid:
         fbc_value = generate_fbc(fbclid)
         response.set_cookie(
             key="_fbc", 
             value=fbc_value, 
-            max_age=90*24*60*60,  # 90 days
+            max_age=7776000,  # 90 days
             httponly=True, 
-            samesite="lax"
+            samesite="lax",
+            secure=True
         )
     
     # =================================================================
