@@ -120,11 +120,21 @@ class Settings(BaseSettings):
     
     # Cloudflare (If using Zaraz for ad-blocker bypass)
     CLOUDFLARE_ZONE_ID: Optional[str] = None
+
+    # RudderStack (CDP)
+    # Get Write Key at: https://rudderstack.com
+    RUDDERSTACK_WRITE_KEY: Optional[str] = None
+    RUDDERSTACK_DATA_PLANE_URL: Optional[str] = None
     
     @property
     def redis_enabled(self) -> bool:
         """Check if Redis is properly configured"""
         return bool(self.UPSTASH_REDIS_REST_URL and self.UPSTASH_REDIS_REST_TOKEN)
+
+    @property
+    def rudderstack_enabled(self) -> bool:
+        """Check if RudderStack is properly configured"""
+        return bool(self.RUDDERSTACK_WRITE_KEY and self.RUDDERSTACK_DATA_PLANE_URL)
     
     def validate_critical(self):
         """Valida configuración crítica"""

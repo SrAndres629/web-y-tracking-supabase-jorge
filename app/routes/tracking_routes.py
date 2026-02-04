@@ -20,6 +20,7 @@ from app.models import TrackResponse, LeadCreate, InteractionCreate
 
 # Direct imports (bypassing Celery)
 from app.meta_capi import send_elite_event
+from app.rudderstack import rudder_service
 from app.tracking import send_n8n_webhook
 from app.database import save_visitor, upsert_contact_advanced, get_or_create_lead, log_interaction
 import app.database as database
@@ -112,6 +113,19 @@ def bg_send_webhook(payload):
             logger.info(f"✅ [BG] n8n Webhook sent")
     except Exception as e:
         logger.error(f"⚠️ [BG] Webhook failed: {e}")
+
+
+def bg_send_rudderstack_event(user_id, event_name, properties, context):
+    """Sends to RudderStack without blocking"""
+    try:
+        rudder_service.track(
+            user_id=user_id, 
+            event_name=event_name, 
+            properties=properties, 
+            context=context
+        )
+    except Exception as e:
+        logger.error(f"❌ [BG] RudderStack failed: {e}")
 
 
 # =================================================================
@@ -241,6 +255,33 @@ async def track_event(
         webhook_payload = event.model_dump()
         webhook_payload['utm_data'] = utm_data
         background_tasks.add_task(bg_send_webhook, webhook_payload)
+        
+    # 5. Dual Reporting (RudderStack CDP)
+    # Sends detailed event context to Data Plane for routing (GA4, Mixpanel, etc)
+    rudder_properties = {
+        "event_id": event.event_id,
+        "url": event.event_source_url,
+        "fbclid": fbclid,
+        "fbp": fbp,
+        "fbc": fbc,
+        **utm_data
+    }
+    if custom_data:
+        rudder_properties.update(custom_data)
+        
+    rudder_context = {
+        "ip": client_ip,
+        "userAgent": user_agent,
+        "externalId": external_id
+    }
+    
+    background_tasks.add_task(
+        bg_send_rudderstack_event,
+        user_id=external_id or "anon",
+        event_name=event.event_name,
+        properties=rudder_properties,
+        context=rudder_context
+    )
     
     # 🚀 INSTANT RESPONSE (Background tasks run after this)
     return {

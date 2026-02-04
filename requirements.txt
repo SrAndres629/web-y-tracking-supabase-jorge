@@ -32,3 +32,6 @@ phonenumbers>=8.13.30
 upstash-redis>=1.0.0
 python-dotenv>=1.0.0
 
+# CDP (RudderStack)
+rudder-sdk-python>=2.0.2
+

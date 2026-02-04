@@ -32,6 +32,8 @@ async def health_check():
         integrations.append("redis_upstash")
     if settings.CLARITY_PROJECT_ID:
         integrations.append("clarity")
+    if settings.rudderstack_enabled:
+        integrations.append("rudderstack")
     if settings.SENTRY_DSN:
         integrations.append("sentry")
 
