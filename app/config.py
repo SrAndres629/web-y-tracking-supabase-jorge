@@ -105,8 +105,8 @@ class Settings(BaseSettings):
     
     # Upstash Redis (Serverless Cache - for Event Deduplication)
     # Get credentials at: https://upstash.com
-    UPSTASH_REDIS_REST_URL: Optional[str] = None
-    UPSTASH_REDIS_REST_TOKEN: Optional[str] = None
+    UPSTASH_REDIS_REST_URL: Optional[str] = os.getenv("UPSTASH_REDIS_REST_URL")
+    UPSTASH_REDIS_REST_TOKEN: Optional[str] = os.getenv("UPSTASH_REDIS_REST_TOKEN")
     
     # Microsoft Clarity (Free Heatmaps & Session Recordings)
     # Get project ID at: https://clarity.microsoft.com

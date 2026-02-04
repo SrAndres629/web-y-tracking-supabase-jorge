@@ -4,7 +4,7 @@
 # =================================================================
 
 import logging
-import ruddersdk.analytics as analytics
+import rudderstack.analytics as analytics
 from typing import Optional, Dict, Any
 from app.config import settings
 
