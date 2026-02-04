@@ -19,7 +19,8 @@ from app.config import settings
 from app.models import TrackResponse, LeadCreate, InteractionCreate
 
 # Direct imports (bypassing Celery)
-from app.tracking import send_event, send_n8n_webhook
+from app.meta_capi import send_elite_event
+from app.tracking import send_n8n_webhook
 from app.database import save_visitor, upsert_contact_advanced, get_or_create_lead, log_interaction
 import app.database as database
 
@@ -49,26 +50,47 @@ def bg_save_visitor(external_id, fbclid, client_ip, user_agent, source, utm_data
 
 
 def bg_send_meta_event(event_name, event_source_url, client_ip, user_agent, event_id, 
-                       fbclid=None, fbp=None, external_id=None, phone=None, email=None, custom_data=None):
-    """Sends to Meta CAPI without blocking"""
+                       fbclid=None, fbp=None, external_id=None, phone=None, email=None, custom_data=None, 
+                       first_name=None, last_name=None, city=None, state=None, zip_code=None, country=None):
+    """Sends to Meta CAPI using Elite Service (SDK + Redis)"""
     try:
-        success = send_event(
+        # Auto-construct fbc from fbclid if needed
+        fbc_cookie = None
+        if fbclid:
+            # Standard Meta click ID format: fb.1.timestamp.fbclid
+            timestamp = int(time.time())
+            fbc_cookie = f"fb.1.{timestamp}.{fbclid}"
+            
+        result = send_elite_event(
             event_name=event_name,
-            event_source_url=event_source_url,
+            event_id=event_id,
+            url=event_source_url,
             client_ip=client_ip,
             user_agent=user_agent,
-            event_id=event_id,
-            fbclid=fbclid,
-            fbp=fbp,
             external_id=external_id,
+            fbc=fbc_cookie, # Pass constructed cookie for better matching
+            fbp=fbp,
             phone=phone,
             email=email,
+            first_name=first_name,
+            last_name=last_name,
+            city=city,
+            state=state,
+            zip_code=zip_code,
+            country=country,
             custom_data=custom_data
         )
-        if success:
+        
+        status = result.get("status")
+        if status == "success":
             logger.info(f"✅ [BG] Meta Event sent: {event_name}")
+        elif status == "duplicate":
+            logger.info(f"🔄 [BG] Skipped duplicate: {event_name}")
+        elif status == "sandbox":
+            logger.info(f"🛡️ [BG] Sandbox intercepted: {event_name}")
         else:
-            logger.warning(f"⚠️ [BG] Meta Event failed (no retry): {event_name}")
+            logger.warning(f"⚠️ [BG] Meta Event issue: {result}")
+
     except Exception as e:
         logger.error(f"❌ [BG] Meta send error: {e}")
 
@@ -204,6 +226,12 @@ async def track_event(
         external_id=external_id,
         phone=phone,
         email=email,
+        first_name=event.user_data.get('fn') or event.user_data.get('first_name'),
+        last_name=event.user_data.get('ln') or event.user_data.get('last_name'),
+        city=event.user_data.get('ct') or event.user_data.get('city'),
+        state=event.user_data.get('st') or event.user_data.get('state'),
+        zip_code=event.user_data.get('zp') or event.user_data.get('zip_code'),
+        country=event.user_data.get('country'),
         custom_data=custom_data
     )
     

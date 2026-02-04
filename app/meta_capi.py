@@ -467,6 +467,12 @@ def send_elite_event(
     fbp: Optional[str] = None,
     phone: Optional[str] = None,
     email: Optional[str] = None,
+    first_name: Optional[str] = None,
+    last_name: Optional[str] = None,
+    city: Optional[str] = None,
+    state: Optional[str] = None,
+    zip_code: Optional[str] = None,
+    country: Optional[str] = "bo",
     custom_data: Optional[Dict[str, Any]] = None
 ) -> Dict[str, Any]:
     """
@@ -481,7 +487,12 @@ def send_elite_event(
         fbp=fbp,
         phone=phone,
         email=email,
-        country="bo"
+        first_name=first_name,
+        last_name=last_name,
+        city=city,
+        state=state,
+        zip_code=zip_code,
+        country=country
     )
     
     enhanced_custom = None
