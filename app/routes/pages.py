@@ -228,32 +228,33 @@ async def read_root(
     timing_header = f"total;dur={total_ms}, cache;dur={timings.get('cache_ms', 0)}, db;dur={timings.get('db_ms', 0)}"
 
     # 🚀 INSTANT RESPONSE (Background tasks run after this)
-    resp = templates.TemplateResponse("index.html", {
-        "request": request, 
-        "pixel_id": settings.META_PIXEL_ID,
-        "pageview_event_id": event_id,
-        "external_id": external_id,
-        "fbclid": fbclid or "", # Pass to frontend for contact button
-        "services": SERVICES_CONFIG,
-        "contact": CONTACT_CONFIG,
-        # 🚀 Identity Resolution (Phase 7)
-        "google_client_id": settings.GOOGLE_CLIENT_ID,
-        "clarity_id": settings.CLARITY_PROJECT_ID,
-        # 🚩 Feature Flags (Control from Vercel Dashboard)
-        "flags": {
-            "show_testimonials": settings.FLAG_SHOW_TESTIMONIALS,
-            "show_gallery": settings.FLAG_SHOW_GALLERY,
-            "enable_chat_widget": settings.FLAG_ENABLE_CHAT_WIDGET,
-            "cta_variant": settings.FLAG_CTA_VARIANT,
-            "hero_style": settings.FLAG_HERO_STYLE,
-            "meta_tracking": settings.FLAG_META_TRACKING,
-            "maintenance_mode": settings.FLAG_MAINTENANCE_MODE,
-            "booking_enabled": settings.FLAG_BOOKING_ENABLED,
+    return templates.TemplateResponse(
+        name="index.html", 
+        context={
+            "request": request, 
+            "pixel_id": settings.META_PIXEL_ID,
+            "pageview_event_id": event_id,
+            "external_id": external_id,
+            "fbclid": fbclid or "", # Pass to frontend for contact button
+            "services": SERVICES_CONFIG,
+            "contact": CONTACT_CONFIG,
+            # 🚀 Identity Resolution (Phase 7)
+            "google_client_id": settings.GOOGLE_CLIENT_ID,
+            "clarity_id": settings.CLARITY_PROJECT_ID,
+            # 🚩 Feature Flags (Control from Vercel Dashboard)
+            "flags": {
+                "show_testimonials": settings.FLAG_SHOW_TESTIMONIALS,
+                "show_gallery": settings.FLAG_SHOW_GALLERY,
+                "enable_chat_widget": settings.FLAG_ENABLE_CHAT_WIDGET,
+                "cta_variant": settings.FLAG_CTA_VARIANT,
+                "hero_style": settings.FLAG_HERO_STYLE,
+                "meta_tracking": settings.FLAG_META_TRACKING,
+                "maintenance_mode": settings.FLAG_MAINTENANCE_MODE,
+                "booking_enabled": settings.FLAG_BOOKING_ENABLED,
+            }
+        },
+        headers={
+            "Cache-Control": "public, s-maxage=1, stale-while-revalidate=59",
+            "Server-Timing": timing_header
         }
-    })
-    
-    # Apply Edge Caching & Performance Headers
-    resp.headers["Cache-Control"] = "public, s-maxage=1, stale-while-revalidate=59"
-    resp.headers["Server-Timing"] = timing_header
-    
-    return resp
+    )

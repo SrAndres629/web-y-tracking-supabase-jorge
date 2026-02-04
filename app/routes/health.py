@@ -59,8 +59,12 @@ async def ping():
 
 
 @router.get("/perf-test")
-async def perf_test(response: JSONResponse):
+async def perf_test():
     """Diagnóstico limpio de headers (Phase 9)"""
-    response.headers["Cache-Control"] = "public, s-maxage=1, stale-while-revalidate=59"
-    response.headers["Server-Timing"] = "test;dur=123"
-    return {"message": "Performance headers injected"}
+    return JSONResponse(
+        content={"message": "Performance headers injected"},
+        headers={
+            "Cache-Control": "public, s-maxage=1, stale-while-revalidate=59",
+            "Server-Timing": "test;dur=123"
+        }
+    )
