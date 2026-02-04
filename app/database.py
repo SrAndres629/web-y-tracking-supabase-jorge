@@ -35,12 +35,19 @@ def init_pool() -> bool:
     is_prod = os.getenv("VERCEL") or os.getenv("RENDER") or os.getenv("ENVIRONMENT") == "production"
     
     # 1. Intentar PostgreSQL (Capacidad Crítica)
-    if settings.DATABASE_URL and HAS_POSTGRES:
+    db_url = settings.DATABASE_URL
+    if db_url and HAS_POSTGRES:
+        # Auto-fix: Ensure sslmode=require for Supabase/External DBs if missing
+        if "sslmode=" not in db_url and ("supabase" in db_url or "pooler" in db_url or is_prod):
+            separator = "&" if "?" in db_url else "?"
+            db_url += f"{separator}sslmode=require"
+            logger.info("🔒 Applied SSL security fix to DATABASE_URL")
+
         try:
             _pg_pool = psycopg2.pool.SimpleConnectionPool(
                 minconn=1,
                 maxconn=10,
-                dsn=settings.DATABASE_URL,
+                dsn=db_url,
                 keepalives=1,
                 keepalives_idle=30,
                 keepalives_interval=10,
@@ -50,14 +57,15 @@ def init_pool() -> bool:
             logger.info("✅ PRODUCTION DATABASE: PostgreSQL connection established.")
             return True
         except Exception as e:
-            logger.critical(f"🔥 FATAL: PostgreSQL connection failed: {e}")
+            error_msg = f"🔥 FATAL: PostgreSQL connection failed: {str(e)}"
+            logger.critical(error_msg)
             if is_prod:
-                raise RuntimeError("PRODUCTION LOCKDOWN: Database connection required. Halting process to prevent data loss.")
+                raise RuntimeError(f"PRODUCTION LOCKDOWN: Database connection required. Details: {str(e)}")
     
     # 2. Fallback Controlado (Solo Desarrollo Local)
     if is_prod:
-        logger.critical("🔥 FATAL: DATABASE_URL missing in production runtime.")
-        raise RuntimeError("PRODUCTION LOCKDOWN: DATABASE_URL must be configured in Vercel/Render dashboard.")
+        logger.critical("🔥 FATAL: DATABASE_URL missing or Invalid in production runtime.")
+        raise RuntimeError("PRODUCTION LOCKDOWN: DATABASE_URL must be configured correctly in Vercel Dashboard.")
 
     BACKEND = "sqlite"
     logger.warning("🧪 LOCAL DEV: Using SQLite (Data will be ephemeral if deployed).")
