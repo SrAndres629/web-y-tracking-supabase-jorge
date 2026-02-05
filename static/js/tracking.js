@@ -213,16 +213,22 @@ const TrackingEngine = {
      */
     setupSliderListeners() {
         const sliders = document.querySelectorAll('.ba-slider');
-        const serviceNames = ['Microblading 3D', 'Cejas Sombra', 'Delineado Permanente', 'Labios Full Color'];
-        const serviceIds = ['microblading_3d', 'cejas_sombra', 'delineado_ojos', 'labios_full'];
+        // Updated: Use Data Attributes for Robustness (Index is fallback)
+        const fallbackNames = ['Microblading 3D', 'Delineado Permanente', 'Labios Full Color'];
+        const fallbackIds = ['microblading_3d', 'delineado_ojos', 'labios_full'];
 
         sliders.forEach((slider, index) => {
             const trackInteraction = () => {
                 if (slider.dataset.tracked) return;
                 slider.dataset.tracked = "true";
 
-                const serviceName = serviceNames[index] || 'Servicio Desconocido';
-                const serviceId = serviceIds[index] || 'unknown';
+                // Get ID from HTML or Fallback
+                const serviceId = slider.dataset.serviceCategory || fallbackIds[index] || `slider_${index}`;
+                // Derive readable name from ID or Fallback
+                let serviceName = fallbackNames[index] || 'Servicio Desconocido';
+                if (slider.dataset.serviceCategory) {
+                    serviceName = slider.dataset.serviceCategory.replace(/_/g, ' ').toUpperCase();
+                }
 
                 if (window.fbq || true) { // Force usage of safeFbq
                     this.safeFbq('trackCustom', 'SliderInteraction', {
