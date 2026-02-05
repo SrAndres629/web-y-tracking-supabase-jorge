@@ -21,8 +21,24 @@
         /* Apple Off-White */
         --glass-bg: rgba(255, 255, 255, 0.02);
         /* Apple Spring: Mass=1, Stiffness=170, Damping=26 */
-        --transition-spring: 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
-        --border-light: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%);
+        --transition-spring: 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+        --border-light: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.02) 100%);
+    }
+
+    /* Apple-Level Typography Modernization */
+    body {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        letter-spacing: -0.015em;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    h1,
+    h2,
+    h3,
+    .font-serif {
+        letter-spacing: -0.03em !important;
+        line-height: 1.1 !important;
     }
 }
 
@@ -147,6 +163,44 @@
     }
 }
 
+/* Doctoral-Level "Gold Dust" (Zero JS Overhead) */
+.gold-dust-container {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.gold-dust-particle {
+    position: absolute;
+    background: radial-gradient(circle, var(--luxury-gold-light) 0%, transparent 70%);
+    border-radius: 50%;
+    opacity: 0;
+    animation: gold-particle-float var(--particle-duration) ease-in-out infinite;
+    animation-delay: var(--particle-delay);
+}
+
+@keyframes gold-particle-float {
+    0% {
+        transform: translate(0, 0) scale(0.5);
+        opacity: 0;
+    }
+
+    15% {
+        opacity: 0.15;
+    }
+
+    85% {
+        opacity: 0.15;
+    }
+
+    100% {
+        transform: translate(var(--particle-x), var(--particle-y)) scale(1.2);
+        opacity: 0;
+    }
+}
+
 /* -----------------------------------------------------------------
    UTILITY CLASSES (Animaciones)
    ----------------------------------------------------------------- */
@@ -167,16 +221,14 @@
    ----------------------------------------------------------------- */
 .glass-card {
     background: var(--glass-bg);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid transparent;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    border-radius: 24px;
-    /* Apple Rounded */
+    backdrop-filter: blur(24px);
+    /* Higher blur for premium feel */
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    /* Ultra-thin border */
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    border-radius: 20px;
     transition: all var(--transition-spring);
-    transform-style: preserve-3d;
-    transform: perspective(1000px);
     position: relative;
     overflow: hidden;
 }

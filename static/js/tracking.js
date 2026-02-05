@@ -131,7 +131,7 @@ const TrackingEngine = {
         }
 
         // CAPI
-        this.sendToCAPI('ViewContent', {
+        this.trackEvent('ViewContent', {
             event_id: eventId,
             service: serviceData.name,
             category: serviceData.category,
@@ -163,7 +163,7 @@ const TrackingEngine = {
                     }, { eventID: `slider_${Date.now()}_${serviceId}` });
                 }
 
-                this.sendToCAPI('SliderInteraction', {
+                this.trackEvent('SliderInteraction', {
                     event_id: `slider_${Date.now()}_${serviceId}`,
                     service_name: serviceName,
                     service_id: serviceId,
@@ -211,7 +211,7 @@ const TrackingEngine = {
         }
 
         // CAPI
-        this.sendToCAPI('Contact', {
+        this.trackEvent('Contact', {
             event_id: eventId,
             source: source,
             service_data: data
@@ -254,7 +254,16 @@ const TrackingEngine = {
     /**
      * 5. CAPI HELPER
      */
-    async sendToCAPI(eventName, customData) {
+    async trackEvent(eventName, eventData = {}) {
+        // High-performance background tracking (Zero Latency)
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(() => this._dispatch(eventName, eventData));
+        } else {
+            setTimeout(() => this._dispatch(eventName, eventData), 10);
+        }
+    },
+
+    async _dispatch(eventName, eventData) {
         // Extract _fbp cookie (Meta Browser ID)
         const fbp = document.cookie.split('; ').find(row => row.startsWith('_fbp='))?.split('=')[1] || this.getUTM('fbp');
 
@@ -262,7 +271,7 @@ const TrackingEngine = {
         const payload = {
             event_name: eventName,
             event_time: Math.floor(Date.now() / 1000),
-            event_id: customData.event_id || `${eventName.toLowerCase()}_${Date.now()}`,
+            event_id: eventData.event_id || `${eventName.toLowerCase()}_${Date.now()}`,
             event_source_url: window.location.href,
             action_source: "website",
             user_data: {
@@ -271,7 +280,7 @@ const TrackingEngine = {
                 fbp: fbp
             },
             custom_data: {
-                ...customData,
+                ...eventData,
                 fbclid: this.getUTM('fbclid'),
                 fbp,
                 utm_source: this.getUTM('utm_source'),

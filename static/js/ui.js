@@ -171,7 +171,7 @@ const UIEngine = {
                 });
             }, { rootMargin: '50px' });
 
-            document.querySelectorAll('#particles-js, .animate-shine, .btn-gold-liquid')
+            document.querySelectorAll('.animate-shine, .btn-gold-liquid')
                 .forEach(el => observer.observe(el));
         }
     }

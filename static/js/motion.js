@@ -9,12 +9,12 @@ const MotionEngine = {
     lenis: null,
     initialized: false,
 
-    // Config: Physics & Mathematics
+    // Config: Doctoral Physics & Precise Mathematics
     physics: {
-        lerp: 0.07,          // Follow inertia
-        parallaxScrub: 1,    // Parallax damping
-        magneticPower: 0.35, // Attraction strength
-        goldAlpha: 0.07      // Ambient light intensity
+        lerp: 0.1,           // Optimized follow inertia (Apple Standard)
+        parallaxScrub: 1.2,  // Silkier parallax damping
+        magneticPower: 0.4,  // Precise attraction strength
+        goldAlpha: 0.05      // Minimalist ambient light intensity
     },
 
     init() {

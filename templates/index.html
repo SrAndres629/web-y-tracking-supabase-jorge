@@ -16,8 +16,24 @@
         class="absolute top-0 right-0 w-[500px] h-[500px] bg-luxury-gold/5 blur-luxury-lg rounded-full pointer-events-none">
     </div>
 
-    <!-- Gold Dust Particles -->
-    <div id="particles-js" class="absolute inset-0 z-[1] pointer-events-none opacity-20"></div>
+    <!-- Doctoral Gold Dust (CSS Particles) -->
+    <div class="gold-dust-container opacity-20">
+        <div class="gold-dust-particle"
+            style="--particle-x: 10vw; --particle-y: -30vh; --particle-duration: 8s; --particle-delay: 0s; left: 20%; top: 80%; width: 2px; height: 2px;">
+        </div>
+        <div class="gold-dust-particle"
+            style="--particle-x: -15vw; --particle-y: -40vh; --particle-duration: 12s; --particle-delay: 2s; left: 70%; top: 90%; width: 3px; height: 3px;">
+        </div>
+        <div class="gold-dust-particle"
+            style="--particle-x: 5vw; --particle-y: -25vh; --particle-duration: 10s; --particle-delay: 5s; left: 40%; top: 85%; width: 2px; height: 2px;">
+        </div>
+        <div class="gold-dust-particle"
+            style="--particle-x: -8vw; --particle-y: -35vh; --particle-duration: 15s; --particle-delay: 1s; left: 10%; top: 95%; width: 2px; height: 2px;">
+        </div>
+        <div class="gold-dust-particle"
+            style="--particle-x: 12vw; --particle-y: -45vh; --particle-duration: 9s; --particle-delay: 4s; left: 85%; top: 75%; width: 3px; height: 3px;">
+        </div>
+    </div>
 
     <div class="container mx-auto px-6 relative z-10 text-center md:text-left grid md:grid-cols-2 gap-12 items-center">
         <div class="space-y-8 animate-fade-in-up">
@@ -191,7 +207,8 @@
 </section>
 
 <!-- ========== GALERÍA ANTES/DESPUÉS ========== -->
-<section id="galeria" class="py-24 bg-transparent relative overflow-hidden">
+<section id="galeria" class="py-24 bg-transparent relative overflow-hidden"
+    style="content-visibility: auto; contain-intrinsic-size: 1000px;">
     <!-- Background Subtle Glow -->
     <div
         class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-luxury-gold/5 blur-luxury-xl rounded-full pointer-events-none">
@@ -350,7 +367,8 @@
 </section>
 
 <!-- ========== TESTIMONIOS REALES ========== -->
-<section id="testimonios" class="py-24 bg-transparent relative">
+<section id="testimonios" class="py-24 bg-transparent relative"
+    style="content-visibility: auto; contain-intrinsic-size: 600px;">
     <div class="container mx-auto px-6 relative z-10">
         <div class="text-center mb-16">
             <span class="text-luxury-gold text-xs font-bold uppercase tracking-[0.4em]">Lo que dicen de
@@ -421,7 +439,8 @@
 </section>
 
 <!-- ========== SERVICIOS ========== -->
-<section id="servicios" class="py-24 bg-transparent relative overflow-hidden">
+<section id="servicios" class="py-24 bg-transparent relative overflow-hidden"
+    style="content-visibility: auto; contain-intrinsic-size: 1200px;">
     <!-- Background Glow -->
     <div
         class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] bg-luxury-gold/5 blur-luxury-2xl rounded-full pointer-events-none">
@@ -765,15 +784,7 @@
     </div>
 </section>
 
-<!-- Particles.js (Gold Dust Effect) - Conditional Desktop Only -->
-<script>
-    if (window.innerWidth > 768) {
-        const script = document.createElement('script');
-        script.src = "https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js";
-        script.defer = true;
-        document.body.appendChild(script);
-    }
-</script>
+<!-- Particles.js Removed (Migrated to high-performance CSS Particles) -->
 
 {% endblock %}
 
