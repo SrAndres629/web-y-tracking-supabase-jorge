@@ -11,8 +11,9 @@ const UIEngine = {
         this.initialized = true;
 
         this.NavManager.init();
+        this.SliderManager.init(); // 🚀 Critical UI: Init immediately, not deferred
 
-        // Performance-safe initialization
+        // Performance-safe initialization for non-critical elements
         if ('requestIdleCallback' in window) {
             requestIdleCallback(() => this.deferredInit());
         } else {
@@ -23,7 +24,6 @@ const UIEngine = {
     },
 
     deferredInit() {
-        this.SliderManager.init();
         this.CROManager.init();
         this.PerformanceManager.init();
     },
