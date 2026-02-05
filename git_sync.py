@@ -2,12 +2,45 @@ import subprocess
 import sys
 import os
 import datetime
+import json
+import urllib.request
+import urllib.error
+
+# --- CONFIGURATION (Standard Silicon Valley Protocol) ---
+CLOUDFLARE_ZONE_ID = "19bd9bdd7abf8f74b4e95d75a41e8583"
+CLOUDFLARE_API_KEY = "6094d6fa8c138d93409de2f59a3774cd8795a"
+CLOUDFLARE_EMAIL = "Acordero629@gmail.com"
+# -------------------------------------------------------
 
 # --- CONFIGURATION ---
 # Use the current directory as base path to avoid hardcoded "monorepo" issues
 REPO_PATH = os.path.dirname(os.path.abspath(__file__))
 REMOTE_BRANCH = "origin/main"
 # ---------------------
+
+def purge_cloudflare_cache():
+    """Purge everything from Cloudflare Edge for jorgeaguirreflores.com"""
+    print("🧹 6. Initiating Cloudflare Cache Purge (Standard SV Protocol)...")
+    url = f"https://api.cloudflare.com/client/v4/zones/{CLOUDFLARE_ZONE_ID}/purge_cache"
+    headers = {
+        "X-Auth-Email": CLOUDFLARE_EMAIL,
+        "X-Auth-Key": CLOUDFLARE_API_KEY,
+        "Content-Type": "application/json"
+    }
+    data = json.dumps({"purge_everything": True}).encode("utf-8")
+    
+    try:
+        req = urllib.request.Request(url, data=data, headers=headers, method="POST")
+        with urllib.request.urlopen(req) as response:
+            result = json.loads(response.read().decode("utf-8"))
+            if result.get("success"):
+                print("✨ CLOUDFLARE CACHE PURGED. Site is now live at the Edge.")
+            else:
+                print(f"⚠️ Cloudflare Purge Issue: {result.get('errors')}")
+    except urllib.error.URLError as e:
+        print(f"❌ Cloudflare API Error: {e}")
+    except Exception as e:
+        print(f"❌ Critical Purge Exception: {e}")
 
 def run_command(command, cwd=None, check=True, silent=False):
     """Run a shell command and return (success, stdout, stderr)."""
@@ -71,8 +104,10 @@ def main():
     
     if success:
         print("\n✅ DEPLOYMENT INITIATED")
-        print(f"🔗 Live at: https://web-y-tracking-supabase-jorge.vercel.app")
-        print("� Monitoring: vercel logs")
+        print(f"🔗 Live at: https://jorgeaguirreflores.com")
+        
+        # 6. Cloudflare Sync (Elite Performance Loop)
+        purge_cloudflare_cache()
     else:
         print(f"\n❌ SYNC FAILED: {stderr}")
 
