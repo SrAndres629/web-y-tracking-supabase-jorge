@@ -12,10 +12,13 @@
         .font-serif {
             font-family: 'Playfair Display', serif;
         }
+
         /* Doctoral-level CSS Reset for Apple Standard */
         html {
-            scroll-behavior: initial; /* Handled by Lenis for better performance */
+            scroll-behavior: initial;
+            /* Handled by Lenis for better performance */
         }
+
         ::selection {
             background-color: #C5A059;
             color: #000;
@@ -137,8 +140,8 @@
     <script type="application/json" id="app-config">
         {
             "META_PIXEL_ID": "{{ pixel_id }}",
-            "META_EVENT_ID": "{{ pageview_event_id }}",
-            "EXTERNAL_ID": "{{ external_id }}",
+            "META_EVENT_ID": null,
+            "EXTERNAL_ID": null,
             "SERVICES_CONFIG": {{ services | tojson }},
             "CONTACT_CONFIG": {{ contact | tojson }}
         }

@@ -17,6 +17,21 @@ const TrackingEngine = {
         if (this.initialized) return;
         this.initialized = true;
 
+        // 🚀 HYBRID ARCHITECTURE (Client-Side Identity)
+        // Since HTML is cached at Edge, we must generate unique IDs here if missing.
+        if (!window.META_EVENT_ID) {
+            window.META_EVENT_ID = `pageview_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            this.log('🆔 Generated Client-Side Event ID:', window.META_EVENT_ID);
+        }
+
+        if (!window.EXTERNAL_ID) {
+            // Check cookie first, else generate
+            const storedId = this.getCookie('external_id');
+            window.EXTERNAL_ID = storedId || `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            if (!storedId) this.setCookie('external_id', window.EXTERNAL_ID, 30); // 30 days
+            this.log('👤 Hydrated Identity:', window.EXTERNAL_ID);
+        }
+
         // Auto-enable debug if specific parameter exists
         if (new URLSearchParams(window.location.search).has('debug_pixel')) {
             this.debugMode = true;
@@ -28,7 +43,29 @@ const TrackingEngine = {
         this.setupViewContentObserver();
         this.setupSliderListeners();
 
-        this.log('📊 [Senior Architecture] Tracking Engine Active (CAPI + UTMs + Zaraz Managed Pixel)');
+        this.log('📊 [Senior Architecture] Tracking Engine Active (Hybrid Mode: Edge Cache + Client Identity)');
+    },
+
+    // Cookie Helpers
+    setCookie(name, value, days) {
+        let expires = "";
+        if (days) {
+            const date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            expires = "; expires=" + date.toUTCString();
+        }
+        document.cookie = name + "=" + (value || "") + expires + "; path=/; SameSite=Lax";
+    },
+
+    getCookie(name) {
+        const nameEQ = name + "=";
+        const ca = document.cookie.split(';');
+        for (let i = 0; i < ca.length; i++) {
+            let c = ca[i];
+            while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+        }
+        return null;
     },
 
     /**
