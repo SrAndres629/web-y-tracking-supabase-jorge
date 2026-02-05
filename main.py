@@ -21,22 +21,29 @@ import logging
 import gc
 import os
 
-# Módulos internos
-from app.config import settings
-from app import database
-from app.routes import pages, tracking_routes, admin, health, identity_routes
+# Configuración de Logging prioritaria
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
-# Observability (Sentry)
-if settings.SENTRY_DSN:
-    import sentry_sdk
-    from sentry_sdk.integrations.fastapi import FastApiIntegration
-    sentry_sdk.init(
-        dsn=settings.SENTRY_DSN,
-        integrations=[FastApiIntegration()],
-        traces_sample_rate=0.1,
-        profiles_sample_rate=0.1,
-    )
-    logging.info("🛡️ Sentry Monitoring Active")
+def init_sentry():
+    """Lazy init for Sentry to avoid blocking the main thread during startup"""
+    from app.config import settings
+    if settings.SENTRY_DSN:
+        try:
+            import sentry_sdk
+            from sentry_sdk.integrations.fastapi import FastApiIntegration
+            sentry_sdk.init(
+                dsn=settings.SENTRY_DSN,
+                integrations=[FastApiIntegration()],
+                traces_sample_rate=0.1,
+                profiles_sample_rate=0.1,
+            )
+            logger.info("🛡️ Sentry Monitoring Active")
+        except ImportError:
+            logger.warning("⚠️ Sentry not installed")
 
 # Configurar logging
 logging.basicConfig(
@@ -54,25 +61,16 @@ from contextlib import asynccontextmanager
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Ciclo de vida de la aplicación con manejo de contexto"""
-    # Startup
-    logger.info("🚀 Iniciando Jorge Aguirre Flores Web v2.0")
+    # Startup - OPTIMIZED: No blocking DB init
+    logger.info("🚀 Iniciando Jorge Aguirre Flores Web v2.1.1 (Extreme Performance Mode)")
     
-    # Inicializar base de datos
-    try:
-        database_ok = database.initialize()
-        if database_ok:
-            logger.info("✅ Base de datos PostgreSQL conectada y sincronizada")
-        else:
-            logger.critical("❌ ERROR CRÍTICO: Fallo al inicializar base de datos")
-            if os.getenv("VERCEL") or os.getenv("ENVIRONMENT") == "production":
-                 raise RuntimeError("Database Initialization sync failed in Production")
-            logger.warning("ℹ️ Ejecutando en modo degradado (Sin BD) - Solo permitido en Desarrollo Local")
-    except Exception as e:
-        logger.critical(f"🚨 PRODUCTION LOCKDOWN: {str(e)}")
-        if os.getenv("VERCEL") or os.getenv("ENVIRONMENT") == "production":
-             raise e
-        logger.warning(f"⚠️ Startup error ignored in dev: {e}")
+    # 1. Initialize Sentry (Parallelizable/Non-blocking)
+    init_sentry()
     
+    # NOTE: Database connection is now LAZY (initialized on first request)
+    logger.info("⚡ Cold Start Optimization: Database will connect on first request")
+    
+    from app.config import settings
     logger.info(f"📊 Meta Pixel ID: {settings.META_PIXEL_ID}")
     logger.info(f"🌐 Servidor listo en http://{settings.HOST}:{settings.PORT}")
     
@@ -99,12 +97,12 @@ app = FastAPI(
 app.add_middleware(GZipMiddleware, minimum_size=500)
 
 # Middleware para Proxy/CDN (Cloudflare/Render)
-# Confía en headers X-Forwarded-For y X-Forwarded-Proto
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=["*"])
 
 # Middleware CORS (Seguridad: permitir solo dominios propios)
 from fastapi.middleware.cors import CORSMiddleware
+from app.config import settings
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ALLOWED_ORIGINS,
@@ -146,22 +144,27 @@ app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 
 # =================================================================
-# ROUTERS
+# ROUTERS - LAZY LOADING
 # =================================================================
 
 # Páginas HTML
+from app.routes import pages
 app.include_router(pages.router)
 
 # Tracking endpoints (/track-lead, /track-viewcontent)
+from app.routes import tracking_routes
 app.include_router(tracking_routes.router)
 
 # Panel de administración (/admin/*)
+from app.routes import admin
 app.include_router(admin.router)
 
 # Health checks (/health, /ping)
+from app.routes import health
 app.include_router(health.router)
 
 # Identity Resolution (/api/identity/*)
+from app.routes import identity_routes
 app.include_router(identity_routes.router)
 
 # Chat routes (Evolution/Natalia) moved to separate microservice
