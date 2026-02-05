@@ -70,6 +70,41 @@ def create_cache_everything_rule():
         print(f"⚠️ Failed to create rule: {data.get('errors')}")
         print(f"📄 Messages: {data.get('messages')}")
 
+def create_vercel_bypass_rule():
+    print("\n🛡️ Securing Vercel Analytics (Bypass Cache)...")
+    url = f"{BASE_URL}/zones/{CLOUDFLARE_ZONE_ID}/pagerules"
+    
+    payload = {
+        "targets": [
+            {
+                "target": "url",
+                "constraint": {
+                    "operator": "matches",
+                    "value": "*jorgeaguirreflores.com/_vercel/*"
+                }
+            }
+        ],
+        "actions": [
+            {
+                "id": "cache_level",
+                "value": "bypass"
+            },
+            {
+                "id": "disable_performance"  # Ensure raw script delivery
+            }
+        ],
+        "priority": 1,
+        "status": "active"
+    }
+    
+    response = requests.post(url, headers=HEADERS, json=payload)
+    data = response.json()
+    
+    if data.get("success"):
+        print("✅ SUCCESS: Vercel Analytics safeguarded.")
+    else:
+        print(f"⚠️ Failed to create Vercel rule: {data.get('errors')}")
+
 if __name__ == "__main__":
     current_rules = list_page_rules()
     
@@ -86,3 +121,15 @@ if __name__ == "__main__":
     
     if not exists:
         create_cache_everything_rule()
+        
+    # Check for Vercel rule
+    vercel_exists = False
+    for rule in current_rules:
+        target = rule['targets'][0]['constraint']['value']
+        if "_vercel/*" in target:
+            print(f"ℹ️ Rule already exists for {target}. Skipping.")
+            vercel_exists = True
+            break
+            
+    if not vercel_exists:
+        create_vercel_bypass_rule()
