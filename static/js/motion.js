@@ -47,12 +47,15 @@ const MotionEngine = {
         if (!heroPortrait) return;
 
         // Initial state - slightly scaled down and transparent
+        // 🚀 SILICON VALLEY OPTIMIZATION: Disable JS hide to allow CSS Instant Paint
+        /*
         gsap.set(heroPortrait, {
             opacity: 0,
             scale: 0.92,
             y: 30,
             filter: 'blur(8px)'
         });
+        */
         gsap.set([heroGlow, heroBorder], { opacity: 0 });
 
         // Cinematic Reveal Timeline

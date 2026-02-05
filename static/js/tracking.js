@@ -244,11 +244,19 @@ const TrackingEngine = {
 
         const whatsappUrl = `https://wa.me/${this.config.phone}?text=${encodeURIComponent(message)}`;
 
-        // Use timeout to ensure tracking fires before redirect, but don't block too long
-        // 300ms is usually enough for asynchronous fires to be queued by browser
-        setTimeout(() => {
-            window.open(whatsappUrl, '_blank');
-        }, 300);
+        // 🚀 SMART NAVIGATION (Silicon Valley Pattern)
+        // Check if the trigger is an Anchor Tag (<a>). If so, we let the BROWSER handle the navigation instantly.
+        const evt = window.event;
+        const isSemanticLink = evt && evt.target && evt.target.closest('a');
+
+        if (!isSemanticLink) {
+            // Unblocks UI immediately while tracking fires in background
+            setTimeout(() => {
+                window.open(whatsappUrl, '_blank');
+            }, 300);
+        } else {
+            this.log('🔗 Navigation handled natively by Browser (Zero Latency)');
+        }
     },
 
     /**
