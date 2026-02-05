@@ -150,22 +150,52 @@ const TrackingEngine = {
         document.querySelectorAll('[data-service-category]').forEach(el => observer.observe(el));
     },
 
+    /**
+     * 🛡️ PIXEL SAFETY WRAPPER (Prevents Race Conditions)
+     */
+    safeFbq(method, eventName, data, options) {
+        if (window.fbq) {
+            fbq(method, eventName, data, options);
+            this.log(`✅ Pixel Fired: ${eventName}`);
+        } else {
+            // Retry logic for async loading (Zaraz/Partytown)
+            this.retryQueue = this.retryQueue || [];
+            this.retryQueue.push({ method, eventName, data, options, time: Date.now() });
+
+            if (!this.retryTimer) {
+                this.log(`⏳ Pixel not ready. Queuing event: ${eventName}`);
+                this.retryTimer = setInterval(() => {
+                    if (window.fbq) {
+                        this.log(`🚀 Pixel loaded! Replaying ${this.retryQueue.length} events.`);
+                        this.retryQueue.forEach(e => fbq(e.method, e.eventName, e.data, e.options));
+                        this.retryQueue = [];
+                        clearInterval(this.retryTimer);
+                        this.retryTimer = null;
+                    }
+                    // Stop trying after 10 seconds
+                    else if (this.retryQueue.length > 0 && (Date.now() - this.retryQueue[0].time > 10000)) {
+                        this.warn('❌ Pixel failed to load. Aborting retries.');
+                        clearInterval(this.retryTimer);
+                        this.retryTimer = null;
+                    }
+                }, 500);
+            }
+        }
+    },
+
     trackIndividualView(sectionId) {
         const serviceData = this.config.services[sectionId] || { name: sectionId, category: 'General', price: 0 };
         const eventId = `vc_${Date.now()}_${sectionId}`;
 
-        // 🚀 ZARAZ MIGRATION:
-        // Zaraz will pick up 'fbq' if it's defined, but we'll focus CAPI for high-fidelity signal.
-        if (window.fbq) {
-            fbq('track', 'ViewContent', {
-                content_name: serviceData.name,
-                content_category: serviceData.category,
-                content_ids: [sectionId],
-                content_type: 'product',
-                value: serviceData.price,
-                currency: 'USD'
-            }, { eventID: eventId });
-        }
+        // 🚀 ZARAZ MIGRATION: Safe Wrapper
+        this.safeFbq('track', 'ViewContent', {
+            content_name: serviceData.name,
+            content_category: serviceData.category,
+            content_ids: [sectionId],
+            content_type: 'product',
+            value: serviceData.price,
+            currency: 'USD'
+        }, { eventID: eventId });
 
         // CAPI
         this.trackEvent('ViewContent', {
@@ -192,8 +222,8 @@ const TrackingEngine = {
                 const serviceName = serviceNames[index] || 'Servicio Desconocido';
                 const serviceId = serviceIds[index] || 'unknown';
 
-                if (window.fbq) {
-                    fbq('trackCustom', 'SliderInteraction', {
+                if (window.fbq || true) { // Force usage of safeFbq
+                    this.safeFbq('trackCustom', 'SliderInteraction', {
                         content_name: serviceName,
                         content_id: serviceId,
                         interaction_type: 'compare_before_after'
@@ -237,15 +267,15 @@ const TrackingEngine = {
         // 2. The backend will fire the real 'Lead' when the message actually is sent.
 
         // Send to Pixel (via Zaraz if available)
-        if (window.fbq) {
-            fbq('track', 'Contact', {
-                content_name: data.name,
-                content_category: data.intent,
-                content_ids: [data.id],
-                lead_source: 'whatsapp',
-                trigger_location: source
-            }, { eventID: eventId });
-        }
+        // Send to Pixel (via Zaraz if available)
+        // 🚀 SAFE TRACKING: Auto-retries if Pixel is late
+        this.safeFbq('track', 'Contact', {
+            content_name: data.name,
+            content_category: data.intent,
+            content_ids: [data.id],
+            lead_source: 'whatsapp',
+            trigger_location: source
+        }, { eventID: eventId });
 
         // CAPI
         this.trackEvent('Contact', {

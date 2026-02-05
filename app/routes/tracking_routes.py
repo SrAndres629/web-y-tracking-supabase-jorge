@@ -10,6 +10,7 @@
 # =================================================================
 
 from fastapi import APIRouter, Request, BackgroundTasks, HTTPException, Cookie
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
 import time
@@ -284,11 +285,19 @@ async def track_event(
     )
     
     # 🚀 INSTANT RESPONSE (Background tasks run after this)
-    return {
-        "status": "queued", 
-        "mode": "fastapi_background", 
-        "event_id": event.event_id
-    }
+    # INFRASTRUCTURE DEFENSE: Explicit Anti-Cache Headers
+    return JSONResponse(
+        content={
+            "status": "queued", 
+            "mode": "fastapi_background", 
+            "event_id": event.event_id
+        },
+        headers={
+            "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+            "Pragma": "no-cache",
+            "Expires": "0"
+        }
+    )
 
 
 # =================================================================
