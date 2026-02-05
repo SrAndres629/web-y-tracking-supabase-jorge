@@ -25,12 +25,33 @@
         --border-light: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.02) 100%);
     }
 
-    /* Apple-Level Typography Modernization */
+    /* Apple-Level Typography Modernization (Mobile Optimized) */
+    html {
+        -webkit-text-size-adjust: 100%;
+        /* Prevents iOS font zooming */
+        font-size: 16px;
+        /* Base size for accessibility */
+        scroll-behavior: smooth;
+    }
+
     body {
         font-family: 'Inter', system-ui, -apple-system, sans-serif;
         letter-spacing: -0.015em;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
+        /* Mobile Performance Boosts */
+        -webkit-tap-highlight-color: transparent;
+        overflow-x: hidden;
+        /* Prevent horizontal scroll */
+        width: 100%;
+    }
+
+    /* Modern Viewport Units (Fixes iOS Safari Address Bar Jump) */
+    .min-h-screen {
+        min-height: 100vh;
+        /* Fallback */
+        min-height: 100dvh;
+        /* Dynamic Viewport Height */
     }
 
     h1,

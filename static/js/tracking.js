@@ -343,6 +343,10 @@ const TrackingEngine = {
         const fbp = document.cookie.split('; ').find(row => row.startsWith('_fbp='))?.split('=')[1] || this.getUTM('fbp');
 
         // Enriched Payload with UTMs
+        // Detect In-App Browsers (Instagram/TikTok) for ROI Analysis
+        const ua = navigator.userAgent || navigator.vendor || window.opera;
+        const isInApp = (ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1) || (ua.indexOf("Instagram") > -1) || (ua.indexOf("TikTok") > -1);
+
         const payload = {
             event_name: eventName,
             event_time: Math.floor(Date.now() / 1000),
@@ -362,11 +366,21 @@ const TrackingEngine = {
                 utm_medium: this.getUTM('utm_medium'),
                 utm_campaign: this.getUTM('utm_campaign'),
                 utm_term: this.getUTM('utm_term'),
-                utm_content: this.getUTM('utm_content')
+                utm_content: this.getUTM('utm_content'),
+                browser_context: isInApp ? 'in_app' : 'browser' // Critical for ROI analysis
             }
         };
 
         try {
+            // 🚀 BEACON API (Guaranteed Delivery on Mobile Exit)
+            if (navigator.sendBeacon && eventName === 'Contact') {
+                const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+                navigator.sendBeacon('/track/event', blob);
+                this.log(`📡 [Beacon] Sent critical event: ${eventName}`);
+                return;
+            }
+
+            // Standard Fetch for others
             const response = await fetch('/track/event', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
