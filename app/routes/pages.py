@@ -172,17 +172,12 @@ async def read_root(
     timings["db_ms"] = int((time.time() - t0_db) * 1000)
     logger.info(f"⏱️ [Perf] DB Lookup: {timings['db_ms']}ms")
     
-    # 5. Link fbc cookie if we found fbclid
-    if fbclid:
-        fbc_value = generate_fbc(fbclid)
-        response.set_cookie(
-            key="_fbc", 
-            value=fbc_value, 
-            max_age=7776000,  # 90 days
-            httponly=True, 
-            samesite="lax",
-            secure=True
-        )
+    # 5. Link fbc cookie (DISABLED SERVER-SIDE TO ENABLE CDN CACHING)
+    # logic: Setting a cookie here bypasses Vercel/Cloudflare Cache.
+    # The client-side tracking.js already handles cookie persistence.
+    # if fbclid:
+    #     fbc_value = generate_fbc(fbclid)
+    #     response.set_cookie(...)
     
     # =================================================================
     # BACKGROUND TASKS (Run AFTER response is sent)
