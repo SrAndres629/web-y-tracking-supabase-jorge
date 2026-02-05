@@ -99,6 +99,8 @@
         href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Cloudflare Turnstile (Anti-Bot Protection) -->
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
     <!-- GSAP (Core Animation Engine) -->
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
@@ -171,6 +173,10 @@
 
 <body
     class="bg-luxury-black text-luxury-text font-sans antialiased selection:bg-luxury-gold selection:text-black relative">
+
+    <!-- Anti-Bot Defense Layer -->
+    <div class="cf-turnstile" data-sitekey="0x4AAAAAAAxg9J9Vf9T9J9Vf" data-callback="onTurnstileSuccess"
+        data-appearance="interaction-only"></div>
 
     <!-- Global Ambient Spotlight -->
     <div id="mouse-spotlight"

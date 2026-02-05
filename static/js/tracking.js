@@ -13,6 +13,8 @@ const TrackingEngine = {
         phone: (window.CONTACT_CONFIG && window.CONTACT_CONFIG.phone) || "59164714751",
     },
 
+    isHuman: false, // Turnstile Status
+
     init() {
         if (this.initialized) return;
         this.initialized = true;
@@ -398,6 +400,13 @@ const TrackingEngine = {
 
 // Global Exposure for UI clicks
 window.handleConversion = (source) => TrackingEngine.handleConversion(source);
+
+// Turnstile Callback (Anti-Bot)
+window.onTurnstileSuccess = function (token) {
+    TrackingEngine.isHuman = true;
+    TrackingEngine.log('🤖 Turnstile Verified: User is Human');
+    TrackingEngine.turnstileToken = token;
+};
 
 // Initialize with safe DOM check
 if (document.readyState === 'complete' || document.readyState === 'interactive') {

@@ -1,33 +1,44 @@
-# SERVICES.PY - Configuración Centralizada de Servicios
-# Single Source of Truth para Backend y Frontend
+import os
+import httpx
+import logging
 
-SERVICES_CONFIG = {
-    'cejas': {
-        'id': 'microblading_3d',
-        'name': 'Microblading de Cejas',
-        'category': 'cejas',
-        'price': 350,
-        'description': 'Técnica pelo a pelo para un look natural 3D'
-    },
-    'ojos': {
-        'id': 'delineado_ojos',
-        'name': 'Delineado Permanente',
-        'category': 'ojos',
-        'price': 300,
-        'description': 'Realce de mirada con delineado superior e inferior'
-    },
-    'labios': {
-        'id': 'labios_full',
-        'name': 'Labios Full Color',
-        'category': 'labios',
-        'price': 400,
-        'description': 'Color completo y definición para labios perfectos'
+# Configure Logging
+logger = logging.getLogger("uvicorn.error")
+
+QSTASH_TOKEN = os.getenv("QSTASH_TOKEN")
+# Auto-detect Vercel URL or fallback to localhost for dev
+VERCEL_URL = os.getenv("VERCEL_URL", "jorgeaguirreflores.com") 
+if "http" not in VERCEL_URL:
+    VERCEL_URL = f"https://{VERCEL_URL}"
+
+async def publish_to_qstash(event_data: dict):
+    """
+    Publishes an event to QStash to be processed asynchronously.
+    This bypasses Vercel's function freeze by offloading the work to an external queue.
+    """
+    if not QSTASH_TOKEN:
+        logger.warning("⚠️ QStash Token missing! Falling back to direct execution (Risk of Freeze)")
+        return False
+
+    url = f"{VERCEL_URL}/api/hooks/process-event"
+    
+    headers = {
+        "Authorization": f"Bearer {QSTASH_TOKEN}",
+        "Content-Type": "application/json",
+        "Upstash-Retries": "3" # Retry up to 3 times if our API is down
     }
-}
 
-CONTACT_CONFIG = {
-    'phone': "59164714751",
-    'whatsapp_url': "https://wa.me/59164714751",
-    'address': "Sobre el la av. 4to anillo y prolongacion av. brasil, frente al hospital guaracachi, Santa Cruz de la Sierra, Bolivia",
-    'maps_url': "https://maps.app.goo.gl/Nfqet1ArkDMMcPt76"
-}
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(
+                f"https://qstash.upstash.io/v2/publish/{url}",
+                headers=headers,
+                json=event_data,
+                timeout=5.0
+            )
+            response.raise_for_status()
+            logger.info(f"🚀 Event offloaded to QStash: {response.json().get('messageId')}")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Failed to publish to QStash: {str(e)}")
+            return False
