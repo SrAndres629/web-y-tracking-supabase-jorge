@@ -1,12 +1,11 @@
 {
     "version": 2,
-    "functions": {
-        "api/index.py": {
-            "runtime": "@vercel/python",
-            "memory": 512,
-            "maxDuration": 15
+    "builds": [
+        {
+            "src": "api/index.py",
+            "use": "@vercel/python"
         }
-    },
+    ],
     "rewrites": [
         {
             "source": "/static/(.*)",
@@ -16,5 +15,26 @@
             "source": "/(.*)",
             "destination": "/api/index.py"
         }
-    ]
+    ],
+    "redirects": [
+        {
+            "source": "/favicon.ico",
+            "destination": "/static/images/luxury_logo.svg",
+            "permanent": true
+        }
+    ],
+    "headers": [
+        {
+            "source": "/static/(.*)",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=31536000, immutable"
+                }
+            ]
+        }
+    ],
+    "env": {
+        "PYTHONPATH": "."
+    }
 }
