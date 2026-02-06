@@ -1,15 +1,8 @@
-from fastapi import FastAPI
-from fastapi.responses import JSONResponse
+def handler(environ, start_response):
+    status = '200 OK'
+    headers = [('Content-type', 'application/json')]
+    start_response(status, headers)
+    return [b'{"status": "wsgi_success", "message": "Python Runtime is HEALTHY"}']
 
-# ZERO DEPENDENCY TEST
-app = FastAPI()
-
-@app.get("/{full_path:path}")
-async def health(full_path: str):
-    return JSONResponse(content={
-        "status": "baseline_success",
-        "message": "If you see this, Vercel Ruby/Python runtime is WORKING",
-        "path": full_path
-    })
-
-handler = app
+# Alias app to handler just in case
+app = handler
