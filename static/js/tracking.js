@@ -19,11 +19,18 @@ const TrackingEngine = {
         if (this.initialized) return;
         this.initialized = true;
 
-        // 🚀 SILICON VALLEY DEDUPLICATION (UUID v4)
-        // Ensure a shared event_id exists for PageView before any fire
+        // 🚀 SILICON VALLEY DEDUPLICATION (UUID v4 + Persistence)
+        // Ensure a shared event_id exists for PageView to match CAPI + Pixel
         if (!window.META_EVENT_ID) {
-            window.META_EVENT_ID = this.generateUUID();
-            this.log('🆔 Generated Master Event ID:', window.META_EVENT_ID);
+            const cachedEventId = this.getCookie('_event_id_cache');
+            if (cachedEventId) {
+                window.META_EVENT_ID = cachedEventId;
+                this.log('🆔 Restored Master Event ID from Cache:', window.META_EVENT_ID);
+            } else {
+                window.META_EVENT_ID = this.generateUUID();
+                this.setCookie('_event_id_cache', window.META_EVENT_ID, 0.01); // 15 min cache
+                this.log('🆔 Generated Master Event ID:', window.META_EVENT_ID);
+            }
         }
 
         // 🚀 IDENTITY HYDRATION
@@ -47,6 +54,10 @@ const TrackingEngine = {
         this.setupSliderListeners();
 
         this.log('📊 [Silicon Valley Protocol] Tracking Engine Active (Direct & Resilient)');
+
+        // 🚀 FIRE PAGEVIEW (CAPI + Pixel - Unified ID)
+        this.trackEvent('PageView', { event_id: window.META_EVENT_ID });
+        this.safeFbq('track', 'PageView', {}, { eventID: window.META_EVENT_ID });
     },
 
     /**
