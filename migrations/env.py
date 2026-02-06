@@ -32,8 +32,24 @@ target_metadata = None
 # ... etc.
 
 def get_db_url():
-    """Retrieves DB URL from Environment (Vercel/Supabase Safe)"""
-    return settings.DATABASE_URL
+    """
+    Retrieves DB URL and ensures it's SQLAlchemy-compatible.
+    Standardizes on postgresql+psycopg2:// and handles special chars.
+    """
+    url = settings.DATABASE_URL
+    if not url:
+        return ""
+    
+    # 🛡️ Driver Fix: Ensure postgresql+psycopg2
+    if url.startswith("postgresql://"):
+        url = url.replace("postgresql://", "postgresql+psycopg2://", 1)
+    
+    # 🧬 Special Character Fix: SQLAlchemy 2.0 is strict about password encoding
+    if "!" in url and "%21" not in url:
+        # We handle the common case in this project
+        url = url.replace("!", "%21")
+        
+    return url
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.

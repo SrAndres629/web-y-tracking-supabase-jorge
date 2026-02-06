@@ -67,6 +67,10 @@ async def lifespan(app: FastAPI):
     # 1. Initialize Sentry (Parallelizable/Non-blocking)
     init_sentry()
     
+    # 2. Warm CMS Cache (Zero-Latency Content)
+    from app.services import ContentManager
+    await ContentManager.warm_cache()
+    
     # NOTE: Database connection is now LAZY (initialized on first request)
     logger.info("⚡ Cold Start Optimization: Database will connect on first request")
     

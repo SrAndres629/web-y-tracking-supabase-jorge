@@ -15,7 +15,8 @@
 # =================================================================
 
 import logging
-from typing import Optional
+import json
+from typing import Optional, Any, Dict, List
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +52,29 @@ if REDIS_ENABLED:
 else:
     redis_client = None
     logger.info("ℹ️ Redis not configured - using in-memory fallback")
+
+# 🧠 GENERIC CACHE WRAPPER (SILICON VALLEY PATTERN)
+class RedisCacheWrapper:
+    async def get_json(self, key: str) -> Optional[Any]:
+        if not REDIS_ENABLED or not redis_client: return None
+        try:
+            val = redis_client.get(key)
+            return json.loads(val) if val else None
+        except: return None
+
+    async def set_json(self, key: str, value: Any, expire: int = 3600):
+        if not REDIS_ENABLED or not redis_client: return
+        try:
+            redis_client.set(key, json.dumps(value), ex=expire)
+        except: pass
+
+    async def delete(self, key: str):
+        if not REDIS_ENABLED or not redis_client: return
+        try:
+            redis_client.delete(key)
+        except: pass
+
+redis_cache = RedisCacheWrapper()
 
 
 # =================================================================

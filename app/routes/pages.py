@@ -14,7 +14,7 @@ from app.config import settings
 from app.database import get_visitor_fbclid, save_visitor
 from app.tracking import generate_external_id, generate_fbc, send_event
 from app.cache import cache_visitor_data, get_cached_visitor
-from app.services import SERVICES_CONFIG, CONTACT_CONFIG
+from app.services import get_services_config, get_contact_config
 
 logger = logging.getLogger("BackgroundWorker")
 
@@ -110,6 +110,10 @@ async def read_root(
         import random
         ab_variant = "variant_b" if random.random() > 0.5 else "variant_a"
         
+    # 0.1 FETCH DYNAMIC CONTENT (Phase 14 - Agility Engine)
+    services_config = await get_services_config()
+    contact_config = await get_contact_config()
+
     # 1. SETUP & IDENTITY
     start_time = time.time()
     timings = {}
@@ -287,8 +291,8 @@ async def read_root(
             "pageview_event_id": event_id,
             "external_id": external_id,
             "fbclid": fbclid or "", # Pass to frontend for contact button
-            "services": SERVICES_CONFIG,
-            "contact": CONTACT_CONFIG,
+            "services": services_config,
+            "contact": contact_config,
             "google_client_id": settings.GOOGLE_CLIENT_ID,
             "clarity_id": settings.CLARITY_PROJECT_ID,
             "flags": {
