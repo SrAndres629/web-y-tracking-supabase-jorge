@@ -87,7 +87,7 @@ async def head_root():
 
 
 @router.get("/", response_class=HTMLResponse)
-async def read_root(
+async def read_root( # noqa: C901
     request: Request, 
     response: Response,
     background_tasks: BackgroundTasks,

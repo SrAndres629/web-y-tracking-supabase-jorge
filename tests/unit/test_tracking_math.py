@@ -31,7 +31,9 @@ def test_entropy_collision_resistance():
     # Assertion 1: Uniqueness
     assert len(ids) == SAMPLE_SIZE, f"❌ COLLISION DETECTED! Generated {SAMPLE_SIZE} but only got {len(ids)} unique IDs."
     
-    print(f"\n✅ Generated {SAMPLE_SIZE} unique IDs in {duration:.2f}s ({(SAMPLE_SIZE/duration):.0f} IDs/sec)")
+    import logging
+    logger = logging.getLogger("tests")
+    logger.info(f"✅ Generated {SAMPLE_SIZE} unique IDs in {duration:.2f}s ({(SAMPLE_SIZE/duration):.0f} IDs/sec)")
 
 def test_id_structure_strictness():
     """

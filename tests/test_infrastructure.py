@@ -13,13 +13,27 @@ def test_environment_variables():
     required_vars = [
         "DATABASE_URL", 
         "META_PIXEL_ID", 
-        "META_API_TOKEN"
+        "META_API_TOKEN",
+        "UPSTASH_REDIS_REST_URL",
+        "UPSTASH_REDIS_REST_TOKEN"
     ]
-    # Check explicitly if env vars are loaded (not just via settings object which might have defaults)
-    # But usually testing 'settings' is better. We'll check settings to ensure config loading worked.
     
-    assert settings.DATABASE_URL, "DATABASE_URL is missing"
-    assert settings.META_PIXEL_ID, "META_PIXEL_ID is missing"
+    all_vars_present = True
+    missing_vars = []
+
+    for var_name in required_vars:
+        if not hasattr(settings, var_name) or not getattr(settings, var_name):
+            all_vars_present = False
+            missing_vars.append(var_name)
+            logger.error(f"Environment variable {var_name} is missing or empty.")
+        else:
+            logger.info(f"Environment variable {var_name} is present.")
+
+    if not all_vars_present:
+        pytest.fail(f"🔥 Missing critical environment variables: {', '.join(missing_vars)}")
+    
+    logger.info("All critical environment variables are present.")
+    assert all_vars_present is True
 
 def test_database_connection():
     """Prueba de conexión a Supabase (Postgres)"""
@@ -27,8 +41,8 @@ def test_database_connection():
     # If using SQLite fallback, we should test THAT connection instead of failing.
     
     db_url = settings.DATABASE_URL.lower()
-    if "required_in_vercel" in db_url or "placeholder" in db_url:
-        print("⚠️ Placeholder DSN detected. Skipping REAL Postgres check, verifying SQLite fallback path.")
+    if "stub_for_vercel" in db_url or "stub" in db_url:
+        logger.info("⚠️ Stub DSN detected. Skipping REAL Postgres check, verifying SQLite fallback path.")
         from app.database import get_db_connection
         try:
             with get_db_connection() as conn:
@@ -51,8 +65,8 @@ def test_database_connection():
 
 def test_redis_connection():
     """Prueba de conexión a Upstash Redis"""
-    if not settings.UPSTASH_REDIS_REST_URL or "placeholder" in str(settings.UPSTASH_REDIS_REST_URL):
-        print("⚠️ Redis not configured or placeholder. Skipping.")
+    if not settings.UPSTASH_REDIS_REST_URL or "stub" in str(settings.UPSTASH_REDIS_REST_URL):
+        logger.info("⚠️ Redis not configured or stub. Skipping.")
         return
         
     try:

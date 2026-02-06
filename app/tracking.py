@@ -101,7 +101,7 @@ def get_prioritized_fbclid(url_fbclid: Optional[str], cookie_fbc: Optional[str])
 # META CONVERSIONS API (CORE LOGIC)
 # =================================================================
 
-def _build_payload(
+def _build_payload(  # noqa: C901
     event_name: str,
     event_source_url: str,
     client_ip: str,

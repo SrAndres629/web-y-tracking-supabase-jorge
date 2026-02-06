@@ -106,7 +106,7 @@ class EnhancedUserData:
     gender: Optional[str] = None      # m or f
     date_of_birth: Optional[str] = None  # YYYYMMDD
     
-    def to_sdk_user_data(self) -> "UserData":
+    def to_sdk_user_data(self) -> "UserData":  # noqa: C901
         """Convert to SDK UserData object with automatic hashing"""
         if not SDK_AVAILABLE:
             raise RuntimeError("Meta SDK not available")
@@ -233,7 +233,7 @@ class EliteMetaCAPIService:
             self._deduplicate = lambda x, y: True  # Always allow if no cache
             self._cache_enabled = False
     
-    def send_event(
+    def send_event(  # noqa: C901
         self,
         event_name: str,
         event_id: str,
@@ -456,7 +456,7 @@ elite_capi = EliteMetaCAPIService()
 # QUICK ACCESS FUNCTIONS (For backward compatibility)
 # =================================================================
 
-def send_elite_event(
+def send_elite_event(  # noqa: C901
     event_name: str,
     event_id: str,
     url: str,

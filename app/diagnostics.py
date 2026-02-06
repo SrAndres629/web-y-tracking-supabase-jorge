@@ -1,12 +1,15 @@
 import os
 import sys
+import json
 import logging
-from typing import Dict, Any, List
+import asyncio
+import httpx
+from typing import Dict, Any
+
+logger = logging.getLogger(__name__)
 
 # No top-level imports that might crash if dependencies are missing
 # Import lazily inside functions
-
-logger = logging.getLogger("diagnostics")
 
 def check_environment() -> Dict[str, Any]:
     """Audit environment variables and system info"""
@@ -25,7 +28,10 @@ def check_environment() -> Dict[str, Any]:
             "META_PIXEL_ID": settings.META_PIXEL_ID,
             "VERCEL_ENV": os.getenv("VERCEL_ENV", "local"),
             "PYTHONPATH": os.getenv("PYTHONPATH", "unset")
-        }
+        },
+        "meta_capi": "READY" if settings.META_ACCESS_TOKEN and settings.META_PIXEL_ID else "NOT_CONFIGURED",
+        "api_status": "OPERATIONAL",
+        "db_mode": "PROD" if "localhost" not in (settings.DATABASE_URL or "") else "LOCAL_DEV"
     }
 
 def check_database() -> Dict[str, Any]:
@@ -35,9 +41,9 @@ def check_database() -> Dict[str, Any]:
         from app.database import check_connection, get_cursor, BACKEND
         from app.config import settings
         
-        # Check if URL is placeholder
-        if settings.DATABASE_URL == "REQUIRED_IN_VERCEL":
-            return {"status": "skipped", "details": "Local placeholder detected"}
+        # Check if URL is invalid stub
+        if settings.DATABASE_URL == "STUB_FOR_VERCEL":
+            return {"status": "skipped", "details": "INVALID_DATABASE_URL_STUB"}
 
         if not settings.DATABASE_URL:
              return {"status": "failed", "details": "DATABASE_URL not set"}
@@ -83,6 +89,6 @@ def log_startup_report():
     """Print diagnostics to stdout for Vercel Logs"""
     try:
         report = run_full_diagnostics()
-        print(f"🔍 [DIAGNOSTICS] REPORT: {report}")
+        logger.info(f"🔍 [DIAGNOSTICS] REPORT: {report}")
     except Exception as e:
-        print(f"⚠️ [DIAGNOSTICS] FAILED TO RUN: {e}")
+        logger.error(f"⚠️ [DIAGNOSTICS] FAILED TO RUN: {e}")

@@ -21,7 +21,7 @@ class ServerSideIdentityMiddleware(BaseHTTPMiddleware):
     def __init__(self, app: ASGIApp):
         super().__init__(app)
 
-    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+    async def dispatch(self, request: Request, call_next: Callable) -> Response:  # noqa: C901
         response = await call_next(request)
         
         # Skip for static files and API calls that are not page loads

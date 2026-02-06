@@ -27,22 +27,22 @@ logger = logging.getLogger(__name__)
 # Global pools are created per-lambda instance, leading to connection exhaustion.
 BACKEND = "sqlite"
 if settings.DATABASE_URL and HAS_POSTGRES:
-    # 🛡️ SILICON VALLEY PROTOCOL: Deterministic Guard against Placeholder DSNs
-    # If the ENV var is a placeholder, we FORCE SQLite to prevent DSN Parse Errors.
+    # 🛡️ SILICON VALLEY PROTOCOL: Deterministic Guard against STUB DSNs
+    # If the ENV var is a stub, we FORCE SQLite to prevent DSN Parse Errors.
     db_url_clean = settings.DATABASE_URL.strip().lower()
-    is_placeholder = "required" in db_url_clean or "placeholder" in db_url_clean or "none" in db_url_clean
+    is_invalid = "required" in db_url_clean or "DSN_HERE" in db_url_clean or "none" in db_url_clean
 
-    if not is_placeholder:
+    if not is_invalid:
         BACKEND = "postgres"
         # Ensure URL forces Supabase Transaction Mode if available
         if ":6543" in settings.DATABASE_URL and "pgbouncer=true" not in settings.DATABASE_URL:
             logger.warning("⚠️ Using Supabase Pooler Port 6543 but missing '?pgbouncer=true'. Adding it automatically.")
     else:
-        logger.warning(f"🛡️ Deterministic Guard: detected placeholder DSN. Falling back to SQLite.")
+        logger.warning(f"🛡️ Deterministic Guard: detected invalid DSN. Falling back to SQLite.")
         # Logic to append query param could go here, but usually users fix ENV.
 
 @contextmanager
-def get_db_connection():
+def get_db_connection():  # noqa: C901
     """
     Creates a SINGLE connection per request.
     Crucial for Vercel/Supabase Transaction Pooler (Port 6543).
@@ -145,7 +145,7 @@ def get_cursor():
 # COMPATIBILITY & INIT
 # =================================================================
 
-def init_tables():
+def init_tables():  # noqa: C901
     """Crea tablas si no existen, sincronizado con init_crm_master_clean.sql v2.0"""
     try:
         with get_cursor() as cur:

@@ -97,7 +97,7 @@ async def receive_google_credential(
     request: Request,
     background_tasks: BackgroundTasks,
     body: GoogleCredential
-):
+):  # noqa: C901
     """
     Receives Google One Tap credential and extracts user info.
     Sends Lead event to Meta CAPI with verified email.

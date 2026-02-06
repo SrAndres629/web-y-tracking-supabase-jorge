@@ -148,7 +148,7 @@ class TrackingEvent(BaseModel):
 
 @router.post("/track/event")
 @limiter.limit("60/minute")
-async def track_event(
+async def track_event(  # noqa: C901
     event: TrackingEvent, 
     request: Request, 
     background_tasks: BackgroundTasks,

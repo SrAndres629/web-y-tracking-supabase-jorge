@@ -135,7 +135,7 @@ class ContentManager:
         try:
             from app.database import get_cursor
             with get_cursor() as cur:
-                # SQL Parameter placeholder adaption is handled by get_cursor wrapper if needed (postgres %s vs sqlite ?)
+                # SQL Parameter adaption is handled by get_cursor wrapper if needed (postgres %s vs sqlite ?)
                 # But get_cursor wrapper for sqlite handles %s replacement!
                 cur.execute("SELECT value FROM site_content WHERE key = %s", (key,))
                 row = cur.fetchone()

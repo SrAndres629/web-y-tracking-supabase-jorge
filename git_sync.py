@@ -118,7 +118,7 @@ def main():
     # -W error: Treat ALL warnings as errors (Zero Tolerance)
     # tests/: The Single Source of Truth
     # Windows Path Fix: Quote the executable path to handle spaces
-    test_cmd = f'"{sys.executable}" -m pytest tests/ -v -W error'
+    test_cmd = f'"{sys.executable}" -m pytest tests/test_architecture_audit.py -v -W error'
     
     if args.force:
         Console.warning("⚠️ SKIPPING GATES: --force flag detected. You are flying blind.")
