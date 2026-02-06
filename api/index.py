@@ -10,6 +10,6 @@ def handler(request):
         "body": json.dumps({
             "status": "alive",
             "message": "Hello from Minimal Python Handler",
-            "check": "If you see this, Vercel Config is OK. App Dependencies are the problem."
+            "check": "Vercel Config FIXED. 'api/index.py' explicitly mapped."
         })
     }
