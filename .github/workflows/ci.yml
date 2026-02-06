@@ -1,0 +1,34 @@
+name: "🛡️ Silicon Valley Safety Net"
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test_suite:
+    name: 🧪 Run Pytest
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.9"
+
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest httpx pytest-mock
+
+    - name: Run Unit Tests
+      env:
+        DATABASE_URL: "sqlite:///test.db" # Mock DB for CI
+        VERCEL: "1" # Simulate Vercel Env
+      run: |
+        pytest tests/ -v

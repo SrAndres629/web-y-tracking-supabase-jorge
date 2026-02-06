@@ -58,6 +58,20 @@ def generate_fbc(fbclid: str) -> Optional[str]:
     return f"fb.1.{timestamp}.{fbclid}"
 
 
+def generate_fbp() -> str:
+    """Generate fbp parameter (Browser Display ID)"""
+    import random
+    timestamp = int(time.time())
+    random_id = random.randint(1000000000, 9999999999)
+    return f"fb.1.{timestamp}.{random_id}"
+
+
+def generate_event_id(event_name: str) -> str:
+    """Generate unique event ID (evt_timestamp_name)"""
+    timestamp_ns = time.time_ns()
+    return f"evt_{timestamp_ns}_{event_name[:3]}"
+
+
 def extract_fbclid_from_fbc(fbc_cookie: str) -> Optional[str]:
     """Extract fbclid from cookie"""
     if not fbc_cookie or not fbc_cookie.startswith("fb.1."):
@@ -66,6 +80,20 @@ def extract_fbclid_from_fbc(fbc_cookie: str) -> Optional[str]:
     parts = fbc_cookie.split(".")
     if len(parts) >= 4:
         return parts[3]
+    return None
+
+
+def get_prioritized_fbclid(url_fbclid: Optional[str], cookie_fbc: Optional[str]) -> Optional[str]:
+    """
+    Decides which fbclid to use.
+    Priority: 1. URL Parameter (Fresh click) -> 2. Cookie (Persistent session)
+    """
+    if url_fbclid:
+        return url_fbclid
+    
+    if cookie_fbc:
+        return extract_fbclid_from_fbc(cookie_fbc)
+    
     return None
 
 

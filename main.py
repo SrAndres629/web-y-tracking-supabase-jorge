@@ -119,6 +119,10 @@ app.add_middleware(ServerSideIdentityMiddleware)
 from app.middleware.early_hints import EarlyHintsMiddleware
 app.add_middleware(EarlyHintsMiddleware)
 
+# Middleware: Security Shield (Phase 13.5)
+from app.middleware.security import SecurityHeadersMiddleware
+app.add_middleware(SecurityHeadersMiddleware)
+
 # =================================================================
 # SECURITY: RATE LIMITING (Redis-Backed)
 # =================================================================
