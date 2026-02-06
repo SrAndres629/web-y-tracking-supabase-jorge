@@ -3,13 +3,20 @@ import sys
 import traceback
 import os
 import json
-from mangum import Mangum
 
-# Load Main App
+# DIAGNOSTIC BOOT
+print("🚀 [BOOT] Starting Vercel Python Runtime...")
+print(f"🐍 [BOOT] Python Version: {sys.version}")
+
 try:
+    print("📦 [BOOT] Importing Mangum...")
+    from mangum import Mangum
+    print("📦 [BOOT] Importing Main App...")
     from main import app as main_app
+    print("✅ [BOOT] App Imported successfully.")
+    
     # Production Handler
-    handler = Mangum(main_app, lifespan="off") # 'off' for serverless cold-start speed
+    handler = Mangum(main_app, lifespan="off")
 except Exception as e:
     LOAD_ERROR = f"{str(e)}\n{traceback.format_exc()}"
     print(f"🔥 [BOOT] CRITICAL FAILURE: {LOAD_ERROR}")
@@ -21,8 +28,12 @@ except Exception as e:
             "headers": {"Content-Type": "application/json"},
             "body": json.dumps({
                 "status": "BOOT_FAILURE",
-                "error": LOAD_ERROR,
-                "python": sys.version
+                "message": "Crash during application import",
+                "error": str(e),
+                "traceback": traceback.format_exc(),
+                "python": sys.version,
+                "path": sys.path
             })
         }
+
 
