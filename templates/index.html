@@ -87,10 +87,9 @@
                     class="hero-border absolute -inset-1 bg-gradient-to-br from-luxury-gold/20 via-transparent to-luxury-gold/10 rounded-2xl opacity-0">
                 </div>
 
-                <img src="/static/images/jorge_hero_premium.webp"
-                    alt="Jorge Aguirre Flores - Especialista en Maquillaje Permanente (Autoridad Certificada)"
-                    class="hero-portrait rounded-2xl shadow-2xl border border-white/5 relative z-10 w-full object-cover"
-                    style="mask-image: linear-gradient(to bottom, black 85%, transparent); -webkit-mask-image: linear-gradient(to bottom, black 85%, transparent);"
+                <img srcset="/static/images/jorge_hero_new.webp 800w, /static/images/jorge_hero_premium.webp 1200w"
+                    sizes="(max-width: 600px) 480px, 100vw" alt="Jorge Aguirre Flores - Especialista en Microblading"
+                    class="relative rounded-2xl shadow-2xl border border-luxury-gold/20 w-full max-w-md mx-auto aspect-[4/5] object-cover animate-fade-in-right z-10"
                     width="800" height="800" loading="eager" fetchpriority="high" />
             </div>
         </div>
@@ -945,7 +944,13 @@
       "opens": "09:00",
       "closes": "14:00"
     }
-  ]
+  ],
+  "priceCurrency": "BOB",
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "5.0",
+    "reviewCount": "127"
+  }
 }
 </script>
 {% endblock %}

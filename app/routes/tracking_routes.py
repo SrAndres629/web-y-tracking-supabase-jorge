@@ -25,7 +25,9 @@ from app.meta_capi import send_elite_event
 from app.rudderstack import rudder_service
 from app.tracking import send_n8n_webhook
 from app.database import save_visitor, upsert_contact_advanced, get_or_create_lead, log_interaction
+from app.database import save_visitor, upsert_contact_advanced, get_or_create_lead, log_interaction
 import app.database as database
+from app.limiter import limiter
 
 # Logger
 logger = logging.getLogger("BackgroundWorker")
@@ -145,6 +147,7 @@ class TrackingEvent(BaseModel):
 
 
 @router.post("/track/event")
+@limiter.limit("60/minute")
 async def track_event(
     event: TrackingEvent, 
     request: Request, 
