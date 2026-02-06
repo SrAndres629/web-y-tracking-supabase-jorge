@@ -17,7 +17,7 @@ import time
 import logging
 
 from app.config import settings
-from app.models import TrackResponse, LeadCreate, InteractionCreate
+from app.models import TrackResponse, LeadCreate, InteractionCreate, InteractionResponse
 
 # Direct imports (bypassing Celery)
 from app.meta_capi import send_elite_event

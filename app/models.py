@@ -117,6 +117,13 @@ class InteractionCreate(BaseModel):
     lead_id: str
     role: str = Field(..., description="'user', 'assistant', 'system'")
     content: str
+    session_id: Optional[str] = None
+    metadata: Optional[dict] = None
+
+class InteractionResponse(BaseModel):
+    """Schema para respuesta de interacción"""
+    status: str
+    id: str
     
 class ErrorResponse(BaseModel):
     """Response para errores"""
