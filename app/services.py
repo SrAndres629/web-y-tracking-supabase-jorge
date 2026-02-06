@@ -1,18 +1,14 @@
+import requests
+
 class ContentManager:
-    def __init__(self, db):
-        self.db = db
+    def __init__(self):
+        self._FALLBACKS = {
+            'service1': {'url': 'https://service1.example.com/api', 'timeout': 30},
+            'service2': {'url': 'https://service2.example.com/api', 'timeout': 30},
+            # ... Add complete service data structure here
+        }
 
-    def create_content(self, data):
-        self.db.insert(data)
+    def get_service_info(self, service_name):
+        return self._FALLBACKS.get(service_name, None)
 
-    def read_content(self, content_id):
-        return self.db.get(content_id)
-
-    def update_content(self, content_id, data):
-        self.db.update(content_id, data)
-
-    def delete_content(self, content_id):
-        self.db.delete(content_id)
-
-    def list_all_content(self):
-        return self.db.get_all()
+    # Add additional methods as necessary
