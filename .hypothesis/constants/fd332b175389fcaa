@@ -1,0 +1,4 @@
+# file: C:\Users\acord\OneDrive\Desktop\paginas web\Paginas web y tracking\Web y tracking-supabase Jorge\app\database.py
+# hypothesis_version: 6.151.5
+
+[500, '%s', ':6543', '?', 'CURRENT_TIMESTAMP', 'INTEGER DEFAULT 0', 'INTEGER DEFAULT 50', 'SELECT 1', 'SERIAL PRIMARY KEY', 'TEXT', "TEXT DEFAULT 'new'", 'TEXT PRIMARY KEY', 'TIMESTAMP', 'UUID', 'appointment_count', 'click_id', 'content', 'database', 'email', 'external_id', 'fb_browser_id', 'fbclid', 'fbp', 'id', 'ip_address', 'is_admin', 'lead_score', 'local_fallback.db', 'meta_lead_id', 'name', 'new', 'none', 'onboarding_step', 'pageview', 'pain_point', 'pgbouncer=true', 'phone', 'placeholder', 'postgres', 'profile_pic_url', 'require', 'required', 'role', 'service_booked_date', 'service_interest', 'source', 'sqlite', 'status', 'timeout', 'timestamp', 'too many connections', 'updated_at', 'utm_campaign', 'utm_content', 'utm_medium', 'utm_source', 'utm_term']

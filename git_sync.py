@@ -79,70 +79,115 @@ def run_cmd(command, cwd=None, exit_on_fail=False):
         return False, result.stdout, result.stderr
     return True, result.stdout, result.stderr
 
+def check_environment():
+    """Phase 0: Environment Integrity Verification"""
+    Console.log("Verifying Execution Environment...", "🔍")
+    
+    required_modules = ["pytest", "hypothesis", "httpx"]
+    missing = []
+    
+    for mod in required_modules:
+        try:
+            __import__(mod)
+        except ImportError:
+            missing.append(mod)
+    
+    if missing:
+        Console.error(f"CRITICAL: Missing core engineering mandates: {', '.join(missing)}")
+        Console.info("Run: pip install -r requirements.txt")
+        sys.exit(1)
+    
+    Console.success("Environment Integrity Verified (Dependencies Loaded).")
+
 def main():
     parser = argparse.ArgumentParser(description="Silicon Valley Deployment Pipeline")
-    parser.add_argument("--force", action="store_true", help="Force push even if clean")
+    parser.add_argument("--force", action="store_true", help="Bypass checks (NOT RECOMMENDED)")
     parser.add_argument("message", nargs="?", default=None, help="Commit message")
     args = parser.parse_args()
 
-    print(f"\n{Console.BOLD}🧠 [VERCEL-SYNC] Initializing Optimized Deployment Protocol...{Console.ENDC}\n")
+    print(f"\n{Console.BOLD}🧠 [NEURAL-SYNC] Initializing Silicon Valley Deployment Protocol...{Console.ENDC}\n")
 
-    # 1. SYNC
-    Console.log("Synchronizing with Registry...", "📡")
-    run_cmd("git fetch origin", cwd=REPO_PATH)
+    # PHASE 0: INTEGRITY CHECK
+    check_environment()
+
+    # PHASE 1: THE IRON GATE (Unified Audit)
+    Console.log("[1/6] Executing The Iron Gate (Strict Audit)...", "🛡️")
     
-    # 2. PULL REBASE (Avoid Merge Bubbles)
-    Console.log("Integrating Latest Code...", "🔄")
-    success, _, stderr = run_cmd("git pull origin main --rebase", cwd=REPO_PATH, exit_on_fail=False)
-    if not success and "conflict" in stderr.lower():
-        Console.error("CRITICAL: Merge Conflict Detected. Resolve manually.")
-        sys.exit(1)
+    # Validation Command:
+    # -v: Verbose
+    # -W error: Treat ALL warnings as errors (Zero Tolerance)
+    # tests/: The Single Source of Truth
+    # Windows Path Fix: Quote the executable path to handle spaces
+    test_cmd = f'"{sys.executable}" -m pytest tests/ -v -W error'
+    
+    if args.force:
+        Console.warning("⚠️ SKIPPING GATES: --force flag detected. You are flying blind.")
+    else:
+        success, stdout, stderr = run_cmd(test_cmd, cwd=REPO_PATH)
+        
+        if not success:
+            Console.error("⛔ DEPLOYMENT BLOCKED: The Iron Gate has closed.")
+            Console.info("Reason: Tests, Audits, or Strict Warnings failed.")
+            print(f"\n{Console.FAIL}=== AUDIT REPORT START ==={Console.ENDC}")
+            print(stdout)
+            print(stderr)
+            print(f"{Console.FAIL}=== AUDIT REPORT END ==={Console.ENDC}")
+            print(f"\n{Console.WARNING}Action: Fix the errors above or remove the placeholders/warnings.{Console.ENDC}")
+            sys.exit(1)
+            
+        Console.success("The Iron Gate Passed. Zero Defects Detected.")
 
-    # 3. STAGE
-    Console.log("Staging Local Logic...", "📦")
+    # PHASE 2: STAGE (Commit Local Changes First)
+    Console.log("[2/6] Staging & Committing...", "📦")
     run_cmd("git add .", cwd=REPO_PATH)
-
-    # 4. CHECK STATUS
+    
     success, output, _ = run_cmd("git status --porcelain", cwd=REPO_PATH)
     has_changes = bool(output.strip())
-
-    if not has_changes and not args.force:
-        # Check if local is ahead of remote
-        s_local, local_sha, _ = run_cmd("git rev-parse HEAD", cwd=REPO_PATH)
-        s_remote, remote_sha, _ = run_cmd("git rev-parse origin/main", cwd=REPO_PATH)
-        
-        if local_sha.strip() == remote_sha.strip():
-            Console.success("SYSTEM SYNCED. No changes to deploy.")
-            Console.info("Use --force to trigger empty commit & deploy.")
-            return
-        else:
-            Console.log(f"Pending Push: Local is ahead of Remote.", "⬆️")
     
-    # 5. COMMIT (If needed)
     if has_changes or args.force:
         time_str = datetime.datetime.now().strftime('%H:%M')
-        default_msg = f"feat: optimization sync {time_str}"
-        msg = args.message if args.message else default_msg
+        msg = args.message if args.message else f"chore: system sync {time_str}"
         
         if not has_changes and args.force:
             msg += " (FORCED)"
-            Console.log(f"Forcing Empty Commit: '{msg}'", "⚠️")
-            run_cmd(f'git commit --allow-empty -m "{msg}"', cwd=REPO_PATH, exit_on_fail=True)
+            run_cmd(f'git commit --allow-empty -m "{msg}"', cwd=REPO_PATH)
         elif has_changes:
-            Console.log(f"Committing: '{msg}'", "📝")
-            run_cmd(f'git commit -m "{msg}"', cwd=REPO_PATH, exit_on_fail=True)
+            Console.log(f"Committing source: '{msg}'", "📝")
+            run_cmd(f'git commit -m "{msg}"', cwd=REPO_PATH)
+    else:
+        Console.info("No local changes to commit.")
 
-    # 6. PUSH
-    Console.log("Pushing to GitHub & Triggering Vercel...", "🚀")
+    # PHASE 3: SYNC & REBASE (Integrate Remote)
+    Console.log("[3/6] Synchronizing with Origin...", "📡")
+    run_cmd("git fetch origin", cwd=REPO_PATH)
+    
+    Console.log("[4/6] Rebase Integration...", "🔄")
+    # Now we can rebase safely because we are clean
+    success, _, stderr = run_cmd("git pull origin main --rebase", cwd=REPO_PATH)
+    if not success:
+        Console.error("CRITICAL: Rebase Conflict. Resolve manually with 'git status'.")
+        sys.exit(1)
+    
+    # Check if we need to push
+    # (Existing logic to check ahead/behind)
+    _, local_sha, _ = run_cmd("git rev-parse HEAD", cwd=REPO_PATH)
+    _, remote_sha, _ = run_cmd("git rev-parse origin/main", cwd=REPO_PATH)
+    
+    if local_sha.strip() == remote_sha.strip():
+        Console.success("SYSTEM SYNCED. No Ops Required.")
+        return
+    else:
+        Console.log("Local is ahead. Proceeding to Push...", "⬆️")
+
+    # PHASE 6: DEPLOY
+    Console.log("[6/6] Injecting into Production...", "🚀")
     success, _, stderr = run_cmd("git push -u origin main", cwd=REPO_PATH)
     
     if success:
-        Console.success("DEPLOYMENT INITIATED")
-        Console.log("Waiting for Vercel Build...", "⏳")
-        print(f"🔗 Live at: https://jorgeaguirreflores.com")
-        
-        # 7. CLOUDFLARE PURGE
+        Console.success("✅ DEPLOYMENT SUCCESSFUL")
+        Console.log("Validating Edge Cache Purge...", "🧹")
         purge_cloudflare_cache()
+        print(f"\n{Console.GREEN}🌟 System is Live: https://jorgeaguirreflores.com{Console.ENDC}")
     else:
         Console.error(f"Push Failed: {stderr}")
 

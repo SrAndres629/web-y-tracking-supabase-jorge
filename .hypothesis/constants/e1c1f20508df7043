@@ -1,0 +1,4 @@
+# file: C:\Users\acord\OneDrive\Desktop\paginas web\Paginas web y tracking\Web y tracking-supabase Jorge\app\cache.py
+# hypothesis_version: 6.151.5
+
+[3600, 10000, '1', 'Redis not configured', 'disabled', 'error', 'event', 'healthy', 'message', 'provider', 'status', 'unhealthy', 'upstash']

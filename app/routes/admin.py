@@ -37,11 +37,14 @@ async def admin_dashboard(request: Request, key: str = ""):
     
     visitors = get_all_visitors(limit=50)
     
-    return templates.TemplateResponse("admin.html", {
-        "request": request,
-        "visitors": visitors,
-        "admin_key": key
-    })
+    return templates.TemplateResponse(
+        request=request,
+        name="admin.html",
+        context={
+            "visitors": visitors,
+            "admin_key": key
+        }
+    )
 
 
 @router.get("/stats")

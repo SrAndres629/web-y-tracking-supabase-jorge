@@ -336,11 +336,11 @@
                     class="w-full aspect-square md:aspect-[4/5] relative overflow-hidden rounded-sm border border-white/10 shadow-2xl bg-black">
                     <!-- After Image (Background) -->
                     <img src="/static/images/lips_after_clean.webp?v=2"
-                        class="absolute inset-0 w-full h-full object-cover object-center" alt="Después" loading="lazy"
-                        width="400" height="500">
+                        class="absolute inset-0 w-full h-full object-cover object-[center_35%]" alt="Después"
+                        loading="lazy" width="400" height="500">
                     <!-- Before Image (Foreground - Clipped) -->
                     <img src="/static/images/lips_before.webp"
-                        class="absolute inset-0 w-full h-full object-cover object-center foreground-img"
+                        class="absolute inset-0 w-full h-full object-cover object-[center_35%] foreground-img"
                         style="clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);" alt="Antes" loading="lazy" width="400"
                         height="500">
 
@@ -575,122 +575,6 @@
     </div>
 </section>
 
-</section>
-
-<!-- ========== GALERÍA (Resultados Reales) ========== -->
-<section id="galeria" class="py-24 bg-luxury-black relative overflow-hidden">
-    <!-- Background Decor -->
-    <div
-        class="absolute top-0 right-0 w-[600px] h-[600px] bg-luxury-gold/5 blur-[100px] rounded-full pointer-events-none">
-    </div>
-
-    <div class="container mx-auto px-6 relative z-10">
-        <div class="text-center mb-16">
-            <span class="text-luxury-gold text-xs font-bold uppercase tracking-[0.4em]">Evidencia</span>
-            <h2 class="font-serif text-4xl md:text-5xl text-white mt-4 tracking-wide">Transformaciones <span
-                    class="italic text-luxury-gold">Reales</span></h2>
-            <p class="text-gray-400 mt-4 max-w-2xl mx-auto">Desliza para ver el cambio instantáneo.</p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
-
-            <!-- Slider 1: Cejas (Microblading) -->
-            <div class="slider-container ba-slider group" data-service-category="microblading_3d" data-aos="fade-up"
-                data-aos-delay="0">
-                <div
-                    class="relative w-full aspect-[4/5] md:aspect-square rounded-2xl overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-white/10">
-                    <img src="/static/images/brows_before.webp" class="absolute inset-0 w-full h-full object-cover"
-                        alt="Cejas Antes" loading="lazy">
-                    <img src="/static/images/brows_after.webp"
-                        class="foreground-img absolute inset-0 w-full h-full object-cover" alt="Cejas Después"
-                        style="clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);">
-
-                    <input type="range" min="0" max="100" value="50"
-                        class="slider-range absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-30"
-                        aria-label="Comparar antes y después microblading">
-
-                    <div class="slider-thumb absolute top-0 bottom-0 w-[2px] bg-luxury-gold z-20 shadow-[0_0_15px_rgba(197,160,89,0.9)] pointer-events-none"
-                        style="left: 50%;">
-                        <div
-                            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-black/40 backdrop-blur border border-luxury-gold rounded-full flex items-center justify-center shadow-lg">
-                            <i class="fas fa-arrows-alt-h text-luxury-gold text-sm"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="text-center mt-6">
-                    <h3 class="text-xl font-serif text-white">Microblading 3D</h3>
-                    <p class="text-xs text-luxury-gold uppercase tracking-widest mt-1">Efecto Pelo a Pelo</p>
-                </div>
-            </div>
-
-            <!-- Slider 2: Ojos (Delineado) -->
-            <div class="slider-container ba-slider group" data-service-category="delineado_ojos" data-aos="fade-up"
-                data-aos-delay="100">
-                <div
-                    class="relative w-full aspect-[4/5] md:aspect-square rounded-2xl overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-white/10">
-                    <img src="/static/images/eyes_before.webp" class="absolute inset-0 w-full h-full object-cover"
-                        alt="Ojos Antes" loading="lazy">
-                    <img src="/static/images/eyes_after.webp"
-                        class="foreground-img absolute inset-0 w-full h-full object-cover" alt="Ojos Después"
-                        style="clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);">
-
-                    <input type="range" min="0" max="100" value="50"
-                        class="slider-range absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-30"
-                        aria-label="Comparar antes y después delineado">
-
-                    <div class="slider-thumb absolute top-0 bottom-0 w-[2px] bg-luxury-gold z-20 shadow-[0_0_15px_rgba(197,160,89,0.9)] pointer-events-none"
-                        style="left: 50%;">
-                        <div
-                            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-black/40 backdrop-blur border border-luxury-gold rounded-full flex items-center justify-center shadow-lg">
-                            <i class="fas fa-arrows-alt-h text-luxury-gold text-sm"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="text-center mt-6">
-                    <h3 class="text-xl font-serif text-white">Delineado Superior</h3>
-                    <p class="text-xs text-luxury-gold uppercase tracking-widest mt-1">Efecto Pestañas</p>
-                </div>
-            </div>
-
-            <!-- Slider 3: Labios (Full Color) -->
-            <div class="slider-container ba-slider group" data-service-category="labios_full" data-aos="fade-up"
-                data-aos-delay="200">
-                <div
-                    class="relative w-full aspect-[4/5] md:aspect-square rounded-2xl overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-white/10">
-                    <img src="/static/images/lips_before.webp" class="absolute inset-0 w-full h-full object-cover"
-                        alt="Labios Antes" loading="lazy">
-                    <img src="/static/images/lips_after.webp"
-                        class="foreground-img absolute inset-0 w-full h-full object-cover" alt="Labios Después"
-                        style="clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);">
-
-                    <input type="range" min="0" max="100" value="50"
-                        class="slider-range absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-30"
-                        aria-label="Comparar antes y después labios">
-
-                    <div class="slider-thumb absolute top-0 bottom-0 w-[2px] bg-luxury-gold z-20 shadow-[0_0_15px_rgba(197,160,89,0.9)] pointer-events-none"
-                        style="left: 50%;">
-                        <div
-                            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-black/40 backdrop-blur border border-luxury-gold rounded-full flex items-center justify-center shadow-lg">
-                            <i class="fas fa-arrows-alt-h text-luxury-gold text-sm"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="text-center mt-6">
-                    <h3 class="text-xl font-serif text-white">Labios Full Color</h3>
-                    <p class="text-xs text-luxury-gold uppercase tracking-widest mt-1">Corrección y Volumen</p>
-                </div>
-            </div>
-
-        </div>
-
-        <div class="text-center mt-12">
-            <button onclick="handleConversion('Galería CTA')"
-                class="btn-outline-gold px-10 py-4 text-sm font-bold uppercase tracking-widest hover:scale-105 transition-transform">
-                <i class="fab fa-whatsapp mr-2"></i> Quiero Estos Resultados
-            </button>
-        </div>
-    </div>
-</section>
 
 <!-- ========== FAQ (SEO) ========== -->
 <section id="faq" class="py-20 bg-luxury-black border-t border-white/5">

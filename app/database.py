@@ -27,10 +27,18 @@ logger = logging.getLogger(__name__)
 # Global pools are created per-lambda instance, leading to connection exhaustion.
 BACKEND = "sqlite"
 if settings.DATABASE_URL and HAS_POSTGRES:
-    BACKEND = "postgres"
-    # Ensure URL forces Supabase Transaction Mode if available
-    if ":6543" in settings.DATABASE_URL and "pgbouncer=true" not in settings.DATABASE_URL:
-        logger.warning("⚠️ Using Supabase Pooler Port 6543 but missing '?pgbouncer=true'. Adding it automatically.")
+    # 🛡️ SILICON VALLEY PROTOCOL: Deterministic Guard against Placeholder DSNs
+    # If the ENV var is a placeholder, we FORCE SQLite to prevent DSN Parse Errors.
+    db_url_clean = settings.DATABASE_URL.strip().lower()
+    is_placeholder = "required" in db_url_clean or "placeholder" in db_url_clean or "none" in db_url_clean
+
+    if not is_placeholder:
+        BACKEND = "postgres"
+        # Ensure URL forces Supabase Transaction Mode if available
+        if ":6543" in settings.DATABASE_URL and "pgbouncer=true" not in settings.DATABASE_URL:
+            logger.warning("⚠️ Using Supabase Pooler Port 6543 but missing '?pgbouncer=true'. Adding it automatically.")
+    else:
+        logger.warning(f"🛡️ Deterministic Guard: detected placeholder DSN. Falling back to SQLite.")
         # Logic to append query param could go here, but usually users fix ENV.
 
 @contextmanager

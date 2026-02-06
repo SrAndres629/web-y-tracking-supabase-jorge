@@ -284,9 +284,9 @@ async def read_root(
 
     # RESPONSE WITH COOKIE
     response = templates.TemplateResponse(
+        request=request,
         name="index.html",
         context={
-            "request": request,
             "pixel_id": settings.META_PIXEL_ID,
             "pageview_event_id": event_id,
             "external_id": external_id,

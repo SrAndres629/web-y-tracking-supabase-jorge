@@ -133,14 +133,16 @@ class ContentManager:
     def _fetch_from_db(cls, key: str) -> Optional[Any]:
         """Synchronous DB fetch (Used for cold starts or refresh)"""
         try:
-            with get_db_connection() as conn:
-                with conn.cursor() as cur:
-                    cur.execute("SELECT value FROM site_content WHERE key = %s", (key,))
-                    row = cur.fetchone()
-                    if row and row[0]:
-                        # value is already JSON in DB, psycopg2 parses it if using jsonb
-                        val = row[0]
-                        return json.loads(val) if isinstance(val, str) else val
+            from app.database import get_cursor
+            with get_cursor() as cur:
+                # SQL Parameter placeholder adaption is handled by get_cursor wrapper if needed (postgres %s vs sqlite ?)
+                # But get_cursor wrapper for sqlite handles %s replacement!
+                cur.execute("SELECT value FROM site_content WHERE key = %s", (key,))
+                row = cur.fetchone()
+                if row and row[0]:
+                    # value is already JSON in DB, psycopg2 parses it if using jsonb
+                    val = row[0]
+                    return json.loads(val) if isinstance(val, str) else val
         except Exception as e:
             logger.error(f"❌ CMS DB Fetch Error ({key}): {e}")
         return None

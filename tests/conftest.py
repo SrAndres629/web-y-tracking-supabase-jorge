@@ -3,14 +3,15 @@ import os
 import sys
 from unittest.mock import MagicMock, patch
 
-# Add app to path so we can import modules
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# 🛡️ GLOBAL CONFIG: Ensure Project Root is in Path
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, PROJECT_ROOT)
 
-@pytest.fixture
-def mock_settings():
+@pytest.fixture(scope="session", autouse=True)
+def set_env():
     """Mocks app configuration settings"""
     with patch("app.config.settings") as mock:
-        mock.DATABASE_URL = "postgres://user:pass@localhost:5432/db"
+        mock.DATABASE_URL = "postgres://mock:mock@localhost:5432/db"
         mock.META_PIXEL_ID = "1234567890"
         mock.META_ACCESS_TOKEN = "fake_token"
         yield mock
