@@ -90,15 +90,33 @@ class ContentManager:
         try:
             cached = await redis_cache.get_json(f"content:{key}")
             if cached:
-                cls._ram_cache[key] = cached
-                return cached
+                # Basic validation for services_config
+                if key == "services_config" and isinstance(cached, list) and cached and "badges" not in cached[0]:
+                    logger.warning("⚠️ Redis cache content for services_config is incomplete. Ignoring.")
+                else:
+                    cls._ram_cache[key] = cached
+                    return cached
         except:
             pass
             
         # 3. 🧬 DATABASE LAST (Source of Truth)
         content = cls._fetch_from_db(key)
         
+        # 🧬 SILICON VALLEY VALIDATION: Ensure DB data has the expected schema
+        # This prevents 'UndefinedError' in Jinja if DB record is partial/corrupted.
+        is_valid = False
         if content:
+            if key == "services_config":
+                # Check if it's a list and the first item has 'badges'
+                if isinstance(content, list) and len(content) > 0 and "badges" in content[0]:
+                    is_valid = True
+            elif key == "contact_config":
+                if isinstance(content, dict) and "whatsapp" in content:
+                    is_valid = True
+            else:
+                is_valid = True # No specific validation for other keys yet
+
+        if is_valid:
             # Update caches
             cls._ram_cache[key] = content
             try:
@@ -108,6 +126,7 @@ class ContentManager:
             return content
             
         # 4. 🛟 EMERGENCY FALLBACK
+        logger.warning(f"🛟 CMS Schema Mismatch or Empty for '{key}'. Using hardcoded Golden Fallbacks.")
         return cls._FALLBACKS.get(key)
 
     @classmethod
