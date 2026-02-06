@@ -32,6 +32,15 @@
 | A-005.3   | ✅ ÉXITO | `git_sync.py`: Reescrito. Implementa bloqueo estricto (Warnings=Errors). Flujo Stage->Commit->Rebase. |
 | A-005.4   | ✅ ÉXITO | `requirements.txt`: Dependencias de testing formalizadas. Check de entorno en `git_sync.py`.          |
 
+### [A-008] FASE 8: DIAMOND STANDARD ARCHITECTURE AUDIT (COMPLETADO)
+- **Objetivo**: Aplicar matemáticamente la higiene del código, la seguridad y los límites de la deuda técnica.
+- **Implementación**:
+    - Creación de `tests/test_architecture_audit.py` utilizando `ast` y regex.
+    - Detección automatizada de marcadores de posición, secretos codificados y `debug prints`.
+    - Aplicación de un límite de 50 líneas para las funciones (con soporte `# noqa` para necesidades arquitectónicas).
+    - Integración de la auditoría como la 'Puerta de Hierro' en `git_sync.py`.
+- **Estado**: Operacional. Cero violaciones en la base de código de producción.
+
 ### [A-006] FASE 6: AI CONTEXT OPTIMIZATION
 **Directiva**: "Maximizar señal para agentes de IA (Gemini/Copilot). Eliminar ruido."
 
