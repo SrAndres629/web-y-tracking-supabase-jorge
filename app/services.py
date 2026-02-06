@@ -32,16 +32,50 @@ class ContentManager:
     # 🛡️ DEFENSIVE FALLBACKS (In case DB is empty/broken)
     _FALLBACKS = {
         "services_config": [
-            {"id": "microblading", "title": "Microblading Elite", "description": "Cejas perfectas pelo a pelo.", "icon": "fa-eye", "color": "luxury-gold"},
-            {"id": "eyeliner", "title": "Delineado Permanente", "description": "Resalta tu mirada.", "icon": "fa-pencil", "color": "luxury-gold"},
-            {"id": "lips", "title": "Acuarela de Labios", "description": "Color vibrante para tus labios.", "icon": "fa-kiss", "color": "luxury-gold"}
+            {
+                "id": "microblading",
+                "title": "Microblading 3D",
+                "subtitle": "Efecto Pelo a Pelo",
+                "description": "Técnica pelo a pelo para cejas ultra naturales. Rellena huecos y recupera la forma joven de tu ceja.",
+                "icon": "fa-eye-dropper",
+                "image": "/static/images/service_brows.webp",
+                "rating": "4.9",
+                "clients": "+620",
+                "badges": ["Más Pedido", "100% Natural", "2-3 años"],
+                "benefits": ["2 hrs sesión", "Sin dolor", "Retoque incluido"]
+            },
+            {
+                "id": "eyeliner",
+                "title": "Delineado Permanente",
+                "subtitle": "Efecto Pestañas",
+                "description": "Despierta con una mirada intensa y expresiva. Olvídate de que se corra el maquillaje.",
+                "icon": "fa-eye",
+                "image": "/static/images/service_eyes.webp",
+                "rating": "4.9",
+                "clients": "+480",
+                "badges": ["Sin Dolor", "Efecto Pestañas", "2-3 años"],
+                "benefits": ["1.5 hrs sesión", "Anestesia tópica", "Resultados inmediatos"]
+            },
+            {
+                "id": "lips",
+                "title": "Labios Full Color",
+                "subtitle": "Corrección y Volumen",
+                "description": "Correcciones y luce una boca jugosa y saludable. Tu color perfecto sin retocarte.",
+                "icon": "fa-kiss-wink-heart",
+                "image": "/static/images/service_lips.webp",
+                "rating": "5.0",
+                "clients": "+400",
+                "badges": ["Premium", "Color Natural", "1-2 años"],
+                "benefits": ["2 hrs sesión", "Corrige volumen", "Efecto rejuvenecedor"]
+            }
         ],
         "contact_config": {
             "whatsapp": "https://wa.me/59164714751",
             "phone": "+591 64714751",
             "email": "contacto@jorgeaguirreflores.com",
             "location": "Santa Cruz de la Sierra",
-            "instagram": "https://instagram.com/jorgeaguirreflores"
+            "instagram": "https://instagram.com/jorgeaguirreflores",
+            "cta_assessment": "Hola Jorge, quiero agendar mi diagnóstico gratuito y ver la geometría de mi rostro."
         }
     }
 
