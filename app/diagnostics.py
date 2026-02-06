@@ -32,7 +32,7 @@ def check_database() -> Dict[str, Any]:
     """Verify Supabase connection"""
     status = {"status": "unknown", "backend": "none", "details": ""}
     try:
-        from app.database import init_pool, get_cursor, BACKEND
+        from app.database import check_connection, get_cursor, BACKEND
         from app.config import settings
         
         # Check if URL is placeholder
@@ -42,8 +42,7 @@ def check_database() -> Dict[str, Any]:
         if not settings.DATABASE_URL:
              return {"status": "failed", "details": "DATABASE_URL not set"}
 
-        # Attempt Init
-        if init_pool():
+        if check_connection():
             status["backend"] = BACKEND
             with get_cursor() as cur:
                 cur.execute("SELECT version();")
