@@ -8,18 +8,28 @@ env/
 .env.local
 .env.production
 .pytest_cache/
+.hypothesis/
+.coverage
+htmlcov/
+site/
+
+# --- Temporary / Local Scripts ---
 check_db.py
 test_signal.py
+debug_*.py
+scratch_*.py
 
 # --- Deployment / IDE Bloat ---
 .vercel/
 .cursor/
 .vscode/
+.idea/
 .ai/
 ENGINEERING_LOG.md
 *.log
 database/local_fallback.db
-
-# --- System Bloat ---
-.DS_Store
+*~
+*.swp
+*.bak
 Thumbs.db
+.DS_Store
