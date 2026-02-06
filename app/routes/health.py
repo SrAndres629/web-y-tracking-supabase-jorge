@@ -52,6 +52,16 @@ async def health_check(request: Request):
     })
 
 
+@router.get("/health/diagnostics")
+async def health_diagnostics_full(request: Request):
+    """
+    Reporte de diagnóstico completo (sistema, DB, Redis, env)
+    """
+    from app.diagnostics import run_full_diagnostics
+    report = run_full_diagnostics()
+    return JSONResponse(report)
+
+
 @router.get("/ping", response_class=PlainTextResponse)
 async def ping():
     """Ping simple para monitoreo básico"""

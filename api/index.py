@@ -1,8 +1,18 @@
-# DIAGNOSTIC BOOTLOADER v2
+# DIAGNOSTIC BOOTLOADER v3 (Unified Integration)
 import sys
 import traceback
 
-# 1. Try to load dependencies
+# 0. Run Unified Diagnostics (Logs to Vercel Console)
+try:
+    # Diagnostic module is safe to import (lazy loads dependencies)
+    from app.diagnostics import log_startup_report
+    log_startup_report()
+except ImportError:
+    print("⚠️ [BOOT] Could not import app.diagnostics")
+except Exception as e:
+    print(f"⚠️ [BOOT] Diagnostics failed: {e}")
+
+# 1. Try to load dependencies (Mangum)
 try:
     from mangum import Mangum
     HAS_MANGUM = True
@@ -21,14 +31,18 @@ try:
     from main import app as main_app
     app = main_app
 except Exception as e:
+    # Capture the full traceback for the JSON response
     LOAD_ERROR = f"{str(e)}\n{traceback.format_exc()}"
+    print(f"🔥 [BOOT] CRITICAL APP LOAD FAILURE:\n{LOAD_ERROR}")
 
 # 3. Decision Logic
 if not LOAD_ERROR and app and HAS_MANGUM:
     # SUCCESS: Normal Operation
+    # Wrap API for Vercel Serverless (AWS Lambda compatibility)
     handler = Mangum(app)
 else:
     # FAILURE: Fallback Mode
+    print("⚠️ [BOOT] Entering Fallback Mode")
     fallback = FastAPI()
     
     @fallback.get("/{path:path}")
@@ -38,14 +52,12 @@ else:
             "has_mangum": HAS_MANGUM,
             "python_version": sys.version,
             "error": LOAD_ERROR or "Unknown Error (App is None)",
-            "path": sys.path
+            "path": sys.path,
+            "env_check": "Check Vercel Logs for [DIAGNOSTICS] report"
         }
     
     if HAS_MANGUM:
         handler = Mangum(fallback)
     else:
-        # If Mangum is missing, we can't do much on Vercel, 
-        # but standard Vercel Python runtime might handle a simple WSGI app catchall? 
-        # Actually Vercel expects 'handler' or 'app' to be an object it can invoke.
-        # Let's hope Mangum is there (it should be).
-        raise RuntimeError(f"CRITICAL: Mangum Missing. {LOAD_ERROR}")
+        # Emergency raw handler if Mangum is gone (unlikely on Vercel Python runtime)
+        raise RuntimeError(f"CRITICAL: Mangum Missing & App Failed. {LOAD_ERROR}")
