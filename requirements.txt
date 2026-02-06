@@ -35,3 +35,9 @@ python-dotenv>=1.0.0
 # CDP (RudderStack)
 rudder-sdk-python>=2.0.2
 
+
+# Supabase (Refactored for Vercel/Architecture Alignment)
+supabase>=2.3.0
+gotrue>=2.3.0
+
+# Build Cache Buster: 2026-02-05-FIX-MANGUM
