@@ -38,12 +38,18 @@ def get_db_connection():
     """
     Creates a SINGLE connection per request.
     Crucial for Vercel/Supabase Transaction Pooler (Port 6543).
+    Silicon Valley Protocol: 0-Latency failover & strict pool hygiene.
     """
     conn = None
     try:
         if BACKEND == "postgres":
             # ⚡ SERVERLESS PATTERN: Open -> Query -> Close IMMEDIATELY
-            conn = psycopg2.connect(settings.DATABASE_URL)
+            # We use a short timeout to fail fast and allow Vercel to retry
+            conn = psycopg2.connect(
+                settings.DATABASE_URL,
+                connect_timeout=5,
+                sslmode='require'
+            )
             yield conn
         else:
             # Local SQLite fallback
@@ -52,11 +58,9 @@ def get_db_connection():
             os.makedirs(os.path.dirname(db_path), exist_ok=True)
             
             conn = sqlite3.connect(db_path)
-            # Enable foreign keys
             conn.execute("PRAGMA foreign_keys = ON")
             yield conn
 
-        # Commit happens automatically if no exception
         if conn:
             conn.commit()
             
@@ -66,14 +70,25 @@ def get_db_connection():
                 conn.rollback()
             except:
                 pass
-        logger.error(f"🔥 Database Transaction Error: {e}")
+        
+        # ELITE LOGGING: Detect common Supabase issues
+        err_msg = str(e)
+        if "timeout" in err_msg.lower():
+            logger.error("🔥 DB ERROR: Connection Timeout. Possible cold start or pooler exhaustion.")
+        elif "too many connections" in err_msg.lower():
+            logger.error("🔥 DB ERROR: Connection Exhaustion. Check pooler settings.")
+        elif "password authentication failed" in err_msg.lower():
+            logger.error("🔥 DB ERROR: Auth Failure. Check DATABASE_URL.")
+        else:
+            logger.error(f"🔥 Database Transaction Error: {err_msg}")
+        
         raise e
     finally:
         if conn:
             try:
                 conn.close()
-            except:
-                pass
+            except Exception as close_err:
+                logger.debug(f"ℹ️ Connection close cleanup: {close_err}")
 
 class SQLiteCursorWrapper:
     """Adapta sintaxis Postgres (%s) a SQLite (?)"""
