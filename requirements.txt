@@ -41,3 +41,8 @@ supabase>=2.3.0
 gotrue>=2.3.0
 
 # Build Cache Buster: 2026-02-05-CLEAN-INSTALL-v1
+
+# Auth & Scheduling (Critical for Boot)
+google-auth>=2.27.0
+google-auth-oauthlib>=1.2.0
+apscheduler>=3.10.4
