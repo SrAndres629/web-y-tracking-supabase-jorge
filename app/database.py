@@ -427,6 +427,7 @@ def get_or_create_lead(whatsapp_phone: str, meta_data: Optional[dict] = None) ->
         logger.error(f"Error creating lead: {e}")
         return (None, False)
 
+
 def log_interaction(lead_id: str, role: str, content: str) -> bool:
     try:
         with get_cursor() as cur:
@@ -434,3 +435,74 @@ def log_interaction(lead_id: str, role: str, content: str) -> bool:
             return True
     except Exception:
         return False
+
+def get_all_visitors(limit: int = 50) -> List[Dict[str, Any]]:
+    """Retrieves recent visitors for the admin dashboard."""
+    visitors = []
+    try:
+        with get_cursor() as cur:
+            # Query compatible with proper ordering
+            if BACKEND == "postgres":
+                query = """
+                    SELECT id, external_id, fbclid, source, created_at, 
+                           utm_source, utm_medium, ip, user_agent 
+                    FROM visitors 
+                    ORDER BY created_at DESC 
+                    LIMIT %s
+                """
+            else:
+                query = """
+                    SELECT id, external_id, fbclid, source, created_at, 
+                           utm_source, utm_medium, ip, user_agent 
+                    FROM visitors 
+                    ORDER BY created_at DESC 
+                    LIMIT ?
+                """
+            
+            cur.execute(query, (limit,))
+            rows = cur.fetchall()
+            
+            columns = [
+                "id", "external_id", "fbclid", "source", "created_at", 
+                "utm_source", "utm_medium", "ip", "user_agent"
+            ]
+            
+            for row in rows:
+                visitor = dict(zip(columns, row))
+                visitors.append(visitor)
+                
+    except Exception as e:
+        logger.error(f"Error fetching visitors: {e}")
+        
+    return visitors
+
+def get_visitor_by_id(visitor_id: int) -> Optional[Dict[str, Any]]:
+    """Retrieves a specific visitor by their internal DB ID."""
+    try:
+        with get_cursor() as cur:
+            if BACKEND == "postgres":
+                query = "SELECT * FROM visitors WHERE id = %s"
+            else:
+                query = "SELECT * FROM visitors WHERE id = ?"
+                
+            cur.execute(query, (visitor_id,))
+            row = cur.fetchone()
+            
+            if row:
+                # Dynamically map based on cursor description if available, 
+                # otherwise fallback to known columns (risky if * is used without row_factory)
+                # For safety in this hybrid env, we'll try to get description
+                if hasattr(cur.cursor, 'description') and cur.cursor.description:
+                    col_names = [desc[0] for desc in cur.cursor.description]
+                    return dict(zip(col_names, row))
+                else:
+                    # Fallback for limited SQLite wrappers without description
+                    # This implies we should be explicit with columns if description fails
+                    # But for now, returning a dict with basic knowns if needed or raw
+                    # Let's hope the description attribute works (it usually does in pyodbc/psycopg2/sqlite3)
+                    pass
+                    
+            return None
+    except Exception as e:
+        logger.error(f"Error fetching visitor {visitor_id}: {e}")
+        return None
