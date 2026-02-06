@@ -115,6 +115,10 @@ app.add_middleware(
 from app.middleware.identity import ServerSideIdentityMiddleware
 app.add_middleware(ServerSideIdentityMiddleware)
 
+# Middleware: Early Hints Bridge (Cloudflare 103 Optimization)
+from app.middleware.early_hints import EarlyHintsMiddleware
+app.add_middleware(EarlyHintsMiddleware)
+
 # =================================================================
 # SECURITY: RATE LIMITING
 # =================================================================

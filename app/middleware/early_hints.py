@@ -1,0 +1,40 @@
+from fastapi import Request
+from starlette.middleware.base import BaseHTTPMiddleware
+import logging
+
+logger = logging.getLogger(__name__)
+
+class EarlyHintsMiddleware(BaseHTTPMiddleware):
+    """
+    Senior Performance Middleware: Early Hints Bridge
+    Adds 'Link' headers to HTML responses to trigger Cloudflare 103 Early Hints.
+    This informs the browser of critical assets before the HTML is fully rendered.
+    """
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        
+        # Only apply to successful HTML responses
+        content_type = response.headers.get("content-type", "")
+        if response.status_code == 200 and "text/html" in content_type:
+            # Doctoral-level Asset Mapping (Critical Path Only)
+            links = [
+                # 1. Main CSS (v16 corresponds to current template version)
+                '</static/css/output.css?v=16>; rel=preload; as=style',
+                # 2. Critical Fonts (Google Fonts CSS)
+                '<https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap>; rel=preload; as=style',
+                # 3. Branding (Luxury Logo)
+                '</static/images/luxury_logo.svg>; rel=preload; as=image',
+                # 4. Preconnect to Typography CDN
+                '<https://fonts.gstatic.com>; rel=preconnect; crossorigin'
+            ]
+            
+            # Combine into a single Link header (Standard practice)
+            response.headers["Link"] = ", ".join(links)
+
+            # 🚀 Phase 2: Stale-While-Revalidate (SWR)
+            # Instructs Cloudflare to serve stale content while revalidating in background.
+            # s-maxage: Time it stays fresh in Cloudflare (1 day)
+            # stale-while-revalidate: Time it's served stale (7 days)
+            response.headers["Cache-Control"] = "public, s-maxage=86400, stale-while-revalidate=604800"
+            
+        return response
