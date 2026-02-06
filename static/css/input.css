@@ -1139,8 +1139,8 @@ button:focus-visible {
 /* Response Fix for Mobile Sticky */
 @media (max-width: 768px) {
     .whatsapp-premium-container {
-        @apply bottom-24 right-6;
-        /* Posed above the mobile sticky bar */
+        @apply bottom-6 right-6;
+        /* Posed without mobile sticky bar */
     }
 }
 
