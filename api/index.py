@@ -16,24 +16,23 @@ try:
     print("✅ [BOOT] App Imported successfully.")
     
     # Production Handler
-    handler = Mangum(main_app, lifespan="off")
+    app = Mangum(main_app, lifespan="off")
 except Exception as e:
     LOAD_ERROR = f"{str(e)}\n{traceback.format_exc()}"
     print(f"🔥 [BOOT] CRITICAL FAILURE: {LOAD_ERROR}")
     
-    # Emergency Fallback Handler
-    def handler(event, context):
-        return {
-            "statusCode": 500,
-            "headers": {"Content-Type": "application/json"},
-            "body": json.dumps({
-                "status": "BOOT_FAILURE",
-                "message": "Crash during application import",
-                "error": str(e),
-                "traceback": traceback.format_exc(),
-                "python": sys.version,
-                "path": sys.path
-            })
+    # Emergency Fallback Handler (WSGI style for safety)
+    def app(environ, start_response):
+        status = '500 Internal Server Error'
+        headers = [('Content-type', 'application/json')]
+        start_response(status, headers)
+        body = {
+            "status": "BOOT_FAILURE",
+            "message": "Crash during application import",
+            "error": str(e),
+            "traceback": traceback.format_exc()
         }
+        return [json.dumps(body).encode('utf-8')]
+
 
 
