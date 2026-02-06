@@ -12,7 +12,7 @@
 # La lógica de negocio está en el paquete app/
 # =================================================================
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import ORJSONResponse
 from fastapi.middleware.gzip import GZipMiddleware

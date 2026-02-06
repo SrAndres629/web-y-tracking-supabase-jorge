@@ -436,73 +436,54 @@ def log_interaction(lead_id: str, role: str, content: str) -> bool:
     except Exception:
         return False
 
+# =================================================================
+# MISSING ADMIN FUNCTIONS (Recovers Admin Panel)
+# =================================================================
+
 def get_all_visitors(limit: int = 50) -> List[Dict[str, Any]]:
-    """Retrieves recent visitors for the admin dashboard."""
+    """Obtiene los últimos visitantes para el dashboard"""
     visitors = []
     try:
         with get_cursor() as cur:
-            # Query compatible with proper ordering
+            # SQL Raw para asegurar compatibilidad
             if BACKEND == "postgres":
-                query = """
-                    SELECT id, external_id, fbclid, source, created_at, 
-                           utm_source, utm_medium, ip, user_agent 
-                    FROM visitors 
-                    ORDER BY created_at DESC 
-                    LIMIT %s
-                """
+                sql = "SELECT id, external_id, source, created_at, ip FROM visitors ORDER BY created_at DESC LIMIT %s"
             else:
-                query = """
-                    SELECT id, external_id, fbclid, source, created_at, 
-                           utm_source, utm_medium, ip, user_agent 
-                    FROM visitors 
-                    ORDER BY created_at DESC 
-                    LIMIT ?
-                """
+                sql = "SELECT id, external_id, source, created_at, ip FROM visitors ORDER BY created_at DESC LIMIT ?"
             
-            cur.execute(query, (limit,))
+            cur.execute(sql, (limit,))
             rows = cur.fetchall()
-            
-            columns = [
-                "id", "external_id", "fbclid", "source", "created_at", 
-                "utm_source", "utm_medium", "ip", "user_agent"
-            ]
-            
             for row in rows:
-                visitor = dict(zip(columns, row))
-                visitors.append(visitor)
-                
+                visitors.append({
+                    "id": row[0], # Assuming id is 0
+                    "external_id": row[1],
+                    "source": row[2],
+                    "timestamp": row[3],
+                    "ip_address": row[4]
+                })
     except Exception as e:
-        logger.error(f"Error fetching visitors: {e}")
-        
+        logger.error(f"❌ Error obteniendo visitors: {e}")
     return visitors
 
 def get_visitor_by_id(visitor_id: int) -> Optional[Dict[str, Any]]:
-    """Retrieves a specific visitor by their internal DB ID."""
+    """Obtiene un visitante por ID para confirmar venta"""
     try:
         with get_cursor() as cur:
             if BACKEND == "postgres":
-                query = "SELECT * FROM visitors WHERE id = %s"
+                sql = "SELECT id, external_id, fbclid, source, created_at FROM visitors WHERE id = %s"
             else:
-                query = "SELECT * FROM visitors WHERE id = ?"
-                
-            cur.execute(query, (visitor_id,))
-            row = cur.fetchone()
+                sql = "SELECT id, external_id, fbclid, source, created_at FROM visitors WHERE id = ?"
             
+            cur.execute(sql, (visitor_id,))
+            row = cur.fetchone()
             if row:
-                # Dynamically map based on cursor description if available, 
-                # otherwise fallback to known columns (risky if * is used without row_factory)
-                # For safety in this hybrid env, we'll try to get description
-                if hasattr(cur.cursor, 'description') and cur.cursor.description:
-                    col_names = [desc[0] for desc in cur.cursor.description]
-                    return dict(zip(col_names, row))
-                else:
-                    # Fallback for limited SQLite wrappers without description
-                    # This implies we should be explicit with columns if description fails
-                    # But for now, returning a dict with basic knowns if needed or raw
-                    # Let's hope the description attribute works (it usually does in pyodbc/psycopg2/sqlite3)
-                    pass
-                    
-            return None
+                return {
+                    "id": row[0],
+                    "external_id": row[1],
+                    "fbclid": row[2],
+                    "source": row[3],
+                    "timestamp": row[4]
+                }
     except Exception as e:
-        logger.error(f"Error fetching visitor {visitor_id}: {e}")
-        return None
+        logger.error(f"❌ Error buscando visitor {visitor_id}: {e}")
+    return None
