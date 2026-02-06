@@ -1,18 +1,15 @@
-# DIAGNOSTIC BOOTLOADER v3 (Unified Integration)
+# DIAGNOSTIC BOOTLOADER v4 (Zero-Dependency Isolation)
 import sys
 import traceback
+import os
+import json
 
-# 0. Run Unified Diagnostics (Logs to Vercel Console)
-try:
-    # Diagnostic module is safe to import (lazy loads dependencies)
-    from app.diagnostics import log_startup_report
-    log_startup_report()
-except ImportError:
-    print("⚠️ [BOOT] Could not import app.diagnostics")
-except Exception as e:
-    print(f"⚠️ [BOOT] Diagnostics failed: {e}")
+# 1. Self-contained Log function (since print might be buffered)
+def log_error(msg):
+    print(msg, file=sys.stderr) # stderr often captured better
+    print(msg, file=sys.stdout)
 
-# 1. Try to load dependencies (Mangum)
+# 2. Try to load Mangum
 try:
     from mangum import Mangum
     HAS_MANGUM = True
@@ -20,9 +17,10 @@ except ImportError:
     HAS_MANGUM = False
     Mangum = None
 
-from fastapi import FastAPI
+# 3. Environment Dump (Safe Mode)
+ENV_DEBUG = {k: str(v)[:10] + "..." if "KEY" in k or "TOKEN" in k else v for k, v in os.environ.items()}
 
-# 2. Try to load Main App
+# 4. Try to load Main App
 LOAD_ERROR = None
 app = None
 handler = None
@@ -31,33 +29,36 @@ try:
     from main import app as main_app
     app = main_app
 except Exception as e:
-    # Capture the full traceback for the JSON response
     LOAD_ERROR = f"{str(e)}\n{traceback.format_exc()}"
-    print(f"🔥 [BOOT] CRITICAL APP LOAD FAILURE:\n{LOAD_ERROR}")
+    log_error(f"🔥 [BOOT] CRITICAL FAILURE: {LOAD_ERROR}")
 
-# 3. Decision Logic
+# 5. Handler Logic
+def fallback_handler(event, context):
+    """Raw AWS Lambda Handler for extreme fallback"""
+    body = {
+        "status": "BOOT_FAILURE",
+        "error": LOAD_ERROR or "Unknown",
+        "has_mangum": HAS_MANGUM,
+        "python": sys.version,
+        "env_sample": ENV_DEBUG
+    }
+    return {
+        "statusCode": 500,
+        "headers": {"Content-Type": "application/json"},
+        "body": json.dumps(body)
+    }
+
 if not LOAD_ERROR and app and HAS_MANGUM:
-    # SUCCESS: Normal Operation
-    # Wrap API for Vercel Serverless (AWS Lambda compatibility)
     handler = Mangum(app)
 else:
-    # FAILURE: Fallback Mode
-    print("⚠️ [BOOT] Entering Fallback Mode")
-    fallback = FastAPI()
-    
-    @fallback.get("/{path:path}")
-    async def debug_catch_all(path: str):
-        return {
-            "status": "BOOT_FAILURE",
-            "has_mangum": HAS_MANGUM,
-            "python_version": sys.version,
-            "error": LOAD_ERROR or "Unknown Error (App is None)",
-            "path": sys.path,
-            "env_check": "Check Vercel Logs for [DIAGNOSTICS] report"
-        }
-    
+    # Use fallback. If mangum exists, use it to wrap a dummy fastapi for nicer output
     if HAS_MANGUM:
-        handler = Mangum(fallback)
+        from fastapi import FastAPI
+        fallback_app = FastAPI()
+        @fallback_app.get("/{path:path}")
+        async def catch_all(path: str):
+            return json.loads(fallback_handler(None, None)["body"])
+        handler = Mangum(fallback_app)
     else:
-        # Emergency raw handler if Mangum is gone (unlikely on Vercel Python runtime)
-        raise RuntimeError(f"CRITICAL: Mangum Missing & App Failed. {LOAD_ERROR}")
+        # If no Mangum, use raw lambda handler (Vercel supports this too for Python)
+        handler = fallback_handler
