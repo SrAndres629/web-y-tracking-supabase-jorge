@@ -137,6 +137,32 @@ from app.limiter import limiter
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+# =================================================================
+# DEBUGGING: EXCEPTION HANDLERS
+# =================================================================
+from fastapi.responses import JSONResponse
+import traceback
+
+@app.exception_handler(500)
+async def internal_exception_handler(request: Request, exc: Exception):
+    """
+    Temporary Debug Handler to show error on Vercel
+    Legacy: Internal Server Error
+    New: JSON with traceback
+    """
+    error_msg = str(exc)
+    tb = traceback.format_exc()
+    logger.error(f"🔥 CRITIAL 500: {error_msg}\n{tb}")
+    return JSONResponse(
+        status_code=500,
+        content={
+            "status": "error",
+            "message": "Internal Server Error (Debug Mode)",
+            "detail": error_msg,
+            "traceback": tb.split("\n")
+        }
+    )
+
 # Aplicar límite global (opcional, o por ruta)
 # app.add_middleware(SlowAPIMiddleware)
 
