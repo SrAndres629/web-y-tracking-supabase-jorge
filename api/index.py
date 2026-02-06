@@ -1,3 +1,5 @@
-# Bridge for Vercel Serverless (Native ASGI)
-# Vercel detects FastAPI 'app' automatically from main.py via api/index.py
 from main import app
+from mangum import Mangum
+
+# Wrap API for Vercel Serverless (AWS Lambda compatibility)
+handler = Mangum(app)

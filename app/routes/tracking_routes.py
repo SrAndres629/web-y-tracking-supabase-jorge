@@ -252,7 +252,7 @@ async def track_event(
         "country": event.user_data.get('country'),
         "custom_data": custom_data,
         "utm_data": {
-            "source": util_data.get('utm_source') if 'util_data' in locals() else utm_data.get('utm_source'), # Fallback logic
+            "source": utm_data.get('utm_source'),
             "medium": utm_data.get('utm_medium'),
             "campaign": utm_data.get('utm_campaign'), 
             "term": utm_data.get('utm_term'),
