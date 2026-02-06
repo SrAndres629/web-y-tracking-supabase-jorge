@@ -1,14 +1,31 @@
-import requests
-
 class ContentManager:
     def __init__(self):
         self._FALLBACKS = {
-            'service1': {'url': 'https://service1.example.com/api', 'timeout': 30},
-            'service2': {'url': 'https://service2.example.com/api', 'timeout': 30},
-            # ... Add complete service data structure here
+            'service1': {
+                'badge': 'badge1.png',
+                'image': 'image1.png',
+                'rating': 4.5,
+                'clients': 120,
+                'benefits': ['Benefit 1', 'Benefit 2'],
+                'subtitle': 'Subtitle 1'
+            },
+            'service2': {
+                'badge': 'badge2.png',
+                'image': 'image2.png',
+                'rating': 4.2,
+                'clients': 98,
+                'benefits': ['Benefit 3', 'Benefit 4'],
+                'subtitle': 'Subtitle 2'
+            },
+            'service3': {
+                'badge': 'badge3.png',
+                'image': 'image3.png',
+                'rating': 4.8,
+                'clients': 150,
+                'benefits': ['Benefit 5', 'Benefit 6'],
+                'subtitle': 'Subtitle 3'
+            }
         }
 
-    def get_service_info(self, service_name):
-        return self._FALLBACKS.get(service_name, None)
+    # Other method definitions of the ContentManager class would be here
 
-    # Add additional methods as necessary
