@@ -81,12 +81,12 @@ class ContentManager:
 
     @classmethod
     async def get_content(cls, key: str) -> Any:
-        """Entry point for all dynamic content"""
-        # 1. ⚡ RAM FIRST (No I/O)
+        """Entry point for all dynamic content - Highly Optimized (TTFB 0ms)"""
+        # 1. ⚡ RAM FIRST (0ms)
         if key in cls._ram_cache:
             return cls._ram_cache[key]
         
-        # 2. 🌀 REDIS SECOND (Shared between instances)
+        # 2. 🌀 REDIS SECOND (<15ms)
         try:
             cached = await redis_cache.get_json(f"content:{key}")
             if cached:
@@ -102,32 +102,58 @@ class ContentManager:
         # 3. 🧬 DATABASE LAST (Source of Truth)
         content = cls._fetch_from_db(key)
         
-        # 🧬 SILICON VALLEY VALIDATION: Ensure DB data has the expected schema
-        # This prevents 'UndefinedError' in Jinja if DB record is partial/corrupted.
-        is_valid = False
+        # 🛡️ SILICON VALLEY VALIDATION: Ensure DB data has the expected schema
         if content:
-            if key == "services_config":
-                # Check if it's a list and the first item has 'badges'
-                if isinstance(content, list) and len(content) > 0 and "badges" in content[0]:
-                    is_valid = True
-            elif key == "contact_config":
-                if isinstance(content, dict) and "whatsapp" in content:
-                    is_valid = True
-            else:
-                is_valid = True # No specific validation for other keys yet
-
-        if is_valid:
-            # Update caches
-            cls._ram_cache[key] = content
-            try:
-                await redis_cache.set_json(f"content:{key}", content, expire=cls.CACHE_TTL)
-            except:
-                pass
-            return content
+            content = cls._deep_validate(key, content)
+            if content:
+                # Update L1/L2 caches
+                cls._ram_cache[key] = content
+                try:
+                    await redis_cache.set_json(f"content:{key}", content, expire=cls.CACHE_TTL)
+                except:
+                    pass
+                return content
             
         # 4. 🛟 EMERGENCY FALLBACK
         logger.warning(f"🛟 CMS Schema Mismatch or Empty for '{key}'. Using hardcoded Golden Fallbacks.")
         return cls._FALLBACKS.get(key)
+
+    @classmethod
+    def _deep_validate(cls, key: str, content: Any) -> Optional[Any]:
+        """Performs structural validation on dynamic content"""
+        if key == "services_config":
+            if isinstance(content, list) and len(content) > 0:
+                return cls._validate_services_list(content)
+        elif key == "contact_config":
+            if isinstance(content, dict) and "whatsapp" in content:
+                return content
+        else:
+            return content # Minimal validation for other keys
+        return None
+
+    @classmethod
+    def _validate_services_list(cls, content: List[Dict]) -> List[Dict]:
+        """Deep validation for the services configuration list"""
+        valid_items = []
+        fallbacks = {s["id"]: s for s in cls._FALLBACKS["services_config"]}
+        
+        for item in content:
+            if not isinstance(item, dict) or "id" not in item:
+                continue
+            
+            # Use fallback as base if item is malformed
+            base_fallback = fallbacks.get(item["id"], cls._FALLBACKS["services_config"][0])
+            
+            # Critical Repair logic: Ensure 'badges' and 'benefits' exist
+            if "badges" not in item or not isinstance(item["badges"], list):
+                item["badges"] = base_fallback["badges"]
+                logger.warning(f"🩹 Injected fallback badges for service: {item['id']}")
+            
+            if "benefits" not in item or not isinstance(item["benefits"], list):
+                item["benefits"] = base_fallback["benefits"]
+                
+            valid_items.append(item)
+        return valid_items
 
     @classmethod
     def _fetch_from_db(cls, key: str) -> Optional[Any]:

@@ -512,12 +512,14 @@
 
                     <!-- Benefits Row -->
                     <div class="service-info-row">
+                        {% if service.badges and service.badges|length > 1 %}
                         {% for badge in service.badges[1:] %}
                         <span
                             class="service-badge {% if loop.index == 1 %}natural{% else %}duration{% endif %} font-bold text-[10px]">
                             {{ badge }}
                         </span>
                         {% endfor %}
+                        {% endif %}
                     </div>
 
                     <!-- Benefit Points -->
@@ -677,6 +679,7 @@
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
+  "@id": "https://jorgeaguirreflores.com/#organization",
   "@type": "BeautySalon",
   "name": "Jorge Aguirre Flores - Arte Facial & Microblading",
   "image": "https://jorgeaguirreflores.com/static/images/jorge_hero_new.webp",
@@ -709,35 +712,22 @@
       "closes": "14:00"
     }
   ],
+  "sameAs": [
+    "https://www.instagram.com/jorgeaguirreflores", 
+    "https://www.facebook.com/jorgeaguirreflores"
+  ],
+  "founder": {
+    "@type": "Person",
+    "name": "Jorge Aguirre Flores",
+    "jobTitle": "Especialista en Micropigmentación",
+    "image": "https://jorgeaguirreflores.com/static/images/jorge_hero_new.webp"
+  },
   "priceCurrency": "BOB",
   "aggregateRating": {
     "@type": "AggregateRating",
     "ratingValue": "5.0",
     "reviewCount": "127"
-  },
-  "review": [
-    {
-      "@type": "Review",
-      "author": { "@type": "Person", "name": "Ana M." },
-      "datePublished": "2024-01-15",
-      "reviewBody": "Ahorro 20 minutos cada mañana. Es la mejor inversión profesional que he hecho.",
-      "reviewRating": { "@type": "Rating", "ratingValue": "5" }
-    },
-    {
-      "@type": "Review",
-      "author": { "@type": "Person", "name": "Carmen R." },
-      "datePublished": "2023-11-20",
-      "reviewBody": "Mis amigas dicen que me veo 10 años más joven. El resultado es tan elegante.",
-      "reviewRating": { "@type": "Rating", "ratingValue": "5" }
-    },
-    {
-      "@type": "Review",
-      "author": { "@type": "Person", "name": "Sofía L." },
-      "datePublished": "2024-02-01",
-      "reviewBody": "Tenía miedo de que se viera falso, pero es increíblemente natural. ¡Amo mis cejas!",
-      "reviewRating": { "@type": "Rating", "ratingValue": "5" }
-    }
-  ]
+  }
 }
 </script>
 {% endblock %}
