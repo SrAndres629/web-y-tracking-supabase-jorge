@@ -42,3 +42,38 @@ async def publish_to_qstash(event_data: dict):
         except Exception as e:
             logger.error(f"❌ Failed to publish to QStash: {str(e)}")
             return False
+# =================================================================
+# SERVICES & CONTACT CONFIGURATION
+# =================================================================
+
+SERVICES_CONFIG = [
+    {
+        "id": "microblading",
+        "title": "Microblading Elite",
+        "description": "Cejas perfectas pelo a pelo con resultados naturales.",
+        "icon": "fa-eye",
+        "color": "luxury-gold"
+    },
+    {
+        "id": "eyeliner",
+        "title": "Delineado Permanente",
+        "description": "Resalta tu mirada las 24 horas del día.",
+        "icon": "fa-pencil",
+        "color": "luxury-gold"
+    },
+    {
+        "id": "lips",
+        "title": "Acuarela de Labios",
+        "description": "Color y definición vibrante para tus labios.",
+        "icon": "fa-kiss",
+        "color": "luxury-gold"
+    }
+]
+
+CONTACT_CONFIG = {
+    "whatsapp": "https://wa.me/59164714751",
+    "phone": "+591 64714751",
+    "email": "contacto@jorgeaguirreflores.com",
+    "location": "Santa Cruz de la Sierra, Bolivia",
+    "instagram": "https://instagram.com/jorgeaguirreflores"
+}
