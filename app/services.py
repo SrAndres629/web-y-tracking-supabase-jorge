@@ -42,9 +42,56 @@ async def publish_to_qstash(event_data: dict):
         except Exception as e:
             logger.error(f"❌ Failed to publish to QStash: {str(e)}")
             return False
-# =================================================================
-# SERVICES & CONTACT CONFIGURATION
-# =================================================================
+async def validate_turnstile(token: str) -> bool:
+    """
+    Validates a Cloudflare Turnstile token.
+    Shields the API from bot-generated tracking events.
+    """
+    if not settings.TURNSTILE_SECRET_KEY:
+        logger.warning("🛡️ Turnstile Secret missing - bypassing validation (Insecure)")
+        return True
+    
+    if not token:
+        return False
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(
+                "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+                data={
+                    "secret": settings.TURNSTILE_SECRET_KEY,
+                    "response": token
+                },
+                timeout=5.0
+            )
+            result = response.json()
+            if result.get("success"):
+                logger.info("🛡️ Turnstile validation successful")
+                return True
+            else:
+                logger.warning(f"🛡️ Turnstile validation failed: {result.get('error-codes')}")
+                return False
+        except Exception as e:
+            logger.error(f"🛡️ Turnstile verification error: {e}")
+            return True # Fallback to true on network error to not block legit users
+            
+def normalize_pii(data: str, mode: str = "email") -> str:
+    """
+    Silicon Valley Hygiene: Clean and normalize PII before hashing.
+    """
+    if not data:
+        return ""
+    
+    clean_data = data.strip().lower()
+    
+    if mode == "phone":
+        # Keep only digits
+        clean_data = "".join(filter(str.isdigit, data))
+        # Ensure country code (default Bolivia 591 if 8 digits)
+        if len(clean_data) == 8:
+            clean_data = "591" + clean_data
+            
+    return clean_data
 
 SERVICES_CONFIG = [
     {

@@ -17,6 +17,7 @@ import time
 import logging
 
 from app.config import settings
+from app.services import publish_to_qstash, validate_turnstile, normalize_pii
 from app.models import TrackResponse, LeadCreate, InteractionCreate, InteractionResponse
 
 # Direct imports (bypassing Celery)
@@ -228,11 +229,21 @@ async def track_event(
         }
         background_tasks.add_task(bg_upsert_contact, contact_payload)
 
+    # =================================================================
     # 3. Send to Meta CAPI (OFFLOADED TO QSTASH)
-    # 🛡️ QStash Integration (Serverless Freeze Defense)
-    # Instead of trusting Vercel to keep the process alive, we offload to QStash
+    # =================================================================
     
-    # Payload for the background worker
+    # 🛡️ BOT PROTECTION (Silicon Valley Defense)
+    turnstile_token = custom_data.get("turnstile_token")
+    if not await validate_turnstile(turnstile_token):
+        logger.warning(f"🛡️ Bot/Invalid request blocked: {event.event_name}")
+        # Return success but don't process (Silent Drop)
+        return {"status": "success", "message": "Signal received (filtered)"}
+
+    # 🧼 DATA HYGIENE (PII Normalization)
+    if email: email = normalize_pii(email, "email")
+    if phone: phone = normalize_pii(phone, "phone")
+
     qstash_payload = {
         "event_name": event.event_name,
         "event_id": event.event_id,
@@ -251,32 +262,17 @@ async def track_event(
         "zip_code": event.user_data.get('zp') or event.user_data.get('zip_code'),
         "country": event.user_data.get('country'),
         "custom_data": custom_data,
-        "utm_data": {
-            "source": utm_data.get('utm_source'),
-            "medium": utm_data.get('utm_medium'),
-            "campaign": utm_data.get('utm_campaign'), 
-            "term": utm_data.get('utm_term'),
-            "content": utm_data.get('utm_content')
-        }
+        "utm_data": utm_data
     }
 
-    # Try QStash first
-    from app.services import publish_to_qstash
+    # 🚀 RELIABILITY: Offload to QStash
     sent_to_queue = await publish_to_qstash(qstash_payload)
     
     if not sent_to_queue:
-        # Fallback to local background task if QStash fails/missing
+        # Fallback to local background task if QStash fails
         logger.warning(f"⚠️ QStash failed/skipped. Using local background task for {event.event_name}")
         background_tasks.add_task(
             bg_send_meta_event,
-            event_name=event.event_name,
-            event_source_url=event.event_source_url,
-            client_ip=client_ip,
-            user_agent=user_agent,
-            event_id=event.event_id,
-            fbclid=fbclid,
-            fbp=fbp,
-            external_id=external_id,
             phone=phone,
             email=email,
             first_name=event.user_data.get('fn') or event.user_data.get('first_name'),
@@ -285,7 +281,16 @@ async def track_event(
             state=event.user_data.get('st') or event.user_data.get('state'),
             zip_code=event.user_data.get('zp') or event.user_data.get('zip_code'),
             country=event.user_data.get('country'),
-            custom_data=custom_data
+            custom_data=custom_data,
+            # Pass original payload data
+            event_name=event.event_name,
+            event_id=event.event_id,
+            event_source_url=event.event_source_url,
+            client_ip=client_ip,
+            user_agent=user_agent,
+            external_id=external_id,
+            fbc=fbc,
+            fbp=fbp
         )
     
     # 4. Send to n8n (Important events only)

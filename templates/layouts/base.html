@@ -77,6 +77,18 @@
     <!-- Lenis Smooth Scroll (Butter Feel) -->
     <script defer src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
 
+    <!-- 🚀 MICROSOFT CLARITY (The Black Box - Silicon Valley Observability) -->
+    <!-- Allows seeing user sessions to debug UX issues -->
+    {% if clarity_id %}
+    <script type="text/javascript">
+        (function (c, l, a, r, i, t, y) {
+            c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments) };
+            t = l.createElement(r); t.async = 1; t.src = "https://www.clarity.ms/tag/" + i;
+            y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y);
+        })(window, document, "clarity", "script", "{{ clarity_id }}");
+    </script>
+    {% endif %}
+
     <!-- Google One Tap (Identity Resolution) -->
     {% if google_client_id %}
     <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -144,7 +156,7 @@
 
     <!-- Anti-Bot Defense Layer -->
     <div class="cf-turnstile" data-sitekey="0x4AAAAAAA8Cqg0HkqG6Xq5j" data-callback="onTurnstileSuccess"
-        data-appearance="interaction-only"></div>
+        data-size="invisible"></div>
 
     <!-- Global Ambient Spotlight -->
     <div id="mouse-spotlight"

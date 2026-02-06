@@ -131,6 +131,44 @@ async def read_root(
     # ⚡ TTFB OPTIMIZATION (Phase 5)
     # logic: Check Cookies -> Check URL -> (Only if needed) Check DB
     # =================================================================
+    # =================================================================
+    # 7. DYNAMIC LANDING (SILICON VALLEY UX)
+    # =================================================================
+    # Context-Aware Hero Section based on Ads
+    utm_campaign = request.query_params.get('utm_campaign', '').lower()
+    utm_content = request.query_params.get('utm_content', '').lower()
+    
+    # Default Hero (General)
+    hero_content = {
+        "title": 'Ingeniería de la <span class="italic font-light text-gradient-gold">Mirada</span>',
+        "subtitle": "Especialista en Microblading",
+        "bg_class": "bg-luxury-black", # Default dark
+        "is_dynamic": False
+    }
+
+    # Dynamic Logic
+    if 'labios' in utm_campaign or 'lips' in utm_campaign:
+        hero_content = {
+            "title": 'Arte y Volumen en tus <span class="italic font-light text-gradient-gold">Labios</span>',
+            "subtitle": "Micropigmentación Full Color",
+            "bg_class": "bg-luxury-black", 
+            "is_dynamic": True
+        }
+    elif 'ojos' in utm_campaign or 'delineado' in utm_campaign or 'eyes' in utm_campaign:
+        hero_content = {
+            "title": 'Tu Mirada, Perfectamente <span class="italic font-light text-gradient-gold">Delineada</span>',
+            "subtitle": "Delineado Permanente de Ojos",
+            "bg_class": "bg-luxury-black",
+            "is_dynamic": True
+        }
+    elif 'cejas' in utm_campaign or 'brows' in utm_campaign:
+        hero_content = {
+             "title": 'Cejas Perfectas, <span class="italic font-light text-gradient-gold">Pelo a Pelo</span>',
+             "subtitle": "Microblading 3D Hiper-Realista",
+             "bg_class": "bg-luxury-black",
+             "is_dynamic": True
+        }
+
     # 1. Generate Visitor ID (Determinstic from IP + UA)
     # =================================================================
     external_id = generate_external_id(client_ip, user_agent)
@@ -222,7 +260,16 @@ async def read_root(
     logger.info(f"⏱️ [Perf] Total Processing: {total_ms}ms (Cache: {timings.get('cache_ms', 0)}ms, DB: {timings.get('db_ms', 0)}ms)")
     timing_header = f"total;dur={total_ms}, cache;dur={timings.get('cache_ms', 0)}, db;dur={timings.get('db_ms', 0)}"
 
-    # 🚀 INSTANT RESPONSE (Background tasks run after this)
+    # 🚀 SILICON VALLEY CACHING (Enable Cloudflare EDGE Cache)
+    # public: allow caching by CDN
+    # s-maxage: Cloudflare edge cache duration (1 week)
+    # stale-while-revalidate: Serve old content while updating in background (60s)
+    
+    headers = {
+        "Server-Timing": timing_header,
+        "Cache-Control": "public, s-maxage=604800, stale-while-revalidate=60"
+    }
+
     return templates.TemplateResponse(
         name="index.html", 
         context={
@@ -233,10 +280,8 @@ async def read_root(
             "fbclid": fbclid or "", # Pass to frontend for contact button
             "services": SERVICES_CONFIG,
             "contact": CONTACT_CONFIG,
-            # 🚀 Identity Resolution (Phase 7)
             "google_client_id": settings.GOOGLE_CLIENT_ID,
             "clarity_id": settings.CLARITY_PROJECT_ID,
-            # 🚩 Feature Flags (Control from Vercel Dashboard)
             "flags": {
                 "show_testimonials": settings.FLAG_SHOW_TESTIMONIALS,
                 "show_gallery": settings.FLAG_SHOW_GALLERY,
@@ -246,9 +291,9 @@ async def read_root(
                 "meta_tracking": settings.FLAG_META_TRACKING,
                 "maintenance_mode": settings.FLAG_MAINTENANCE_MODE,
                 "booking_enabled": settings.FLAG_BOOKING_ENABLED,
-            }
+            },
+            # 🧠 UX: Dynamic Hero Data
+            "hero_content": hero_content
         },
-        headers={
-            "Server-Timing": timing_header
-        }
+        headers=headers
     )

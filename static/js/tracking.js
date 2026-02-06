@@ -19,33 +19,57 @@ const TrackingEngine = {
         if (this.initialized) return;
         this.initialized = true;
 
-        // 🚀 HYBRID ARCHITECTURE (Client-Side Identity)
-        // Since HTML is cached at Edge, we must generate unique IDs here if missing.
+        // 🚀 SILICON VALLEY DEDUPLICATION (UUID v4)
+        // Ensure a shared event_id exists for PageView before any fire
         if (!window.META_EVENT_ID) {
-            window.META_EVENT_ID = `pageview_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-            this.log('🆔 Generated Client-Side Event ID:', window.META_EVENT_ID);
+            window.META_EVENT_ID = this.generateUUID();
+            this.log('🆔 Generated Master Event ID:', window.META_EVENT_ID);
         }
 
+        // 🚀 IDENTITY HYDRATION
         if (!window.EXTERNAL_ID) {
-            // Check cookie first, else generate
             const storedId = this.getCookie('external_id');
-            window.EXTERNAL_ID = storedId || `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-            if (!storedId) this.setCookie('external_id', window.EXTERNAL_ID, 30); // 30 days
+            window.EXTERNAL_ID = storedId || `user_${this.generateUUID().substring(0, 18)}`;
+            if (!storedId) this.setCookie('external_id', window.EXTERNAL_ID, 365); // 1 Year persistence
             this.log('👤 Hydrated Identity:', window.EXTERNAL_ID);
         }
 
-        // Auto-enable debug if specific parameter exists
+        // 🚀 COOKIE SYNC (fbclid -> _fbc)
+        this.syncMetaCookies();
+
         if (new URLSearchParams(window.location.search).has('debug_pixel')) {
             this.debugMode = true;
             this.log('🐛 Debug Mode Enabled');
         }
 
-        this.persistUTMs(); // Priority: Capture campaign data immediately
-        // 🚀 ZARAZ MIGRATION: Pixel setup removed here as it's now handled at the Edge by Cloudflare Zaraz.
+        this.persistUTMs();
         this.setupViewContentObserver();
         this.setupSliderListeners();
 
-        this.log('📊 [Senior Architecture] Tracking Engine Active (Hybrid Mode: Edge Cache + Client Identity)');
+        this.log('📊 [Silicon Valley Protocol] Tracking Engine Active (Direct & Resilient)');
+    },
+
+    /**
+     * UUID v4 Generator (RFC 4122)
+     */
+    generateUUID() {
+        return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
+            (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+        );
+    },
+
+    /**
+     * Sync fbclid from URL to _fbc cookie for Cross-Session attribution
+     */
+    syncMetaCookies() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const fbclid = urlParams.get('fbclid');
+        if (fbclid) {
+            const creationTime = Math.floor(Date.now());
+            const fbcValue = `fb.1.${creationTime}.${fbclid}`;
+            this.setCookie('_fbc', fbcValue, 90); // 90 days (standard Meta TTL)
+            this.log('🍪 Synced _fbc cookie from URL:', fbcValue);
+        }
     },
 
     // Cookie Helpers
@@ -64,8 +88,7 @@ const TrackingEngine = {
         const ca = document.cookie.split(';');
         for (let i = 0; i < ca.length; i++) {
             let c = ca[i];
-            while (c.charAt(0) == ' ') c = c.substring(1, c.length);
-            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+            while (c.trim().indexOf(nameEQ) === 0) return c.trim().substring(nameEQ.length, c.trim().length);
         }
         return null;
     },
@@ -187,7 +210,7 @@ const TrackingEngine = {
 
     trackIndividualView(sectionId) {
         const serviceData = this.config.services[sectionId] || { name: sectionId, category: 'General', price: 0 };
-        const eventId = `vc_${Date.now()}_${sectionId}`;
+        const eventId = `vc_${this.generateUUID()}`;
 
         // 🚀 ZARAZ MIGRATION: Safe Wrapper
         this.safeFbq('track', 'ViewContent', {
@@ -230,16 +253,17 @@ const TrackingEngine = {
                     serviceName = slider.dataset.serviceCategory.replace(/_/g, ' ').toUpperCase();
                 }
 
+                const eventId = `slider_${this.generateUUID()}`;
                 if (window.fbq || true) { // Force usage of safeFbq
                     this.safeFbq('trackCustom', 'SliderInteraction', {
                         content_name: serviceName,
                         content_id: serviceId,
                         interaction_type: 'compare_before_after'
-                    }, { eventID: `slider_${Date.now()}_${serviceId}` });
+                    }, { eventID: eventId });
                 }
 
                 this.trackEvent('SliderInteraction', {
-                    event_id: `slider_${Date.now()}_${serviceId}`,
+                    event_id: eventId,
                     service_name: serviceName,
                     service_id: serviceId,
                     interaction_type: 'compare_before_after'
@@ -267,7 +291,7 @@ const TrackingEngine = {
             'Sticky Mobile CTA': { name: 'Cita VIP Móvil', id: 'mobile_sticky', intent: 'convenience' }
         };
 
-        const eventId = `contact_${Date.now()}`;
+        const eventId = `contact_${this.generateUUID()}`;
         const data = triggerMap[source] || { name: source, id: 'unknown', intent: 'general' };
 
         // 🛡️ [Senior optimization]
@@ -375,7 +399,8 @@ const TrackingEngine = {
                 utm_campaign: this.getUTM('utm_campaign'),
                 utm_term: this.getUTM('utm_term'),
                 utm_content: this.getUTM('utm_content'),
-                browser_context: isInApp ? 'in_app' : 'browser' // Critical for ROI analysis
+                browser_context: isInApp ? 'in_app' : 'browser', // Critical for ROI analysis
+                turnstile_token: this.turnstileToken || null // 🛡️ Bot Defense
             }
         };
 

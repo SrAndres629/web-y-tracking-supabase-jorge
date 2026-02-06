@@ -114,6 +114,7 @@ class Settings(BaseSettings):
     
     # Cloudflare (If using Zaraz for ad-blocker bypass)
     CLOUDFLARE_ZONE_ID: Optional[str] = None
+    TURNSTILE_SECRET_KEY: Optional[str] = None
 
     # RudderStack (CDP)
     # Get Write Key at: https://rudderstack.com
@@ -142,7 +143,18 @@ class Settings(BaseSettings):
             logger.warning("⚠️ META_ACCESS_TOKEN no configurado")
         if not self.DATABASE_URL:
             logger.info("ℹ️ DATABASE_URL no configurado - DB deshabilitada")
-        
+        else:
+            # 🛡️ INFRASTRUCTURE SAFETY CHECK (Silicon Valley Standard)
+            # Prevent "Connection Bomb" in Serverless (Vercel)
+            is_prod = os.getenv("VERCEL") or os.getenv("RENDER")
+            if is_prod and ":5432" in self.DATABASE_URL:
+                 logger.warning("🔥 CRITICAL ARCHITECTURE WARNING: You are using Port 5432 (Session Mode) in Serverless.")
+                 logger.warning("👉 PLEASE SWITCH TO PORT 6543 (Transaction Pooler) to avoid connection limits.")
+                 # We don't raise error to avoid hard crash, but we scream in logs.
+            
+            if is_prod and "pgbouncer=true" not in self.DATABASE_URL:
+                 logger.warning("⚠️ PERFORMANCE TIP: Add '?pgbouncer=true' to your DATABASE_URL for stability.")
+
         logger.info("✅ Configuración cargada correctamente")
     
     @property
