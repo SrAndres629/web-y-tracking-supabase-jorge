@@ -103,6 +103,14 @@ async def read_root(
     
     SPEED: Template returns INSTANTLY, tracking runs after.
     """
+    # 0. A/B TESTING (Silicon Valley Science)
+    # Randomly assign variant if not present in cookie
+    ab_variant = request.cookies.get("ab_test_group")
+    if not ab_variant:
+        import random
+        ab_variant = "variant_b" if random.random() > 0.5 else "variant_a"
+        
+    # 1. SETUP & IDENTITY
     start_time = time.time()
     timings = {}
     event_id = str(int(time.time() * 1000))
@@ -270,10 +278,11 @@ async def read_root(
         "Cache-Control": "public, s-maxage=604800, stale-while-revalidate=60"
     }
 
-    return templates.TemplateResponse(
-        name="index.html", 
+    # RESPONSE WITH COOKIE
+    response = templates.TemplateResponse(
+        name="index.html",
         context={
-            "request": request, 
+            "request": request,
             "pixel_id": settings.META_PIXEL_ID,
             "pageview_event_id": event_id,
             "external_id": external_id,
@@ -293,7 +302,10 @@ async def read_root(
                 "booking_enabled": settings.FLAG_BOOKING_ENABLED,
             },
             # 🧠 UX: Dynamic Hero Data
-            "hero_content": hero_content
+            "hero_content": hero_content,
+            "ab_variant": ab_variant # Pass to template for UI logic
         },
         headers=headers
     )
+    response.set_cookie(key="ab_test_group", value=ab_variant, max_age=2592000) # 30 days
+    return response

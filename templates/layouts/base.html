@@ -77,6 +77,20 @@
     <!-- Lenis Smooth Scroll (Butter Feel) -->
     <script defer src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
 
+    <!-- 🛡️ SENTRY (Frontend Error Monitoring) -->
+    <script src="https://js.sentry-cdn.com/YOUR_PUBLIC_DSN.min.js" crossorigin="anonymous"></script>
+    <script>
+        Sentry.onLoad(function () {
+            Sentry.init({
+                // Tracing for performance monitoring
+                tracesSampleRate: 1.0,
+                // Replay for session recording (complementing Clarity)
+                replaysSessionSampleRate: 0.1,
+                replaysOnErrorSampleRate: 1.0,
+            });
+        });
+    </script>
+
     <!-- 🚀 MICROSOFT CLARITY (The Black Box - Silicon Valley Observability) -->
     <!-- Allows seeing user sessions to debug UX issues -->
     {% if clarity_id %}
