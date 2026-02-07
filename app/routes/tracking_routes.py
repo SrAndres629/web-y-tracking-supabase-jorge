@@ -55,13 +55,13 @@ def bg_save_visitor(external_id, fbclid, client_ip, user_agent, source, utm_data
 
 
 def bg_send_meta_event(event_name, event_source_url, client_ip, user_agent, event_id, 
-                       fbclid=None, fbp=None, external_id=None, phone=None, email=None, custom_data=None, 
-                       first_name=None, last_name=None, city=None, state=None, zip_code=None, country=None):
+                       fbclid=None, fbp=None, fbc=None, external_id=None, phone=None, email=None, custom_data=None, 
+                       first_name=None, last_name=None, city=None, state=None, zip_code=None, country=None, utm_data=None):
     """Sends to Meta CAPI using Elite Service (SDK + Redis)"""
     try:
-        # Auto-construct fbc from fbclid if needed
-        fbc_cookie = None
-        if fbclid:
+        # Auto-construct fbc from fbclid if needed (unless passed explicitly)
+        fbc_cookie = fbc
+        if not fbc_cookie and fbclid:
             # Standard Meta click ID format: fb.1.timestamp.fbclid
             timestamp = int(time.time())
             fbc_cookie = f"fb.1.{timestamp}.{fbclid}"

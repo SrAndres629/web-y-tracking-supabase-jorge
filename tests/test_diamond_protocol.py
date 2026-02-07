@@ -52,6 +52,7 @@ def test_dlq_logic():
     add_to_retry_queue("TestEvent", {"data": "test"})
     assert os.path.exists(QUEUE_FILE)
     with open(QUEUE_FILE, "r") as f:
+        # Status logged internally
         import json
         data = json.load(f)
         assert len(data) == 1
