@@ -2,6 +2,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 import logging
+import re
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """
@@ -16,8 +17,17 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     def __init__(self, app):
         super().__init__(app)
         self.logger = logging.getLogger("uvicorn.error")
+        # List of common bots/crawlers/scrapers
+        self.bot_pattern = re.compile(
+            r"(googlebot|bingbot|yandexbot|duckduckbot|slurp|baiduspider|facebookexternalhit|twitterbot|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest\/0\.|slackbot|vkShare|W3C_Validator|uptime|monitor|crawl|spider|scraper|bot)",
+            re.IGNORECASE
+        )
 
     async def dispatch(self, request: Request, call_next):
+        # 🕵️ BOT DEFENSE: Mark request as human or bot
+        user_agent = request.headers.get("user-agent", "")
+        request.state.is_human = not bool(self.bot_pattern.search(user_agent))
+        
         response = await call_next(request)
         
         # 1. Force HTTPS (HSTS) - 1 Year Cache

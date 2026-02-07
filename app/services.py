@@ -2,6 +2,7 @@ import os
 import httpx
 import logging
 import json
+import time
 from typing import Optional, Dict, Any, List
 from app.config import settings
 from app.database import get_db_connection
@@ -27,7 +28,9 @@ class ContentManager:
     Layer 3: Supabase DB (Fallback)
     """
     _ram_cache: Dict[str, Any] = {}
+    _cache_times: Dict[str, float] = {}
     CACHE_TTL = 3600 # 1 hour
+    STALE_THRESHOLD = 300 # 5 minutes
     
     # 🛡️ DEFENSIVE FALLBACKS (In case DB is empty/broken)
     _FALLBACKS = {
@@ -81,42 +84,60 @@ class ContentManager:
 
     @classmethod
     async def get_content(cls, key: str) -> Any:
-        """Entry point for all dynamic content - Highly Optimized (TTFB 0ms)"""
+        """Entry point for all dynamic content - SWR Optimized (TTFB 0ms)"""
+        current_time = time.time()
+        
         # 1. ⚡ RAM FIRST (0ms)
         if key in cls._ram_cache:
+            # Check if stale
+            last_fetch = cls._cache_times.get(key, 0)
+            if current_time - last_fetch > cls.STALE_THRESHOLD:
+                logger.info(f"🔄 [SWR] RAM stale for '{key}'. Triggering background refresh...")
+                import asyncio
+                asyncio.create_task(cls._refresh_in_background(key))
             return cls._ram_cache[key]
         
         # 2. 🌀 REDIS SECOND (<15ms)
         try:
+            # Get TTL from Redis to check staleness
+            # For simplicity, we'll just check our internal timer or Redis TTL
             cached = await redis_cache.get_json(f"content:{key}")
             if cached:
-                # Basic validation for services_config
-                if key == "services_config" and isinstance(cached, list) and cached and "badges" not in cached[0]:
-                    logger.warning("⚠️ Redis cache content for services_config is incomplete. Ignoring.")
-                else:
-                    cls._ram_cache[key] = cached
-                    return cached
-        except:
-            pass
+                cls._ram_cache[key] = cached
+                cls._cache_times[key] = current_time
+                # Trigger bg refresh if we don't know when it was last fetched or if old
+                import asyncio
+                asyncio.create_task(cls._refresh_in_background(key))
+                return cached
+        except Exception as e:
+            logger.debug(f"Redis skip: {e}")
             
         # 3. 🧬 DATABASE LAST (Source of Truth)
-        content = cls._fetch_from_db(key)
-        
-        # 🛡️ SILICON VALLEY VALIDATION: Ensure DB data has the expected schema
+        content = await cls._refresh_in_background(key)
         if content:
-            content = cls._deep_validate(key, content)
-            if content:
-                # Update L1/L2 caches
-                cls._ram_cache[key] = content
-                try:
-                    await redis_cache.set_json(f"content:{key}", content, expire=cls.CACHE_TTL)
-                except:
-                    pass
-                return content
+            return content
             
         # 4. 🛟 EMERGENCY FALLBACK
         logger.warning(f"🛟 CMS Schema Mismatch or Empty for '{key}'. Using hardcoded Golden Fallbacks.")
         return cls._FALLBACKS.get(key)
+
+    @classmethod
+    async def _refresh_in_background(cls, key: str) -> Optional[Any]:
+        """Fetch from DB and update all caches"""
+        t0 = time.time()
+        content = cls._fetch_from_db(key)
+        if content:
+            content = cls._deep_validate(key, content)
+            if content:
+                cls._ram_cache[key] = content
+                cls._cache_times[key] = time.time()
+                try:
+                    await redis_cache.set_json(f"content:{key}", content, expire=cls.CACHE_TTL)
+                    logger.debug(f"✅ [SWR] Cache updated for '{key}' ({int((time.time()-t0)*1000)}ms)")
+                except:
+                    pass
+                return content
+        return None
 
     @classmethod
     def _deep_validate(cls, key: str, content: Any) -> Optional[Any]:

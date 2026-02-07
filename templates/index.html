@@ -87,10 +87,15 @@
                     class="hero-border absolute -inset-1 bg-gradient-to-br from-luxury-gold/20 via-transparent to-luxury-gold/10 rounded-2xl opacity-0">
                 </div>
 
-                <img srcset="/static/images/jorge_hero_new.webp 800w, /static/images/jorge_hero_premium.webp 1200w"
-                    sizes="(max-width: 600px) 480px, 100vw" alt="Jorge Aguirre Flores - Especialista en Microblading"
-                    class="relative rounded-2xl shadow-2xl border border-luxury-gold/20 w-full max-w-md mx-auto aspect-[4/5] object-cover animate-fade-in-right z-10"
-                    width="800" height="800" loading="eager" fetchpriority="high" />
+                <picture>
+                    <source srcset="/static/images/jorge_hero_new.avif" type="image/avif">
+                    <source srcset="/static/images/jorge_hero_new.webp" type="image/webp">
+                    <img srcset="/static/images/jorge_hero_new.webp 800w, /static/images/jorge_hero_premium.webp 1200w"
+                        sizes="(max-width: 600px) 480px, 100vw"
+                        alt="Jorge Aguirre Flores - Especialista en Microblading"
+                        class="relative rounded-2xl shadow-2xl border border-luxury-gold/20 w-full max-w-md mx-auto aspect-[4/5] object-cover animate-fade-in-right z-10"
+                        width="800" height="800" loading="eager" fetchpriority="high" />
+                </picture>
             </div>
         </div>
     </div>
@@ -470,9 +475,14 @@
                 data-aos-delay="{{ loop.index0 * 150 }}">
                 <!-- Image Container -->
                 <div class="relative h-[280px] md:h-[320px] overflow-hidden rounded-t-2xl">
-                    <img src="{{ service.image }}"
-                        class="absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:scale-110"
-                        alt="{{ service.title }} - {{ service.subtitle }}" loading="lazy" width="400" height="320">
+                    <picture>
+                        {% set base_img = service.image | replace('.webp', '') %}
+                        <source srcset="{{ base_img }}.avif" type="image/avif">
+                        <source srcset="{{ service.image }}" type="image/webp">
+                        <img src="{{ service.image }}"
+                            class="absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:scale-110"
+                            alt="{{ service.title }} - {{ service.subtitle }}" loading="lazy" width="400" height="320">
+                    </picture>
                     <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
 
                     <!-- Badges -->
@@ -736,13 +746,3 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 <script src="https://unpkg.com/@studio-freight/lenis@1.0.29/dist/lenis.min.js"></script>
-
-<script>
-    // Initialize Lenis (Smooth Scroll)
-    const lenis = new Lenis();
-    function raf(time) {
-        lenis.raf(time);
-        requestAnimationFrame(raf);
-    }
-    requestAnimationFrame(raf);
-</script>

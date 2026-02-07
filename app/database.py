@@ -42,61 +42,61 @@ if settings.DATABASE_URL and HAS_POSTGRES:
         # Logic to append query param could go here, but usually users fix ENV.
 
 @contextmanager
-def get_db_connection():  # noqa: C901
+def get_db_connection():
     """
     Creates a SINGLE connection per request.
-    Crucial for Vercel/Supabase Transaction Pooler (Port 6543).
     Silicon Valley Protocol: 0-Latency failover & strict pool hygiene.
     """
     conn = None
     try:
-        if BACKEND == "postgres":
-            # ⚡ SERVERLESS PATTERN: Open -> Query -> Close IMMEDIATELY
-            # We use a short timeout to fail fast and allow Vercel to retry
-            conn = psycopg2.connect(
-                settings.DATABASE_URL,
-                connect_timeout=5,
-                sslmode='require'
-            )
-            yield conn
-        else:
-            # Local SQLite fallback
-            db_dir = os.path.dirname(os.path.abspath(__file__))
-            db_path = os.path.join(os.path.dirname(db_dir), "database", "local_fallback.db")
-            os.makedirs(os.path.dirname(db_path), exist_ok=True)
-            
-            conn = sqlite3.connect(db_path)
-            conn.execute("PRAGMA foreign_keys = ON")
-            yield conn
-
+        conn = _establish_connection()
+        yield conn
         if conn:
             conn.commit()
-            
     except Exception as e:
-        if conn:
-            try:
-                conn.rollback()
-            except:
-                pass
-        
-        # ELITE LOGGING: Detect common Supabase issues
-        err_msg = str(e)
-        if "timeout" in err_msg.lower():
-            logger.error("🔥 DB ERROR: Connection Timeout. Possible cold start or pooler exhaustion.")
-        elif "too many connections" in err_msg.lower():
-            logger.error("🔥 DB ERROR: Connection Exhaustion. Check pooler settings.")
-        elif "password authentication failed" in err_msg.lower():
-            logger.error("🔥 DB ERROR: Auth Failure. Check DATABASE_URL.")
-        else:
-            logger.error(f"🔥 Database Transaction Error: {err_msg}")
-        
+        _handle_db_error(conn, e)
         raise e
     finally:
-        if conn:
-            try:
-                conn.close()
-            except Exception as close_err:
-                logger.debug(f"ℹ️ Connection close cleanup: {close_err}")
+        _close_connection(conn)
+
+def _establish_connection():
+    if BACKEND == "postgres":
+        return psycopg2.connect(
+            settings.DATABASE_URL,
+            connect_timeout=5,
+            sslmode='require'
+        )
+    
+    db_dir = os.path.dirname(os.path.abspath(__file__))
+    db_path = os.path.join(os.path.dirname(db_dir), "database", "local_fallback.db")
+    os.makedirs(os.path.dirname(db_path), exist_ok=True)
+    conn = sqlite3.connect(db_path)
+    conn.execute("PRAGMA foreign_keys = ON")
+    return conn
+
+def _handle_db_error(conn, e):
+    if conn:
+        try:
+            conn.rollback()
+        except:
+            pass
+    
+    err_msg = str(e).lower()
+    if "timeout" in err_msg:
+        logger.error("🔥 DB ERROR: Connection Timeout. Possible cold start or pooler exhaustion.")
+    elif "too many connections" in err_msg:
+        logger.error("🔥 DB ERROR: Connection Exhaustion. Check pooler settings.")
+    elif "password authentication failed" in err_msg:
+        logger.error("🔥 DB ERROR: Auth Failure. Check DATABASE_URL.")
+    else:
+        logger.error(f"🔥 Database Transaction Error: {e}")
+
+def _close_connection(conn):
+    if conn:
+        try:
+            conn.close()
+        except Exception as close_err:
+            logger.debug(f"ℹ️ Connection close cleanup: {close_err}")
 
 class SQLiteCursorWrapper:
     """Adapta sintaxis Postgres (%s) a SQLite (?)"""
@@ -145,113 +145,112 @@ def get_cursor():
 # COMPATIBILITY & INIT
 # =================================================================
 
-def init_tables():  # noqa: C901
+def init_tables():
     """Crea tablas si no existen, sincronizado con init_crm_master_clean.sql v2.0"""
     try:
         with get_cursor() as cur:
-            # --- Configuración de Tipos y Defaults ---
-            if BACKEND == "postgres":
-                id_type_uuid = "UUID PRIMARY KEY DEFAULT gen_random_uuid()"
-                id_type_serial = "SERIAL PRIMARY KEY"
-                timestamp_default = "CURRENT_TIMESTAMP"
-                status_type = "lead_status DEFAULT 'new'"
-                lead_id_type = "UUID"
-                id_type_pk = id_type_uuid
-                
-                # Crear Enum en Postgres si no existe
-                cur.execute("""
-                    DO $$ BEGIN
-                        CREATE TYPE lead_status AS ENUM (
-                            'new', 'interested', 'nurturing', 'ghost', 'booked', 
-                            'client_active', 'client_loyal', 'archived'
-                        );
-                    EXCEPTION WHEN duplicate_object THEN null; END $$;
-                """)
-            else:
-                id_type_uuid = "TEXT PRIMARY KEY"
-                id_type_serial = "INTEGER PRIMARY KEY AUTOINCREMENT"
-                timestamp_default = "CURRENT_TIMESTAMP"
-                status_type = "TEXT DEFAULT 'new'"
-                lead_id_type = "TEXT"
-                id_type_pk = id_type_uuid
-
-            # Formatear y Ejecutar DDLs
-            cur.execute(queries.CREATE_TABLE_BUSINESS_KNOWLEDGE.format(
-                id_type_serial=id_type_serial, timestamp_default=timestamp_default
-            ))
-            cur.execute(queries.CREATE_INDEX_KNOWLEDGE_SLUG)
-
-            cur.execute(queries.CREATE_TABLE_VISITORS.format(
-                id_type_serial=id_type_serial, timestamp_default=timestamp_default
-            ))
-            cur.execute(queries.CREATE_INDEX_VISITORS_EXTERNAL_ID)
-
-            cur.execute(queries.CREATE_TABLE_CONTACTS.format(
-                id_type_primary_key=id_type_pk, 
-                status_type=status_type,
-                timestamp_default=timestamp_default
-            ))
-            # ... Indexes ...
-            cur.execute(queries.CREATE_INDEX_CONTACTS_WHATSAPP)
-            cur.execute(queries.CREATE_INDEX_CONTACTS_STATUS)
-            
-            # Additional Tables (Messages, Appointments, Leads, Interactions)
-            cur.execute(queries.CREATE_TABLE_MESSAGES.format(
-                id_type_primary_key=id_type_pk, timestamp_default=timestamp_default
-            ))
-            cur.execute(queries.CREATE_INDEX_MESSAGES_CONTACT_ID)
-
-            cur.execute(queries.CREATE_TABLE_APPOINTMENTS.format(
-                id_type_serial=id_type_serial, timestamp_default=timestamp_default
-            ))
-
-            cur.execute(queries.CREATE_TABLE_LEADS.format(
-                id_type_primary_key=id_type_pk, timestamp_default=timestamp_default
-            ))
-            cur.execute(queries.CREATE_INDEX_LEADS_PHONE)
-            cur.execute(queries.CREATE_INDEX_LEADS_META_ID)
-
-            cur.execute(queries.CREATE_TABLE_INTERACTIONS.format(
-                id_type_serial=id_type_serial, lead_id_type=lead_id_type, timestamp_default=timestamp_default
-            ))
-            cur.execute(queries.CREATE_INDEX_INTERACTIONS_LEAD_ID)
-            
-            # --- Column Migrations (Condensed for stability) ---
-            # Kept minimal to avoid errors during cold start
-            new_columns = [
-                ("profile_pic_url", "TEXT"),
-                ("fb_browser_id", "TEXT"),
-                ("utm_term", "TEXT"),
-                ("utm_content", "TEXT"),
-                ("status", status_type),
-                ("lead_score", "INTEGER DEFAULT 50"),
-                ("pain_point", "TEXT"),
-                ("service_interest", "TEXT"),
-                ("service_booked_date", "TIMESTAMP"),
-                ("appointment_count", "INTEGER DEFAULT 0"),
-                ("updated_at", "TIMESTAMP"),
-                ("onboarding_step", "TEXT"), 
-                ("is_admin", "BOOLEAN DEFAULT FALSE")
-            ]
-            
-            for col_name, col_type in new_columns:
-                try:
-                    if BACKEND == "postgres":
-                        cur.execute(f"ALTER TABLE contacts ADD COLUMN IF NOT EXISTS {col_name} {col_type};")
-                    else:
-                        # SQLite migration logic
-                        try:
-                            cur.execute(f"ALTER TABLE contacts ADD COLUMN {col_name} {col_type};")
-                        except Exception:
-                            pass # Column likely exists
-                except Exception:
-                    pass
-
+            config = _get_db_config()
+            _create_core_tables(cur, config)
+            _create_crm_tables(cur, config)
+            _run_column_migrations(cur, config['status_type'])
         logger.info(f"✅ Tablas sincronizadas ({BACKEND})")
         return True
     except Exception as e:
         logger.error(f"❌ Error sincronizando tablas: {e}")
         return False
+
+def _get_db_config():
+    if BACKEND == "postgres":
+        return {
+            "id_type_uuid": "UUID PRIMARY KEY DEFAULT gen_random_uuid()",
+            "id_type_serial": "SERIAL PRIMARY KEY",
+            "timestamp_default": "CURRENT_TIMESTAMP",
+            "status_type": "lead_status DEFAULT 'new'",
+            "lead_id_type": "UUID",
+            "id_type_pk": "UUID PRIMARY KEY DEFAULT gen_random_uuid()"
+        }
+    return {
+        "id_type_uuid": "TEXT PRIMARY KEY",
+        "id_type_serial": "INTEGER PRIMARY KEY AUTOINCREMENT",
+        "timestamp_default": "CURRENT_TIMESTAMP",
+        "status_type": "TEXT DEFAULT 'new'",
+        "lead_id_type": "TEXT",
+        "id_type_pk": "TEXT PRIMARY KEY"
+    }
+
+def _create_core_tables(cur, cf):
+    if BACKEND == "postgres":
+        cur.execute("""
+            DO $$ BEGIN
+                CREATE TYPE lead_status AS ENUM (
+                    'new', 'interested', 'nurturing', 'ghost', 'booked', 
+                    'client_active', 'client_loyal', 'archived'
+                );
+            EXCEPTION WHEN duplicate_object THEN null; END $$;
+        """)
+
+    cur.execute(queries.CREATE_TABLE_BUSINESS_KNOWLEDGE.format(
+        id_type_serial=cf['id_type_serial'], timestamp_default=cf['timestamp_default']
+    ))
+    cur.execute(queries.CREATE_INDEX_KNOWLEDGE_SLUG)
+
+    cur.execute(queries.CREATE_TABLE_VISITORS.format(
+        id_type_serial=cf['id_type_serial'], timestamp_default=cf['timestamp_default']
+    ))
+    cur.execute(queries.CREATE_INDEX_VISITORS_EXTERNAL_ID)
+
+def _create_crm_tables(cur, cf):
+    cur.execute(queries.CREATE_TABLE_CONTACTS.format(
+        id_type_primary_key=cf['id_type_pk'], 
+        status_type=cf['status_type'],
+        timestamp_default=cf['timestamp_default']
+    ))
+    cur.execute(queries.CREATE_INDEX_CONTACTS_WHATSAPP)
+    cur.execute(queries.CREATE_INDEX_CONTACTS_STATUS)
+    
+    cur.execute(queries.CREATE_TABLE_MESSAGES.format(
+        id_type_primary_key=cf['id_type_pk'], timestamp_default=cf['timestamp_default']
+    ))
+    cur.execute(queries.CREATE_INDEX_MESSAGES_CONTACT_ID)
+
+    cur.execute(queries.CREATE_TABLE_APPOINTMENTS.format(
+        id_type_serial=cf['id_type_serial'], timestamp_default=cf['timestamp_default']
+    ))
+
+    cur.execute(queries.CREATE_TABLE_LEADS.format(
+        id_type_primary_key=cf['id_type_pk'], timestamp_default=cf['timestamp_default']
+    ))
+    cur.execute(queries.CREATE_INDEX_LEADS_PHONE)
+    cur.execute(queries.CREATE_INDEX_LEADS_META_ID)
+
+    cur.execute(queries.CREATE_TABLE_INTERACTIONS.format(
+        id_type_serial=cf['id_type_serial'], lead_id_type=cf['lead_id_type'], timestamp_default=cf['timestamp_default']
+    ))
+    cur.execute(queries.CREATE_INDEX_INTERACTIONS_LEAD_ID)
+
+def _run_column_migrations(cur, status_type):
+    new_columns = [
+        ("profile_pic_url", "TEXT"), ("fb_browser_id", "TEXT"),
+        ("utm_term", "TEXT"), ("utm_content", "TEXT"),
+        ("status", status_type), ("lead_score", "INTEGER DEFAULT 50"),
+        ("pain_point", "TEXT"), ("service_interest", "TEXT"),
+        ("service_booked_date", "TIMESTAMP"), ("appointment_count", "INTEGER DEFAULT 0"),
+        ("updated_at", "TIMESTAMP"), ("onboarding_step", "TEXT"), 
+        ("is_admin", "BOOLEAN DEFAULT FALSE")
+    ]
+    
+    for col_name, col_type in new_columns:
+        try:
+            if BACKEND == "postgres":
+                cur.execute(f"ALTER TABLE contacts ADD COLUMN IF NOT EXISTS {col_name} {col_type};")
+            else:
+                # SQLite migration logic
+                try:
+                    cur.execute(f"ALTER TABLE contacts ADD COLUMN {col_name} {col_type};")
+                except Exception:
+                    pass # Column likely exists
+        except Exception:
+            pass
 
 # =================================================================
 # OPERATIONS (Domain Logic - Persisted)

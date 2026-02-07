@@ -253,6 +253,40 @@
     </script>
     <script defer src="/_vercel/insights/script.js"></script>
     <script defer src="/_vercel/speed-insights/script.js"></script>
+
+    <!-- 🌀 MASTER UX ENGINE: Lenis + GSAP Sync -->
+    <script>
+        window.addEventListener('scroll-init', () => {
+            const lenis = new Lenis({
+                duration: 1.2,
+                easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+                smoothWheel: true
+            });
+
+            function raf(time) {
+                lenis.raf(time);
+                requestAnimationFrame(raf);
+            }
+            requestAnimationFrame(raf);
+
+            // Sync with ScrollTrigger
+            if (typeof ScrollTrigger !== 'undefined') {
+                lenis.on('scroll', ScrollTrigger.update);
+                gsap.ticker.add((time) => {
+                    lenis.raf(time * 1000);
+                });
+                gsap.ticker.lagSmoothing(0);
+            }
+            window.lenis = lenis;
+        });
+
+        // Trigger init when libraries are ready
+        window.addEventListener('load', () => {
+            if (typeof Lenis !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('scroll-init'));
+            }
+        });
+    </script>
 </body>
 
 </html>

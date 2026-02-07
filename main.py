@@ -20,6 +20,7 @@ import uvicorn
 import logging
 import gc
 import os
+import time
 
 # Configuración de Logging prioritaria
 logging.basicConfig(
@@ -63,6 +64,12 @@ async def lifespan(app: FastAPI):
     """Ciclo de vida de la aplicación con manejo de contexto"""
     # Startup - OPTIMIZED: No blocking DB init
     logger.info("🚀 Iniciando Jorge Aguirre Flores Web v2.1.1 (Extreme Performance Mode)")
+    
+    # 0. Process Dead Letter Queue (DLQ) for Meta CAPI
+    from app.retry_queue import process_retry_queue
+    from fastapi import BackgroundTasks
+    import asyncio
+    asyncio.create_task(asyncio.to_thread(process_retry_queue))
     
     # 1. Initialize Sentry (Parallelizable/Non-blocking)
     init_sentry()

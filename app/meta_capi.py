@@ -18,8 +18,10 @@ import time
 from typing import Optional, Dict, Any, List
 from dataclasses import dataclass, field
 from enum import Enum
+import hashlib
 
 from app.config import settings
+from app.retry_queue import add_to_retry_queue
 
 logger = logging.getLogger(__name__)
 
@@ -106,48 +108,52 @@ class EnhancedUserData:
     gender: Optional[str] = None      # m or f
     date_of_birth: Optional[str] = None  # YYYYMMDD
     
-    def to_sdk_user_data(self) -> "UserData":  # noqa: C901
+    def to_sdk_user_data(self) -> "UserData":
         """Convert to SDK UserData object with automatic hashing"""
         if not SDK_AVAILABLE:
             raise RuntimeError("Meta SDK not available")
         
         user_data = UserData()
-        
-        # Core identifiers (not hashed)
+        self._set_basic_identifiers(user_data)
+        self._set_fb_identifiers(user_data)
+        self._set_contact_info(user_data)
+        self._set_personal_info(user_data)
+        self._set_location_info(user_data)
+        self._set_demographics(user_data)
+        return user_data
+
+    def _set_basic_identifiers(self, user_data: "UserData"):
         if self.client_ip_address:
             user_data.client_ip_address = self.client_ip_address
         if self.client_user_agent:
             user_data.client_user_agent = self.client_user_agent
-        
-        # External ID (hashed by SDK)
         if self.external_id:
             user_data.external_id = self.external_id
-            
-        # Facebook cookies (not hashed)
+
+    def _set_fb_identifiers(self, user_data: "UserData"):
         if self.fbc:
             user_data.fbc = self.fbc
         if self.fbp:
             user_data.fbp = self.fbp
         if self.fb_login_id:
             user_data.fb_login_id = self.fb_login_id
-            
-        # Contact (hashed by SDK)
+
+    def _set_contact_info(self, user_data: "UserData"):
         if self.email:
             user_data.email = self.email.lower().strip()
         if self.phone:
-            # Normalize phone: ensure country code
             phone_clean = "".join(filter(str.isdigit, self.phone))
             if not phone_clean.startswith("591"):
                 phone_clean = "591" + phone_clean
             user_data.phone = phone_clean
-            
-        # Personal info (hashed by SDK)
+
+    def _set_personal_info(self, user_data: "UserData"):
         if self.first_name:
             user_data.first_name = self.first_name.lower().strip()
         if self.last_name:
             user_data.last_name = self.last_name.lower().strip()
-            
-        # Location (hashed by SDK)
+
+    def _set_location_info(self, user_data: "UserData"):
         if self.city:
             user_data.city = self.city.lower().replace(" ", "")
         if self.state:
@@ -156,14 +162,12 @@ class EnhancedUserData:
             user_data.zip_code = self.zip_code
         if self.country:
             user_data.country_code = self.country.lower()
-            
-        # Demographics
+
+    def _set_demographics(self, user_data: "UserData"):
         if self.gender:
             user_data.gender = self.gender.lower()[0] if self.gender else None
         if self.date_of_birth:
             user_data.date_of_birth = self.date_of_birth
-            
-        return user_data
 
 
 # =================================================================
@@ -233,7 +237,7 @@ class EliteMetaCAPIService:
             self._deduplicate = lambda x, y: True  # Always allow if no cache
             self._cache_enabled = False
     
-    def send_event(  # noqa: C901
+    def send_event(
         self,
         event_name: str,
         event_id: str,
@@ -242,81 +246,58 @@ class EliteMetaCAPIService:
         custom_data: Optional[EnhancedCustomData] = None,
         event_time: Optional[int] = None
     ) -> Dict[str, Any]:
-        """
-        Send event to Meta CAPI using official SDK.
-        
-        Args:
-            event_name: Meta standard event name
-            event_id: Unique ID for deduplication
-            event_source_url: Page URL where event occurred
-            user_data: Enhanced user data object
-            custom_data: Optional custom data object
-            event_time: Unix timestamp (defaults to now)
-            
-        Returns:
-            Response dict with status and details
-        """
-        
-        # Sandbox mode check
+        """Send event to Meta CAPI using official SDK."""
+        # 1. Guards
         if self.sandbox_mode:
             logger.info(f"🛡️ [SANDBOX] {event_name} intercepted")
             return {"status": "sandbox", "event_id": event_id}
         
-        # Deduplication check (Redis)
         if not self._deduplicate(event_id, event_name):
             logger.info(f"🔄 [DEDUP] Skipped duplicate {event_name}: {event_id[:16]}...")
             return {"status": "duplicate", "event_id": event_id}
         
-        # SDK availability check
         if not SDK_AVAILABLE:
-            logger.warning(f"⚠️ SDK unavailable - falling back to HTTP")
-            return self._fallback_http_send(
-                event_name, event_id, event_source_url, user_data, custom_data
-            )
+            return self._fallback_http_send(event_name, event_id, event_source_url, user_data, custom_data)
         
+        # 2. Build & Execute
         try:
-            # Build Event object
-            event = Event(
-                event_name=event_name,
-                event_time=event_time or int(time.time()),
-                event_id=event_id,
-                event_source_url=event_source_url,
-                action_source=ActionSource.WEBSITE,
-                user_data=user_data.to_sdk_user_data()
-            )
-            
-            # Add custom data if provided
-            if custom_data:
-                event.custom_data = custom_data.to_sdk_custom_data()
-            
-            # Build and execute request
-            request = EventRequest(
-                pixel_id=self.pixel_id,
-                events=[event]
-            )
-            
-            # Add test event code if configured
-            if self.test_event_code:
-                request.test_event_code = self.test_event_code
-            
-            # Execute (synchronous)
+            request = self._build_event_request(event_name, event_id, event_source_url, user_data, custom_data, event_time)
             response = request.execute()
             
             logger.info(f"✅ [META CAPI SDK] {event_name} sent successfully")
             return {
-                "status": "success",
-                "event_id": event_id,
+                "status": "success", "event_id": event_id,
                 "events_received": response.get("events_received", 1),
                 "fbtrace_id": response.get("fbtrace_id")
             }
-            
         except Exception as e:
-            logger.error(f"❌ [META CAPI SDK] Error: {e}")
-            return {
-                "status": "error",
-                "event_id": event_id,
-                "error": str(e)
-            }
+            return self._handle_capi_error(e, event_name, event_id, event_source_url, user_data, custom_data)
+
+    def _build_event_request(self, event_name, event_id, url, user_data, custom_data, event_time):
+        event = Event(
+            event_name=event_name,
+            event_time=event_time or int(time.time()),
+            event_id=event_id,
+            event_source_url=url,
+            action_source=ActionSource.WEBSITE,
+            user_data=user_data.to_sdk_user_data()
+        )
+        if custom_data:
+            event.custom_data = custom_data.to_sdk_custom_data()
+        
+        request = EventRequest(pixel_id=self.pixel_id, events=[event])
+        if self.test_event_code:
+            request.test_event_code = self.test_event_code
+        return request
+
+    def _handle_capi_error(self, e, name, event_id, url, user_data, custom_data):
+        logger.error(f"❌ [META CAPI SDK] Error: {e}")
+        add_to_retry_queue(name, {
+            "url": url, "user_data": vars(user_data),
+            "custom_data": vars(custom_data) if custom_data else None,
+            "event_id": event_id
+        })
+        return {"status": "queued", "event_id": event_id, "error": str(e)}
     
     def _fallback_http_send(
         self,
@@ -456,24 +437,9 @@ elite_capi = EliteMetaCAPIService()
 # QUICK ACCESS FUNCTIONS (For backward compatibility)
 # =================================================================
 
-def send_elite_event(  # noqa: C901
-    event_name: str,
-    event_id: str,
-    url: str,
-    client_ip: str,
-    user_agent: str,
-    external_id: Optional[str] = None,
-    fbc: Optional[str] = None,
-    fbp: Optional[str] = None,
-    phone: Optional[str] = None,
-    email: Optional[str] = None,
-    first_name: Optional[str] = None,
-    last_name: Optional[str] = None,
-    city: Optional[str] = None,
-    state: Optional[str] = None,
-    zip_code: Optional[str] = None,
-    country: Optional[str] = "bo",
-    custom_data: Optional[Dict[str, Any]] = None
+def send_elite_event(
+    event_name: str, event_id: str, url: str, client_ip: str, user_agent: str,
+    **kwargs
 ) -> Dict[str, Any]:
     """
     Quick function to send events with minimal boilerplate.
@@ -482,19 +448,20 @@ def send_elite_event(  # noqa: C901
     user_data = EnhancedUserData(
         client_ip_address=client_ip,
         client_user_agent=user_agent,
-        external_id=external_id,
-        fbc=fbc,
-        fbp=fbp,
-        phone=phone,
-        email=email,
-        first_name=first_name,
-        last_name=last_name,
-        city=city,
-        state=state,
-        zip_code=zip_code,
-        country=country
+        external_id=kwargs.get("external_id"),
+        fbc=kwargs.get("fbc"),
+        fbp=kwargs.get("fbp"),
+        phone=kwargs.get("phone"),
+        email=kwargs.get("email"),
+        first_name=kwargs.get("first_name"),
+        last_name=kwargs.get("last_name"),
+        city=kwargs.get("city"),
+        state=kwargs.get("state"),
+        zip_code=kwargs.get("zip_code"),
+        country=kwargs.get("country", "bo")
     )
     
+    custom_data = kwargs.get("custom_data")
     enhanced_custom = None
     if custom_data:
         enhanced_custom = EnhancedCustomData(
@@ -504,9 +471,6 @@ def send_elite_event(  # noqa: C901
         )
     
     return elite_capi.send_event(
-        event_name=event_name,
-        event_id=event_id,
-        event_source_url=url,
-        user_data=user_data,
-        custom_data=enhanced_custom
+        event_name=event_name, event_id=event_id, event_source_url=url,
+        user_data=user_data, custom_data=enhanced_custom
     )

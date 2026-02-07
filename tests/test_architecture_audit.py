@@ -22,8 +22,7 @@ FORBIDDEN_TERMS = [
 IGNORE_DIRS = {".git", "__pycache__", "venv", "node_modules", ".pytest_cache", ".hypothesis", ".vercel", ".cursor", "scripts"}
 IGNORE_FILES = {
     "test_architecture_audit.py", "git_sync.py", "AI_CONTEXT.md", 
-    "README.md", "ENGINEERING_LOG.md", ".env", "requirements.txt",
-    "setup_cloudflare_rules.py", "test_redis_conn.py" # Maintenance scripts
+    "README.md", "ENGINEERING_LOG.md", "requirements.txt"
 }
 IGNORE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".svg", ".ico", ".css", ".map", ".json", ".log"}
 

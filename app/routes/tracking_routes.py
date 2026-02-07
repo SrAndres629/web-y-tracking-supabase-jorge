@@ -148,202 +148,107 @@ class TrackingEvent(BaseModel):
 
 @router.post("/track/event")
 @limiter.limit("60/minute")
-async def track_event(  # noqa: C901
-    event: TrackingEvent, 
-    request: Request, 
-    background_tasks: BackgroundTasks,
-    # Auto-capture _fbp cookie for EMQ boost
+async def track_event(
+    event: TrackingEvent, request: Request, background_tasks: BackgroundTasks,
     fbp: Optional[str] = Cookie(default=None, alias="_fbp"),
     fbc: Optional[str] = Cookie(default=None, alias="_fbc")
 ):
-    """
-    Receives frontend events, responds INSTANTLY, processes in background.
+    """Event ingestion with instant response and background processing."""
+    # 1. Context & Identity
+    ctx = _get_tracking_context(request, event, fbp, fbc)
     
-    The magic: background_tasks.add_task() runs AFTER the HTTP response.
-    """
-    # 🛡️ ROAS PROTECTION: Real IP Extraction (Cloudflare/Proxy Support)
-    forwarded = request.headers.get("x-forwarded-for")
-    cf_ip = request.headers.get("cf-connecting-ip")
-    
-    if cf_ip:
-        client_ip = cf_ip
-    elif forwarded:
-        client_ip = forwarded.split(",")[0].strip()
-    else:
-        client_ip = request.client.host
-        
-    user_agent = request.headers.get("user-agent", "unknown")
-    
-    # Extract Data
-    custom_data = event.custom_data or {}
-    logger.info(f"📥 Event: {event.event_name} | IP: {client_ip}")
-    
-    fbclid = custom_data.get('fbclid')
-    external_id = event.user_data.get('external_id')
-    
-    # Inject cookies into custom_data for EMQ boost
-    if fbp:
-        custom_data['fbp'] = fbp
-    if fbc:
-        custom_data['fbc'] = fbc
-        # Extract fbclid from fbc cookie if not present
-        if not fbclid and fbc.startswith("fb.1."):
-            parts = fbc.split(".")
-            if len(parts) >= 4:
-                fbclid = parts[3]
-
-    # Extract UTMs
-    utm_data = {
-        'utm_source': custom_data.get('utm_source'),
-        'utm_medium': custom_data.get('utm_medium'),
-        'utm_campaign': custom_data.get('utm_campaign'),
-        'utm_term': custom_data.get('utm_term'),
-        'utm_content': custom_data.get('utm_content')
-    }
-    
-    # =================================================================
-    # BACKGROUND TASK QUEUE (Executes AFTER response is sent)
-    # =================================================================
-    
-    # 1. Save Visitor (Persistence)
+    # 2. Basic Persistence (Background)
     background_tasks.add_task(
         bg_save_visitor,
-        external_id=external_id or "anon",
-        fbclid=fbclid,
-        client_ip=client_ip,
-        user_agent=user_agent,
-        source=event.event_name,
-        utm_data=utm_data
+        external_id=ctx['ext_id'] or "anon",
+        fbclid=ctx['fb_id'], client_ip=ctx['ip'], user_agent=ctx['ua'],
+        source=event.event_name, utm_data=ctx['utm']
+    )
+    
+    # 3. Lead Sync (Background)
+    if event.event_name == 'Lead' and ctx['phone']:
+        _queue_lead_sync(background_tasks, event, ctx)
+    
+    # 4. Meta CAPI (QStash / Local)
+    if await _validate_human(event, ctx):
+        await _dispatch_to_capi(background_tasks, event, ctx)
+    else:
+        return {"status": "success", "message": "Signal filtered"}
+    
+    # 5. External Hubs (Background)
+    _queue_external_hubs(background_tasks, event, ctx)
+    
+    return JSONResponse(
+        content={"status": "queued", "event_id": event.event_id},
+        headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"}
     )
 
-    # 2. Save Lead (If applicable)
-    phone = custom_data.get('phone') or event.user_data.get('phone')
-    email = custom_data.get('email') or event.user_data.get('email')
+def _get_tracking_context(request, event, fbp, fbc):
+    forwarded = request.headers.get("x-forwarded-for")
+    cf_ip = request.headers.get("cf-connecting-ip")
+    ip = cf_ip or (forwarded.split(",")[0].strip() if forwarded else request.client.host)
     
-    if event.event_name == 'Lead' and phone:
-        contact_payload = {
-            'phone': phone,
-            'name': custom_data.get('name') or event.user_data.get('name'),
-            'fbclid': fbclid,
-            'fbp': fbp,
-            'status': 'interested',
-            'service_interest': custom_data.get('service_type') or utm_data.get('utm_campaign'),
-            **utm_data
+    custom = event.custom_data or {}
+    fb_id = custom.get('fbclid')
+    if not fb_id and fbc and fbc.startswith("fb.1."):
+        parts = fbc.split(".")
+        if len(parts) >= 4: fb_id = parts[3]
+        
+    return {
+        "ip": ip, "ua": request.headers.get("user-agent", "unknown"),
+        "fb_id": fb_id, "ext_id": event.user_data.get('external_id'),
+        "fbp": fbp or custom.get('fbp'), "fbc": fbc or custom.get('fbc'),
+        "phone": normalize_pii(custom.get('phone') or event.user_data.get('phone'), "phone"),
+        "email": normalize_pii(custom.get('email') or event.user_data.get('email'), "email"),
+        "utm": {
+            'utm_source': custom.get('utm_source'), 'utm_medium': custom.get('utm_medium'),
+            'utm_campaign': custom.get('utm_campaign'), 'utm_term': custom.get('utm_term'),
+            'utm_content': custom.get('utm_content')
         }
-        background_tasks.add_task(bg_upsert_contact, contact_payload)
+    }
 
-    # =================================================================
-    # 3. Send to Meta CAPI (OFFLOADED TO QSTASH)
-    # =================================================================
-    
-    # 🛡️ BOT PROTECTION (Silicon Valley Defense)
-    turnstile_token = custom_data.get("turnstile_token")
-    if not await validate_turnstile(turnstile_token):
-        logger.warning(f"🛡️ Bot/Invalid request blocked: {event.event_name}")
-        # Return success but don't process (Silent Drop)
-        return {"status": "success", "message": "Signal received (filtered)"}
+async def _validate_human(event, ctx):
+    token = (event.custom_data or {}).get("turnstile_token")
+    if not await validate_turnstile(token):
+        logger.warning(f"🛡️ Filtered: {event.event_name}")
+        return False
+    return True
 
-    # 🧼 DATA HYGIENE (PII Normalization)
-    if email: email = normalize_pii(email, "email")
-    if phone: phone = normalize_pii(phone, "phone")
+def _queue_lead_sync(bt, event, ctx):
+    payload = {
+        'phone': ctx['phone'], 'fbclid': ctx['fb_id'], 'fbp': ctx['fbp'], 'status': 'interested',
+        'name': (event.custom_data or {}).get('name') or event.user_data.get('name'),
+        'service_interest': (event.custom_data or {}).get('service_type') or ctx['utm'].get('utm_campaign'),
+        **ctx['utm']
+    }
+    bt.add_task(bg_upsert_contact, payload)
 
-    qstash_payload = {
-        "event_name": event.event_name,
-        "event_id": event.event_id,
-        "event_source_url": event.event_source_url,
-        "client_ip": client_ip,
-        "user_agent": user_agent,
-        "external_id": external_id,
-        "fbc": fbc,
-        "fbp": fbp,
-        "phone": phone,
-        "email": email,
+async def _dispatch_to_capi(bt, event, ctx):
+    payload = {
+        "event_name": event.event_name, "event_id": event.event_id, "event_source_url": event.event_source_url,
+        "client_ip": ctx['ip'], "user_agent": ctx['ua'], "external_id": ctx['ext_id'],
+        "fbc": ctx['fbc'], "fbp": ctx['fbp'], "phone": ctx['phone'], "email": ctx['email'],
         "first_name": event.user_data.get('fn') or event.user_data.get('first_name'),
         "last_name": event.user_data.get('ln') or event.user_data.get('last_name'),
         "city": event.user_data.get('ct') or event.user_data.get('city'),
         "state": event.user_data.get('st') or event.user_data.get('state'),
         "zip_code": event.user_data.get('zp') or event.user_data.get('zip_code'),
-        "country": event.user_data.get('country'),
-        "custom_data": custom_data,
-        "utm_data": utm_data
+        "country": event.user_data.get('country'), "custom_data": event.custom_data, "utm_data": ctx['utm']
     }
+    if not await publish_to_qstash(payload):
+        bt.add_task(bg_send_meta_event, **payload)
 
-    # 🚀 RELIABILITY: Offload to QStash
-    sent_to_queue = await publish_to_qstash(qstash_payload)
+def _queue_external_hubs(bt, event, ctx):
+    # Webhook
+    if event.event_name in ['Lead', 'ViewContent', 'Contact', 'Purchase', 'SliderInteraction']:
+        payload = event.model_dump()
+        payload['utm_data'] = ctx['utm']
+        bt.add_task(bg_send_webhook, payload)
     
-    if not sent_to_queue:
-        # Fallback to local background task if QStash fails
-        logger.warning(f"⚠️ QStash failed/skipped. Using local background task for {event.event_name}")
-        background_tasks.add_task(
-            bg_send_meta_event,
-            phone=phone,
-            email=email,
-            first_name=event.user_data.get('fn') or event.user_data.get('first_name'),
-            last_name=event.user_data.get('ln') or event.user_data.get('last_name'),
-            city=event.user_data.get('ct') or event.user_data.get('city'),
-            state=event.user_data.get('st') or event.user_data.get('state'),
-            zip_code=event.user_data.get('zp') or event.user_data.get('zip_code'),
-            country=event.user_data.get('country'),
-            custom_data=custom_data,
-            # Pass original payload data
-            event_name=event.event_name,
-            event_id=event.event_id,
-            event_source_url=event.event_source_url,
-            client_ip=client_ip,
-            user_agent=user_agent,
-            external_id=external_id,
-            fbc=fbc,
-            fbp=fbp
-        )
-    
-    # 4. Send to n8n (Important events only)
-    IMPORTANT_EVENTS = ['Lead', 'ViewContent', 'Contact', 'Purchase', 'SliderInteraction']
-    if event.event_name in IMPORTANT_EVENTS:
-        webhook_payload = event.model_dump()
-        webhook_payload['utm_data'] = utm_data
-        background_tasks.add_task(bg_send_webhook, webhook_payload)
-        
-    # 5. Dual Reporting (RudderStack CDP)
-    # Sends detailed event context to Data Plane for routing (GA4, Mixpanel, etc)
-    rudder_properties = {
-        "event_id": event.event_id,
-        "url": event.event_source_url,
-        "fbclid": fbclid,
-        "fbp": fbp,
-        "fbc": fbc,
-        **utm_data
-    }
-    if custom_data:
-        rudder_properties.update(custom_data)
-        
-    rudder_context = {
-        "ip": client_ip,
-        "userAgent": user_agent,
-        "externalId": external_id
-    }
-    
-    background_tasks.add_task(
-        bg_send_rudderstack_event,
-        user_id=external_id or "anon",
-        event_name=event.event_name,
-        properties=rudder_properties,
-        context=rudder_context
-    )
-    
-    # 🚀 INSTANT RESPONSE (Background tasks run after this)
-    # INFRASTRUCTURE DEFENSE: Explicit Anti-Cache Headers
-    return JSONResponse(
-        content={
-            "status": "queued", 
-            "mode": "fastapi_background", 
-            "event_id": event.event_id
-        },
-        headers={
-            "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
-            "Pragma": "no-cache",
-            "Expires": "0"
-        }
-    )
+    # RudderStack
+    props = {"event_id": event.event_id, "url": event.event_source_url, "fbclid": ctx['fb_id'], "fbp": ctx['fbp'], "fbc": ctx['fbc'], **ctx['utm']}
+    if event.custom_data: props.update(event.custom_data)
+    bt.add_task(bg_send_rudderstack_event, ctx['ext_id'] or "anon", event.event_name, props, {"ip": ctx['ip'], "userAgent": ctx['ua'], "externalId": ctx['ext_id']})
 
 
 # =================================================================

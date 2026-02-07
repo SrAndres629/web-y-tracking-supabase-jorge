@@ -1,10 +1,16 @@
 import requests
 import json
+import logging
+import os
 
-# --- CONFIGURATION (Same as git_sync.py) ---
-CLOUDFLARE_ZONE_ID = "19bd9bdd7abf8f74b4e95d75a41e8583"
-CLOUDFLARE_API_KEY = "6094d6fa8c138d93409de2f59a3774cd8795a"
-CLOUDFLARE_EMAIL = "Acordero629@gmail.com"
+# --- LOGGING SETUP ---
+logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+logger = logging.getLogger(__name__)
+
+# --- CONFIGURATION (Load from ENV for security) ---
+CLOUDFLARE_ZONE_ID = os.getenv("CLOUDFLARE_ZONE_ID", "19bd9bdd7abf8f74b4e95d75a41e8583")
+CLOUDFLARE_API_KEY = os.getenv("CLOUDFLARE_API_KEY")
+CLOUDFLARE_EMAIL = os.getenv("CLOUDFLARE_EMAIL", "Acordero629@gmail.com")
 # -------------------------------------------------------
 
 BASE_URL = "https://api.cloudflare.com/client/v4"
@@ -15,20 +21,20 @@ HEADERS = {
 }
 
 def list_page_rules():
-    print("🔍 Listing existing Page Rules...")
+    logger.info("🔍 Listing existing Page Rules...")
     url = f"{BASE_URL}/zones/{CLOUDFLARE_ZONE_ID}/pagerules"
     response = requests.get(url, headers=HEADERS)
     if response.status_code == 200:
         rules = response.json().get("result", [])
         for rule in rules:
-            print(f"   - Rule: {rule['targets'][0]['constraint']['value']} -> {[a['id'] for a in rule['actions']]}")
+            logger.info(f"   - Rule: {rule['targets'][0]['constraint']['value']} -> {[a['id'] for a in rule['actions']]}")
         return rules
     else:
-        print(f"❌ Error listing rules: {response.text}")
+        logger.error(f"❌ Error listing rules: {response.text}")
         return []
 
 def create_cache_everything_rule():
-    print("\n🚀 Activating 'Cache Everything' (Silicon Valley Standard)...")
+    logger.info("\n🚀 Activating 'Cache Everything' (Silicon Valley Standard)...")
     url = f"{BASE_URL}/zones/{CLOUDFLARE_ZONE_ID}/pagerules"
     
     # Rule: Cache Everything for the domain
@@ -64,14 +70,14 @@ def create_cache_everything_rule():
     data = response.json()
     
     if data.get("success"):
-        print("✅ SUCCESS: Cache Everything rule is ACTIVE.")
-        print("🌍 Your site is now served from the Edge.")
+        logger.info("✅ SUCCESS: Cache Everything rule is ACTIVE.")
+        logger.info("🌍 Your site is now served from the Edge.")
     else:
-        print(f"⚠️ Failed to create rule: {data.get('errors')}")
-        print(f"📄 Messages: {data.get('messages')}")
+        logger.warning(f"⚠️ Failed to create rule: {data.get('errors')}")
+        logger.info(f"📄 Messages: {data.get('messages')}")
 
 def create_vercel_bypass_rule():
-    print("\n🛡️ Securing Vercel Analytics (Bypass Cache)...")
+    logger.info("\n🛡️ Securing Vercel Analytics (Bypass Cache)...")
     url = f"{BASE_URL}/zones/{CLOUDFLARE_ZONE_ID}/pagerules"
     
     payload = {
@@ -101,9 +107,9 @@ def create_vercel_bypass_rule():
     data = response.json()
     
     if data.get("success"):
-        print("✅ SUCCESS: Vercel Analytics safeguarded.")
+        logger.info("✅ SUCCESS: Vercel Analytics safeguarded.")
     else:
-        print(f"⚠️ Failed to create Vercel rule: {data.get('errors')}")
+        logger.warning(f"⚠️ Failed to create Vercel rule: {data.get('errors')}")
 
 if __name__ == "__main__":
     current_rules = list_page_rules()
@@ -115,7 +121,7 @@ if __name__ == "__main__":
         if "jorgeaguirreflores.com/*" in target:
             actions = [a['id'] for a in rule['actions']]
             if "cache_level" in actions:
-                print(f"ℹ️ Rule already exists for {target}. Skipping creation.")
+                logger.info(f"Rule already exists for {target}. Skipping creation.")
                 exists = True
                 break
     
@@ -127,7 +133,7 @@ if __name__ == "__main__":
     for rule in current_rules:
         target = rule['targets'][0]['constraint']['value']
         if "_vercel/*" in target:
-            print(f"ℹ️ Rule already exists for {target}. Skipping.")
+            logger.info(f"Rule already exists for {target}. Skipping.")
             vercel_exists = True
             break
             
