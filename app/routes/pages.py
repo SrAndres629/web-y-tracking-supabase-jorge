@@ -165,22 +165,36 @@ def _get_hero_content(params) -> dict:
     return content
 
 async def _resolve_fbclid_full(request, fbc_cookie, external_id):
-    # 1. URL -> 2. Cookie -> 3. Cache -> 4. DB
+    """
+    Resolves FBCLID with zero-latency priority.
+    1. URL (Immediate)
+    2. Cookie (Immediate)
+    3. Redis Cache (Fast - <15ms)
+    4. (SKIP) DB lookup is too slow for initial render (approx 1-2s delay)
+    """
+    # 1. URL Parameter (highest priority)
     fbclid = request.query_params.get('fbclid')
-    if not fbclid and fbc_cookie and fbc_cookie.startswith("fb.1."):
-        parts = fbc_cookie.split(".")
-        if len(parts) >= 4: fbclid = parts[3]
-    
-    if not fbclid:
-        cached = get_cached_visitor(external_id)
-        if cached: fbclid = cached.get("fbclid")
+    if fbclid:
+        return fbclid
         
-    if not fbclid:
-        try:
-            from starlette.concurrency import run_in_threadpool
-            fbclid = await run_in_threadpool(get_visitor_fbclid, external_id)
-        except: fbclid = None
-    return fbclid
+    # 2. Cookie (_fbc)
+    if fbc_cookie and fbc_cookie.startswith("fb.1."):
+        parts = fbc_cookie.split(".")
+        if len(parts) >= 4:
+            return parts[3]
+    
+    # 3. Redis Cache (L2 Identity)
+    try:
+        from app.cache import get_cached_visitor
+        cached = get_cached_visitor(external_id)
+        if cached and cached.get("fbclid"):
+            return cached.get("fbclid")
+    except Exception as e:
+        logger.debug(f"Identity cache miss: {e}")
+        
+    # 4. 🔥 SKIP DB: For new visitors, we don't block 5 seconds to find a previous ID.
+    # The background task 'bg_save_visitor' will eventually link the identity.
+    return None
 
 def _schedule_tracking(bt, request, ident, ext_id, fbclid, fbp, event_id):
     if not getattr(request.state, "is_human", True): return

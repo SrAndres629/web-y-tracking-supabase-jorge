@@ -99,8 +99,6 @@ class ContentManager:
         
         # 2. 🌀 REDIS SECOND (<15ms)
         try:
-            # Get TTL from Redis to check staleness
-            # For simplicity, we'll just check our internal timer or Redis TTL
             cached = await redis_cache.get_json(f"content:{key}")
             if cached:
                 cls._ram_cache[key] = cached
@@ -112,31 +110,38 @@ class ContentManager:
         except Exception as e:
             logger.debug(f"Redis skip: {e}")
             
-        # 3. 🧬 DATABASE LAST (Source of Truth)
-        content = await cls._refresh_in_background(key)
-        if content:
-            return content
-            
-        # 4. 🛟 EMERGENCY FALLBACK
-        logger.warning(f"🛟 CMS Schema Mismatch or Empty for '{key}'. Using hardcoded Golden Fallbacks.")
+        # 3. 🧬 DATABASE / FALLBACK (Zero-Latency Guarantee)
+        # Instead of awaiting the DB (slow), we return the Golden Fallback
+        # and trigger a background update to eventually replace it.
+        logger.info(f"🧪 [SWR] First hit for '{key}'. Using fallback + triggering async fetch.")
+        import asyncio
+        asyncio.create_task(cls._refresh_in_background(key))
+        
         return cls._FALLBACKS.get(key)
 
     @classmethod
     async def _refresh_in_background(cls, key: str) -> Optional[Any]:
         """Fetch from DB and update all caches"""
+        # Run DB fetch in a thread pool to avoid blocking the event loop
+        import asyncio
+        from starlette.concurrency import run_in_threadpool
+        
         t0 = time.time()
-        content = cls._fetch_from_db(key)
-        if content:
-            content = cls._deep_validate(key, content)
+        try:
+            content = await run_in_threadpool(cls._fetch_from_db, key)
             if content:
-                cls._ram_cache[key] = content
-                cls._cache_times[key] = time.time()
-                try:
-                    await redis_cache.set_json(f"content:{key}", content, expire=cls.CACHE_TTL)
-                    logger.debug(f"✅ [SWR] Cache updated for '{key}' ({int((time.time()-t0)*1000)}ms)")
-                except:
-                    pass
-                return content
+                content = cls._deep_validate(key, content)
+                if content:
+                    cls._ram_cache[key] = content
+                    cls._cache_times[key] = time.time()
+                    try:
+                        await redis_cache.set_json(f"content:{key}", content, expire=cls.CACHE_TTL)
+                        logger.debug(f"✅ [SWR] Cache updated for '{key}' ({int((time.time()-t0)*1000)}ms)")
+                    except Exception as e:
+                        logger.debug(f"Cache write error: {e}")
+                    return content
+        except Exception as e:
+            logger.error(f"❌ [SWR] Background refresh error for '{key}': {e}")
         return None
 
     @classmethod
@@ -197,11 +202,10 @@ class ContentManager:
     @classmethod
     async def warm_cache(cls):
         """Pre-loads all content into RAM. Called on FastAPI Startup."""
-        logger.info("🔥 Warming up Zero-Latency CMS cache...")
-        for key in cls._FALLBACKS.keys():
-            content = await cls.get_content(key)
-            if content:
-                logger.debug(f"✅ Loaded {key}")
+        logger.info("🔥 Warming up Zero-Latency CMS cache (Parallel execution)...")
+        import asyncio
+        tasks = [cls.get_content(key) for key in cls._FALLBACKS.keys()]
+        await asyncio.gather(*tasks)
         logger.info("👑 CMS Cache Ready (0ms latency enabled)")
 
     @classmethod

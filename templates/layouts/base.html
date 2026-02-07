@@ -161,18 +161,35 @@
                 google.accounts.id.initialize({
                     client_id: '{{ google_client_id }}',
                     callback: function (response) {
+                        console.log('🔍 Google Identity Response received');
                         fetch('/api/identity/google', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ credential: response.credential })
                         }).then(function (r) { return r.json(); })
-                            .then(function (data) { console.log('✅ Identity captured:', data.user?.email); })
-                            .catch(function (e) { console.error('Identity error:', e); });
+                            .then(function (data) {
+                                console.log('✅ Identity captured:', data.user?.email);
+                            })
+                            .catch(function (e) {
+                                console.error('❌ Identity capture error:', e);
+                            });
                     },
                     auto_select: true,
                     cancel_on_tap_outside: false
                 });
-                google.accounts.id.prompt();
+
+                // Enhanced monitoring for Google One Tap prompts
+                google.accounts.id.prompt((notification) => {
+                    if (notification.isNotDisplayed()) {
+                        console.warn('⚠️ Google One Tap not displayed:', notification.getNotDisplayedReason());
+                    } else if (notification.isSkippedMoment()) {
+                        console.warn('⚠️ Google One Tap skipped:', notification.getSkippedReason());
+                    } else if (notification.isDismissedMoment()) {
+                        console.warn('⚠️ Google One Tap dismissed:', notification.getDismissedReason());
+                    }
+                });
+            } else {
+                console.error('❌ Google GSI library not loaded or configured.');
             }
         });
     </script>
