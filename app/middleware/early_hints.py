@@ -1,5 +1,6 @@
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
+from app.routes.pages import SYSTEM_VERSION
 import logging
 
 logger = logging.getLogger(__name__)
@@ -18,8 +19,8 @@ class EarlyHintsMiddleware(BaseHTTPMiddleware):
         if response.status_code == 200 and "text/html" in content_type:
             # Doctoral-level Asset Mapping (Critical Path Only)
             links = [
-                # 1. Main CSS (v16 corresponds to current template version)
-                '</static/css/output.css?v=16>; rel=preload; as=style',
+                # 1. Main CSS (Versioned Dynamic)
+                f'</static/css/output.css?v={SYSTEM_VERSION}>; rel=preload; as=style',
                 # 2. Critical Fonts (Google Fonts CSS)
                 '<https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap>; rel=preload; as=style',
                 # 3. Branding (Luxury Logo)
@@ -31,10 +32,9 @@ class EarlyHintsMiddleware(BaseHTTPMiddleware):
             # Combine into a single Link header (Standard practice)
             response.headers["Link"] = ", ".join(links)
 
-            # 🚀 Phase 2: Stale-While-Revalidate (SWR)
-            # Instructs Cloudflare to serve stale content while revalidating in background.
-            # s-maxage: Time it stays fresh in Cloudflare (1 day)
-            # stale-while-revalidate: Time it's served stale (7 days)
-            response.headers["Cache-Control"] = "public, s-maxage=86400, stale-while-revalidate=604800"
+            # 🛡️ SILICON VALLEY SYNCHRONICITY: Ensure HTML is fresh
+            response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
             
         return response

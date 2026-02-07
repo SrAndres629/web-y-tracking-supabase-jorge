@@ -5,7 +5,12 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/svg+xml" href="/static/images/luxury_logo.svg">
+    <link rel="icon" type="image/svg+xml" href="/static/images/luxury_logo.svg?v={{ system_version }}">
+
+    <!-- 🛡️ GLOBAL CACHE INVALIDATION (Diamond Standard) -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
 
     <!-- Unified Background & Typography Overrides -->
     <style>
@@ -113,8 +118,8 @@
     <!-- Scripts removed here as they are now handled by Zaraz at the Cloudflare Edge -->
 
     <!-- Tailwind CSS (Local Build) -->
-    <link rel="preload" href="/static/css/output.css?v=16" as="style">
-    <link rel="stylesheet" href="/static/css/output.css?v=16">
+    <link rel="preload" href="/static/css/output.css?v={{ system_version }}" as="style">
+    <link rel="stylesheet" href="/static/css/output.css?v={{ system_version }}">
 
     <!-- Google Fonts + Icons (Apple Standard: Inter Variable) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -238,9 +243,9 @@
     {% include 'components/footer.html' ignore missing %}
 
     <!-- Global Scripts -->
-    <script defer src="/static/js/tracking.js?v=4.3"></script>
-    <script defer src="/static/js/ui.js?v=3.1"></script>
-    <script defer src="/static/js/motion.js?v=3.2"></script>
+    <script defer src="/static/js/tracking.js?v={{ system_version }}"></script>
+    <script defer src="/static/js/ui.js?v={{ system_version }}"></script>
+    <script defer src="/static/js/motion.js?v={{ system_version }}"></script>
     {% block extra_scripts %}{% endblock %}
     <!-- Vercel Services (Updated) -->
     <script>

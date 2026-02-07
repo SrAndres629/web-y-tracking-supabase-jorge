@@ -137,6 +137,15 @@ def main():
             
         Console.success("The Iron Gate Passed. Zero Defects Detected.")
 
+    # PHASE 1.5: SINCRO-VAL (Verify Global Versioning Logic locally)
+    Console.log("[1.5/6] Verifying Sincro-Logic...", "🧬")
+    sincro_cmd = f'"{sys.executable}" -m pytest tests/test_synchronicity.py -v'
+    success, _, stderr = run_cmd(sincro_cmd, cwd=REPO_PATH)
+    if not success:
+        Console.error("⛔ SINCRO-VAL FAILED: Asset versioning logic is broken.")
+        print(stderr)
+        sys.exit(1)
+
     # PHASE 2: STAGE (Commit Local Changes First)
     Console.log("[2/6] Staging & Committing...", "📦")
     run_cmd("git add .", cwd=REPO_PATH)
@@ -187,6 +196,25 @@ def main():
         Console.success("✅ DEPLOYMENT SUCCESSFUL")
         Console.log("Validating Edge Cache Purge...", "🧹")
         purge_cloudflare_cache()
+        
+        # 💎 SILICON VALLEY PRE-WARM: Force global propagation
+        try:
+            import requests
+            import re
+            url = "https://jorgeaguirreflores.com"
+            Console.log(f"🔥 Pre-Warming Global Edge: {url}", "🔥")
+            # Wait a few seconds for Vercel to reflect the push
+            time.sleep(10)
+            resp = requests.get(url, timeout=15)
+            if resp.status_code == 200:
+                version_match = re.search(r'\?v=(\d+)', resp.text)
+                new_version = version_match.group(1) if version_match else "Unknown"
+                Console.success(f"PRODUCCIÓN ACTUALIZADA: Versión Atómica {new_version} activa.")
+            else:
+                Console.warning(f"Pre-Warm status: {resp.status_code}")
+        except Exception as e:
+            Console.warning(f"Pre-Warm failed: {e}")
+
         print(f"\n{Console.GREEN}🌟 System is Live: https://jorgeaguirreflores.com{Console.ENDC}")
     else:
         Console.error(f"Push Failed: {stderr}")

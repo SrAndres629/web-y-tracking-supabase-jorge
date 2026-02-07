@@ -25,6 +25,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 templates_dir = os.path.join(BASE_DIR, "templates")
 templates = Jinja2Templates(directory=templates_dir)
 
+# 🕒 SILICON VALLEY VERSIONING: Unique ID per-process start
+# This forces global cache bust when the app restarts (deploy)
+SYSTEM_VERSION = str(int(time.time()))
+templates.env.globals["system_version"] = SYSTEM_VERSION
+logger.info(f"💎 SYSTEM CORE: Version {SYSTEM_VERSION} initialized.")
+
 
 # =================================================================
 # MINI-WORKERS (Execute after HTTP response)
@@ -277,9 +283,13 @@ async def read_root( # noqa: C901
     # s-maxage: Cloudflare edge cache duration (1 week)
     # stale-while-revalidate: Serve old content while updating in background (60s)
     
+    # 🛡️ SILICON VALLEY SYNCHRONICITY: Force revalidation of HTML
+    # This ensures users ALWAYS get the latest HTML which then loads the latest Assets (?v=)
     headers = {
         "Server-Timing": timing_header,
-        "Cache-Control": "public, s-maxage=604800, stale-while-revalidate=60"
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0"
     }
 
     # RESPONSE WITH COOKIE
