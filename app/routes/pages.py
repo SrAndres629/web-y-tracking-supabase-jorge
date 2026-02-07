@@ -124,6 +124,7 @@ async def read_root(
             "services": services_config, "contact": contact_config,
             "google_client_id": settings.GOOGLE_CLIENT_ID,
             "clarity_id": settings.CLARITY_PROJECT_ID,
+            "turnstile_site_key": settings.TURNSTILE_SITE_KEY,
             "flags": _get_feature_flags(),
             "hero_content": hero_content, "ab_variant": ab_variant
         },

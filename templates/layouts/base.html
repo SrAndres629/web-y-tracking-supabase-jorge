@@ -62,7 +62,19 @@
             border: 1px solid #C5A059;
             border-radius: 50%;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
+
+        /* Prevent scroll selection during sliding */
+        .slider-range::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 48px;
+            height: 48px;
+            cursor: ew-resize;
+        }
+
 
         /* Icon inside handle */
         .slider-thumb::before {
@@ -235,8 +247,9 @@
     class="bg-luxury-black text-luxury-text font-sans antialiased selection:bg-luxury-gold selection:text-black relative">
 
     <!-- Anti-Bot Defense Layer -->
-    <div class="cf-turnstile" data-sitekey="0x4AAAAAAA8Cqg0HkqG6Xq5j" data-callback="onTurnstileSuccess"
+    <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}" data-callback="onTurnstileSuccess"
         data-size="invisible"></div>
+
 
     <!-- Global Ambient Spotlight -->
     <div id="mouse-spotlight"

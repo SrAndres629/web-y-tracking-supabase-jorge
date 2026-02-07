@@ -115,6 +115,7 @@ class Settings(BaseSettings):
     # Cloudflare (If using Zaraz for ad-blocker bypass)
     CLOUDFLARE_ZONE_ID: Optional[str] = None
     TURNSTILE_SECRET_KEY: Optional[str] = None
+    TURNSTILE_SITE_KEY: str = "0x4AAAAAAA8Cqg0HkqG6Xq5j"  # Default to visible key if not provided
 
     # RudderStack (CDP)
     # Get Write Key at: https://rudderstack.com
