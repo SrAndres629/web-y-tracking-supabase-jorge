@@ -6,6 +6,9 @@ import json
 import urllib.request
 import urllib.error
 import argparse
+import time
+import requests
+import re
 
 # =================================================================
 # 🛡️ SILICON VALLEY DEPLOYMENT PROTOCOL
@@ -46,6 +49,10 @@ class Console:
     @staticmethod
     def info(msg):
         print(f"{Console.CYAN}ℹ️  {msg}{Console.ENDC}")
+
+    @staticmethod
+    def warning(msg):
+        print(f"{Console.WARNING}⚠️  {msg}{Console.ENDC}")
 
 def purge_cloudflare_cache():
     """Purge everything from Cloudflare Edge for jorgeaguirreflores.com"""
@@ -199,8 +206,6 @@ def main():
         
         # 💎 SILICON VALLEY PRE-WARM: Force global propagation
         try:
-            import requests
-            import re
             url = "https://jorgeaguirreflores.com"
             Console.log(f"🔥 Pre-Warming Global Edge: {url}", "🔥")
             # Wait a few seconds for Vercel to reflect the push
