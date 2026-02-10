@@ -13,6 +13,11 @@ CREDENTIALS = [
         "type": "token"
     },
     {
+        "name": "User Curl Token (QbGb...)",
+        "token": "QbGb88wydH9URjGjjaHUHfcakpA8Yd7Zs0HgG8ja",
+        "type": "token"
+    },
+    {
         "name": "Found Token (_f1Q...)",
         "token": "_f1QrJImGK0Qg5eSACM1DGnkF6xd9yRMGGXvGUA8",
         "type": "token"
