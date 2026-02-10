@@ -148,19 +148,33 @@ import traceback
 @app.exception_handler(500)
 async def internal_exception_handler(request: Request, exc: Exception):
     """
-    Temporary Debug Handler to show error on Vercel
-    Legacy: Internal Server Error
-    New: JSON with traceback
+    Enhanced Diagnostic Handler for Vercel
     """
     error_msg = str(exc)
     tb = traceback.format_exc()
-    logger.error(f"🔥 CRITIAL 500: {error_msg}\n{tb}")
+    
+    # Forensic Filesystem Audit
+    audit = {}
+    try:
+        import os
+        audit = {
+            "cwd": os.getcwd(),
+            "var_task": os.listdir("/var/task") if os.path.exists("/var/task") else "NOT_FOUND",
+            "var_task_api": os.listdir("/var/task/api") if os.path.exists("/var/task/api") else "NOT_FOUND",
+            "pythonpath": os.getenv("PYTHONPATH"),
+            "file": __file__
+        }
+    except:
+        audit = {"error": "Audit failed"}
+
+    logger.error(f"🔥 CRITIAL 500: {error_msg}\n{tb}\nAudit: {audit}")
     return JSONResponse(
         status_code=500,
         content={
             "status": "error",
             "message": "Internal Server Error (Debug Mode)",
             "detail": error_msg,
+            "audit": audit,
             "traceback": tb.split("\n")
         }
     )
