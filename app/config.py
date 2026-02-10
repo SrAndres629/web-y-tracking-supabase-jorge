@@ -33,6 +33,11 @@ class Settings(BaseSettings):
         extra="ignore"
     )
 
+    # 📂 PHYSICAL PATHS (Serverless Hardening)
+    BASE_DIR: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    TEMPLATES_DIR: str = os.path.join(BASE_DIR, "templates")
+    STATIC_DIR: str = os.path.join(BASE_DIR, "static")
+
     # Meta Ads (Pixel + CAPI)
     META_PIXEL_ID: str = ""
     META_ACCESS_TOKEN: Optional[str] = None
@@ -104,7 +109,6 @@ class Settings(BaseSettings):
     # =================================================================
     
     # Upstash Redis (Serverless Cache - for Event Deduplication)
-    # Get credentials at: https://upstash.com
     UPSTASH_REDIS_REST_URL: Optional[str] = os.getenv("UPSTASH_REDIS_REST_URL")
     UPSTASH_REDIS_REST_TOKEN: Optional[str] = os.getenv("UPSTASH_REDIS_REST_TOKEN")
 
@@ -117,24 +121,21 @@ class Settings(BaseSettings):
     # n8n Webhook (Optional)
     N8N_WEBHOOK_URL: Optional[str] = None
     
-    # Microsoft Clarity (Free Heatmaps & Session Recordings)
-    # Get project ID at: https://clarity.microsoft.com
+    # Microsoft Clarity
     CLARITY_PROJECT_ID: Optional[str] = None
     
-    # Cloudflare (If using Zaraz for ad-blocker bypass)
+    # Cloudflare
     CLOUDFLARE_ZONE_ID: Optional[str] = os.getenv("CLOUDFLARE_ZONE_ID")
     CLOUDFLARE_EMAIL: Optional[str] = os.getenv("CLOUDFLARE_EMAIL")
     CLOUDFLARE_API_KEY: Optional[str] = os.getenv("CLOUDFLARE_API_KEY")
     TURNSTILE_SECRET_KEY: Optional[str] = None
-    TURNSTILE_SITE_KEY: str = "0x4AAAAAAA8Cqg0HkqG6Xq5j"  # Default to visible key if not provided
+    TURNSTILE_SITE_KEY: str = "0x4AAAAAAA8Cqg0HkqG6Xq5j"
 
     # RudderStack (CDP)
-    # Get Write Key at: https://rudderstack.com
     RUDDERSTACK_WRITE_KEY: Optional[str] = None
     RUDDERSTACK_DATA_PLANE_URL: Optional[str] = None
     
-    # Google One Tap (Identity Resolution)
-    # Get Client ID at: https://console.cloud.google.com/apis/credentials
+    # Google One Tap
     GOOGLE_CLIENT_ID: Optional[str] = None
     
     @property
@@ -156,13 +157,10 @@ class Settings(BaseSettings):
         if not self.DATABASE_URL:
             logger.info("ℹ️ DATABASE_URL no configurado - DB deshabilitada")
         else:
-            # 🛡️ INFRASTRUCTURE SAFETY CHECK (Silicon Valley Standard)
-            # Prevent "Connection Bomb" in Serverless (Vercel)
             is_prod = os.getenv("VERCEL") or os.getenv("RENDER")
             if is_prod and ":5432" in self.DATABASE_URL:
                  logger.warning("🔥 CRITICAL ARCHITECTURE WARNING: You are using Port 5432 (Session Mode) in Serverless.")
                  logger.warning("👉 PLEASE SWITCH TO PORT 6543 (Transaction Pooler) to avoid connection limits.")
-                 # We don't raise error to avoid hard crash, but we scream in logs.
             
             if is_prod and "pgbouncer=true" not in self.DATABASE_URL:
                  logger.warning("⚠️ PERFORMANCE TIP: Add '?pgbouncer=true' to your DATABASE_URL for stability.")
@@ -183,8 +181,7 @@ class Settings(BaseSettings):
 # Singleton de configuración
 settings = Settings()
 
-# 🛡️ MANUAL CONFIG PATCH: Pydantic-settings tries to JSON-decode "complex" field names.
-# We bypass this by loading the env var manually into our internal field.
+# 🛡️ MANUAL CONFIG PATCH: CORS Origins
 _env_origins = os.getenv("BACKEND_CORS_ORIGINS")
 if _env_origins:
     settings.CORS_ALLOWED_ORIGINS = [i.strip() for i in _env_origins.split(",") if i.strip()]

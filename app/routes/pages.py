@@ -20,10 +20,8 @@ logger = logging.getLogger("BackgroundWorker")
 
 router = APIRouter()
 
-# Absolute path to templates (fixes Docker/Render path issues)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-templates_dir = os.path.join(BASE_DIR, "templates")
-templates = Jinja2Templates(directory=templates_dir)
+# 🗄️ TEMPLATE CONFIG (Silicon Valley Standard)
+templates = Jinja2Templates(directory=settings.TEMPLATES_DIR)
 
 # 🕒 SILICON VALLEY VERSIONING: Unique ID per-process start
 # This forces global cache bust when the app restarts (deploy)
