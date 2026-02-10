@@ -18,6 +18,8 @@ from app.services import get_services_config, get_contact_config
 
 logger = logging.getLogger("BackgroundWorker")
 
+router = APIRouter()
+
 # 🗄️ TEMPLATE CONFIG (Resilient Search Paths for Serverless)
 _potential_paths = [
     settings.TEMPLATES_DIR,
@@ -119,19 +121,32 @@ async def read_root(
     ab_variant = _handle_ab_test(request)
     services_config = await get_services_config()
     contact_config = await get_contact_config()
+    hero_content = _get_hero_content(request.query_params)
     
     # 2. Tracking Identity
     event_id = str(int(time.time() * 1000))
     external_id = generate_external_id(ident['ip'], ident['ua'])
     fbclid = await _resolve_fbclid_full(request, fbc_cookie, external_id)
     
-    # 3. Dynamic Hero
-    hero_content = _get_hero_content(request.query_params)
+    # 4. SEO Engine (Silicon Valley Research Standard)
+    from app.services.seo_engine import SEOEngine
     
-    # 4. Background Tasks & Cookies
+    # Page metadata
+    seo_meta = SEOEngine.get_page_metadata("/", {
+        "title": "Jorge Aguirre Flores | Experto en Microblading y Estética Avanzada",
+        "description": "Transforma tu mirada con el mejor especialista en Microblading de Santa Cruz. 30 años de trayectoria garantizan resultados naturales y artísticos."
+    })
+    
+    # Schemas
+    schemas = [
+        SEOEngine.get_global_schema(),
+        SEOEngine.get_breadcrumb_schema([{"name": "Inicio", "path": "/"}])
+    ]
+    
+    # 5. Background Tasks & Cookies
     _schedule_tracking(background_tasks, request, ident, external_id, fbclid, fbp_cookie, event_id)
     
-    # 5. Build Response
+    # 6. Build Response
     response = templates.TemplateResponse(
         request=request, name="pages/public/home.html",
         context={
@@ -143,7 +158,11 @@ async def read_root(
             "clarity_id": settings.CLARITY_PROJECT_ID,
             "turnstile_site_key": settings.TURNSTILE_SITE_KEY,
             "flags": _get_feature_flags(),
-            "hero_content": hero_content, "ab_variant": ab_variant
+            "hero_content": hero_content, "ab_variant": ab_variant,
+            "seo": {
+                **seo_meta,
+                "json_ld": SEOEngine.generate_all_json_ld(schemas)
+            }
         },
         headers={"Cache-Control": "no-cache, no-store, must-revalidate"}
     )

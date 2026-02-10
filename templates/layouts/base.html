@@ -23,36 +23,36 @@
         }
     </style>
 
-    <!-- SEO Core Tags via Block -->
-    <title>{% block title %}Jorge Aguirre Flores | Maquillaje Permanente en Santa Cruz{% endblock %}</title>
+    <!-- SEO Core Tags (Dynamic Silicon Valley Hub) -->
+    <title>{% block title %}{{ seo.title if seo and seo.title else "Jorge Aguirre Flores | Maquillaje Permanente en Santa Cruz" }}{% endblock %}</title>
     {% block meta_tags %}
-    <meta name="description"
-        content="Especialista en Microblading, Delineado Permanente y Labios. 30 años de experiencia en Santa Cruz de la Sierra. Resultados naturales garantizados.">
-    <meta name="keywords"
-        content="microblading santa cruz, maquillaje permanente bolivia, cejas permanentes, delineado de ojos permanente, labios permanentes, micropigmentacion santa cruz">
+    <meta name="description" content="{{ seo.description if seo and seo.description else "Especialista en Microblading, Delineado Permanente y Labios. 30 años de experiencia en Santa Cruz de la Sierra." }}">
     <meta name="author" content="Jorge Aguirre Flores">
-    <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://jorgeaguirreflores.com/">
+    <meta name="robots" content="{{ seo.robots if seo and seo.robots else 'index, follow' }}">
+    <link rel="canonical" href="{{ seo.canonical if seo and seo.canonical else 'https://jorgeaguirreflores.com/' }}">
 
     <!-- Open Graph -->
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Jorge Aguirre Flores | Maquillaje Permanente Premium">
-    <meta property="og:description"
-        content="30 años transformando miradas en Santa Cruz. Microblading, Delineado y Labios.">
-    <meta property="og:url" content="https://jorgeaguirreflores.com/">
-    <meta property="og:image" content="https://jorgeaguirreflores.com/static/images/og-image.webp">
+    <meta property="og:title" content="{{ seo.og_title if seo and seo.og_title else 'Jorge Aguirre Flores | Maquillaje Permanente Premium' }}">
+    <meta property="og:description" content="{{ seo.description if seo and seo.description else '30 años transformando miradas en Santa Cruz. Microblading, Delineado y Labios.' }}">
+    <meta property="og:url" content="{{ seo.canonical if seo and seo.canonical else 'https://jorgeaguirreflores.com/' }}">
+    <meta property="og:image" content="{{ seo.og_image if seo and seo.og_image else 'https://jorgeaguirreflores.com/static/images/og-image.webp' }}">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:type" content="image/webp">
     <meta property="og:locale" content="es_BO">
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Jorge Aguirre Flores | Maquillaje Permanente Premium">
-    <meta name="twitter:description"
-        content="30 años transformando miradas en Santa Cruz. Microblading, Delineado y Labios.">
-    <meta name="twitter:image" content="https://jorgeaguirreflores.com/static/images/og-image.webp">
+    <meta name="twitter:title" content="{{ seo.og_title if seo and seo.og_title else 'Jorge Aguirre Flores | Maquillaje Permanente Premium' }}">
+    <meta name="twitter:description" content="{{ seo.description if seo and seo.description else '30 años transformando miradas en Santa Cruz. Microblading, Delineado y Labios.' }}">
+    <meta name="twitter:image" content="{{ seo.og_image if seo and seo.og_image else 'https://jorgeaguirreflores.com/static/images/og-image.webp' }}">
     {% endblock %}
+
+    <!-- Semantic Data (JSON-LD) -->
+    {% if seo and seo.json_ld %}
+    {{ seo.json_ld | safe }}
+    {% endif %}
+    {% block extra_schema %}{% endblock %}
 
     <!-- Cloudflare Zaraz (Offloaded Tracking) -->
     <!-- Managed via Cloudflare Dashboard -->

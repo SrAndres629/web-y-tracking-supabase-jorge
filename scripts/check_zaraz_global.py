@@ -1,8 +1,9 @@
+import os
 import requests
 import json
 
-CLOUDFLARE_EMAIL = "Acordero629@gmail.com"
-CLOUDFLARE_API_KEY = "6094d6fa8c138d93409de2f59a3774cd8795a"
+CLOUDFLARE_EMAIL = os.getenv("CLOUDFLARE_EMAIL")
+CLOUDFLARE_API_KEY = os.getenv("CLOUDFLARE_API_KEY")
 ZONE_ID = "19bd9bdd7abf8f74b4e95d75a41e8583"
 
 HEADERS = {

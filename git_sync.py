@@ -22,10 +22,11 @@ load_dotenv()
 
 # --- CONFIGURATION (Credentials loaded from environment) ---
 CLOUDFLARE_API_KEY = os.getenv("CLOUDFLARE_API_KEY")
+CLOUDFLARE_API_TOKEN = os.getenv("CLOUDFLARE_API_TOKEN") # Safer alternative
 CLOUDFLARE_EMAIL = os.getenv("CLOUDFLARE_EMAIL")
 CLOUDFLARE_ZONE_ID = os.getenv("CLOUDFLARE_ZONE_ID")
 
-if not CLOUDFLARE_API_KEY or not CLOUDFLARE_EMAIL or not CLOUDFLARE_ZONE_ID:
+if not (CLOUDFLARE_API_KEY or CLOUDFLARE_API_TOKEN) or not CLOUDFLARE_ZONE_ID:
     print("\033[93m[WARN] Missing Cloudflare Credentials in .env. Purge will be skipped.\033[0m")
 
 if not CLOUDFLARE_API_KEY or not CLOUDFLARE_EMAIL:
@@ -116,18 +117,22 @@ class SystemAuditor:
     def run_phase(self, name, path, audit_mode=True):
         Console.log(f"Running Integrity: {name}...", "-")
 
-        env_prefix = 'set "AUDIT_MODE=1" && ' if audit_mode else ""
-        pytest_cmd = (
-            f'{env_prefix}"{sys.executable}" -m pytest {path} -v -W error '
-            f"--tb=short --maxfail=0"
-        )
+        # Cross-platform environment variables
+        env = os.environ.copy()
+        if audit_mode:
+            env["AUDIT_MODE"] = "1"
+        
+        pytest_cmd = [
+            sys.executable, "-m", "pytest", path, "-v", "-W", "error",
+            "--tb=short", "--maxfail=0"
+        ]
 
         result = subprocess.run(
             pytest_cmd,
-            shell=True,
             capture_output=True,
             text=True,
             cwd=self.repo_path,
+            env=env
         )
         stdout = result.stdout or ""
         stderr = result.stderr or ""
@@ -302,10 +307,18 @@ def purge_cloudflare_cache():
 
     url = f"https://api.cloudflare.com/client/v4/zones/{CLOUDFLARE_ZONE_ID}/purge_cache"
     headers = {
-        "X-Auth-Email": CLOUDFLARE_EMAIL,
-        "X-Auth-Key": CLOUDFLARE_API_KEY,
         "Content-Type": "application/json",
     }
+    
+    # Priority: API Token (Bearer) > Global API Key (X-Auth-Key)
+    if CLOUDFLARE_API_TOKEN:
+        headers["Authorization"] = f"Bearer {CLOUDFLARE_API_TOKEN}"
+    elif CLOUDFLARE_API_KEY and CLOUDFLARE_EMAIL:
+        headers["X-Auth-Email"] = CLOUDFLARE_EMAIL
+        headers["X-Auth-Key"] = CLOUDFLARE_API_KEY
+    else:
+        Console.warning("Skipping Cloudflare Purge: Insufficient Credentials.")
+        return
     data = json.dumps({"purge_everything": True}).encode("utf-8")
 
     try:

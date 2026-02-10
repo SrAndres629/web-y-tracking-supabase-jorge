@@ -8,6 +8,23 @@ sys.path.insert(0, parent_dir)
 
 # 2. Diagnostics: Catch import errors immediately
 try:
+    # 🔍 VERCEL FORENSIC AUDIT
+    import os
+    import logging
+    logger = logging.getLogger("Forensics")
+    logger.info(f"📍 CWD: {os.getcwd()}")
+    try:
+        for root, dirs, files in os.walk("/var/task", topdown=True):
+            level = root.replace("/var/task", "").count(os.sep)
+            indent = " " * 4 * (level)
+            logger.info(f"{indent}📂 {os.path.basename(root)}/")
+            subindent = " " * 4 * (level + 1)
+            for f in files[:5]: # Limit output
+                logger.info(f"{subindent}📄 {f}")
+            if level > 2: break # Don't go too deep
+    except Exception as e:
+        logger.error(f"Audit failed: {e}")
+
     from main import app
 except Exception as e:
     # 💥 CRITICAL BOOT FAILURE

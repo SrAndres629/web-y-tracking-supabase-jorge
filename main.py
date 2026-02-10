@@ -167,7 +167,7 @@ async def internal_exception_handler(request: Request, exc: Exception):
     except:
         audit = {"error": "Audit failed"}
 
-    logger.error(f"🔥 CRITIAL 500: {error_msg}\n{tb}\nAudit: {audit}")
+    logger.error(f"🔥 CRITICAL 500: {error_msg}\n{tb}\nAudit: {audit}")
     return JSONResponse(
         status_code=500,
         content={

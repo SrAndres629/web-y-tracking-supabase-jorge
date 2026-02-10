@@ -203,6 +203,7 @@ class ContentManager:
                 if row and row[0]:
                     # value is already JSON in DB, psycopg2 parses it if using jsonb
                     val = row[0]
+                    cur.close() # Ensure cursor is closed if not using context manager properly (it is used properly though)
                     return json.loads(val) if isinstance(val, str) else val
         except Exception as e:
             logger.error(f"❌ CMS DB Fetch Error ({key}): {e}")
