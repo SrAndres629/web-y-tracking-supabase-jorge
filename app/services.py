@@ -200,7 +200,7 @@ class ContentManager:
         return None
 
     @classmethod
-    async def warm_cache(cls):
+    async def warm_cache(cls) -> None:
         """Pre-loads all content into RAM. Called on FastAPI Startup."""
         logger.info("🔥 Warming up Zero-Latency CMS cache (Parallel execution)...")
         import asyncio
@@ -209,7 +209,7 @@ class ContentManager:
         logger.info("👑 CMS Cache Ready (0ms latency enabled)")
 
     @classmethod
-    async def refresh_all(cls):
+    async def refresh_all(cls) -> None:
         """Clears L1/L2 cache. Forces L3 reload."""
         cls._ram_cache.clear()
         for key in cls._FALLBACKS.keys():
@@ -224,16 +224,18 @@ class ContentManager:
 # =================================================================
 
 async def get_services_config() -> List[dict]:
+    """Legacy wrapper for services config"""
     return await ContentManager.get_content("services_config")
 
 async def get_contact_config() -> dict:
+    """Legacy wrapper for contact config"""
     return await ContentManager.get_content("contact_config")
 
 # =================================================================
 # CORE UTILITIES
 # =================================================================
 
-async def publish_to_qstash(event_data: dict):
+async def publish_to_qstash(event_data: dict) -> bool:
     """Publishes an event to QStash to be processed asynchronously."""
     if not QSTASH_TOKEN:
         logger.warning("⚠️ QStash Token missing!")

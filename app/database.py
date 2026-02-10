@@ -30,7 +30,7 @@ if settings.DATABASE_URL and HAS_POSTGRES:
     # 🛡️ SILICON VALLEY PROTOCOL: Deterministic Guard against STUB DSNs
     # If the ENV var is a stub, we FORCE SQLite to prevent DSN Parse Errors.
     db_url_clean = settings.DATABASE_URL.strip().lower()
-    is_invalid = "required" in db_url_clean or "DSN_HERE" in db_url_clean or "none" in db_url_clean
+    is_invalid = any(x in db_url_clean for x in ["required", "dsn_here", "none", "production", "placeholder"])
 
     if not is_invalid:
         BACKEND = "postgres"
@@ -38,11 +38,11 @@ if settings.DATABASE_URL and HAS_POSTGRES:
         if ":6543" in settings.DATABASE_URL and "pgbouncer=true" not in settings.DATABASE_URL:
             logger.warning("⚠️ Using Supabase Pooler Port 6543 but missing '?pgbouncer=true'. Adding it automatically.")
     else:
-        logger.warning(f"🛡️ Deterministic Guard: detected invalid DSN. Falling back to SQLite.")
+        logger.warning(f"🛡️ Deterministic Guard: detected invalid DSN ({settings.DATABASE_URL[:10]}...). Falling back to SQLite.")
         # Logic to append query param could go here, but usually users fix ENV.
 
 @contextmanager
-def get_db_connection():
+def get_db_connection() -> Any:
     """
     Creates a SINGLE connection per request.
     Silicon Valley Protocol: 0-Latency failover & strict pool hygiene.
@@ -103,31 +103,37 @@ class SQLiteCursorWrapper:
     def __init__(self, cursor):
         self.cursor = cursor
         
-    def execute(self, sql, params=None):
+    def execute(self, sql: str, params: Optional[tuple] = None) -> Any:
+        """Executes SQL query with parameter substitution."""
         if params:
             sql = sql.replace("%s", "?")
             return self.cursor.execute(sql, params)
         return self.cursor.execute(sql)
         
-    def fetchone(self):
+    def fetchone(self) -> Optional[tuple]:
+        """Fetches a single row."""
         return self.cursor.fetchone()
         
-    def fetchall(self):
+    def fetchall(self) -> List[tuple]:
+        """Fetches all rows."""
         return self.cursor.fetchall()
         
-    def close(self):
+    def close(self) -> None:
+        """Closes the cursor."""
         self.cursor.close()
         
     @property
-    def rowcount(self):
+    def rowcount(self) -> int:
+        """Returns number of rows affected."""
         return self.cursor.rowcount
     
     @property
-    def lastrowid(self):
+    def lastrowid(self) -> Optional[int]:
+        """Returns ID of last inserted row."""
         return self.cursor.lastrowid
 
 @contextmanager
-def get_cursor():
+def get_cursor() -> Any:
     """
     Utility to get a cursor directly.
     Usage: with get_cursor() as cur: cur.execute(...)
@@ -145,7 +151,7 @@ def get_cursor():
 # COMPATIBILITY & INIT
 # =================================================================
 
-def init_tables():
+def init_tables() -> bool:
     """Crea tablas si no existen, sincronizado con init_crm_master_clean.sql v2.0"""
     try:
         with get_cursor() as cur:
@@ -256,7 +262,8 @@ def _run_column_migrations(cur, status_type):
 # OPERATIONS (Domain Logic - Persisted)
 # =================================================================
 
-def save_visitor(external_id, fbclid, ip_address, user_agent, source="pageview", utm_data=None):
+def save_visitor(external_id, fbclid, ip_address, user_agent, source="pageview", utm_data=None) -> None:
+    """Saves visitor data for attribution tracking."""
     if utm_data is None:
         utm_data = {}
         
@@ -294,6 +301,7 @@ def save_visitor(external_id, fbclid, ip_address, user_agent, source="pageview",
         logger.error(f"Failed to save visitor: {e}")
 
 def get_visitor_fbclid(external_id: str) -> Optional[str]:
+    """Retrieves the Facebook Click ID for a given visitor."""
     try:
         with get_cursor() as cur:
             query = "SELECT fbclid FROM visitors WHERE external_id = %s"
@@ -305,7 +313,7 @@ def get_visitor_fbclid(external_id: str) -> Optional[str]:
         pass
     return None
 
-def upsert_contact_advanced(contact_data: Dict[str, Any]):
+def upsert_contact_advanced(contact_data: Dict[str, Any]) -> None:
     """Upsert avanzado estilo CRM Natalia."""
     if BACKEND != "postgres":
         # SQLite Partial
@@ -348,7 +356,8 @@ def upsert_contact_advanced(contact_data: Dict[str, Any]):
 # Backward compatibility alias
 upsert_contact = upsert_contact_advanced
 
-def save_message(whatsapp_number: str, role: str, content: str):
+def save_message(whatsapp_number: str, role: str, content: str) -> None:
+    """Persists a chat message in the conversation history."""
     try:
         with get_cursor() as cur:
             # 1. Obtener contact_id
@@ -365,7 +374,7 @@ def save_message(whatsapp_number: str, role: str, content: str):
     except Exception as e:
         logger.error(f"❌ Error guardando mensaje: {e}")
 
-def get_chat_history(whatsapp_number: str, limit: int = 10):
+def get_chat_history(whatsapp_number: str, limit: int = 10) -> List[Dict[str, str]]:
     """Obtiene los últimos N mensajes para contexto de la IA"""
     history = []
     try:
@@ -392,6 +401,7 @@ def check_connection() -> bool:
 # =================================================================
 
 def mark_lead_sent(whatsapp_number: str) -> bool:
+    """Flags a lead as successfully sent to Meta CAPI."""
     try:
         with get_cursor() as cur:
             cur.execute(queries.UPDATE_LEAD_SENT_FLAG, (whatsapp_number,))
@@ -400,6 +410,7 @@ def mark_lead_sent(whatsapp_number: str) -> bool:
         return False
 
 def get_user_message_count(whatsapp_number: str) -> int:
+    """Counts total messages sent by a user."""
     try:
         with get_cursor() as cur:
             cur.execute(queries.COUNT_USER_MESSAGES, (whatsapp_number,))
@@ -409,6 +420,7 @@ def get_user_message_count(whatsapp_number: str) -> int:
         return 0
 
 def check_if_lead_sent(whatsapp_number: str) -> bool:
+    """Checks if the conversion event was already sent to Meta."""
     try:
         with get_cursor() as cur:
             cur.execute(queries.CHECK_LEAD_SENT_FLAG, (whatsapp_number,))
@@ -418,6 +430,7 @@ def check_if_lead_sent(whatsapp_number: str) -> bool:
         return False
         
 def get_or_create_lead(whatsapp_phone: str, meta_data: Optional[dict] = None) -> Tuple[Optional[str], bool]:
+    """Retrieves existing lead ID or creates a new one."""
     if meta_data is None: meta_data = {}
     try:
         with get_cursor() as cur:
@@ -451,6 +464,7 @@ def get_or_create_lead(whatsapp_phone: str, meta_data: Optional[dict] = None) ->
 
 
 def log_interaction(lead_id: str, role: str, content: str) -> bool:
+    """Logs a specific interaction event associated with a lead."""
     try:
         with get_cursor() as cur:
             cur.execute(queries.INSERT_INTERACTION, (lead_id, role, content))

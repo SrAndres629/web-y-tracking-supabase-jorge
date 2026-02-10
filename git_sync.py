@@ -121,40 +121,38 @@ def main():
     Console.log("[1/6] Executing The Iron Gate (Strict Audit)...", "🛡️")
     
     # 🛑 CRITICAL INTEGRITY TESTS (Cannot be bypassed easily)
-    integrity_tests = [
-        "tests/test_boot_integrity.py",
-        "tests/test_template_integrity.py",
-        "tests/test_architecture_audit.py"
+    # We run by directory to ensure we catch ALL architecture/boot tests
+    integrity_phases = [
+        {"name": "Architecture & Boot", "path": "tests/00_architecture"},
+        {"name": "Unit Ops", "path": "tests/01_unit"},
+        {"name": "Integration & Sync", "path": "tests/02_integration"},
+        {"name": "Security & Perf Audit", "path": "tests/03_audit"}
     ]
     
     if args.force:
         Console.warning("⚠️ SKIPPING GATES: --force flag detected. You are flying blind.")
     else:
-        for t_file in integrity_tests:
-            Console.log(f"Running Integrity: {t_file}...", "🧪")
+        for phase in integrity_phases:
+            Console.log(f"Running Integrity: {phase['name']}...", "🧪")
             # -W error: Treat ALL warnings as errors (Zero Tolerance)
-            test_cmd = f'"{sys.executable}" -m pytest {t_file} -v -W error'
+            # -v: Verbose
+            test_cmd = f'"{sys.executable}" -m pytest {phase["path"]} -v -W error'
             success, stdout, stderr = run_cmd(test_cmd, cwd=REPO_PATH)
             
             if not success:
-                Console.error(f"⛔ DEPLOYMENT BLOCKED: {t_file} failed.")
+                Console.error(f"⛔ DEPLOYMENT BLOCKED: {phase['name']} failed.")
                 Console.info("Reason: Tests, Audits, or Strict Warnings failed.")
                 print(f"\n{Console.FAIL}=== AUDIT REPORT START ==={Console.ENDC}")
-                print(stdout)
-                print(stderr)
+                # Print only the last 20 lines of stdout/stderr to avoid spam, or full if short
+                print(stdout[-2000:] if len(stdout) > 2000 else stdout)
+                print(stderr[-2000:] if len(stderr) > 2000 else stderr)
                 print(f"{Console.FAIL}=== AUDIT REPORT END ==={Console.ENDC}")
                 sys.exit(1)
             
         Console.success("The Iron Gate Passed. Zero Defects Detected.")
 
-    # PHASE 1.5: SINCRO-VAL (Verify Global Versioning Logic locally)
-    Console.log("[1.5/6] Verifying Sincro-Logic...", "🧬")
-    sincro_cmd = f'"{sys.executable}" -m pytest tests/test_synchronicity.py -v'
-    success, _, stderr = run_cmd(sincro_cmd, cwd=REPO_PATH)
-    if not success:
-        Console.error("⛔ SINCRO-VAL FAILED: Asset versioning logic is broken.")
-        print(stderr)
-        sys.exit(1)
+    # PHASE 1.5: SINCRO-VAL (Implicitly covered by tests/02_integration)
+    # We kept specific check previously, but now it's in the suite.
 
     # PHASE 2: STAGE (Commit Local Changes First)
     Console.log("[2/6] Staging & Committing...", "📦")

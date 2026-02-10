@@ -9,7 +9,15 @@ sys.path.insert(0, PROJECT_ROOT)
 
 @pytest.fixture(scope="session", autouse=True)
 def set_env():
-    """Mocks app configuration settings"""
+    """Mocks app configuration settings EXCEPT when running audits"""
+    # 🛡️ SILICON VALLEY PROTOCOL: Allow Audits to see the REAL environment
+    # We detect if we are running in an audit-specific folder.
+    is_audit_run = any("tests/03_audit" in arg or "tests\\03_audit" in arg for arg in sys.argv)
+    
+    if is_audit_run:
+        yield None
+        return
+
     with patch("app.config.settings") as mock:
         mock.DATABASE_URL = "postgres://mock:mock@localhost:5432/db"
         mock.META_PIXEL_ID = "1234567890"

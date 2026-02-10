@@ -17,9 +17,17 @@ try:
     CACHE_ENABLED = True
 except ImportError:
     CACHE_ENABLED = False
-    def deduplicate_event(event_id, event_name="event"): return True
-    def cache_visitor_data(external_id, data, ttl_hours=24): pass
-    def get_cached_visitor(external_id): return None
+    def deduplicate_event(event_id: str, event_name: str = "event") -> bool:
+        """Mock deduplication: Always returns True (Success)"""
+        return True
+
+    def cache_visitor_data(external_id: str, data: Dict[str, Any], ttl_hours: int = 24) -> None:
+        """Mock cache visitor data"""
+        pass
+
+    def get_cached_visitor(external_id: str) -> Optional[Dict[str, Any]]:
+        """Mock get cached visitor"""
+        return None
 
 logger = logging.getLogger(__name__)
 
