@@ -10,6 +10,9 @@ import urllib.error
 import urllib.request
 
 import requests
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # =================================================================
 # 🛡️ SILICON VALLEY DEPLOYMENT PROTOCOL
@@ -21,6 +24,9 @@ import requests
 CLOUDFLARE_API_KEY = os.getenv("CLOUDFLARE_API_KEY")
 CLOUDFLARE_EMAIL = os.getenv("CLOUDFLARE_EMAIL")
 CLOUDFLARE_ZONE_ID = os.getenv("CLOUDFLARE_ZONE_ID")
+
+if not CLOUDFLARE_API_KEY or not CLOUDFLARE_EMAIL or not CLOUDFLARE_ZONE_ID:
+    print("\033[93m[WARN] Missing Cloudflare Credentials in .env. Purge will be skipped.\033[0m")
 
 if not CLOUDFLARE_API_KEY or not CLOUDFLARE_EMAIL:
     # We don't block execution effectively here as they might not be needed for all ops,
@@ -290,6 +296,10 @@ class SystemAuditor:
 def purge_cloudflare_cache():
     """Purge everything from Cloudflare Edge for jorgeaguirreflores.com"""
     Console.log("Initiating Cloudflare Cache Purge (Standard SV Protocol)...", "🧹")
+    if not CLOUDFLARE_ZONE_ID or not CLOUDFLARE_API_KEY or not CLOUDFLARE_EMAIL:
+        Console.warning("Skipping Cloudflare Purge: Missing Credentials.")
+        return
+
     url = f"https://api.cloudflare.com/client/v4/zones/{CLOUDFLARE_ZONE_ID}/purge_cache"
     headers = {
         "X-Auth-Email": CLOUDFLARE_EMAIL,

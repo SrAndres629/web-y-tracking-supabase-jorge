@@ -47,6 +47,20 @@ gotrue>=2.3.0
 
 # Build Cache Buster: 2026-02-05-CLEAN-INSTALL-v1
 
+# 🏗️ Architecture & DI (Silicon Valley Patterns)
+dependency-injector>=4.41.0
+inject>=5.2.1
+tenacity>=8.2.0
+circuitbreaker>=1.4.0
+
+# 📝 Structured Logging
+structlog>=24.1.0
+
+# 🔍 Code Quality
+beartype>=0.16.0
+
+# Build Cache Buster: 2026-02-05-CLEAN-INSTALL-v1
+
 # Auth & Scheduling (Critical for Boot)
 google-auth>=2.27.0
 google-auth-oauthlib>=1.2.0

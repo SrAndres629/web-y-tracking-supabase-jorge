@@ -211,7 +211,7 @@ def _schedule_tracking(bt, request, ident, ext_id, fbclid, fbp, event_id):
 
 def _set_identity_cookies(response, variant, ident, fbclid, fbp):
     response.set_cookie(key="ab_test_group", value=variant, max_age=2592000)
-    if not getattr(ident, "is_human", True): return
+    if not ident.get("is_human", True): return
     
     if not fbp:
         import random
