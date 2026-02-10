@@ -44,7 +44,7 @@ class TrackEventRequest(BaseModel):
     Validaciones Pydantic aseguran datos correctos antes de entrar al dominio.
     """
     event_name: str = Field(..., description="Nombre del evento")
-    external_id: str = Field(..., description="ID del visitante", min_length=32, max_length=32)
+    external_id: str = Field(..., description="ID del visitante", min_length=8, max_length=64)
     source_url: str = Field(..., description="URL donde ocurrió el evento")
     
     # Facebook tracking
@@ -97,7 +97,7 @@ class TrackEventResponse(BaseModel):
     message: Optional[str] = None
     
     @classmethod
-    def success(cls, event_id: str, message: str = "Event tracked") -> TrackEventResponse:
+    def ok(cls, event_id: str, message: str = "Event tracked") -> TrackEventResponse:
         return cls(success=True, event_id=event_id, status="queued", message=message)
     
     @classmethod

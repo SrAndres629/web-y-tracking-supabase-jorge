@@ -132,5 +132,5 @@ class MetaTracker(TrackerPort):
                 params={"access_token": self._settings.meta.access_token},
             )
             return response.status_code == 200
-        except:
+        except Exception:
             return False

@@ -10,7 +10,7 @@ instancias de handlers y servicios a los routes.
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import List
+from typing import List, Optional
 
 from app.application.commands.track_event import TrackEventHandler
 from app.application.commands.create_visitor import CreateVisitorHandler
@@ -72,20 +72,22 @@ def get_lead_repository() -> LeadRepository:
 
 # ===== Trackers =====
 
+_tracker_cache: Optional[List[TrackerPort]] = None
+
 def get_trackers() -> List[TrackerPort]:
-    """Provee lista de trackers configurados."""
+    """Provee lista de trackers configurados (singleton instances)."""
+    global _tracker_cache
+    if _tracker_cache is not None:
+        return _tracker_cache
+    
     from app.infrastructure.external.meta_capi import MetaTracker
     from app.infrastructure.external.rudderstack import RudderStackTracker
     
-    trackers: List[TrackerPort] = []
-    
-    # Meta CAPI
-    trackers.append(MetaTracker())
-    
-    # RudderStack
-    trackers.append(RudderStackTracker())
-    
-    return trackers
+    _tracker_cache = [
+        MetaTracker(),
+        RudderStackTracker(),
+    ]
+    return _tracker_cache
 
 
 # ===== Handlers =====

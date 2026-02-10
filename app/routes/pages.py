@@ -24,6 +24,7 @@ router = APIRouter()
 _potential_paths = [
     settings.TEMPLATES_DIR,
     os.path.join(os.getcwd(), "templates"),
+    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "templates"),
     os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "templates"),
     "/var/task/templates",
     "/var/task/api/templates",

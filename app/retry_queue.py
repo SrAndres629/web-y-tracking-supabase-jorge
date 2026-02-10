@@ -10,34 +10,14 @@ from typing import Dict, Any, List
 
 logger = logging.getLogger(__name__)
 
-QUEUE_FILE = "capi_retry_queue.json"
+# ⚠️ DISABLED: Filesystem-based retry queue is incompatible with Vercel serverless.
+# All functions below are safe no-ops that only log warnings.
+# TODO: Migrate to Upstash Redis-backed retry queue.
+QUEUE_FILE = "capi_retry_queue.json"  # Legacy reference, unused
 
 def add_to_retry_queue(event_name: str, payload: Dict[str, Any]):
-    """Adds a failed event to the local retry queue"""
-    try:
-        queue = []
-        if os.path.exists(QUEUE_FILE):
-            with open(QUEUE_FILE, "r") as f:
-                queue = json.load(f)
-        
-        # Add event with retry metadata
-        queue.append({
-            "event_name": event_name,
-            "payload": payload,
-            "failed_at": int(time.time()),
-            "retries": 0
-        })
-        
-        # Keep queue manageable (max 1000 items)
-        if len(queue) > 1000:
-            queue = queue[-1000:]
-            
-        with open(QUEUE_FILE, "w") as f:
-            json.dump(queue, f)
-            
-        logger.info(f"📥 [DLQ] Event '{event_name}' added to local queue.")
-    except Exception as e:
-        logger.error(f"❌ [DLQ] Failed to write to retry queue: {e}")
+    """[DISABLED] Would add failed event to local retry queue — filesystem writes crash on Vercel."""
+    logger.warning(f"⚠️ [DLQ] Retry queue DISABLED (serverless). Event '{event_name}' lost. Migrate to Redis.")
 
 def _process_single_item(item: Dict[str, Any]) -> bool:
     """Helper to process a single event retry"""

@@ -14,7 +14,7 @@ Inmutable (frozen) porque los eventos históricos no cambian.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, Self, Any
 from enum import Enum, auto
 
@@ -77,7 +77,7 @@ class TrackingEvent:
             event_id=EventId.generate(),
             event_name=event_name,
             external_id=external_id,
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             source_url=source_url,
             custom_data=custom_data or {},
             utm=utm or UTMParams(),

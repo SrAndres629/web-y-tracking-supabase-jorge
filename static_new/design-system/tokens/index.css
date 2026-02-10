@@ -1,0 +1,13 @@
+/**
+ * 🎨 DESIGN TOKENS - Entry Point
+ * Importa todos los tokens del sistema de diseño
+ * 
+ * Uso: Este archivo debe ser importado PRIMERO en input.css
+ * antes de @tailwind directives
+ */
+
+@import url('colors.css');
+@import url('animations.css');
+@import url('shadows.css');
+@import url('spacing.css');
+@import url('typography.css');

@@ -1,0 +1,177 @@
+/**
+ * ✨ ANIMATION TOKENS
+ * Design System - Motion Language
+ * 
+ * Timing functions, durations, y keyframes reutilizables
+ */
+
+:root {
+  /* -----------------------------------------------------------------
+     TRANSITION TIMING
+     Apple Spring: Mass=1, Stiffness=170, Damping=26
+     ----------------------------------------------------------------- */
+  --transition-spring: 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  --transition-bounce: 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  --transition-smooth: 0.3s ease;
+  --transition-fast: 0.15s ease;
+  
+  /* -----------------------------------------------------------------
+     DURATIONS
+     ----------------------------------------------------------------- */
+  --duration-instant: 0.1s;
+  --duration-fast: 0.2s;
+  --duration-normal: 0.3s;
+  --duration-slow: 0.5s;
+  --duration-slower: 0.7s;
+  --duration-cinematic: 1.2s;
+  
+  /* -----------------------------------------------------------------
+     DELAYS (Stagger patterns)
+     ----------------------------------------------------------------- */
+  --delay-micro: 50ms;
+  --delay-small: 100ms;
+  --delay-medium: 200ms;
+  --delay-large: 400ms;
+}
+
+/* -----------------------------------------------------------------
+   KEYFRAME ANIMATIONS
+   ----------------------------------------------------------------- */
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes pulse-gold {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(197, 160, 89, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(197, 160, 89, 0.8);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes shimmer-slow {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(197, 160, 89, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(197, 160, 89, 0.7), 0 0 60px rgba(197, 160, 89, 0.3);
+  }
+}
+
+@keyframes sweep {
+  0% {
+    opacity: 0;
+    margin-top: -10px;
+  }
+  100% {
+    opacity: 1;
+    margin-top: 0px;
+  }
+}
+
+@keyframes liquid-gold-flow {
+  to {
+    background-position: 200% center;
+  }
+}
+
+@keyframes gold-particle-float {
+  0% {
+    transform: translate(0, 0) scale(0.5);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.15;
+  }
+  85% {
+    opacity: 0.15;
+  }
+  100% {
+    transform: translate(var(--particle-x, 100px), var(--particle-y, -100px)) scale(1.2);
+    opacity: 0;
+  }
+}
+
+/* -----------------------------------------------------------------
+   UTILITY CLASSES (Optional - can be used with @apply)
+   ----------------------------------------------------------------- */
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s ease-out forwards;
+}
+
+.animate-pulse-gold {
+  animation: pulse-gold 2s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  animation: shimmer 3s ease infinite;
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+.animate-liquid-gold {
+  background-size: 200% auto;
+  animation: liquid-gold-flow 6s linear infinite;
+}
+
+/* Pause animations for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
