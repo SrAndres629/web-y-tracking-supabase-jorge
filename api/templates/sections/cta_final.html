@@ -1,0 +1,28 @@
+<!-- ========== CTA FINAL ========== -->
+<section class="py-24 bg-luxury-black border-t border-luxury-gold/10 relative overflow-hidden">
+    <!-- Spot Light Sutil -->
+    <div
+        class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-luxury-gold/5 blur-[120px] rounded-full pointer-events-none">
+    </div>
+
+    <div class="container mx-auto px-6 text-center relative z-10">
+        <span
+            class="inline-block py-1 px-3 rounded border border-luxury-gold/30 text-luxury-text text-[10px] font-bold uppercase tracking-widest mb-6">
+            Agenda Abierta 2025
+        </span>
+        <h2 class="font-serif text-4xl md:text-6xl text-luxury-text mb-8 tracking-wide">¿Lista para dejar de
+            <span class="italic text-luxury-gold">Maquillarte</span>?
+        </h2>
+        <p class="text-gray-400 max-w-2xl mx-auto mb-10 text-lg">
+            Agenda tu diseño gratuito hoy. Solo liberamos 5 cupos de valoración por semana.
+        </p>
+        <button onclick="handleConversion('CTA Final')"
+            class="px-12 py-6 bg-luxury-gold text-black font-bold uppercase tracking-widest text-xl hover:bg-white transition-all duration-300 shadow-[0_0_40px_rgba(197,160,89,0.5)]">
+            <i class="fab fa-whatsapp mr-3"></i> Agendar Valoración GRATIS
+        </button>
+        <a href="{{ contact.maps_url }}" target="_blank" rel="noopener noreferrer"
+            class="text-gray-600 text-sm mt-6 hover:text-luxury-gold transition duration-300">
+            <i class="fas fa-map-marker-alt mr-2"></i> {{ contact.address }}
+        </a>
+    </div>
+</section>

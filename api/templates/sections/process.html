@@ -1,0 +1,105 @@
+<!-- ========== PROCESO (SEO) ========== -->
+<section id="proceso" class="py-32 md:py-48 bg-transparent relative overflow-hidden"
+    style="content-visibility: auto; contain-intrinsic-size: 800px;">
+    <!-- Background element -->
+    <div
+        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-luxury-gold/5 blur-luxury-xl rounded-full pointer-events-none">
+    </div>
+
+    <div class="container mx-auto px-6 text-center relative z-10">
+        <span class="text-luxury-gold/60 text-[10px] font-bold uppercase tracking-[0.6em] mb-8 block">Experiencia
+            VIP</span>
+        <h2 class="font-serif text-4xl md:text-6xl mb-6 tracking-wide text-gradient-gold">Tu Camino a la <span
+                class="italic text-white font-light">Perfección</span></h2>
+
+        <!-- Trust Badge -->
+        <p class="text-gray-400 text-sm mt-4 mb-12 md:mb-16 flex flex-wrap items-center justify-center gap-4">
+            <span class="flex items-center gap-2">
+                <i class="fas fa-clock text-luxury-gold"></i>
+                Tiempo total: ~2.5 horas
+            </span>
+            <span class="hidden md:inline text-luxury-gold/30">|</span>
+            <span class="flex items-center gap-2">
+                <i class="fas fa-shield-alt text-luxury-gold"></i>
+                Garantía de satisfacción
+            </span>
+        </p>
+
+        <div class="grid md:grid-cols-3 gap-8 md:gap-12 relative">
+            <!-- Animated Connector Line (Desktop) -->
+            <div class="hidden md:block absolute top-[60px] left-[16.67%] right-[16.67%] h-[2px] -z-10">
+                <div
+                    class="w-full h-full bg-gradient-to-r from-transparent via-luxury-gold/40 to-transparent rounded-full animate-pulse-gold">
+                </div>
+            </div>
+
+            <!-- Paso 01: Diagnóstico -->
+            <div class="process-step group" data-aos="fade-up" data-aos-delay="0">
+                <!-- Icon -->
+                <div class="process-icon mb-6">
+                    <i class="fas fa-search-plus"></i>
+                </div>
+                <h3 class="text-xl font-serif text-luxury-text mb-3 tracking-wide">Diagnóstico</h3>
+                <p class="text-luxury-gray text-sm leading-relaxed font-light mb-4">
+                    Analizamos la geometría de tu rostro para recomendarte la técnica exacta.
+                </p>
+                <!-- Time Estimate -->
+                <span
+                    class="inline-flex items-center gap-1.5 text-xs text-luxury-gold/70 bg-luxury-gold/10 px-3 py-1 rounded-full">
+                    <i class="far fa-clock"></i> 10 min
+                </span>
+            </div>
+
+            <!-- Paso 02: Diseño Previo -->
+            <div class="process-step group" data-aos="fade-up" data-aos-delay="200">
+                <!-- Icon -->
+                <div class="process-icon mb-6">
+                    <i class="fas fa-pen-fancy"></i>
+                </div>
+                <h3 class="text-xl font-serif text-luxury-text mb-3 tracking-wide">Diseño Previo</h3>
+                <p class="text-luxury-gray text-sm leading-relaxed font-light mb-4">
+                    Dibujamos con lápiz sobre tu piel. <span class="text-luxury-gold/90">Nada es definitivo
+                        hasta que sonríes.</span>
+                </p>
+                <!-- Time Estimate -->
+                <span
+                    class="inline-flex items-center gap-1.5 text-xs text-luxury-gold/70 bg-luxury-gold/10 px-3 py-1 rounded-full">
+                    <i class="far fa-clock"></i> 15 min
+                </span>
+            </div>
+
+            <!-- Paso 03: Transformación -->
+            <div class="process-step group" data-aos="fade-up" data-aos-delay="400">
+                <!-- Icon -->
+                <div class="process-icon mb-6">
+                    <i class="fas fa-magic"></i>
+                </div>
+                <h3 class="text-xl font-serif text-luxury-text mb-3 tracking-wide">Transformación</h3>
+                <p class="text-luxury-gray text-sm leading-relaxed font-light mb-4">
+                    <span class="text-luxury-gold/90">Sin dolor traumático.</span> Sales lista para lucir tu
+                    nueva mirada.
+                </p>
+                <!-- Time Estimate -->
+                <span
+                    class="inline-flex items-center gap-1.5 text-xs text-luxury-gold/70 bg-luxury-gold/10 px-3 py-1 rounded-full">
+                    <i class="far fa-clock"></i> ~2 horas
+                </span>
+            </div>
+        </div>
+
+        <!-- Section CTA -->
+        <div class="mt-12 md:mt-16" data-aos="fade-up" data-aos-delay="600">
+            <a href="{{ contact.whatsapp }}?text={{ contact.cta_assessment|urlencode }}" target="_blank"
+                onclick="handleConversion('Proceso CTA')"
+                class="btn-gold-liquid group relative px-8 py-5 font-bold uppercase tracking-widest rounded-lg inline-flex items-center justify-center">
+                <span class="flex items-center gap-2 justify-center relative z-10">
+                    <i class="fab fa-whatsapp text-xl"></i> Agendar Tu Diagnóstico Gratis
+                </span>
+            </a>
+            <p class="text-gray-500 text-xs mt-4 flex items-center justify-center gap-2">
+                <span class="text-luxury-gold">✨</span>
+                Proceso 100% personalizado • Sin costo inicial
+            </p>
+        </div>
+    </div>
+</section>

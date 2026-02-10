@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Dashboard{% endblock %} | Jorge Aguirre Flores</title>
+    
+    <!-- Cache Control -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <!-- Tailwind CSS (Local Build for consistency) -->
+    <link rel="stylesheet" href="/static/css/output.css?v={{ system_version }}">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    {% block extra_head %}{% endblock %}
+    
+    <style>
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+        
+        /* Admin-specific utility classes */
+        .admin-card {
+            @apply bg-luxury-dark rounded-lg border border-gray-800;
+        }
+        
+        .admin-table-header {
+            @apply bg-gray-900 text-gray-400 text-left;
+        }
+        
+        .admin-table-row {
+            @apply border-t border-gray-800 hover:bg-gray-900/50;
+        }
+    </style>
+</head>
+
+<body class="bg-luxury-black text-gray-200 min-h-screen">
+    <!-- Admin Header -->
+    <header class="bg-luxury-dark border-b border-luxury-gold/30 py-4 px-6">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <a href="/admin/dashboard?key={{ admin_key }}" class="text-luxury-gold hover:text-white transition">
+                    <i class="fas fa-chart-line mr-2"></i>
+                    <span class="font-bold">Panel de Administración</span>
+                </a>
+            </div>
+            <div class="flex items-center gap-4">
+                <span class="text-gray-500 text-sm">Jorge Aguirre Flores</span>
+                <a href="/" class="text-gray-500 hover:text-luxury-gold text-sm">
+                    <i class="fas fa-external-link-alt mr-1"></i> Ver Sitio
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-6">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Global Admin Scripts -->
+    <script>
+        // Admin utilities
+        window.AdminUtils = {
+            confirmAction: function(message) {
+                return confirm(message);
+            },
+            formatDate: function(timestamp) {
+                return timestamp ? timestamp.substring(0, 16) : 'N/A';
+            }
+        };
+    </script>
+    
+    {% block extra_scripts %}{% endblock %}
+</body>
+
+</html>

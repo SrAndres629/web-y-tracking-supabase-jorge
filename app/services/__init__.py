@@ -263,7 +263,11 @@ async def publish_to_qstash(event_data: dict) -> bool:
 
 async def validate_turnstile(token: str) -> bool:
     """Validates a Cloudflare Turnstile token."""
-    if not settings.TURNSTILE_SECRET_KEY: return True
+    if not settings.TURNSTILE_SECRET_KEY:
+        if not getattr(validate_turnstile, '_warned', False):
+            logger.warning("⚠️ TURNSTILE_SECRET_KEY not set — bot protection DISABLED. All events pass through.")
+            validate_turnstile._warned = True
+        return True
     if not token: return False
     async with httpx.AsyncClient() as client:
         try:

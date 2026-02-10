@@ -60,11 +60,9 @@ async def lifespan(app: FastAPI):
     # Startup - OPTIMIZED: No blocking DB init
     logger.info("🚀 Iniciando Jorge Aguirre Flores Web v2.1.1 (Extreme Performance Mode)")
     
-    # 0. Process Dead Letter Queue (DLQ) for Meta CAPI
-    from app.retry_queue import process_retry_queue
-    from fastapi import BackgroundTasks
-    import asyncio
-    asyncio.create_task(asyncio.to_thread(process_retry_queue))
+    # DLQ disabled: retry_queue.py uses filesystem (incompatible with Vercel serverless)
+    # TODO: Re-enable when migrated to Redis-backed retry queue
+    logger.info("⚠️ DLQ disabled (serverless-incompatible filesystem writes)")
     
     # 1. Initialize Sentry (Parallelizable/Non-blocking)
     init_sentry()
@@ -148,34 +146,17 @@ import traceback
 @app.exception_handler(500)
 async def internal_exception_handler(request: Request, exc: Exception):
     """
-    Enhanced Diagnostic Handler for Vercel
+    Production-safe error handler.
+    Logs full diagnostics server-side but returns sanitized response to client.
     """
-    error_msg = str(exc)
-    tb = traceback.format_exc()
+    # Full diagnostics server-side only
+    logger.exception(f"🔥 CRITICAL 500 on {request.url.path}: {exc}")
     
-    # Forensic Filesystem Audit
-    audit = {}
-    try:
-        import os
-        audit = {
-            "cwd": os.getcwd(),
-            "var_task": os.listdir("/var/task") if os.path.exists("/var/task") else "NOT_FOUND",
-            "var_task_api": os.listdir("/var/task/api") if os.path.exists("/var/task/api") else "NOT_FOUND",
-            "pythonpath": os.getenv("PYTHONPATH"),
-            "file": __file__
-        }
-    except:
-        audit = {"error": "Audit failed"}
-
-    logger.error(f"🔥 CRITICAL 500: {error_msg}\n{tb}\nAudit: {audit}")
     return JSONResponse(
         status_code=500,
         content={
             "status": "error",
-            "message": "Internal Server Error (Debug Mode)",
-            "detail": error_msg,
-            "audit": audit,
-            "traceback": tb.split("\n")
+            "message": "Internal Server Error",
         }
     )
 

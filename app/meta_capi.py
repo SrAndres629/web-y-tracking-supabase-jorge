@@ -301,13 +301,10 @@ class EliteMetaCAPIService:
         return request
 
     def _handle_capi_error(self, e, name, event_id, url, user_data, custom_data):
-        logger.error(f"❌ [META CAPI SDK] Error: {e}")
-        add_to_retry_queue(name, {
-            "url": url, "user_data": vars(user_data),
-            "custom_data": vars(custom_data) if custom_data else None,
-            "event_id": event_id
-        })
-        return {"status": "queued", "event_id": event_id, "error": str(e)}
+        logger.error(f"❌ [META CAPI SDK] Error sending {name} ({event_id}): {e}")
+        # NOTE: Retry queue disabled — filesystem writes crash on Vercel serverless.
+        # TODO: Migrate to Redis-backed retry when Upstash is configured.
+        return {"status": "error", "event_id": event_id, "error": str(e)}
     
     async def _fallback_http_send(
         self,
