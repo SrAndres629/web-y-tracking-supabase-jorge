@@ -44,19 +44,14 @@ def test_swr_caching():
     pass
 
 def test_dlq_logic():
-    """Verify DLQ file creation"""
+    """Verify DLQ is disabled for serverless compatibility"""
     from app.retry_queue import add_to_retry_queue, QUEUE_FILE
     if os.path.exists(QUEUE_FILE):
         os.remove(QUEUE_FILE)
         
+    # Should not create file as it's now a safe no-op with warning
     add_to_retry_queue("TestEvent", {"data": "test"})
-    assert os.path.exists(QUEUE_FILE)
-    with open(QUEUE_FILE, "r") as f:
-        # Status logged internally
-        import json
-        data = json.load(f)
-        assert len(data) == 1
-        assert data[0]["event_name"] == "TestEvent"
+    assert not os.path.exists(QUEUE_FILE), "DLQ file should NOT be created in serverless-safe mode"
 
 if __name__ == "__main__":
     # Manual run

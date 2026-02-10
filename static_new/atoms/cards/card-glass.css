@@ -1,0 +1,55 @@
+/**
+ * ⚛️ ATOM: Card Glass
+ * Tarjeta con efecto glassmorphism
+ */
+
+@import url('../../design-system/tokens/index.css');
+
+.card-glass {
+  /* Layout */
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-2xl);
+  
+  /* Glass effect */
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--blur-xl));
+  -webkit-backdrop-filter: blur(var(--blur-xl));
+  border: 1px solid var(--glass-border);
+  
+  /* Shadow */
+  box-shadow: var(--shadow-glass);
+  
+  /* Animation */
+  transition: all var(--transition-spring);
+}
+
+/* Hover state */
+.card-glass:hover {
+  border-color: var(--glass-border-hover);
+  box-shadow: var(--shadow-glass-hover);
+}
+
+/* Shimmer effect on hover */
+.card-glass::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(197, 160, 89, 0.1), transparent);
+  transition: left 0.7s ease;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.card-glass:hover::before {
+  left: 100%;
+}
+
+/* Content wrapper */
+.card-glass > * {
+  position: relative;
+  z-index: 2;
+}

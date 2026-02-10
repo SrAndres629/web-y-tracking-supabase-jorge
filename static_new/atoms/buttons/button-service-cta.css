@@ -1,0 +1,56 @@
+/**
+ * ⚛️ ATOM: Button Service CTA
+ * Botón CTA específico para tarjetas de servicio
+ */
+
+@import url('../../design-system/tokens/index.css');
+
+.btn-service-cta {
+  /* Layout */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 0.875rem 1.5rem;
+  
+  /* Typography */
+  font-size: 0.75rem;
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--luxury-black);
+  
+  /* Appearance */
+  background: var(--gradient-gold-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-gold-sm);
+  
+  /* Interaction */
+  cursor: pointer;
+  transition: all var(--transition-smooth);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-service-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-gold-md);
+  background: linear-gradient(135deg, var(--luxury-gold-light) 0%, var(--luxury-gold) 100%);
+}
+
+.btn-service-cta:active {
+  transform: translateY(0);
+}
+
+.btn-service-cta i {
+  font-size: 1rem;
+}
+
+/* Mobile: full width */
+@media (max-width: 768px) {
+  .btn-service-cta {
+    width: 100%;
+    padding: var(--space-4);
+  }
+}

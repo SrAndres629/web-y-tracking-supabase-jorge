@@ -1,0 +1,101 @@
+/**
+ * ⚛️ ATOM: Card Service Premium
+ * Tarjeta de servicio con imagen de fondo y overlay
+ */
+
+@import url('../../design-system/tokens/index.css');
+
+.card-service-premium {
+  /* Layout */
+  position: relative;
+  overflow: hidden;
+  min-height: 380px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  
+  /* Appearance */
+  border: 1px solid transparent;
+  border-top: 1px solid rgba(197, 160, 89, 0.2);
+  border-radius: var(--radius-3xl);
+  background-size: cover;
+  background-position: center;
+  
+  /* Gradient overlay */
+  background-image: var(--gradient-dark-card);
+  
+  /* Animation */
+  transition: all var(--transition-spring);
+}
+
+/* Hover effects */
+.card-service-premium:hover {
+  transform: translateY(-12px) scale(1.02);
+  border-color: var(--luxury-gold);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7),
+              0 0 40px rgba(197, 160, 89, 0.2),
+              inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Shimmer on hover */
+.card-service-premium::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(197, 160, 89, 0.08) 40%,
+    rgba(197, 160, 89, 0.15) 50%,
+    rgba(197, 160, 89, 0.08) 60%,
+    transparent 100%);
+  transition: left 0.7s ease;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.card-service-premium:hover::after {
+  left: 100%;
+}
+
+/* Background overlay */
+.card-service-premium::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-overlay);
+  transition: opacity 0.5s ease;
+  z-index: 1;
+}
+
+.card-service-premium:hover::before {
+  opacity: 0.5;
+}
+
+/* Content area */
+.card-service-premium .content {
+  position: relative;
+  z-index: 5;
+  background: linear-gradient(180deg,
+    rgba(10, 10, 10, 0.5) 0%,
+    rgba(10, 10, 10, 0.95) 100%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-top: 1px solid rgba(197, 160, 89, 0.1);
+  padding: var(--space-6);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .card-service-premium {
+    border-radius: var(--radius-2xl);
+    margin-bottom: var(--space-6);
+    min-height: 320px;
+  }
+  
+  .card-service-premium .content {
+    padding: var(--space-5);
+  }
+}
