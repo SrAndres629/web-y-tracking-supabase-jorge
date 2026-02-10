@@ -1,3 +1,4 @@
+
 # =================================================================
 # CONFIG.PY - Configuración centralizada con validación (Pydantic)
 # Jorge Aguirre Flores Web
@@ -25,22 +26,28 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 def _resolve_templates_dir() -> str:
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    # Use absolute path from current file
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    base_dir = os.path.dirname(current_dir)
+    
     if os.getenv("VERCEL"):
+        # Vercel-specific absolute path (usually /var/task)
         template_dir = os.path.join(os.getcwd(), "templates")
     else:
         template_dir = os.path.join(base_dir, "templates")
+    
     print(f"DEBUG: Template dir set to: {template_dir}")
     return template_dir
 
 def _resolve_static_dir() -> str:
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    base_dir = os.path.dirname(current_dir)
+    
     if os.getenv("VERCEL"):
         return os.path.join(os.getcwd(), "static")
     return os.path.join(base_dir, "static")
 
 class Settings(BaseSettings):
-    """Configuración centralizada del sistema con validación"""
     model_config = SettingsConfigDict(
         env_file=".env", 
         env_file_encoding="utf-8", 

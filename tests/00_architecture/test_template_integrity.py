@@ -4,7 +4,7 @@ from jinja2 import Environment, FileSystemLoader, TemplateSyntaxError
 from pathlib import Path
 
 BASE_DIR = Path(__file__).parent.parent
-TEMPLATES_DIR = BASE_DIR / "templates"
+TEMPLATES_DIR = BASE_DIR / "api" / "templates"
 
 def test_jinja2_template_syntax():
     """

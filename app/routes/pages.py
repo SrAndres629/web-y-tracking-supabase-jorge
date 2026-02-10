@@ -23,13 +23,9 @@ router = APIRouter()
 # 🗄️ TEMPLATE CONFIG (Resilient Search Paths for Serverless)
 _potential_paths = [
     settings.TEMPLATES_DIR,
-    os.path.join(os.getcwd(), "templates"),
-    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "templates"),
-    os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "templates"),
-    "/var/task/templates",
+    os.path.join(os.getcwd(), "api", "templates"),
     "/var/task/api/templates",
-    "api/templates",
-    "../templates"
+    "api/templates"
 ]
 
 # 🔍 FORENSIC AUDIT (Log actual filesystem state)

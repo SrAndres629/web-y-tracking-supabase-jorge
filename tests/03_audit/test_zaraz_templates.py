@@ -10,8 +10,8 @@ from pathlib import Path
 
 # ─── Constants ───────────────────────────────────────────────────
 PROJECT_ROOT = Path(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-TEMPLATES_DIR = PROJECT_ROOT / "templates"
-STATIC_JS_DIR = PROJECT_ROOT / "static" / "js"
+TEMPLATES_DIR = PROJECT_ROOT / "api" / "templates"
+TRACKING_DIR = PROJECT_ROOT / "static" / "engines" / "tracking"
 
 # Patterns that indicate tracking conflicts
 BANNED_PATTERNS = {
@@ -136,37 +136,39 @@ class TestBaseTemplateZaraz:
 class TestTrackingJsZaraz:
     """Verify tracking.js uses zaraz.track() properly."""
 
-    def _get_tracking_js(self):
-        path = STATIC_JS_DIR / "tracking.js"
-        assert path.exists(), "tracking.js not found"
+    def _get_pixel_bridge(self):
+        path = TRACKING_DIR / "pixel-bridge.js"
+        assert path.exists(), "pixel-bridge.js not found"
+        return _read_file(path)
+
+    def _get_tracking_engine(self):
+        path = TRACKING_DIR / "index.js"
+        assert path.exists(), "tracking engine not found"
         return _read_file(path)
 
     def test_zaraz_track_bridge_exists(self):
         """tracking.js must check for zaraz.track before falling back to fbq."""
-        content = self._get_tracking_js()
-        assert "zaraz" in content and "zaraz.track" in content, \
+        content = self._get_pixel_bridge()
+        assert "zaraz" in content and "window.zaraz.track" in content, \
             "tracking.js does not reference zaraz.track() — missing Zaraz bridge"
 
     def test_no_duplicate_pageview_pixel(self):
         """tracking.js must NOT fire PageView via safeFbq/fbq (Zaraz handles this)."""
-        content = self._get_tracking_js()
-        # Look for safeFbq('track', 'PageView') pattern
-        has_duplicate = re.search(
-            r"safeFbq\s*\(\s*['\"]track['\"],\s*['\"]PageView['\"]",
-            content
-        )
+        content = self._get_tracking_engine()
+        # Pixel-side PageView should not be sent explicitly
+        has_duplicate = re.search(r"PixelBridge\.track\s*\(\s*['\"]PageView['\"]", content)
         assert not has_duplicate, \
             "tracking.js fires PageView via safeFbq — this duplicates Zaraz's AllPageviews action"
 
     def test_capi_pageview_exists(self):
         """tracking.js should still send PageView to CAPI for server-side dedup."""
-        content = self._get_tracking_js()
-        assert "trackEvent('PageView'" in content or 'trackEvent("PageView"' in content, \
+        content = self._get_tracking_engine()
+        assert "CAPI.trackAsync('PageView'" in content or 'CAPI.trackAsync("PageView"' in content, \
             "tracking.js missing CAPI PageView event — needed for server-side deduplication"
 
     def test_zaraz_first_priority(self):
         """Zaraz should be checked BEFORE fbq in the safeFbq function."""
-        content = self._get_tracking_js()
+        content = self._get_pixel_bridge()
         zaraz_pos = content.find("window.zaraz")
         fbq_pos = content.find("window.fbq")
         # Allow for both existing, but zaraz should come first in safeFbq
@@ -176,10 +178,10 @@ class TestTrackingJsZaraz:
 
     def test_retry_queue_supports_zaraz(self):
         """The retry queue should attempt zaraz.track before fbq."""
-        content = self._get_tracking_js()
+        content = self._get_pixel_bridge()
         # In the retry interval, zaraz should be checked
-        retry_section = content[content.find("retryTimer"):]
-        assert "zaraz" in retry_section, \
+        retry_section = content[content.find("_startRetryLoop"):]
+        assert "window.zaraz.track" in retry_section, \
             "Retry queue does not check for zaraz — events may be lost"
 
 
