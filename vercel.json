@@ -1,11 +1,14 @@
 {
     "version": 2,
-    "functions": {
-        "api/index.py": {
-            "maxDuration": 10,
-            "includeFiles": "../{templates,app,main.py,_vendor}/**"
+    "builds": [
+        {
+            "src": "api/index.py",
+            "use": "@vercel/python",
+            "config": {
+                "includeFiles": "templates/**"
+            }
         }
-    },
+    ],
     "rewrites": [
         {
             "source": "/static/(.*)",
