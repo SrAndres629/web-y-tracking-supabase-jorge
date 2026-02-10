@@ -10,9 +10,14 @@ limiter.enabled = False
 # FORCE STRICT SECURITY: Ensure Secret Key is "present" so logic doesn't bypass
 settings.TURNSTILE_SECRET_KEY = "dummy_secret_for_test"
 
-client = TestClient(app)
+import pytest
 
-def test_zero_tolerance_turnstile_missing():
+@pytest.fixture
+def client():
+    with TestClient(app) as client:
+        yield client
+
+def test_zero_tolerance_turnstile_missing(client):
     """
     🛡️ ARCHITECTURAL AUDIT: Zero Tolerance Policy (Missing Token)
     Attempts to send a critical event (Lead) without a Turnstile token.
@@ -45,7 +50,7 @@ def test_zero_tolerance_turnstile_missing():
 
 
 @patch("app.routes.tracking_routes.validate_turnstile", new_callable=AsyncMock)
-def test_zero_tolerance_turnstile_invalid(mock_validate):
+def test_zero_tolerance_turnstile_invalid(mock_validate, client):
     """
     🛡️ ARCHITECTURAL AUDIT: Zero Tolerance Policy (Invalid Token)
     Attempts to send a critical event with a FAKE token.

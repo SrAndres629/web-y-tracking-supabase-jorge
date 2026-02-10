@@ -1,6 +1,7 @@
 import pytest
 import time
 import re
+from unittest.mock import patch
 from hypothesis import given, strategies as st, settings as h_settings, Verbosity
 from app.tracking import generate_event_id, generate_fbc, generate_fbp, hash_data
 from app.services import normalize_pii
@@ -133,6 +134,7 @@ def test_hashing_consistency_math_phone(phone):
     # Check consistency
     assert hash_data(normalized_raw) == hash_data(normalized_dirty)
 
+@patch("app.cache.REDIS_ENABLED", False)
 @given(st.uuids())
 def test_deduplication_idempotency_math(event_id):
     """

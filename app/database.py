@@ -61,8 +61,12 @@ def get_db_connection() -> Any:
 
 def _establish_connection():
     if BACKEND == "postgres":
+        # 🛡️ SILICON VALLEY FIX: specific query params like 'pgbouncer=true' cause libpq to crash.
+        # We strip them for the raw psycopg2 connection.
+        clean_url = settings.DATABASE_URL.replace("?pgbouncer=true", "").replace("&pgbouncer=true", "")
+        
         return psycopg2.connect(
-            settings.DATABASE_URL,
+            clean_url,
             connect_timeout=5,
             sslmode='require'
         )
@@ -285,15 +289,15 @@ def save_visitor(external_id, fbclid, ip_address, user_agent, source="pageview",
             if BACKEND == "postgres":
                 stmt = """
                     INSERT INTO visitors 
-                    (external_id, fbclid, ip, user_agent, source, utm_source, utm_medium, utm_campaign, utm_term, utm_content)
+                    (external_id, fbclid, ip_address, user_agent, source, utm_source, utm_medium, utm_campaign, utm_term, utm_content)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    ON CONFLICT (external_id) DO NOTHING
+                    ON CONFLICT DO NOTHING
                 """
                 cur.execute(stmt, params)
             else:
                 stmt = """
                     INSERT OR IGNORE INTO visitors 
-                    (external_id, fbclid, ip, user_agent, source, utm_source, utm_medium, utm_campaign, utm_term, utm_content, created_at)
+                    (external_id, fbclid, ip_address, user_agent, source, utm_source, utm_medium, utm_campaign, utm_term, utm_content, created_at)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
                 """
                 cur.execute(stmt, params)
@@ -483,9 +487,9 @@ def get_all_visitors(limit: int = 50) -> List[Dict[str, Any]]:
         with get_cursor() as cur:
             # SQL Raw para asegurar compatibilidad
             if BACKEND == "postgres":
-                sql = "SELECT id, external_id, source, created_at, ip FROM visitors ORDER BY created_at DESC LIMIT %s"
+                sql = "SELECT id, external_id, source, created_at, ip_address FROM visitors ORDER BY created_at DESC LIMIT %s"
             else:
-                sql = "SELECT id, external_id, source, created_at, ip FROM visitors ORDER BY created_at DESC LIMIT ?"
+                sql = "SELECT id, external_id, source, created_at, ip_address FROM visitors ORDER BY created_at DESC LIMIT ?"
             
             cur.execute(sql, (limit,))
             rows = cur.fetchall()

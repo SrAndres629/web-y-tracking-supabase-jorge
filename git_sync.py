@@ -1,14 +1,15 @@
-import subprocess
-import sys
-import os
+import argparse
 import datetime
 import json
-import urllib.request
-import urllib.error
-import argparse
-import time
-import requests
+import os
 import re
+import subprocess
+import sys
+import time
+import urllib.error
+import urllib.request
+
+import requests
 
 # =================================================================
 # 🛡️ SILICON VALLEY DEPLOYMENT PROTOCOL
@@ -23,36 +24,263 @@ CLOUDFLARE_EMAIL = "Acordero629@gmail.com"
 REPO_PATH = os.path.dirname(os.path.abspath(__file__))
 # -------------------------------------------------------
 
+
 class Console:
     """Professional Logging Wrapper"""
-    HEADER = '\033[95m'
-    BLUE = '\033[94m'
-    CYAN = '\033[96m'
-    GREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
+
+    HEADER = "\033[95m"
+    BLUE = "\033[94m"
+    CYAN = "\033[96m"
+    GREEN = "\033[92m"
+    WARNING = "\033[93m"
+    FAIL = "\033[91m"
+    ENDC = "\033[0m"
+    BOLD = "\033[1m"
+
+    @staticmethod
+    def _print(text):
+        try:
+            print(text)
+        except UnicodeEncodeError:
+            enc = sys.stdout.encoding or "utf-8"
+            if hasattr(sys.stdout, "buffer"):
+                sys.stdout.buffer.write((text + "\n").encode(enc, errors="replace"))
+                sys.stdout.flush()
+            else:
+                print(text.encode(enc, errors="replace").decode(enc, errors="replace"))
 
     @staticmethod
     def log(msg, symbol="*"):
-        print(f"{symbol} {msg}")
+        Console._print(f"{symbol} {msg}")
 
     @staticmethod
     def success(msg):
-        print(f"{Console.GREEN}[OK] {msg}{Console.ENDC}")
+        Console._print(f"{Console.GREEN}[OK] {msg}{Console.ENDC}")
 
     @staticmethod
     def error(msg):
-        print(f"{Console.FAIL}[ERROR] {msg}{Console.ENDC}")
+        Console._print(f"{Console.FAIL}[ERROR] {msg}{Console.ENDC}")
 
     @staticmethod
     def info(msg):
-        print(f"{Console.CYAN}[INFO] {msg}{Console.ENDC}")
+        Console._print(f"{Console.CYAN}[INFO] {msg}{Console.ENDC}")
 
     @staticmethod
     def warning(msg):
-        print(f"{Console.WARNING}[WARN] {msg}{Console.ENDC}")
+        Console._print(f"{Console.WARNING}[WARN] {msg}{Console.ENDC}")
+
+
+class SystemAuditor:
+    def __init__(self, repo_path):
+        self.repo_path = repo_path
+        self.issues = []
+        self.raw_logs = []
+        self.suggestions = []
+
+    def check_environment(self):
+        Console.log("Verifying Execution Environment...", "🔍")
+        required_modules = ["pytest", "hypothesis", "httpx"]
+        missing = []
+        for mod in required_modules:
+            try:
+                __import__(mod)
+            except ImportError:
+                missing.append(mod)
+
+        if missing:
+            self._add_issue(
+                file_path="ENVIRONMENT",
+                line="N/A",
+                err_type="Exception",
+                message=f"Missing modules: {', '.join(missing)}",
+                phase="Environment",
+            )
+            Console.error(f"CRITICAL: Missing core engineering mandates: {', '.join(missing)}")
+            Console.info("Run: pip install -r requirements.txt")
+            return False
+
+        Console.success("Environment Integrity Verified (Dependencies Loaded).")
+        return True
+
+    def run_phase(self, name, path, audit_mode=True):
+        Console.log(f"Running Integrity: {name}...", "-")
+
+        env_prefix = 'set "AUDIT_MODE=1" && ' if audit_mode else ""
+        pytest_cmd = (
+            f'{env_prefix}"{sys.executable}" -m pytest {path} -v -W error '
+            f"--tb=short --maxfail=0"
+        )
+
+        result = subprocess.run(
+            pytest_cmd,
+            shell=True,
+            capture_output=True,
+            text=True,
+            cwd=self.repo_path,
+        )
+        stdout = result.stdout or ""
+        stderr = result.stderr or ""
+        combined = stdout + "\n" + stderr
+        self.raw_logs.append(combined)
+
+        if result.returncode != 0:
+            Console.error(f"Phase failed: {name}")
+            issues = self._extract_issues(combined, phase=name)
+            if not issues:
+                self._add_issue(
+                    file_path="UNKNOWN",
+                    line="N/A",
+                    err_type="Exception",
+                    message="Unknown failure. Check logs.",
+                    phase=name,
+                )
+        else:
+            Console.success(f"Phase passed: {name}")
+
+    def _add_issue(self, file_path, line, err_type, message, phase):
+        self.issues.append(
+            {
+                "file": file_path,
+                "line": str(line),
+                "type": err_type,
+                "message": message.strip(),
+                "phase": phase,
+            }
+        )
+
+    def _extract_issues(self, output, phase):
+        issues_added = 0
+        last_file = None
+        last_line = None
+
+        for line in output.splitlines():
+            file_match = re.search(r'File "([^"]+\.py)", line (\d+)', line)
+            if file_match:
+                last_file = file_match.group(1)
+                last_line = file_match.group(2)
+                continue
+
+            win_path = re.search(r"([A-Za-z]:\\[^:]+\.py):(\d+):", line)
+            unix_path = re.search(r"(/[^:]+\.py):(\d+):", line)
+            if win_path:
+                last_file, last_line = win_path.group(1), win_path.group(2)
+                continue
+            if unix_path:
+                last_file, last_line = unix_path.group(1), unix_path.group(2)
+                continue
+
+            error_match = re.match(r"^E\s+(.*)", line)
+            if error_match:
+                msg = error_match.group(1)
+                err_type = self._classify_error_type(msg)
+                self._add_issue(
+                    file_path=last_file or "UNKNOWN",
+                    line=last_line or "N/A",
+                    err_type=err_type,
+                    message=msg,
+                    phase=phase,
+                )
+                issues_added += 1
+                continue
+
+            fail_match = re.match(r"^FAILED\s+(.+?)\s+-\s+(.*)$", line)
+            if fail_match:
+                msg = fail_match.group(2)
+                err_type = self._classify_error_type(msg)
+                self._add_issue(
+                    file_path=last_file or fail_match.group(1),
+                    line=last_line or "N/A",
+                    err_type=err_type,
+                    message=msg,
+                    phase=phase,
+                )
+                issues_added += 1
+
+        return issues_added
+
+    def _classify_error_type(self, message):
+        msg = message.lower()
+        if "assert" in msg or "assertionerror" in msg:
+            return "Assert"
+        if "timeout" in msg or "timeoutexception" in msg:
+            return "Timeout"
+        if "exception" in msg or "error" in msg or "failed" in msg:
+            return "Exception"
+        return "Exception"
+
+    def analyze_suggestions(self):
+        combined = "\n".join(self.raw_logs).lower()
+        suggestion_map = {
+            r"oauth.*190|error 190": "Posible error de credenciales OAuth. Revisa tus variables .env y el token.",
+            r"permission denied": "Parece un error de permisos. Revisa accesos a archivos o credenciales.",
+            r"timeout": "Hay un timeout. Revisa red/servicios externos y aumenta el timeout si aplica.",
+        }
+        for pattern, suggestion in suggestion_map.items():
+            if re.search(pattern, combined):
+                self.suggestions.append(suggestion)
+
+    def report(self):
+        Console.log("========== FORENSIC DIAGNOSTIC REPORT ==========", "=")
+        if not self.issues:
+            Console.success("Score de Salud: 100% (Zero Defects Detected)")
+            return True
+
+        total_phases = len({i["phase"] for i in self.issues})
+        Console.error(f"Score de Salud: < 100% ({len(self.issues)} errores en {total_phases} fases)")
+
+        rows = []
+        for issue in self.issues:
+            rows.append(
+                (
+                    self._shorten_path(issue["file"]),
+                    issue["line"],
+                    issue["type"],
+                    issue["phase"],
+                )
+            )
+
+        headers = ("Archivo", "Linea", "Tipo", "Fase")
+        col_widths = [
+            max(len(headers[0]), *(len(r[0]) for r in rows)),
+            max(len(headers[1]), *(len(r[1]) for r in rows)),
+            max(len(headers[2]), *(len(r[2]) for r in rows)),
+            max(len(headers[3]), *(len(r[3]) for r in rows)),
+        ]
+
+        def fmt_row(values):
+            return (
+                f"{values[0]:<{col_widths[0]}}  "
+                f"{values[1]:<{col_widths[1]}}  "
+                f"{values[2]:<{col_widths[2]}}  "
+                f"{values[3]:<{col_widths[3]}}"
+            )
+
+        Console._print(Console.BOLD + fmt_row(headers) + Console.ENDC)
+        for row in rows:
+            Console._print(Console.FAIL + fmt_row(row) + Console.ENDC)
+
+        Console.log("Detalles de errores:", "!")
+        for issue in self.issues:
+            Console._print(
+                f"- {self._shorten_path(issue['file'])}:{issue['line']} "
+                f"[{issue['type']}] {issue['message']}"
+            )
+
+        self.analyze_suggestions()
+        if self.suggestions:
+            Console.log("Sugerencias de mejora:", "💡")
+            for suggestion in sorted(set(self.suggestions)):
+                Console._print(f"- {suggestion}")
+
+        return False
+
+    def _shorten_path(self, path):
+        if not path or path in {"UNKNOWN", "ENVIRONMENT"}:
+            return path
+        if len(path) <= 80:
+            return path
+        return f"...{path[-77:]}"
+
 
 def purge_cloudflare_cache():
     """Purge everything from Cloudflare Edge for jorgeaguirreflores.com"""
@@ -61,10 +289,10 @@ def purge_cloudflare_cache():
     headers = {
         "X-Auth-Email": CLOUDFLARE_EMAIL,
         "X-Auth-Key": CLOUDFLARE_API_KEY,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
     }
     data = json.dumps({"purge_everything": True}).encode("utf-8")
-    
+
     try:
         req = urllib.request.Request(url, data=data, headers=headers, method="POST")
         with urllib.request.urlopen(req) as response:
@@ -76,8 +304,8 @@ def purge_cloudflare_cache():
     except Exception as e:
         Console.error(f"Critical Purge Exception: {e}")
 
+
 def run_cmd(command, cwd=None, exit_on_fail=False):
-    """Executes shell command with strict error checking"""
     result = subprocess.run(command, shell=True, capture_output=True, text=True, cwd=cwd)
     if result.returncode != 0:
         if exit_on_fail:
@@ -86,25 +314,6 @@ def run_cmd(command, cwd=None, exit_on_fail=False):
         return False, result.stdout, result.stderr
     return True, result.stdout, result.stderr
 
-def check_environment():
-    """Phase 0: Environment Integrity Verification"""
-    Console.log("Verifying Execution Environment...", "🔍")
-    
-    required_modules = ["pytest", "hypothesis", "httpx"]
-    missing = []
-    
-    for mod in required_modules:
-        try:
-            __import__(mod)
-        except ImportError:
-            missing.append(mod)
-    
-    if missing:
-        Console.error(f"CRITICAL: Missing core engineering mandates: {', '.join(missing)}")
-        Console.info("Run: pip install -r requirements.txt")
-        sys.exit(1)
-    
-    Console.success("Environment Integrity Verified (Dependencies Loaded).")
 
 def main():
     parser = argparse.ArgumentParser(description="Silicon Valley Deployment Pipeline")
@@ -114,58 +323,47 @@ def main():
 
     print(f"\n{Console.BOLD}[NEURAL-SYNC] Initializing Silicon Valley Deployment Protocol...{Console.ENDC}\n")
 
-    # PHASE 0: INTEGRITY CHECK
-    check_environment()
+    auditor = SystemAuditor(REPO_PATH)
+    env_ok = auditor.check_environment()
 
-    # PHASE 1: THE IRON GATE (Unified Audit)
-    Console.log("[1/6] Executing The Iron Gate (Strict Audit)...", "#")
-    
-    # 🛑 CRITICAL INTEGRITY TESTS (Cannot be bypassed easily)
-    # We run by directory to ensure we catch ALL architecture/boot tests
     integrity_phases = [
         {"name": "Architecture & Boot", "path": "tests/00_architecture"},
         {"name": "Unit Ops", "path": "tests/01_unit"},
         {"name": "Integration & Sync", "path": "tests/02_integration"},
-        {"name": "Security & Perf Audit", "path": "tests/03_audit"}
+        {"name": "Security & Perf Audit", "path": "tests/03_audit"},
     ]
-    
+
     if args.force:
         Console.warning("⚠️ SKIPPING GATES: --force flag detected. You are flying blind.")
     else:
-        for phase in integrity_phases:
-            Console.log(f"Running Integrity: {phase['name']}...", "-")
-            # -W error: Treat ALL warnings as errors (Zero Tolerance)
-            # -v: Verbose
-            # AUDIT_MODE=1: Signals conftest.py to NOT mock settings
-            test_cmd = f'set AUDIT_MODE=1 && "{sys.executable}" -m pytest {phase["path"]} -v -W error'
-            success, stdout, stderr = run_cmd(test_cmd, cwd=REPO_PATH)
-            
-            if not success:
-                Console.error(f"⛔ DEPLOYMENT BLOCKED: {phase['name']} failed.")
-                Console.info("Reason: Tests, Audits, or Strict Warnings failed.")
-                print(f"\n{Console.FAIL}=== AUDIT REPORT START ==={Console.ENDC}")
-                # Print only the last 20 lines of stdout/stderr to avoid spam, or full if short
-                print(stdout[-2000:] if len(stdout) > 2000 else stdout)
-                print(stderr[-2000:] if len(stderr) > 2000 else stderr)
-                print(f"{Console.FAIL}=== AUDIT REPORT END ==={Console.ENDC}")
-                sys.exit(1)
-            
-        Console.success("The Iron Gate Passed. Zero Defects Detected.")
+        if not env_ok:
+            for phase in integrity_phases:
+                auditor._add_issue(
+                    file_path=phase["path"],
+                    line="N/A",
+                    err_type="Exception",
+                    message="Skipped due to missing dependencies.",
+                    phase=phase["name"],
+                )
+        else:
+            for phase in integrity_phases:
+                auditor.run_phase(phase["name"], phase["path"], audit_mode=True)
 
-    # PHASE 1.5: SINCRO-VAL (Implicitly covered by tests/02_integration)
-    # We kept specific check previously, but now it's in the suite.
+    healthy = auditor.report()
+    if not healthy and not args.force:
+        Console.error("Deployment blocked due to failures. Fix issues and re-run.")
+        sys.exit(1)
 
-    # PHASE 2: STAGE (Commit Local Changes First)
     Console.log("[2/6] Staging & Committing...", "+")
     run_cmd("git add .", cwd=REPO_PATH)
-    
+
     success, output, _ = run_cmd("git status --porcelain", cwd=REPO_PATH)
     has_changes = bool(output.strip())
-    
+
     if has_changes or args.force:
-        time_str = datetime.datetime.now().strftime('%H:%M')
+        time_str = datetime.datetime.now().strftime("%H:%M")
         msg = args.message if args.message else f"chore: system sync {time_str}"
-        
+
         if not has_changes and args.force:
             msg += " (FORCED)"
             run_cmd(f'git commit --allow-empty -m "{msg}"', cwd=REPO_PATH)
@@ -175,46 +373,39 @@ def main():
     else:
         Console.info("No local changes to commit.")
 
-    # PHASE 3: SYNC & REBASE (Integrate Remote)
     Console.log("[3/6] Synchronizing with Origin...", ">")
     run_cmd("git fetch origin", cwd=REPO_PATH)
-    
+
     Console.log("[4/6] Rebase Integration...", "~")
-    # Now we can rebase safely because we are clean
-    success, _, stderr = run_cmd("git pull origin main --rebase", cwd=REPO_PATH)
+    success, _, _ = run_cmd("git pull origin main --rebase", cwd=REPO_PATH)
     if not success:
         Console.error("CRITICAL: Rebase Conflict. Resolve manually with 'git status'.")
         sys.exit(1)
-    
-    # Check if we need to push
-    # (Existing logic to check ahead/behind)
+
     _, local_sha, _ = run_cmd("git rev-parse HEAD", cwd=REPO_PATH)
     _, remote_sha, _ = run_cmd("git rev-parse origin/main", cwd=REPO_PATH)
-    
+
     if local_sha.strip() == remote_sha.strip():
         Console.success("SYSTEM SYNCED. No Ops Required.")
         return
     else:
         Console.log("Local is ahead. Proceeding to Push...", "⬆️")
 
-    # PHASE 6: DEPLOY
     Console.log("[6/6] Injecting into Production...", "!")
     success, _, stderr = run_cmd("git push -u origin main", cwd=REPO_PATH)
-    
+
     if success:
         Console.success("✅ DEPLOYMENT SUCCESSFUL")
         Console.log("Validating Edge Cache Purge...", "🧹")
         purge_cloudflare_cache()
-        
-        # 💎 SILICON VALLEY PRE-WARM: Force global propagation
+
         try:
             url = "https://jorgeaguirreflores.com"
             Console.log(f"🔥 Pre-Warming Global Edge: {url}", "🔥")
-            # Wait a few seconds for Vercel to reflect the push
             time.sleep(10)
             resp = requests.get(url, timeout=15)
             if resp.status_code == 200:
-                version_match = re.search(r'\?v=(\d+)', resp.text)
+                version_match = re.search(r"\?v=(\d+)", resp.text)
                 new_version = version_match.group(1) if version_match else "Unknown"
                 Console.success(f"PRODUCCIÓN ACTUALIZADA: Versión Atómica {new_version} activa.")
             else:
@@ -225,6 +416,7 @@ def main():
         print(f"\n{Console.GREEN}🌟 System is Live: https://jorgeaguirreflores.com{Console.ENDC}")
     else:
         Console.error(f"Push Failed: {stderr}")
+
 
 if __name__ == "__main__":
     main()

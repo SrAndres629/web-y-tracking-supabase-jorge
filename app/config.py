@@ -63,7 +63,6 @@ class Settings(BaseSettings):
     
     # Tracking & Analytics
     FLAG_META_TRACKING: bool = True          # Master switch for Meta CAPI
-    FLAG_GOOGLE_ANALYTICS: bool = True       # Master switch for GA4
     FLAG_HEATMAP_ENABLED: bool = False       # Enable heatmap tracking
     
     # Maintenance Mode
@@ -107,7 +106,17 @@ class Settings(BaseSettings):
     # Upstash Redis (Serverless Cache - for Event Deduplication)
     # Get credentials at: https://upstash.com
     UPSTASH_REDIS_REST_URL: Optional[str] = os.getenv("UPSTASH_REDIS_REST_URL")
+    UPSTASH_REDIS_REST_URL: Optional[str] = os.getenv("UPSTASH_REDIS_REST_URL")
     UPSTASH_REDIS_REST_TOKEN: Optional[str] = os.getenv("UPSTASH_REDIS_REST_TOKEN")
+
+    # QStash (Background Tasks)
+    QSTASH_URL: Optional[str] = None
+    QSTASH_TOKEN: Optional[str] = None
+    QSTASH_CURRENT_SIGNING_KEY: Optional[str] = None
+    QSTASH_NEXT_SIGNING_KEY: Optional[str] = None
+
+    # n8n Webhook (Optional)
+    N8N_WEBHOOK_URL: Optional[str] = None
     
     # Microsoft Clarity (Free Heatmaps & Session Recordings)
     # Get project ID at: https://clarity.microsoft.com

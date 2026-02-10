@@ -16,6 +16,7 @@
 
 import logging
 import json
+import os
 from typing import Optional, Any, Dict, List
 
 logger = logging.getLogger(__name__)
@@ -178,6 +179,14 @@ def deduplicate_event(event_id: str, event_name: str = "event") -> bool:
         True if event should be processed (new event)
         False if event should be skipped (duplicate)
     """
+    # In audit/test runs, avoid external Redis state to keep tests deterministic.
+    if os.getenv("AUDIT_MODE", "").strip() == "1":
+        cache_key = f"evt:{event_id}"
+        if _memory_exists(cache_key):
+            return False
+        _memory_set(cache_key, "1", 48 * 3600)
+        return True
+
     if is_duplicate_event(event_id, event_name):
         return False  # Skip duplicate
     

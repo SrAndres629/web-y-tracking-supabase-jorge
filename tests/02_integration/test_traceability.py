@@ -13,10 +13,12 @@ import time
 from main import app
 from app.meta_capi import EnhancedUserData
 
-client = TestClient(app)
+@pytest.fixture
+def client():
+    with TestClient(app) as client:
+        yield client
 
-@pytest.mark.anyio
-async def test_capi_traceability_chain():
+def test_capi_traceability_chain(client):
     """
     TRACEABILITY AUDIT:
     Checks if a raw PII phone number sent to the endpoint correctly
@@ -70,7 +72,7 @@ async def test_capi_traceability_chain():
     assert "+" not in sdk_data.phone
     assert " " not in sdk_data.phone
 
-def test_senior_error_resilience():
+def test_senior_error_resilience(client):
     """Verifies the system doesn't crash on malformed payloads."""
     response = client.post("/track/event", json={"broken": "data"})
     assert response.status_code == 422 # Standard FastAPI validation

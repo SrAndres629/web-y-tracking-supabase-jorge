@@ -86,6 +86,7 @@ class ContentManager:
     async def get_content(cls, key: str) -> Any:
         """Entry point for all dynamic content - SWR Optimized (TTFB 0ms)"""
         current_time = time.time()
+        audit_mode = os.getenv("AUDIT_MODE", "").strip() == "1"
         
         # 1. ⚡ RAM FIRST (0ms)
         if key in cls._ram_cache:
@@ -93,8 +94,9 @@ class ContentManager:
             last_fetch = cls._cache_times.get(key, 0)
             if current_time - last_fetch > cls.STALE_THRESHOLD:
                 logger.info(f"🔄 [SWR] RAM stale for '{key}'. Triggering background refresh...")
-                import asyncio
-                asyncio.create_task(cls._refresh_in_background(key))
+                if not audit_mode:
+                    import asyncio
+                    asyncio.create_task(cls._refresh_in_background(key))
             return cls._ram_cache[key]
         
         # 2. 🌀 REDIS SECOND (<15ms)
@@ -104,8 +106,9 @@ class ContentManager:
                 cls._ram_cache[key] = cached
                 cls._cache_times[key] = current_time
                 # Trigger bg refresh if we don't know when it was last fetched or if old
-                import asyncio
-                asyncio.create_task(cls._refresh_in_background(key))
+                if not audit_mode:
+                    import asyncio
+                    asyncio.create_task(cls._refresh_in_background(key))
                 return cached
         except Exception as e:
             logger.debug(f"Redis skip: {e}")
@@ -114,8 +117,9 @@ class ContentManager:
         # Instead of awaiting the DB (slow), we return the Golden Fallback
         # and trigger a background update to eventually replace it.
         logger.info(f"🧪 [SWR] First hit for '{key}'. Using fallback + triggering async fetch.")
-        import asyncio
-        asyncio.create_task(cls._refresh_in_background(key))
+        if not audit_mode:
+            import asyncio
+            asyncio.create_task(cls._refresh_in_background(key))
         
         return cls._FALLBACKS.get(key)
 

@@ -327,16 +327,6 @@ const TrackingEngine = {
             service_data: data
         });
 
-        // Google Analytics / GTM
-        if (window.dataLayer) {
-            window.dataLayer.push({
-                'event': 'whatsapp_contact',
-                'conversion_value': data.intent,
-                'lead_source': source,
-                'service_name': data.name
-            });
-        }
-
         // WhatsApp Redirect implementation with [Ref Tag] for match quality
         const refTag = window.EXTERNAL_ID ? ` [Ref: ${window.EXTERNAL_ID.substring(0, 8)}]` : "";
         let message = `Hola Jorge 👋`;

@@ -3,9 +3,12 @@ from fastapi.testclient import TestClient
 from main import app
 import re
 
-client = TestClient(app)
+@pytest.fixture
+def client():
+    with TestClient(app) as client:
+        yield client
 
-def test_global_synchronicity_headers():
+def test_global_synchronicity_headers(client):
     """Verify that the root HTML forces revalidation (No-Cache)"""
     response = client.get("/")
     assert response.status_code == 200
@@ -15,7 +18,7 @@ def test_global_synchronicity_headers():
     assert response.headers.get("Pragma") == "no-cache"
     assert response.headers.get("Expires") == "0"
 
-def test_deterministic_asset_versioning():
+def test_deterministic_asset_versioning(client):
     """Verify that assets include a numeric ?v= parameter"""
     response = client.get("/")
     html = response.text
@@ -31,7 +34,7 @@ def test_deterministic_asset_versioning():
     version = match.group(1)
     assert len(version) >= 10, "Version should be a long timestamp"
 
-def test_version_consistency_across_assets():
+def test_version_consistency_across_assets(client):
     """Ensure all local static assets use the EXACT same version ID"""
     response = client.get("/")
     html = response.text

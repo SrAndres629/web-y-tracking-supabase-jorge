@@ -15,6 +15,7 @@
 
 import logging
 import time
+import os
 from typing import Optional, Dict, Any, List
 from dataclasses import dataclass, field
 from enum import Enum
@@ -22,6 +23,7 @@ import hashlib
 
 from app.config import settings
 from app.retry_queue import add_to_retry_queue
+from app.tracking import send_event_async
 
 logger = logging.getLogger(__name__)
 
@@ -231,8 +233,13 @@ class EliteMetaCAPIService:
         # Import cache functions
         try:
             from app.cache import deduplicate_event
-            self._deduplicate = deduplicate_event
-            self._cache_enabled = True
+            if os.getenv("AUDIT_MODE", "").strip() == "1":
+                # Keep tests deterministic; avoid external Redis state.
+                self._deduplicate = lambda x, y: True
+                self._cache_enabled = False
+            else:
+                self._deduplicate = deduplicate_event
+                self._cache_enabled = True
         except ImportError:
             self._deduplicate = lambda x, y: True  # Always allow if no cache
             self._cache_enabled = False
@@ -312,8 +319,6 @@ class EliteMetaCAPIService:
     ) -> Dict[str, Any]:
         """Fallback to manual HTTP if SDK unavailable (Async-Aware)"""
         try:
-            from app.tracking import send_event_async
-            
             # Convert to legacy format
             fbclid = None
             if user_data.fbc and "." in user_data.fbc:

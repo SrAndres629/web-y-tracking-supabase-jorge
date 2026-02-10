@@ -1,6 +1,6 @@
 
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, AsyncMock
 from app.meta_capi import EliteMetaCAPIService, EnhancedUserData, EnhancedCustomData, MetaEventType
 
 # 🛡️ THE META CAPI AUDITOR
@@ -89,16 +89,17 @@ async def test_fallback_mechanism(capi_service):
     Verifies that if SDK is missing, it falls back to HTTP
     """
     with patch("app.meta_capi.SDK_AVAILABLE", False):
-        with patch("app.tracking.send_event_async", return_value=True) as mock_http_send:
-            
-            user_data = EnhancedUserData(email="test@test.com")
-            
-            result = await capi_service.send_event(
-                event_name="Lead",
-                event_id="evt_fallback",
-                event_source_url="http://test.com",
-                user_data=user_data
-            )
+            with patch("app.meta_capi.send_event_async", new_callable=AsyncMock) as mock_http_send:
+                mock_http_send.return_value = True
+                
+                user_data = EnhancedUserData(email="test@test.com")
+                
+                result = await capi_service.send_event(
+                    event_name="Lead",
+                    event_id="evt_fallback",
+                    event_source_url="http://test.com",
+                    user_data=user_data
+                )
             
             assert result["status"] == "success"
             assert result["method"] == "http_fallback"

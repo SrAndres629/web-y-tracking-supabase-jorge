@@ -8,9 +8,12 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from main import app
 
-client = TestClient(app)
+@pytest.fixture
+def client():
+    with TestClient(app) as client:
+        yield client
 
-def test_health_endpoint():
+def test_health_endpoint(client):
     """Verifica que la API responda 200 OK en /healthcheck"""
     # Note: main.py defines /healthcheck not /health based on previous context
     response = client.get("/healthcheck") 
@@ -24,7 +27,7 @@ def test_health_endpoint():
         assert response.status_code == 200
         # assert response.json().get("status") == "ok" # Adjust based on actual response structure if needed
 
-def test_tracking_flow_simulated():
+def test_tracking_flow_simulated(client):
     """Simula un evento de PageView completo"""
     payload = {
         "event_name": "PageView",

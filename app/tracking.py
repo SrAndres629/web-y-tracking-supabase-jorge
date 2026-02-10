@@ -3,6 +3,7 @@
 # Jorge Aguirre Flores Web
 # =================================================================
 import hashlib
+import os
 import time
 import random
 import string
@@ -41,7 +42,10 @@ timeout = httpx.Timeout(10.0, connect=5.0)
 sync_client = httpx.Client(timeout=timeout, http2=True)
 
 # Async client for FastAPI routes (future proofing)
-async_client = httpx.AsyncClient(timeout=timeout, http2=True)
+# In audit/test runs, avoid creating a global async client to prevent
+# unclosed event loop warnings during pytest teardown.
+_AUDIT_MODE = os.getenv("AUDIT_MODE", "").strip() == "1"
+async_client = None if _AUDIT_MODE else httpx.AsyncClient(timeout=timeout, http2=True)
 
 # =================================================================
 # HASHING FUNCTIONS
@@ -261,7 +265,11 @@ async def send_event_async(
     )
 
     try:
-        response = await async_client.post(settings.meta_api_url, json=payload)
+        if async_client is None:
+            async with httpx.AsyncClient(timeout=timeout, http2=True) as client:
+                response = await client.post(settings.meta_api_url, json=payload)
+        else:
+            response = await async_client.post(settings.meta_api_url, json=payload)
         
         if response.status_code == 200:
             logger.info(f"[META CAPI ASYNC] ✅ {event_name} sent via HTTP/2")
