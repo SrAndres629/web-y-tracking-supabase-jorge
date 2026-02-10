@@ -18,10 +18,15 @@ from app.services import get_services_config, get_contact_config
 
 logger = logging.getLogger("BackgroundWorker")
 
-router = APIRouter()
-
-# 🗄️ TEMPLATE CONFIG (Silicon Valley Standard)
-templates = Jinja2Templates(directory=settings.TEMPLATES_DIR)
+# 🗄️ TEMPLATE CONFIG (Resilient Search Paths for Serverless)
+_potential_paths = [
+    settings.TEMPLATES_DIR,
+    os.path.join(os.getcwd(), "templates"),
+    os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "templates"),
+    "/var/task/templates"
+]
+logger.info(f"🔍 [TEMPLATES] Searching in: {_potential_paths}")
+templates = Jinja2Templates(directory=[p for p in _potential_paths if os.path.exists(p) or p == settings.TEMPLATES_DIR])
 
 # 🕒 SILICON VALLEY VERSIONING: Unique ID per-process start
 # This forces global cache bust when the app restarts (deploy)
