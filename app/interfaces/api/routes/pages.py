@@ -29,7 +29,10 @@ router = APIRouter()
 
 # Templates
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
-templates_dir = os.path.join(BASE_DIR, "templates")
+if os.getenv("VERCEL"):
+    templates_dir = os.path.join(os.getcwd(), "templates")
+else:
+    templates_dir = os.path.join(BASE_DIR, "templates")
 templates = Jinja2Templates(directory=templates_dir)
 
 # System version for cache busting

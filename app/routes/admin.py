@@ -12,7 +12,7 @@ from app.database import get_all_visitors, get_visitor_by_id
 from app.routes.tracking_routes import bg_send_meta_event
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory=settings.TEMPLATES_DIR)
 
 # Import queries directly for raw stats
 from app.database import get_cursor

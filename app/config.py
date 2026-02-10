@@ -24,6 +24,20 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+def _resolve_templates_dir() -> str:
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if os.getenv("VERCEL"):
+        template_dir = os.path.join(os.getcwd(), "templates")
+    else:
+        template_dir = os.path.join(base_dir, "templates")
+    print(f"DEBUG: Template dir set to: {template_dir}")
+    return template_dir
+
+def _resolve_static_dir() -> str:
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if os.getenv("VERCEL"):
+        return os.path.join(os.getcwd(), "static")
+    return os.path.join(base_dir, "static")
 
 class Settings(BaseSettings):
     """Configuración centralizada del sistema con validación"""
@@ -35,8 +49,8 @@ class Settings(BaseSettings):
 
     # 📂 PHYSICAL PATHS (Serverless Hardening)
     BASE_DIR: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    TEMPLATES_DIR: str = os.path.join(BASE_DIR, "templates")
-    STATIC_DIR: str = os.path.join(BASE_DIR, "static")
+    TEMPLATES_DIR: str = _resolve_templates_dir()
+    STATIC_DIR: str = _resolve_static_dir()
 
     # Meta Ads (Pixel + CAPI)
     META_PIXEL_ID: str = ""
