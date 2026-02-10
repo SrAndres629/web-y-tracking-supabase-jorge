@@ -1,9 +1,9 @@
 {
     "version": 2,
     "functions": {
-        "api/*.py": {
+        "api/index.py": {
             "maxDuration": 10,
-            "includeFiles": "{templates/**,app/**}"
+            "includeFiles": "../{templates,app,main.py,_vendor}/**"
         }
     },
     "rewrites": [
