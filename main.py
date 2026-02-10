@@ -46,12 +46,7 @@ def init_sentry():
         except ImportError:
             logger.warning("⚠️ Sentry not installed")
 
-# Configurar logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+# Configurar logging (Ya configurado arriba, eliminado bloque duplicado)
 
 # =================================================================
 # EVENTOS DE CICLO DE VIDA

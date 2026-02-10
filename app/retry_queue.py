@@ -48,10 +48,40 @@ def _process_single_item(item: Dict[str, Any]) -> bool:
             return False # Not time yet
         
         logger.info(f"✨ [DLQ] Resending {item['event_name']}...")
-        item["retries"] += 1
-        return True
+        
+        # ⚡ CODEX FIX: Actually resend the event using Elite CAPI
+        # We need to bridge Sync -> Async here because this runs in a thread
+        from app.meta_capi import elite_capi, EnhancedUserData, EnhancedCustomData
+        import asyncio
+        
+        payload = item["payload"]
+        user_data_dict = payload.get("user_data", {})
+        custom_data_dict = payload.get("custom_data", {})
+        
+        # Reconstruct objects
+        user_data = EnhancedUserData(**user_data_dict)
+        custom_data = EnhancedCustomData(**custom_data_dict) if custom_data_dict else None
+        
+        # Run async function in new loop (safe for thread)
+        result = asyncio.run(elite_capi.send_event(
+            event_name=item["event_name"],
+            event_id=payload.get("event_id"),
+            event_source_url=payload.get("url"),
+            user_data=user_data,
+            custom_data=custom_data
+        ))
+        
+        if result.get("status") in ["success", "duplicate", "sandbox"]:
+            logger.info(f"✅ [DLQ] Retry SUCCESS: {item['event_name']}")
+            return True # Remove from queue
+        else:
+            logger.warning(f"⚠️ [DLQ] Retry FAILED: {result}")
+            item["retries"] += 1
+            return False # Keep in queue
+            
     except Exception as e:
-        logger.error(f"❌ [DLQ] Retry failed for {item['event_name']}: {e}")
+        logger.error(f"❌ [DLQ] Retry exception for {item['event_name']}: {e}")
+        item["retries"] += 1
         return False
 
 def process_retry_queue():

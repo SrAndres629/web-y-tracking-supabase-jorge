@@ -12,7 +12,7 @@ def set_env():
     """Mocks app configuration settings EXCEPT when running audits"""
     # 🛡️ SILICON VALLEY PROTOCOL: Allow Audits to see the REAL environment
     # We respect the AUDIT_MODE environment variable or skip if explicitly in audit tests
-    if os.getenv("AUDIT_MODE") == "1":
+    if os.getenv("AUDIT_MODE") == "1" or os.getenv("REAL_INFRA") == "1":
         yield None
         return
 
@@ -37,7 +37,7 @@ def mock_ci_environment():
     to prevent Infrastructure Audit tests from failing due to missing secrets.
     """
     is_ci = os.getenv("GITHUB_ACTIONS") or os.getenv("CI")
-    if not is_ci:
+    if not is_ci or os.getenv("AUDIT_MODE") == "1" or os.getenv("REAL_INFRA") == "1":
         return
 
     required_mocks = {

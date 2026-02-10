@@ -106,7 +106,6 @@ class Settings(BaseSettings):
     # Upstash Redis (Serverless Cache - for Event Deduplication)
     # Get credentials at: https://upstash.com
     UPSTASH_REDIS_REST_URL: Optional[str] = os.getenv("UPSTASH_REDIS_REST_URL")
-    UPSTASH_REDIS_REST_URL: Optional[str] = os.getenv("UPSTASH_REDIS_REST_URL")
     UPSTASH_REDIS_REST_TOKEN: Optional[str] = os.getenv("UPSTASH_REDIS_REST_TOKEN")
 
     # QStash (Background Tasks)
@@ -123,8 +122,8 @@ class Settings(BaseSettings):
     CLARITY_PROJECT_ID: Optional[str] = None
     
     # Cloudflare (If using Zaraz for ad-blocker bypass)
-    CLOUDFLARE_ZONE_ID: Optional[str] = os.getenv("CLOUDFLARE_ZONE_ID", "19bd9bdd7abf8f74b4e95d75a41e8583")
-    CLOUDFLARE_EMAIL: Optional[str] = os.getenv("CLOUDFLARE_EMAIL", "Acordero629@gmail.com")
+    CLOUDFLARE_ZONE_ID: Optional[str] = os.getenv("CLOUDFLARE_ZONE_ID")
+    CLOUDFLARE_EMAIL: Optional[str] = os.getenv("CLOUDFLARE_EMAIL")
     CLOUDFLARE_API_KEY: Optional[str] = os.getenv("CLOUDFLARE_API_KEY")
     TURNSTILE_SECRET_KEY: Optional[str] = None
     TURNSTILE_SITE_KEY: str = "0x4AAAAAAA8Cqg0HkqG6Xq5j"  # Default to visible key if not provided

@@ -17,10 +17,15 @@ import requests
 # Robust, Idempotent, and Observable.
 # =================================================================
 
-# --- CONFIGURATION (Secrets should ideally be ENV, but preserving existing pattern) ---
-CLOUDFLARE_ZONE_ID = "19bd9bdd7abf8f74b4e95d75a41e8583"
-CLOUDFLARE_API_KEY = "6094d6fa8c138d93409de2f59a3774cd8795a"
-CLOUDFLARE_EMAIL = "Acordero629@gmail.com"
+# --- CONFIGURATION (Credentials loaded from environment) ---
+CLOUDFLARE_API_KEY = os.getenv("CLOUDFLARE_API_KEY")
+CLOUDFLARE_EMAIL = os.getenv("CLOUDFLARE_EMAIL")
+CLOUDFLARE_ZONE_ID = os.getenv("CLOUDFLARE_ZONE_ID")
+
+if not CLOUDFLARE_API_KEY or not CLOUDFLARE_EMAIL:
+    # We don't block execution effectively here as they might not be needed for all ops,
+    # but we should warn or handle gracefully in functions that need them.
+    pass
 REPO_PATH = os.path.dirname(os.path.abspath(__file__))
 # -------------------------------------------------------
 
