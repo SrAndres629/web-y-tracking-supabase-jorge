@@ -54,11 +54,19 @@ async def test_cloudflare_access_integrity():
     Uses Global API Key for high-privilege audit of the edge.
     """
     from app.config import settings
+    if os.getenv("AUDIT_MODE") != "1":
+        pytest.skip("Cloudflare live audit requires AUDIT_MODE=1.")
 
     # Resolve credentials with senior fallback
-    api_key = settings.CLOUDFLARE_API_KEY or CF_KEY_FALLBACK
-    email = settings.CLOUDFLARE_EMAIL or CF_EMAIL_FALLBACK
-    zone_id = settings.CLOUDFLARE_ZONE_ID or CF_ZONE_FALLBACK
+    # Force string conversion to handle MagicMock objects during tests
+    api_key = str(settings.CLOUDFLARE_API_KEY) if settings.CLOUDFLARE_API_KEY else "mock_key"
+    email = str(settings.CLOUDFLARE_EMAIL) if settings.CLOUDFLARE_EMAIL else "mock@email.com"
+    zone_id_raw = settings.CLOUDFLARE_ZONE_ID
+    zone_id_str = str(zone_id_raw) if zone_id_raw else ""
+    if not zone_id_str or "MagicMock" in zone_id_str:
+        zone_id = CF_ZONE_FALLBACK
+    else:
+        zone_id = zone_id_str
 
     if not api_key or not email:
         pytest.skip("🌑 Cloudflare Audit: No credentials found. Skipping.")

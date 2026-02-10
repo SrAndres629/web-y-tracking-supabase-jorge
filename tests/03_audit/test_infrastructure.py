@@ -5,6 +5,7 @@ from upstash_redis import Redis
 from app.config import settings
 import sys
 import logging
+from urllib.parse import urlparse, parse_qsl, urlencode, urlunparse
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +73,10 @@ def test_database_connection():
 
     # Real Postgres Check (only if URL looks valid)
     try:
-        conn = psycopg2.connect(settings.DATABASE_URL)
+        parsed = urlparse(settings.DATABASE_URL)
+        query = [(k, v) for k, v in parse_qsl(parsed.query) if k.lower() != "pgbouncer"]
+        sanitized = urlunparse(parsed._replace(query=urlencode(query)))
+        conn = psycopg2.connect(sanitized)
         cur = conn.cursor()
         cur.execute("SELECT 1")
         assert cur.fetchone() is not None
@@ -99,7 +103,8 @@ def test_redis_connection():
             url=settings.UPSTASH_REDIS_REST_URL, 
             token=settings.UPSTASH_REDIS_REST_TOKEN
         )
-        assert redis.ping() is True
+        ping_result = redis.ping()
+        assert ping_result is True or ping_result == "PONG"
     except Exception as e:
         if is_prod:
             pytest.fail(f"🔥 CRITICAL: Production Redis Connection failed: {str(e)}")

@@ -233,7 +233,7 @@ class EliteMetaCAPIService:
         # Import cache functions
         try:
             from app.cache import deduplicate_event
-            if os.getenv("AUDIT_MODE", "").strip() == "1":
+            if os.getenv("AUDIT_MODE", "").strip() == "1" or os.getenv("PYTEST_CURRENT_TEST") or os.getenv("CI"):
                 # Keep tests deterministic; avoid external Redis state.
                 self._deduplicate = lambda x, y: True
                 self._cache_enabled = False

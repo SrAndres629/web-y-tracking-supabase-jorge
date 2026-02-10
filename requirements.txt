@@ -21,14 +21,16 @@ h2>=3.0.0
 # Testing (Dev Dependencies)
 pytest>=8.0.0
 pytest-mock>=3.12.0
-httpx>=0.25.0
+httpx>=0.27.0
 hypothesis>=6.0.0
+pytest-asyncio>=0.23.0
 
 # Observability
 sentry-sdk[fastapi]>=1.40.0
 
 # Ads & External Integrations
 facebook_business>=18.0.0
+facebook-business>=18.0.0
 phonenumbers>=8.13.30
 
 # Caching (Upstash Redis - Serverless)
