@@ -53,11 +53,11 @@ const TrackingEngine = {
         this.setupViewContentObserver();
         this.setupSliderListeners();
 
-        this.log('📊 [Silicon Valley Protocol] Tracking Engine Active (Direct & Resilient)');
+        this.log('📊 [Silicon Valley Protocol] Tracking Engine Active (Zaraz + CAPI)');
 
-        // 🚀 FIRE PAGEVIEW (CAPI + Pixel - Unified ID)
+        // 🚀 PAGEVIEW: Pixel handled by Cloudflare Zaraz (AllPageviews action)
+        // Only fire server-side CAPI for deduplication
         this.trackEvent('PageView', { event_id: window.META_EVENT_ID });
-        this.safeFbq('track', 'PageView', {}, { eventID: window.META_EVENT_ID });
     },
 
     /**
@@ -190,18 +190,28 @@ const TrackingEngine = {
      * 🛡️ PIXEL SAFETY WRAPPER (Prevents Race Conditions)
      */
     safeFbq(method, eventName, data, options) {
-        if (window.fbq) {
+        // 🚀 ZARAZ-FIRST: Prefer edge-executed, consent-aware tracking
+        if (window.zaraz && window.zaraz.track) {
+            zaraz.track(eventName, { ...data, ...(options || {}) });
+            this.log(`✅ Zaraz Edge Event: ${eventName}`);
+        } else if (window.fbq) {
             fbq(method, eventName, data, options);
-            this.log(`✅ Pixel Fired: ${eventName}`);
+            this.log(`✅ Pixel Fired (Legacy): ${eventName}`);
         } else {
             // Retry logic for async loading (Zaraz/Partytown)
             this.retryQueue = this.retryQueue || [];
             this.retryQueue.push({ method, eventName, data, options, time: Date.now() });
 
             if (!this.retryTimer) {
-                this.log(`⏳ Pixel not ready. Queuing event: ${eventName}`);
+                this.log(`⏳ Zaraz/Pixel not ready. Queuing event: ${eventName}`);
                 this.retryTimer = setInterval(() => {
-                    if (window.fbq) {
+                    if (window.zaraz && window.zaraz.track) {
+                        this.log(`🚀 Zaraz loaded! Replaying ${this.retryQueue.length} events.`);
+                        this.retryQueue.forEach(e => zaraz.track(e.eventName, { ...e.data, ...(e.options || {}) }));
+                        this.retryQueue = [];
+                        clearInterval(this.retryTimer);
+                        this.retryTimer = null;
+                    } else if (window.fbq) {
                         this.log(`🚀 Pixel loaded! Replaying ${this.retryQueue.length} events.`);
                         this.retryQueue.forEach(e => fbq(e.method, e.eventName, e.data, e.options));
                         this.retryQueue = [];
@@ -210,7 +220,7 @@ const TrackingEngine = {
                     }
                     // Stop trying after 10 seconds
                     else if (this.retryQueue.length > 0 && (Date.now() - this.retryQueue[0].time > 10000)) {
-                        this.warn('❌ Pixel failed to load. Aborting retries.');
+                        this.warn('❌ Zaraz/Pixel failed to load. Aborting retries.');
                         clearInterval(this.retryTimer);
                         this.retryTimer = null;
                     }
