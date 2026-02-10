@@ -39,7 +39,7 @@ async def admin_dashboard(request: Request, key: str = ""):
     
     return templates.TemplateResponse(
         request=request,
-        name="admin.html",
+        name="pages/admin/dashboard.html",
         context={
             "visitors": visitors,
             "admin_key": key
