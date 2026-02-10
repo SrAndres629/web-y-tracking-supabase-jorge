@@ -120,27 +120,30 @@ def main():
     # PHASE 1: THE IRON GATE (Unified Audit)
     Console.log("[1/6] Executing The Iron Gate (Strict Audit)...", "🛡️")
     
-    # Validation Command:
-    # -v: Verbose
-    # -W error: Treat ALL warnings as errors (Zero Tolerance)
-    # tests/: The Single Source of Truth
-    # Windows Path Fix: Quote the executable path to handle spaces
-    test_cmd = f'"{sys.executable}" -m pytest tests/test_architecture_audit.py -v -W error'
+    # 🛑 CRITICAL INTEGRITY TESTS (Cannot be bypassed easily)
+    integrity_tests = [
+        "tests/test_boot_integrity.py",
+        "tests/test_template_integrity.py",
+        "tests/test_architecture_audit.py"
+    ]
     
     if args.force:
         Console.warning("⚠️ SKIPPING GATES: --force flag detected. You are flying blind.")
     else:
-        success, stdout, stderr = run_cmd(test_cmd, cwd=REPO_PATH)
-        
-        if not success:
-            Console.error("⛔ DEPLOYMENT BLOCKED: The Iron Gate has closed.")
-            Console.info("Reason: Tests, Audits, or Strict Warnings failed.")
-            print(f"\n{Console.FAIL}=== AUDIT REPORT START ==={Console.ENDC}")
-            print(stdout)
-            print(stderr)
-            print(f"{Console.FAIL}=== AUDIT REPORT END ==={Console.ENDC}")
-            print(f"\n{Console.WARNING}Action: Fix the errors above or remove the placeholders/warnings.{Console.ENDC}")
-            sys.exit(1)
+        for t_file in integrity_tests:
+            Console.log(f"Running Integrity: {t_file}...", "🧪")
+            # -W error: Treat ALL warnings as errors (Zero Tolerance)
+            test_cmd = f'"{sys.executable}" -m pytest {t_file} -v -W error'
+            success, stdout, stderr = run_cmd(test_cmd, cwd=REPO_PATH)
+            
+            if not success:
+                Console.error(f"⛔ DEPLOYMENT BLOCKED: {t_file} failed.")
+                Console.info("Reason: Tests, Audits, or Strict Warnings failed.")
+                print(f"\n{Console.FAIL}=== AUDIT REPORT START ==={Console.ENDC}")
+                print(stdout)
+                print(stderr)
+                print(f"{Console.FAIL}=== AUDIT REPORT END ==={Console.ENDC}")
+                sys.exit(1)
             
         Console.success("The Iron Gate Passed. Zero Defects Detected.")
 

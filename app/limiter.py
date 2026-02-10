@@ -17,9 +17,14 @@ limiter_storage = "memory://"
 is_vercel = os.getenv("VERCEL") or os.getenv("RENDER")
 default_redis = "redis://redis_evolution"
 
-if settings.CELERY_BROKER_URL and not (is_vercel and default_redis in settings.CELERY_BROKER_URL):
+# 🛡️ Defensive Check: Ensure it's a real string (Protects against Test Mocks)
+broker_url = settings.CELERY_BROKER_URL
+if not isinstance(broker_url, str):
+    broker_url = None
+
+if broker_url and not (is_vercel and default_redis in broker_url):
     # Only use Redis for slowapi if it's external (e.g. Upstash)
-    limiter_storage = settings.CELERY_BROKER_URL
+    limiter_storage = broker_url
     logger.info(f"🌀 Rate Limiter using Redis storage: {limiter_storage.split('@')[-1]}")
 else:
     logger.info("⚡ Rate Limiter using MEMORY storage (Optimized for Serverless Cold Start)")

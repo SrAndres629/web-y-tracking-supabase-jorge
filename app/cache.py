@@ -27,8 +27,11 @@ try:
     UPSTASH_REDIS_REST_TOKEN = settings.UPSTASH_REDIS_REST_TOKEN
 except ImportError:
     import os
-    UPSTASH_REDIS_REST_URL = os.getenv("UPSTASH_REDIS_REST_URL")
     UPSTASH_REDIS_REST_TOKEN = os.getenv("UPSTASH_REDIS_REST_TOKEN")
+
+# 🛡️ Defensive Check: Ensure it's a real string (Protects against Test Mocks)
+if not isinstance(UPSTASH_REDIS_REST_URL, str):
+    UPSTASH_REDIS_REST_URL = None
 
 # Check if Redis is configured
 REDIS_ENABLED = bool(UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN)

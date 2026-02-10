@@ -14,6 +14,13 @@ def set_env():
         mock.DATABASE_URL = "postgres://mock:mock@localhost:5432/db"
         mock.META_PIXEL_ID = "1234567890"
         mock.META_ACCESS_TOKEN = "fake_token"
+        # 🛡️ Prevent MagicMock leakage in Limiter
+        mock.CELERY_BROKER_URL = None
+        mock.UPSTASH_REDIS_REST_URL = None
+        mock.UPSTASH_REDIS_REST_TOKEN = None
+        mock.SENTRY_DSN = None
+        mock.RUDDERSTACK_WRITE_KEY = None
+        mock.RUDDERSTACK_DATA_PLANE_URL = None
         yield mock
 
 @pytest.fixture
