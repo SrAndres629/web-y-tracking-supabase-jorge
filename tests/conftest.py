@@ -53,6 +53,11 @@ def mock_ci_environment():
     for key, value in required_mocks.items():
         if not os.getenv(key):
             os.environ[key] = value
+            
+    # CRITICAL FIX: Reload settings to pick up new env vars
+    from app.config import Settings
+    import app.config
+    app.config.settings = Settings()
 
 @pytest.fixture
 def mock_db_cursor():
