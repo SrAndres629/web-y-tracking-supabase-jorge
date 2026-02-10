@@ -301,7 +301,9 @@ class SystemAuditor:
 def purge_cloudflare_cache():
     """Purge everything from Cloudflare Edge for jorgeaguirreflores.com"""
     Console.log("Initiating Cloudflare Cache Purge (Standard SV Protocol)...", "🧹")
-    if not CLOUDFLARE_ZONE_ID or not CLOUDFLARE_API_KEY or not CLOUDFLARE_EMAIL:
+    has_token = bool(CLOUDFLARE_API_TOKEN)
+    has_global_key = bool(CLOUDFLARE_API_KEY and CLOUDFLARE_EMAIL)
+    if not CLOUDFLARE_ZONE_ID or not (has_token or has_global_key):
         Console.warning("Skipping Cloudflare Purge: Missing Credentials.")
         return
 
@@ -311,9 +313,9 @@ def purge_cloudflare_cache():
     }
     
     # Priority: API Token (Bearer) > Global API Key (X-Auth-Key)
-    if CLOUDFLARE_API_TOKEN:
+    if has_token:
         headers["Authorization"] = f"Bearer {CLOUDFLARE_API_TOKEN}"
-    elif CLOUDFLARE_API_KEY and CLOUDFLARE_EMAIL:
+    elif has_global_key:
         headers["X-Auth-Email"] = CLOUDFLARE_EMAIL
         headers["X-Auth-Key"] = CLOUDFLARE_API_KEY
     else:
