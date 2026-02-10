@@ -413,7 +413,7 @@ def main():
         except Exception as e:
             Console.warning(f"Pre-Warm failed: {e}")
 
-        print(f"\n{Console.GREEN}🌟 System is Live: https://jorgeaguirreflores.com{Console.ENDC}")
+        print(f"\n{Console.GREEN}System is Live: https://jorgeaguirreflores.com{Console.ENDC}")
     else:
         Console.error(f"Push Failed: {stderr}")
 
