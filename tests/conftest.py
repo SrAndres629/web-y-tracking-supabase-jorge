@@ -48,7 +48,6 @@ def mock_ci_environment():
         "UPSTASH_REDIS_REST_TOKEN": "mock_redis_token",
         "CLOUDFLARE_API_KEY": "mock_cf_key",
         "CLOUDFLARE_EMAIL": "mock@dev.com",
-        "VERCEL": "1",
     }
 
     for key, value in required_mocks.items():
