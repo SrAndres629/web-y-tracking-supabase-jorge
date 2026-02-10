@@ -74,10 +74,15 @@ class ContentManager:
         ],
         "contact_config": {
             "whatsapp": "https://wa.me/59164714751",
-            "phone": "+591 64714751",
-            "email": "contacto@jorgeaguirreflores.com",
+            "phone": "+591 647 14 751",
+            "email": "info@jorgeaguirreflores.com",
+            "address": "Santa Cruz de la Sierra, Bolivia",
+            "maps_url": "https://maps.google.com/?q=Santa+Cruz+de+la+Sierra+Bolivia",
             "location": "Santa Cruz de la Sierra",
             "instagram": "https://instagram.com/jorgeaguirreflores",
+            "facebook": "https://facebook.com/jorgeaguirreflores",
+            "tiktok": "https://tiktok.com/@jorgeaguirreflores",
+            "cta_text": "Hola Jorge, vi su web y me interesa una valoración para micropigmentación.",
             "cta_assessment": "Hola Jorge, quiero agendar mi diagnóstico gratuito y ver la geometría de mi rostro."
         }
     }

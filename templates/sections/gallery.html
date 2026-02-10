@@ -1,0 +1,160 @@
+<!-- ========== GALERÍA ANTES/DESPUÉS ========== -->
+<section id="galeria" class="py-24 bg-transparent relative overflow-hidden"
+    style="content-visibility: auto; contain-intrinsic-size: 1000px;">
+    <!-- Background Subtle Glow -->
+    <div
+        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-luxury-gold/5 blur-luxury-xl rounded-full pointer-events-none">
+    </div>
+
+    <div class="container mx-auto px-6 relative z-10">
+        <div class="text-center mb-16">
+            <span class="text-luxury-gold text-xs font-bold uppercase tracking-[0.4em]">Portafolio</span>
+            <h2 class="font-serif text-4xl md:text-5xl mt-4 mb-4 tracking-wide text-gradient-gold">Resultados
+                <span class="italic text-white">Reales</span>
+            </h2>
+            <p class="text-luxury-gray font-light mb-8">Desliza para ver la transformación</p>
+
+            <a href="{{ contact.whatsapp }}?text=Hola%20Jorge%2C%20vi%20sus%20resultados%20y%20me%20interesa%20una%20valoraci%C3%B3n%20para%20mis%20cejas."
+                target="_blank" onclick="handleConversion('Galería Main CTA')"
+                class="px-8 py-3 border border-luxury-gold text-luxury-gold font-light uppercase tracking-[0.2em] hover:bg-luxury-gold hover:text-black transition-all duration-500 text-xs inline-block">
+                Agendar Valoración
+            </a>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <!-- Slider 1: Microblading -->
+            <div class="relative slider-container ba-slider">
+                <div
+                    class="w-full aspect-square md:aspect-[4/5] relative overflow-hidden rounded-sm border border-white/10 shadow-2xl bg-black">
+                    <!-- After Image (Background) -->
+                    <img src="/static/images/microblading_after_v3.webp"
+                        class="absolute inset-0 w-full h-full object-cover object-center" alt="Después" loading="lazy"
+                        width="400" height="500">
+                    <!-- Before Image (Foreground - Clipped) -->
+                    <img src="/static/images/microblading_before_v3.webp"
+                        class="absolute inset-0 w-full h-full object-cover object-center foreground-img"
+                        style="clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);" alt="Antes">
+
+                    <!-- Handler (Thumb) -->
+                    <div class="absolute inset-y-0 w-0.5 bg-luxury-gold shadow-[0_0_10px_rgba(212,175,55,0.8)] pointer-events-none z-20 slider-thumb"
+                        style="left: 50%;">
+                        <div
+                            class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 bg-black border border-luxury-gold rounded-full flex items-center justify-center shadow-lg">
+                            <i class="fas fa-arrows-alt-h text-luxury-gold text-xs"></i>
+                        </div>
+                    </div>
+
+                    <!-- Range Input -->
+                    <input type="range" min="0" max="100" value="50"
+                        class="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-30 m-0 p-0 slider-range touch-none">
+
+                    <!-- Labels -->
+                    <span
+                        class="absolute top-4 left-4 bg-black/60 backdrop-blur-sm px-2 py-1 text-[10px] uppercase font-bold text-white z-10 border border-white/10">Antes</span>
+                    <span
+                        class="absolute top-4 right-4 bg-black/60 backdrop-blur-sm px-2 py-1 text-[10px] uppercase font-bold text-luxury-gold z-10 border border-luxury-gold/30">Después</span>
+                </div>
+                <h3 class="text-center text-luxury-text font-serif text-lg mt-4 tracking-wide">Microblading 3D
+                </h3>
+            </div>
+
+            <!-- Slider 2: Powder Brows -->
+            <div class="relative slider-container ba-slider">
+                <div
+                    class="w-full aspect-square md:aspect-[4/5] relative overflow-hidden rounded-sm border border-white/10 shadow-2xl bg-black">
+                    <img src="/static/images/brows_after_v3.webp"
+                        class="absolute inset-0 w-full h-full object-cover object-center" alt="Después" loading="lazy"
+                        width="400" height="500">
+                    <img src="/static/images/brows_before_v3.webp"
+                        class="absolute inset-0 w-full h-full object-cover object-center foreground-img"
+                        style="clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);" alt="Antes">
+
+                    <div class="absolute inset-y-0 w-0.5 bg-luxury-gold shadow-[0_0_10px_rgba(212,175,55,0.8)] pointer-events-none z-20 slider-thumb"
+                        style="left: 50%;">
+                        <div
+                            class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 bg-black border border-luxury-gold rounded-full flex items-center justify-center shadow-lg">
+                            <i class="fas fa-arrows-alt-h text-luxury-gold text-xs"></i>
+                        </div>
+                    </div>
+
+                    <input type="range" min="0" max="100" value="50"
+                        class="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-30 m-0 p-0 slider-range touch-none">
+
+                    <span
+                        class="absolute top-4 left-4 bg-black/60 backdrop-blur-sm px-2 py-1 text-[10px] uppercase font-bold text-white z-10 border border-white/10">Antes</span>
+                    <span
+                        class="absolute top-4 right-4 bg-black/60 backdrop-blur-sm px-2 py-1 text-[10px] uppercase font-bold text-luxury-gold z-10 border border-luxury-gold/30">Después</span>
+                </div>
+                <h3 class="text-center text-luxury-text font-serif text-lg mt-4 tracking-wide">Cejas Efecto
+                    Polvo</h3>
+            </div>
+
+            <!-- Slider 3: Eyes -->
+            <div class="relative slider-container ba-slider">
+                <div
+                    class="w-full aspect-square md:aspect-[4/5] relative overflow-hidden rounded-sm border border-white/10 shadow-2xl bg-black">
+                    <img src="/static/images/eyes_after.webp"
+                        class="absolute inset-0 w-full h-full object-cover object-center" alt="Después" loading="lazy"
+                        width="400" height="500">
+                    <img src="/static/images/eyes_before.webp"
+                        class="absolute inset-0 w-full h-full object-cover object-center foreground-img"
+                        style="clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);" alt="Antes">
+
+                    <div class="absolute inset-y-0 w-0.5 bg-luxury-gold shadow-[0_0_10px_rgba(212,175,55,0.8)] pointer-events-none z-20 slider-thumb"
+                        style="left: 50%;">
+                        <div
+                            class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 bg-black border border-luxury-gold rounded-full flex items-center justify-center shadow-lg">
+                            <i class="fas fa-arrows-alt-h text-luxury-gold text-xs"></i>
+                        </div>
+                    </div>
+
+                    <input type="range" min="0" max="100" value="50"
+                        class="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-30 m-0 p-0 slider-range touch-none">
+
+                    <span
+                        class="absolute top-4 left-4 bg-black/60 backdrop-blur-sm px-2 py-1 text-[10px] uppercase font-bold text-white z-10 border border-white/10">Antes</span>
+                    <span
+                        class="absolute top-4 right-4 bg-black/60 backdrop-blur-sm px-2 py-1 text-[10px] uppercase font-bold text-luxury-gold z-10 border border-luxury-gold/30">Después</span>
+                </div>
+                <h3 class="text-center text-luxury-text font-serif text-lg mt-4 tracking-wide">Delineado Ojos
+                </h3>
+            </div>
+
+            <!-- Slider 4: Lips (Refactored) -->
+            <div class="relative slider-container ba-slider">
+                <div
+                    class="w-full aspect-square md:aspect-[4/5] relative overflow-hidden rounded-sm border border-white/10 shadow-2xl bg-black">
+                    <!-- After Image (Background) -->
+                    <img src="/static/images/lips_after_clean.webp?v={{ system_version }}"
+                        class="absolute inset-0 w-full h-full object-cover object-[center_35%]" alt="Después"
+                        loading="lazy" width="400" height="500">
+                    <!-- Before Image (Foreground - Clipped) -->
+                    <img src="/static/images/lips_before.webp"
+                        class="absolute inset-0 w-full h-full object-cover object-[center_35%] foreground-img"
+                        style="clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);" alt="Antes" loading="lazy" width="400"
+                        height="500">
+
+                    <!-- Handler (Thumb) -->
+                    <div class="absolute inset-y-0 w-0.5 bg-luxury-gold shadow-[0_0_10px_rgba(212,175,55,0.8)] pointer-events-none z-20 slider-thumb"
+                        style="left: 50%;">
+                        <div
+                            class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 bg-black border border-luxury-gold rounded-full flex items-center justify-center shadow-lg">
+                            <i class="fas fa-arrows-alt-h text-luxury-gold text-xs"></i>
+                        </div>
+                    </div>
+
+                    <!-- Range Input -->
+                    <input type="range" min="0" max="100" value="50"
+                        class="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-30 m-0 p-0 slider-range touch-none">
+
+                    <!-- Labels -->
+                    <span
+                        class="absolute top-4 left-4 bg-black/60 backdrop-blur-sm px-2 py-1 text-[10px] uppercase font-bold text-white z-10 border border-white/10">Antes</span>
+                    <span
+                        class="absolute top-4 right-4 bg-black/60 backdrop-blur-sm px-2 py-1 text-[10px] uppercase font-bold text-luxury-gold z-10 border border-luxury-gold/30">Después</span>
+                </div>
+                <h3 class="text-center text-luxury-text font-serif text-lg mt-4 tracking-wide">Labios Full Color</h3>
+            </div>
+        </div>
+    </div>
+</section>

@@ -12,83 +12,11 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
 
-    <!-- Unified Background & Typography Overrides -->
+    <!-- Component-specific styles loaded on demand -->
+    <link rel="stylesheet" href="/static/css/components/ba-slider.css?v={{ system_version }}">
+    
+    <!-- Global selection style -->
     <style>
-        /* Mobile-First Slider Optimizations */
-        .ba-slider {
-            touch-action: pan-y;
-            /* Allow vertical scroll, but capture horizontal */
-            position: relative;
-            overflow: hidden;
-            border-radius: 1rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        .slider-range {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            cursor: ew-resize;
-            z-index: 30;
-            touch-action: none;
-            /* Master key for mobile interaction */
-        }
-
-        .slider-thumb {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background: #C5A059;
-            z-index: 20;
-            pointer-events: none;
-            box-shadow: 0 0 15px rgba(197, 160, 89, 0.8);
-        }
-
-        /* Premium Mobile Handle */
-        .slider-thumb::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 48px;
-            /* Larger hit area */
-            height: 48px;
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(4px);
-            border: 1px solid #C5A059;
-            border-radius: 50%;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Prevent scroll selection during sliding */
-        .slider-range::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 48px;
-            height: 48px;
-            cursor: ew-resize;
-        }
-
-
-        /* Icon inside handle */
-        .slider-thumb::before {
-            content: '↔';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: #C5A059;
-            font-size: 18px;
-            font-weight: bold;
-            z-index: 25;
-        }
-
         ::selection {
             background-color: #C5A059;
             color: #000;
