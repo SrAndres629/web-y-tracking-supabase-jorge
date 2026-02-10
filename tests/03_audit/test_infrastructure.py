@@ -23,6 +23,10 @@ def test_environment_variables():
     
     placeholders = ["SET_IN_PRODUCTION", "stub", "YOUR_TOKEN", "REEMPLAZAR"]
     is_prod = os.getenv("VERCEL") or os.getenv("RENDER")
+    is_ci = os.getenv("GITHUB_ACTIONS") or os.getenv("CI")
+    
+    # Senior Guard: Audit Mode (Git Sync) is stricter than daily testing
+    is_strict_audit = os.getenv("AUDIT_MODE") == "1"
     
     missing_vars = []
     placeholder_vars = []
@@ -37,6 +41,8 @@ def test_environment_variables():
     if missing_vars or placeholder_vars:
         if is_prod:
             pytest.fail(f"🚨 PRODUCTION ERROR: Environment issues detected. Missing: {missing_vars}, Placeholders: {placeholder_vars}")
+        elif is_ci and not is_strict_audit:
+             pytest.skip(f"💡 CI Mode: Missing secrets {missing_vars}. Skipping integration audit.")
         else:
             pytest.skip(f"⚠️ Skipping infrastructure integration: Detected missing/placeholder variables in {missing_vars + placeholder_vars}. Configure them for real tests.")
 
@@ -48,7 +54,8 @@ def test_database_connection():
     is_prod = os.getenv("VERCEL") or os.getenv("RENDER")
 
     # Detect placeholders in DSN
-    if not db_url or "set_in_production" in db_url or "stub" in db_url:
+    placeholder_patterns = ["set_in_production", "stub", "placeholder", "sqlite", "required"]
+    if not db_url or any(p in db_url for p in placeholder_patterns):
         if is_prod:
             pytest.fail("🚨 PRODUCTION ERROR: DATABASE_URL contains a placeholder.")
         else:

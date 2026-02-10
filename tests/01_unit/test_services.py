@@ -22,7 +22,7 @@ def test_pii_normalization():
     # Empty
     assert normalize_pii(None) == ""
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_content_manager_ram_cache():
     """
     Verifies that L1 RAM cache works instanty
@@ -33,7 +33,7 @@ async def test_content_manager_ram_cache():
     result = await ContentManager.get_content("test_key")
     assert result == {"data": "cached"}
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_content_manager_fallback():
     """
     Verifies that if cache misses, it returns a fallback

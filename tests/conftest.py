@@ -11,10 +11,8 @@ sys.path.insert(0, PROJECT_ROOT)
 def set_env():
     """Mocks app configuration settings EXCEPT when running audits"""
     # 🛡️ SILICON VALLEY PROTOCOL: Allow Audits to see the REAL environment
-    # We detect if we are running in an audit-specific folder.
-    is_audit_run = any("tests/03_audit" in arg or "tests\\03_audit" in arg for arg in sys.argv)
-    
-    if is_audit_run:
+    # We respect the AUDIT_MODE environment variable or skip if explicitly in audit tests
+    if os.getenv("AUDIT_MODE") == "1":
         yield None
         return
 
@@ -48,3 +46,22 @@ def mock_redis():
     """Mocks Redis client"""
     with patch("app.main.redis_client") as mock:
         yield mock
+
+@pytest.fixture
+def anyio_backend():
+    """Restricts anyio tests to asyncio only"""
+    return "asyncio"
+
+@pytest.fixture
+async def cleanup_resources():
+    """Force cleanup of any dangling async resources"""
+    yield
+    # Explicitly close any open sessions/transports if accessible
+    # This is a placeholder for global cleanup if needed
+    import asyncio
+    tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
+    for task in tasks:
+        task.cancel()
+    await asyncio.gather(*tasks, return_exceptions=True)
+
+

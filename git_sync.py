@@ -35,24 +35,24 @@ class Console:
     BOLD = '\033[1m'
 
     @staticmethod
-    def log(msg, symbol="🔹"):
+    def log(msg, symbol="*"):
         print(f"{symbol} {msg}")
 
     @staticmethod
     def success(msg):
-        print(f"{Console.GREEN}✅ {msg}{Console.ENDC}")
+        print(f"{Console.GREEN}[OK] {msg}{Console.ENDC}")
 
     @staticmethod
     def error(msg):
-        print(f"{Console.FAIL}❌ {msg}{Console.ENDC}")
+        print(f"{Console.FAIL}[ERROR] {msg}{Console.ENDC}")
 
     @staticmethod
     def info(msg):
-        print(f"{Console.CYAN}ℹ️  {msg}{Console.ENDC}")
+        print(f"{Console.CYAN}[INFO] {msg}{Console.ENDC}")
 
     @staticmethod
     def warning(msg):
-        print(f"{Console.WARNING}⚠️  {msg}{Console.ENDC}")
+        print(f"{Console.WARNING}[WARN] {msg}{Console.ENDC}")
 
 def purge_cloudflare_cache():
     """Purge everything from Cloudflare Edge for jorgeaguirreflores.com"""
@@ -112,13 +112,13 @@ def main():
     parser.add_argument("message", nargs="?", default=None, help="Commit message")
     args = parser.parse_args()
 
-    print(f"\n{Console.BOLD}🧠 [NEURAL-SYNC] Initializing Silicon Valley Deployment Protocol...{Console.ENDC}\n")
+    print(f"\n{Console.BOLD}[NEURAL-SYNC] Initializing Silicon Valley Deployment Protocol...{Console.ENDC}\n")
 
     # PHASE 0: INTEGRITY CHECK
     check_environment()
 
     # PHASE 1: THE IRON GATE (Unified Audit)
-    Console.log("[1/6] Executing The Iron Gate (Strict Audit)...", "🛡️")
+    Console.log("[1/6] Executing The Iron Gate (Strict Audit)...", "#")
     
     # 🛑 CRITICAL INTEGRITY TESTS (Cannot be bypassed easily)
     # We run by directory to ensure we catch ALL architecture/boot tests
@@ -133,10 +133,11 @@ def main():
         Console.warning("⚠️ SKIPPING GATES: --force flag detected. You are flying blind.")
     else:
         for phase in integrity_phases:
-            Console.log(f"Running Integrity: {phase['name']}...", "🧪")
+            Console.log(f"Running Integrity: {phase['name']}...", "-")
             # -W error: Treat ALL warnings as errors (Zero Tolerance)
             # -v: Verbose
-            test_cmd = f'"{sys.executable}" -m pytest {phase["path"]} -v -W error'
+            # AUDIT_MODE=1: Signals conftest.py to NOT mock settings
+            test_cmd = f'set AUDIT_MODE=1 && "{sys.executable}" -m pytest {phase["path"]} -v -W error'
             success, stdout, stderr = run_cmd(test_cmd, cwd=REPO_PATH)
             
             if not success:
@@ -155,7 +156,7 @@ def main():
     # We kept specific check previously, but now it's in the suite.
 
     # PHASE 2: STAGE (Commit Local Changes First)
-    Console.log("[2/6] Staging & Committing...", "📦")
+    Console.log("[2/6] Staging & Committing...", "+")
     run_cmd("git add .", cwd=REPO_PATH)
     
     success, output, _ = run_cmd("git status --porcelain", cwd=REPO_PATH)
@@ -175,10 +176,10 @@ def main():
         Console.info("No local changes to commit.")
 
     # PHASE 3: SYNC & REBASE (Integrate Remote)
-    Console.log("[3/6] Synchronizing with Origin...", "📡")
+    Console.log("[3/6] Synchronizing with Origin...", ">")
     run_cmd("git fetch origin", cwd=REPO_PATH)
     
-    Console.log("[4/6] Rebase Integration...", "🔄")
+    Console.log("[4/6] Rebase Integration...", "~")
     # Now we can rebase safely because we are clean
     success, _, stderr = run_cmd("git pull origin main --rebase", cwd=REPO_PATH)
     if not success:
@@ -197,7 +198,7 @@ def main():
         Console.log("Local is ahead. Proceeding to Push...", "⬆️")
 
     # PHASE 6: DEPLOY
-    Console.log("[6/6] Injecting into Production...", "🚀")
+    Console.log("[6/6] Injecting into Production...", "!")
     success, _, stderr = run_cmd("git push -u origin main", cwd=REPO_PATH)
     
     if success:

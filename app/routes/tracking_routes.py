@@ -54,10 +54,10 @@ def bg_save_visitor(external_id, fbclid, client_ip, user_agent, source, utm_data
         logger.error(f"❌ [BG] Error saving visitor: {e}")
 
 
-def bg_send_meta_event(event_name, event_source_url, client_ip, user_agent, event_id, 
+async def bg_send_meta_event(event_name, event_source_url, client_ip, user_agent, event_id, 
                        fbclid=None, fbp=None, fbc=None, external_id=None, phone=None, email=None, custom_data=None, 
                        first_name=None, last_name=None, city=None, state=None, zip_code=None, country=None, utm_data=None):
-    """Sends to Meta CAPI using Elite Service (SDK + Redis)"""
+    """Sends to Meta CAPI using Elite Service (SDK + Redis) - Async-Awaiting"""
     try:
         # Auto-construct fbc from fbclid if needed (unless passed explicitly)
         fbc_cookie = fbc
@@ -66,7 +66,7 @@ def bg_send_meta_event(event_name, event_source_url, client_ip, user_agent, even
             timestamp = int(time.time())
             fbc_cookie = f"fb.1.{timestamp}.{fbclid}"
             
-        result = send_elite_event(
+        result = await send_elite_event(
             event_name=event_name,
             event_id=event_id,
             url=event_source_url,
@@ -328,7 +328,7 @@ class QStashPayload(BaseModel):
     utm_data: Optional[dict] = {}
 
 @router.post("/hooks/process-event")
-def process_qstash_event(payload: QStashPayload):
+async def process_qstash_event(payload: QStashPayload):
     """
     Webhook Receiver for QStash.
     This runs in a FRESH Vercel invocation (Full CPU Time).
@@ -338,7 +338,7 @@ def process_qstash_event(payload: QStashPayload):
     # We call the synchronous bg_send_meta_event directly here
     # Since this is a dedicated request from QStash, we can block/wait for it to finish
     try:
-        bg_send_meta_event(
+        await bg_send_meta_event(
             event_name=payload.event_name,
             event_id=payload.event_id,
             event_source_url=payload.event_source_url,

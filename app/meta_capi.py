@@ -237,7 +237,7 @@ class EliteMetaCAPIService:
             self._deduplicate = lambda x, y: True  # Always allow if no cache
             self._cache_enabled = False
     
-    def send_event(
+    async def send_event(
         self,
         event_name: str,
         event_id: str,
@@ -246,7 +246,7 @@ class EliteMetaCAPIService:
         custom_data: Optional[EnhancedCustomData] = None,
         event_time: Optional[int] = None
     ) -> Dict[str, Any]:
-        """Send event to Meta CAPI using official SDK."""
+        """Send event to Meta CAPI using official SDK (Async-Bridged)."""
         # 1. Guards
         if self.sandbox_mode:
             logger.info(f"🛡️ [SANDBOX] {event_name} intercepted")
@@ -257,14 +257,17 @@ class EliteMetaCAPIService:
             return {"status": "duplicate", "event_id": event_id}
         
         if not SDK_AVAILABLE:
-            return self._fallback_http_send(event_name, event_id, event_source_url, user_data, custom_data)
+            return await self._fallback_http_send(event_name, event_id, event_source_url, user_data, custom_data)
         
-        # 2. Build & Execute
+        # 2. Build & Execute (Offloaded to thread pool)
         try:
-            request = self._build_event_request(event_name, event_id, event_source_url, user_data, custom_data, event_time)
-            response = request.execute()
+            from anyio.to_thread import run_sync
             
-            logger.info(f"✅ [META CAPI SDK] {event_name} sent successfully")
+            request = self._build_event_request(event_name, event_id, event_source_url, user_data, custom_data, event_time)
+            # Use run_sync to avoid blocking the event loop
+            response = await run_sync(request.execute)
+            
+            logger.info(f"✅ [META CAPI SDK] {event_name} sent successfully (Async-Bridge)")
             return {
                 "status": "success", "event_id": event_id,
                 "events_received": response.get("events_received", 1),
@@ -299,7 +302,7 @@ class EliteMetaCAPIService:
         })
         return {"status": "queued", "event_id": event_id, "error": str(e)}
     
-    def _fallback_http_send(
+    async def _fallback_http_send(
         self,
         event_name: str,
         event_id: str,
@@ -307,9 +310,9 @@ class EliteMetaCAPIService:
         user_data: EnhancedUserData,
         custom_data: Optional[EnhancedCustomData]
     ) -> Dict[str, Any]:
-        """Fallback to manual HTTP if SDK unavailable"""
+        """Fallback to manual HTTP if SDK unavailable (Async-Aware)"""
         try:
-            from app.tracking import send_event
+            from app.tracking import send_event_async
             
             # Convert to legacy format
             fbclid = None
@@ -318,7 +321,7 @@ class EliteMetaCAPIService:
                 if len(parts) >= 4:
                     fbclid = parts[3]
             
-            success = send_event(
+            success = await send_event_async(
                 event_name=event_name,
                 event_source_url=event_source_url,
                 client_ip=user_data.client_ip_address or "",
@@ -345,21 +348,21 @@ class EliteMetaCAPIService:
     # CONVENIENCE METHODS (Pre-built for common events)
     # =================================================================
     
-    def track_page_view(
+    async def track_page_view(
         self,
         event_id: str,
         url: str,
         user_data: EnhancedUserData
     ) -> Dict[str, Any]:
         """Track PageView event"""
-        return self.send_event(
+        return await self.send_event(
             event_name=MetaEventType.PAGE_VIEW.value,
             event_id=event_id,
             event_source_url=url,
             user_data=user_data
         )
     
-    def track_lead(
+    async def track_lead(
         self,
         event_id: str,
         url: str,
@@ -374,7 +377,7 @@ class EliteMetaCAPIService:
             lead_source=lead_source
         )
         
-        return self.send_event(
+        return await self.send_event(
             event_name=MetaEventType.LEAD.value,
             event_id=event_id,
             event_source_url=url,
@@ -382,7 +385,7 @@ class EliteMetaCAPIService:
             custom_data=custom_data
         )
     
-    def track_view_content(
+    async def track_view_content(
         self,
         event_id: str,
         url: str,
@@ -396,7 +399,7 @@ class EliteMetaCAPIService:
             content_category=content_category
         )
         
-        return self.send_event(
+        return await self.send_event(
             event_name=MetaEventType.VIEW_CONTENT.value,
             event_id=event_id,
             event_source_url=url,
@@ -404,7 +407,7 @@ class EliteMetaCAPIService:
             custom_data=custom_data
         )
     
-    def track_contact(
+    async def track_contact(
         self,
         event_id: str,
         url: str,
@@ -417,7 +420,7 @@ class EliteMetaCAPIService:
             content_category="consultation_request"
         )
         
-        return self.send_event(
+        return await self.send_event(
             event_name=MetaEventType.CONTACT.value,
             event_id=event_id,
             event_source_url=url,
@@ -437,13 +440,12 @@ elite_capi = EliteMetaCAPIService()
 # QUICK ACCESS FUNCTIONS (For backward compatibility)
 # =================================================================
 
-def send_elite_event(
+async def send_elite_event(
     event_name: str, event_id: str, url: str, client_ip: str, user_agent: str,
     **kwargs
 ) -> Dict[str, Any]:
     """
-    Quick function to send events with minimal boilerplate.
-    Compatible with existing code structure.
+    Quick function to send events with minimal boilerplate (Async).
     """
     user_data = EnhancedUserData(
         client_ip_address=client_ip,
@@ -470,7 +472,7 @@ def send_elite_event(
             lead_source=custom_data.get("lead_source")
         )
     
-    return elite_capi.send_event(
+    return await elite_capi.send_event(
         event_name=event_name, event_id=event_id, event_source_url=url,
         user_data=user_data, custom_data=enhanced_custom
     )

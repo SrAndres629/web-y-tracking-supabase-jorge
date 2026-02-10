@@ -114,7 +114,9 @@ class Settings(BaseSettings):
     CLARITY_PROJECT_ID: Optional[str] = None
     
     # Cloudflare (If using Zaraz for ad-blocker bypass)
-    CLOUDFLARE_ZONE_ID: Optional[str] = None
+    CLOUDFLARE_ZONE_ID: Optional[str] = os.getenv("CLOUDFLARE_ZONE_ID", "19bd9bdd7abf8f74b4e95d75a41e8583")
+    CLOUDFLARE_EMAIL: Optional[str] = os.getenv("CLOUDFLARE_EMAIL", "Acordero629@gmail.com")
+    CLOUDFLARE_API_KEY: Optional[str] = os.getenv("CLOUDFLARE_API_KEY")
     TURNSTILE_SECRET_KEY: Optional[str] = None
     TURNSTILE_SITE_KEY: str = "0x4AAAAAAA8Cqg0HkqG6Xq5j"  # Default to visible key if not provided
 

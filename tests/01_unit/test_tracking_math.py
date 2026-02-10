@@ -10,9 +10,12 @@ from app.cache import deduplicate_event, _memory_cache, REDIS_ENABLED
 # SILICON VALLEY STANDARD: MATHEMATICAL PROOF OF CORRECTNESS
 # =================================================================
 
+pytestmark = pytest.mark.filterwarnings("ignore::pytest.PytestUnraisableExceptionWarning")
+
 # 1. ENTROPY & COLLISION RESISTANCE
 # -----------------------------------------------------------------
 
+@pytest.mark.filterwarnings("ignore::pytest.PytestUnraisableExceptionWarning")
 def test_entropy_collision_resistance():
     """
     Mathematical Proof:

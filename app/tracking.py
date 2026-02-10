@@ -4,6 +4,8 @@
 # =================================================================
 import hashlib
 import time
+import random
+import string
 import httpx
 import asyncio
 from typing import Optional, Dict, Any
@@ -77,7 +79,9 @@ def generate_fbp() -> str:
 def generate_event_id(event_name: str) -> str:
     """Generate unique event ID (evt_timestamp_name)"""
     timestamp_ns = time.time_ns()
-    return f"evt_{timestamp_ns}_{event_name[:3]}"
+    # 🛡️ ENTROPY BOOST: Add 6 chars of randomness to ensure >100k collisions/sec resistance
+    entropy = ''.join(random.choices(string.ascii_lowercase + string.digits, k=6))
+    return f"evt_{timestamp_ns}_{entropy}"
 
 
 def extract_fbclid_from_fbc(fbc_cookie: str) -> Optional[str]:

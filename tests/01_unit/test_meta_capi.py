@@ -46,7 +46,8 @@ def test_enhanced_user_data_hashing():
             # Verify Country
             assert mock_ud.country_code == "bo"
 
-def test_deduplication_logic(capi_service):
+@pytest.mark.asyncio
+async def test_deduplication_logic(capi_service):
     """
     Verifies that duplicate events are blocked
     """
@@ -56,7 +57,7 @@ def test_deduplication_logic(capi_service):
     # Mock deduplicate to return False (Duplicate found)
     capi_service._deduplicate = MagicMock(return_value=False)
     
-    result = capi_service.send_event(
+    result = await capi_service.send_event(
         event_name=event_name,
         event_id=event_id,
         event_source_url="http://test.com",
@@ -66,13 +67,14 @@ def test_deduplication_logic(capi_service):
     assert result["status"] == "duplicate"
     assert result["event_id"] == event_id
 
-def test_sandbox_interception(capi_service):
+@pytest.mark.asyncio
+async def test_sandbox_interception(capi_service):
     """
     Verifies that Sandbox Mode prevents sending
     """
     capi_service.sandbox_mode = True
     
-    result = capi_service.send_event(
+    result = await capi_service.send_event(
         event_name="Lead",
         event_id="evt_test",
         event_source_url="http://test.com",
@@ -81,16 +83,17 @@ def test_sandbox_interception(capi_service):
     
     assert result["status"] == "sandbox"
 
-def test_fallback_mechanism(capi_service):
+@pytest.mark.asyncio
+async def test_fallback_mechanism(capi_service):
     """
     Verifies that if SDK is missing, it falls back to HTTP
     """
     with patch("app.meta_capi.SDK_AVAILABLE", False):
-        with patch("app.tracking.send_event", return_value=True) as mock_http_send:
+        with patch("app.tracking.send_event_async", return_value=True) as mock_http_send:
             
             user_data = EnhancedUserData(email="test@test.com")
             
-            result = capi_service.send_event(
+            result = await capi_service.send_event(
                 event_name="Lead",
                 event_id="evt_fallback",
                 event_source_url="http://test.com",
@@ -100,3 +103,4 @@ def test_fallback_mechanism(capi_service):
             assert result["status"] == "success"
             assert result["method"] == "http_fallback"
             mock_http_send.assert_called_once()
+

@@ -23,6 +23,7 @@
         /* Apple Spring: Mass=1, Stiffness=170, Damping=26 */
         --transition-spring: 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
         --border-light: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.02) 100%);
+        --premium-glow: radial-gradient(circle at center, rgba(197, 160, 89, 0.15) 0%, transparent 70%);
     }
 
     /* Apple-Level Typography Modernization (Mobile Optimized) */
@@ -104,6 +105,33 @@
     .skip-link {
         @apply sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-luxury-gold focus:text-black focus:px-6 focus:py-3 focus:font-bold focus:rounded-lg focus:shadow-2xl focus:border focus:border-white/20;
         transition: transform 0.3s var(--transition-spring);
+    }
+
+    /* LIQUID GOLD TYPOGRAPHY (Hero Level) */
+    .text-liquid-gold {
+        background: linear-gradient(to right, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-size: 200% auto;
+        animation: liquid-gold-flow 6s linear infinite;
+        font-weight: 800;
+        letter-spacing: -0.05em;
+    }
+
+    /* PREMIUM NAVIGATION (Apple Glass High-Fidelity) */
+    .glass-nav-premium {
+        @apply fixed top-0 left-0 w-full z-[1000] border-b border-white/5 transition-all duration-500;
+        background: rgba(5, 5, 5, 0.6);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+    }
+
+    .glass-nav-premium.scrolled {
+        @apply py-3;
+        background: rgba(5, 5, 5, 0.85);
+        border-color: rgba(197, 160, 89, 0.15);
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
     }
 }
 
@@ -220,6 +248,33 @@
         transform: translate(var(--particle-x), var(--particle-y)) scale(1.2);
         opacity: 0;
     }
+}
+
+@keyframes liquid-gold-flow {
+    to {
+        background-position: 200% center;
+    }
+}
+
+/* CURSOR GLOW EFFECT (Motion-Aware) */
+.cursor-glow-follower {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle at center, rgba(197, 160, 89, 0.08) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+    transform: translate(-50%, -50%);
+    transition: opacity 0.5s ease;
+    mix-blend-mode: soft-light;
+    opacity: 0;
+}
+
+body:hover .cursor-glow-follower {
+    opacity: 1;
 }
 
 /* -----------------------------------------------------------------
