@@ -268,11 +268,11 @@ class EliteMetaCAPIService:
         
         # 2. Build & Execute (Offloaded to thread pool)
         try:
-            from anyio.to_thread import run_sync
+            import asyncio
             
             request = self._build_event_request(event_name, event_id, event_source_url, user_data, custom_data, event_time)
-            # Use run_sync to avoid blocking the event loop
-            response = await run_sync(request.execute)
+            # Use asyncio.to_thread to avoid blocking the event loop (More stable on Vercel)
+            response = await asyncio.to_thread(request.execute)
             
             logger.info(f"✅ [META CAPI SDK] {event_name} sent successfully (Async-Bridge)")
             return {
