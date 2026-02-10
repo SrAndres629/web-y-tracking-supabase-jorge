@@ -425,6 +425,11 @@ def main():
                 Console.success(f"PRODUCCIÓN ACTUALIZADA: Versión Atómica {new_version} activa.")
             else:
                 Console.warning(f"Pre-Warm status: {resp.status_code}")
+                try:
+                    error_snippet = resp.text[:500]
+                    Console.info(f"Diagnostic Snippet: {error_snippet}")
+                except:
+                    pass
         except Exception as e:
             Console.warning(f"Pre-Warm failed: {e}")
 
