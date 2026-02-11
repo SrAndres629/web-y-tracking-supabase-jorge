@@ -1,6 +1,7 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock
 from datetime import datetime
+import uuid # Import uuid
 
 from app.application.commands.create_lead import CreateLeadHandler, CreateLeadCommand
 from app.core.result import Result
@@ -29,7 +30,7 @@ def base_command():
         phone="555-123-4567",
         name="John Doe",
         email="john.doe@example.com",
-        external_id="visitor-123",
+        external_id=uuid.uuid4().hex, # Use a valid ExternalId format
         fbclid="fb-clid-abc",
         service_interest="Web Development",
         utm_source="google",
@@ -37,15 +38,15 @@ def base_command():
     )
 
 @pytest.mark.asyncio
-async def test_handle_invalid_phone(handler, base_command):
-    base_command.phone = "invalid-phone"
-    result = await handler.handle(base_command)
+async def test_handle_invalid_phone(handler): # base_command is not used directly here
+    cmd = CreateLeadCommand(phone="invalid-phone") # Create a new command for this test
+    result = await handler.handle(cmd)
     
     assert result.is_err
     assert "Invalid phone" in result.unwrap_err()
 
 @pytest.mark.asyncio
-async def test_handle_existing_lead_updates_info(handler, mock_lead_repo, base_command):
+async def test_handle_existing_lead_updates_info(handler, mock_lead_repo): # base_command is not used directly here
     existing_lead = Lead.create(phone=Phone.parse("555-123-4567").unwrap(), name="Old Name")
     mock_lead_repo.get_by_phone.return_value = existing_lead
     
@@ -63,7 +64,7 @@ async def test_handle_existing_lead_updates_info(handler, mock_lead_repo, base_c
     assert existing_lead.email == Email.parse("new.email@example.com").unwrap()
 
 @pytest.mark.asyncio
-async def test_handle_existing_lead_no_new_info(handler, mock_lead_repo, base_command):
+async def test_handle_existing_lead_no_new_info(handler, mock_lead_repo): # base_command is not used directly here
     existing_lead = Lead.create(phone=Phone.parse("555-123-4567").unwrap(), name="Old Name")
     mock_lead_repo.get_by_phone.return_value = existing_lead
     
@@ -75,7 +76,7 @@ async def test_handle_existing_lead_no_new_info(handler, mock_lead_repo, base_co
     mock_lead_repo.update.assert_not_called() # Should not update if no new info
 
 @pytest.mark.asyncio
-async def test_handle_new_lead_created_without_external_id(handler, mock_lead_repo, mock_visitor_repo, base_command):
+async def test_handle_new_lead_created_without_external_id(handler, mock_lead_repo, mock_visitor_repo): # base_command is not used directly here
     mock_lead_repo.get_by_phone.return_value = None # No existing lead
     mock_visitor_repo.get_by_external_id.return_value = None # No visitor
     
@@ -100,36 +101,38 @@ async def test_handle_new_lead_created_without_external_id(handler, mock_lead_re
     mock_visitor_repo.get_by_external_id.assert_not_called() # visitor_repo not used if external_id is None in cmd
 
 @pytest.mark.asyncio
-async def test_handle_new_lead_created_with_matching_visitor(handler, mock_lead_repo, mock_visitor_repo, base_command):
+async def test_handle_new_lead_created_with_matching_visitor(handler, mock_lead_repo, mock_visitor_repo): # base_command is not used directly here
     mock_lead_repo.get_by_phone.return_value = None # No existing lead
     
+    valid_external_id = uuid.uuid4().hex
     # Mock an existing visitor
     mock_visitor = Visitor.create(ip="1.1.1.1", user_agent="test", source=VisitorSource.DIRECT)
-    mock_visitor._external_id = ExternalId("visitor-123") # Manually set for mock
+    mock_visitor._external_id = ExternalId(valid_external_id) # Manually set for mock with valid format
     mock_visitor_repo.get_by_external_id.return_value = mock_visitor
     
     cmd = CreateLeadCommand(
         phone="555-999-0000",
         name="Alice",
-        external_id="visitor-123",
+        external_id=valid_external_id,
     )
     result = await handler.handle(cmd)
     
     assert result.is_ok
     mock_lead_repo.create.assert_called_once()
     created_lead = mock_lead_repo.create.call_args[0][0]
-    assert created_lead.external_id == ExternalId("visitor-123")
-    mock_visitor_repo.get_by_external_id.assert_called_once_with(ExternalId("visitor-123"))
+    assert created_lead.external_id == ExternalId(valid_external_id)
+    mock_visitor_repo.get_by_external_id.assert_called_once_with(ExternalId(valid_external_id))
 
 @pytest.mark.asyncio
-async def test_handle_new_lead_created_with_external_id_no_matching_visitor(handler, mock_lead_repo, mock_visitor_repo, base_command):
+async def test_handle_new_lead_created_with_external_id_no_matching_visitor(handler, mock_lead_repo, mock_visitor_repo): # base_command is not used directly here
     mock_lead_repo.get_by_phone.return_value = None # No existing lead
     mock_visitor_repo.get_by_external_id.return_value = None # No matching visitor
     
+    valid_external_id = uuid.uuid4().hex
     cmd = CreateLeadCommand(
         phone="555-111-2222",
         name="Bob",
-        external_id="visitor-456",
+        external_id=valid_external_id,
     )
     result = await handler.handle(cmd)
     
@@ -137,7 +140,7 @@ async def test_handle_new_lead_created_with_external_id_no_matching_visitor(hand
     mock_lead_repo.create.assert_called_once()
     created_lead = mock_lead_repo.create.call_args[0][0]
     assert created_lead.external_id is None # No external_id linked as no visitor found
-    mock_visitor_repo.get_by_external_id.assert_called_once_with(ExternalId("visitor-456"))
+    mock_visitor_repo.get_by_external_id.assert_called_once_with(ExternalId(valid_external_id))
 
 @pytest.mark.asyncio
 async def test_handle_exception_during_processing(handler, mock_lead_repo, base_command):

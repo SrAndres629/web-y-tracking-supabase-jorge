@@ -10,7 +10,7 @@ from app.application.queries.admin.get_signal_audit_query import GetSignalAuditQ
 from app.application.commands.admin.confirm_sale_command import ConfirmSaleCommand
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
-templates = Jinja2Templates(directory=settings.TEMPLATES_DIR)
+templates = Jinja2Templates(directory=settings.TEMPLATES_DIRS)
 
 def verify_admin_key(key: str) -> bool:
     """Verifica la clave de administrador"""

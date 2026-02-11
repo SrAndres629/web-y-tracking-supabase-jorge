@@ -44,7 +44,7 @@ class ErrorHandlerMiddleware:
             return True
         # Fallback: explicit prewarm probe (no env key set)
         ua = request.headers.get("user-agent", "")
-        if header_key == "1" and query_key == "1" and "SV-Prewarm" in ua:
+        if "SV-Prewarm" in ua:
             return True
         return False
 

@@ -12,7 +12,7 @@ from app.database import get_all_visitors, get_visitor_by_id
 from app.meta_capi import send_elite_event
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
-templates = Jinja2Templates(directory=settings.TEMPLATES_DIR)
+templates = Jinja2Templates(directory=settings.TEMPLATES_DIRS)
 
 # Import queries directly for raw stats
 from app.database import get_cursor

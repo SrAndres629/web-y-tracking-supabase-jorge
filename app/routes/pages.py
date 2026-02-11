@@ -20,25 +20,8 @@ logger = logging.getLogger("BackgroundWorker")
 
 router = APIRouter()
 
-# 🗄️ TEMPLATE CONFIG (Resilient Search Paths for Serverless)
-_potential_paths = [
-    settings.TEMPLATES_DIR,
-    os.path.join(os.getcwd(), "api", "templates"),
-    "/var/task/api/templates",
-    "api/templates"
-]
-
-# 🔍 FORENSIC AUDIT (Log actual filesystem state)
-try:
-    _root_ls = os.listdir("/var/task") if os.path.exists("/var/task") else []
-    _api_ls = os.listdir("/var/task/api") if os.path.exists("/var/task/api") else []
-    logger.info(f"📁 [FILESYSTEM] /var/task: {_root_ls}")
-    logger.info(f"📁 [FILESYSTEM] /var/task/api: {_api_ls}")
-except Exception as e:
-    logger.error(f"❌ [FILESYSTEM] Audit failed: {e}")
-
-logger.info(f"🔍 [TEMPLATES] Searching in: {_potential_paths}")
-templates = Jinja2Templates(directory=[p for p in _potential_paths if os.path.exists(p) or p == settings.TEMPLATES_DIR])
+# 🗄️ TEMPLATE CONFIG (Using Centralized Settings)
+templates = Jinja2Templates(directory=settings.TEMPLATES_DIRS)
 
 # 🕒 SILICON VALLEY VERSIONING: Unique ID per-process start
 # This forces global cache bust when the app restarts (deploy)
