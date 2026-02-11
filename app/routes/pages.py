@@ -125,20 +125,17 @@ async def read_root(
     external_id = generate_external_id(ident['ip'], ident['ua'])
     fbclid = await _resolve_fbclid_full(request, fbc_cookie, external_id)
     
-    # 4. SEO Engine (Silicon Valley Research Standard)
-    from app.services.seo_engine import SEOEngine
+    # 4. SEO Engine (Clean Architecture Query)
+    from app.application.queries.seo.get_page_seo_data_query import GetPageSEODataQuery
     
-    # Page metadata
-    seo_meta = SEOEngine.get_page_metadata("/", {
-        "title": "Jorge Aguirre Flores | Experto en Microblading y Estética Avanzada",
-        "description": "Transforma tu mirada con el mejor especialista en Microblading de Santa Cruz. 30 años de trayectoria garantizan resultados naturales y artísticos."
-    })
-    
-    # Schemas
-    schemas = [
-        SEOEngine.get_global_schema(),
-        SEOEngine.get_breadcrumb_schema([{"name": "Inicio", "path": "/"}])
-    ]
+    seo_query = GetPageSEODataQuery()
+    seo_data = await seo_query.execute(
+        path="/",
+        context_data={ # Pass initial context data for title/description defaults
+            "title": "Jorge Aguirre Flores | Experto en Microblading y Estética Avanzada",
+            "description": "Transforma tu mirada con el mejor especialista en Microblading de Santa Cruz. 30 años de trayectoria garantizan resultados naturales y artísticos."
+        }
+    )
     
     # 5. Background Tasks & Cookies
     _schedule_tracking(background_tasks, request, ident, external_id, fbclid, fbp_cookie, event_id)
@@ -156,10 +153,7 @@ async def read_root(
             "turnstile_site_key": settings.TURNSTILE_SITE_KEY,
             "flags": _get_feature_flags(),
             "hero_content": hero_content, "ab_variant": ab_variant,
-            "seo": {
-                **seo_meta,
-                "json_ld": SEOEngine.generate_all_json_ld(schemas)
-            }
+            "seo": seo_data
         },
         headers={"Cache-Control": "no-cache, no-store, must-revalidate"}
     )

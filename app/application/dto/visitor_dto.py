@@ -7,6 +7,7 @@ from __future__ import annotations
 from typing import Optional
 from datetime import datetime
 from pydantic import BaseModel, Field
+from pydantic import ConfigDict
 
 
 class CreateVisitorRequest(BaseModel):
@@ -34,9 +35,7 @@ class VisitorResponse(BaseModel):
     visit_count: int
     created_at: datetime
     last_seen: datetime
-    
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class VisitorListResponse(BaseModel):

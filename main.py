@@ -141,45 +141,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # =================================================================
 # DEBUGGING: EXCEPTION HANDLERS
 # =================================================================
-from fastapi.responses import JSONResponse
-import traceback
-
-@app.exception_handler(500)
-async def internal_exception_handler(request: Request, exc: Exception):
-    """
-    Production-safe error handler.
-    Logs full diagnostics server-side but returns sanitized response to client.
-    If a valid debug key is provided, return full traceback for prewarm diagnostics.
-    """
-    logger.exception(f"🔥 CRITICAL 500 on {request.url.path}: {exc}")
-
-    debug_key = os.getenv("PREWARM_DEBUG_KEY") or os.getenv("DEBUG_DIAGNOSTIC_KEY")
-    header_key = request.headers.get("x-prewarm-debug")
-    query_key = request.query_params.get("__debug_key")
-    debug_allowed = bool(debug_key and (header_key == debug_key or query_key == debug_key))
-
-    if debug_allowed:
-        tb = "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))
-        return JSONResponse(
-            status_code=500,
-            content={
-                "status": "error",
-                "message": "Internal Server Error (Debug Mode)",
-                "detail": str(exc),
-                "type": type(exc).__name__,
-                "path": request.url.path,
-                "method": request.method,
-                "traceback": tb,
-            }
-        )
-
-    return JSONResponse(
-        status_code=500,
-        content={
-            "status": "error",
-            "message": "Internal Server Error",
-        }
-    )
+# Error handlers are configured via app.interfaces.api.middleware.error_handler
 
 # Aplicar límite global (opcional, o por ruta)
 # app.add_middleware(SlowAPIMiddleware)

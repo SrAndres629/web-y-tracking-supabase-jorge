@@ -1,47 +1,20 @@
-# =================================================================
-# ADMIN.PY - Panel de Administración (API Interface)
-# Jorge Aguirre Flores Web
-# =================================================================
+import time
 from fastapi import APIRouter, Request, HTTPException, BackgroundTasks
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
-import time
 
 from app.config import settings
-from app.models import ConfirmSaleResponse, ErrorResponse
-from app.database import get_all_visitors, get_visitor_by_id
-from app.meta_capi import send_elite_event
+
+from app.application.queries.admin.get_all_visitors_query import GetAllVisitorsQuery
+from app.application.queries.admin.get_signal_audit_query import GetSignalAuditQuery
+from app.application.commands.admin.confirm_sale_command import ConfirmSaleCommand
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 templates = Jinja2Templates(directory=settings.TEMPLATES_DIR)
 
-# Import queries directly for raw stats
-from app.database import get_cursor
-
-
 def verify_admin_key(key: str) -> bool:
     """Verifica la clave de administrador"""
     return key == settings.ADMIN_KEY
-
-
-async def _bg_send_meta_event(event_name, event_source_url, client_ip, user_agent, event_id,
-                              fbclid=None, fbp=None, fbc=None, external_id=None, custom_data=None):
-    try:
-        result = await send_elite_event(
-            event_name=event_name,
-            event_id=event_id,
-            url=event_source_url,
-            client_ip=client_ip,
-            user_agent=user_agent,
-            external_id=external_id,
-            fbc=fbc,
-            fbp=fbp,
-            custom_data=custom_data or {},
-        )
-        return result
-    except Exception:
-        return {"status": "error"}
-
 
 @router.get("/dashboard", response_class=HTMLResponse)
 async def admin_dashboard(request: Request, key: str = ""):
@@ -55,7 +28,8 @@ async def admin_dashboard(request: Request, key: str = ""):
             status_code=403
         )
     
-    visitors = get_all_visitors(limit=50)
+    get_visitors_query = GetAllVisitorsQuery()
+    visitors = await get_visitors_query.execute(limit=50)
     
     return templates.TemplateResponse(
         request=request,
@@ -66,33 +40,24 @@ async def admin_dashboard(request: Request, key: str = ""):
         }
     )
 
-
 @router.get("/stats")
 async def admin_stats(key: str = ""):
     """Devuelve JSON con estadísticas para monitoreo externo"""
     if not verify_admin_key(key):
         return JSONResponse({"error": "Unauthorized"}, status_code=403)
     
-    visitors = get_all_visitors(limit=1000)
+    get_visitors_query = GetAllVisitorsQuery()
+    visitors = await get_visitors_query.execute(limit=1000)
     return {
         "total_visitors": len(visitors),
         "status": "active",
         "database": "connected"
     }
 
-
 @router.post("/confirm/{visitor_id}")
-async def confirm_sale(visitor_id: int, background_tasks: BackgroundTasks, key: str = ""):
+async def confirm_sale(visitor_id: int, background_tasks: BackgroundTasks, request: Request, key: str = ""):
     """
     Confirma una venta y envía evento Purchase a Meta CAPI
-    
-    Esto permite cerrar el loop de atribución:
-    1. Usuario ve anuncio en Meta
-    2. Hace clic (capturamos fbclid)
-    3. Visita la web (guardamos en DB)
-    4. Contacta por WhatsApp (Lead)
-    5. Admin confirma venta (Purchase)
-    → Meta aprende qué audiencias convierten
     """
     # Validar acceso
     if not verify_admin_key(key):
@@ -101,30 +66,23 @@ async def confirm_sale(visitor_id: int, background_tasks: BackgroundTasks, key: 
             status_code=403
         )
     
-    # Buscar visitante
-    visitor = get_visitor_by_id(visitor_id)
-    if not visitor:
-        return JSONResponse(
-            {"status": "error", "error": "Visitante no encontrado"}, 
-            status_code=404
-        )
+    client_ip = request.client.host if request.client else "unknown"
+    user_agent = request.headers.get("User-Agent", "unknown")
+
+    command = ConfirmSaleCommand()
+    # The actual execution of the command (which includes sending the Meta event)
+    # is now handled by the command itself. We just need to trigger it.
+    # The original _bg_send_meta_event logic is now within ConfirmSaleCommand.execute
     
-    # Enviar Purchase a Meta CAPI (Background)
+    # We should add the execution of the command to background tasks
     background_tasks.add_task(
-        _bg_send_meta_event,
-        event_name="Purchase",
-        event_source_url=f"{settings.HOST}/admin",
-        client_ip="127.0.0.1",
-        user_agent="Admin Dashboard",
-        event_id=f"purchase_{visitor_id}_{int(time.time())}",
-        fbclid=visitor.get("fbclid"),
-        external_id=visitor.get("external_id"),
-        custom_data={
-            "value": 350.00,
-            "currency": "USD"
-        }
+        command.execute,
+        visitor_id=visitor_id,
+        client_ip=client_ip,
+        user_agent=user_agent,
     )
     
+    # Return a synchronous response immediately
     return JSONResponse({
         "status": "success",
         "visitor_id": visitor_id,
@@ -141,32 +99,10 @@ async def audit_signals(key: str = ""):
     if not verify_admin_key(key):
         return JSONResponse({"error": "Unauthorized"}, status_code=403)
 
-    try:
-        with get_cursor() as cur:
-             # 1. Total Contactos Únicos
-             cur.execute("SELECT COUNT(*) FROM contacts")
-             total_leads = cur.fetchone()[0]
-
-             # 2. Total Enviados a Meta (Usando un campo teórico 'sent_to_meta' o log de events)
-             # Nota: Asumiendo que tenemos una tabla de auditoría o flag. 
-             # Si no, contamos leads con fbclid como proxy de calidad.
-             cur.execute("SELECT COUNT(*) FROM contacts WHERE fbclid IS NOT NULL")
-             leads_with_signal = cur.fetchone()[0]
-             
-             # 3. Discrepancy
-             match_rate = 0
-             if total_leads > 0:
-                 match_rate = round((leads_with_signal / total_leads) * 100, 2)
-                 
-             return {
-                 "status": "active",
-                 "audit": {
-                     "total_leads_db": total_leads,
-                     "quality_leads_with_fbclid": leads_with_signal,
-                     "signal_match_rate": f"{match_rate}%",
-                     "alert": "LOW SIGNAL" if match_rate < 50 else "HEALTHY"
-                 },
-                 "recommendation": "Check 'tracking.js' if Match Rate < 80%"
-             }
-    except Exception as e:
-        return {"error": str(e)}
+    query = GetSignalAuditQuery()
+    result = await query.execute()
+    
+    if "error" in result:
+        raise HTTPException(status_code=500, detail=result["error"])
+    
+    return result

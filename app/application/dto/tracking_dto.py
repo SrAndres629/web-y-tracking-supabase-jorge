@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import Optional, Dict, Any
 from datetime import datetime
 from pydantic import BaseModel, Field, field_validator
+from pydantic import ConfigDict
 
 
 class TrackingContext(BaseModel):
@@ -116,6 +117,4 @@ class EventSummaryResponse(BaseModel):
     external_id: str
     timestamp: datetime
     source_url: str
-    
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

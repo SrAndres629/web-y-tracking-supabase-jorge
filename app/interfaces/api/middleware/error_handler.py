@@ -34,24 +34,37 @@ class ErrorHandlerMiddleware:
             return response
         except Exception as exc:
             logger.exception(f"Unhandled exception in request: {request.url}")
-            return self._render_error_page(exc)
+            return self._render_error(request, exc)
     
-    def _render_error_page(self, exc: Exception) -> HTMLResponse:
+    def _debug_allowed(self, request: Request) -> bool:
+        debug_key = os.getenv("PREWARM_DEBUG_KEY") or os.getenv("DEBUG_DIAGNOSTIC_KEY")
+        header_key = request.headers.get("x-prewarm-debug")
+        query_key = request.query_params.get("__debug_key")
+        return bool(debug_key and (header_key == debug_key or query_key == debug_key))
+
+    def _render_error(self, request: Request, exc: Exception):
         """
-        Renderiza página de error según el entorno.
+        Renderiza error según el entorno.
         
-        - Debug: Muestra stack trace completo
+        - Debug: Retorna JSON con stack trace completo
         - Producción: Mensaje genérico amigable
         """
-        is_debug = os.getenv("DEBUG", "false").lower() == "true"
+        if self._debug_allowed(request) or os.getenv("DEBUG", "false").lower() == "true":
+            tb = "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))
+            return JSONResponse(
+                status_code=500,
+                content={
+                    "status": "error",
+                    "message": "Internal Server Error (Debug Mode)",
+                    "detail": str(exc),
+                    "type": type(exc).__name__,
+                    "path": request.url.path,
+                    "method": request.method,
+                    "traceback": tb,
+                }
+            )
         
-        if is_debug:
-            error_detail = f"""
-            <h3>Error Details:</h3>
-            <pre style="background: #f5f5f5; padding: 1rem; overflow-x: auto;">{traceback.format_exc()}</pre>
-            """
-        else:
-            error_detail = "<p>El equipo técnico ha sido notificado. Por favor intente más tarde.</p>"
+        error_detail = "<p>El equipo técnico ha sido notificado. Por favor intente más tarde.</p>"
         
         html = f"""
         <!DOCTYPE html>
@@ -141,7 +154,7 @@ def setup_error_handlers(app):
     async def internal_error_handler(request: Request, exc: Exception):
         """Manejador para errores 500."""
         handler = ErrorHandlerMiddleware()
-        return handler._render_error_page(exc)
+        return handler._render_error(request, exc)
     
     @app.exception_handler(404)
     async def not_found_handler(request: Request, exc: Exception):
