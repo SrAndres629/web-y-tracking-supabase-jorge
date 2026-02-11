@@ -57,18 +57,22 @@ graph TD
 
 ## 📂 Estructura del Proyecto
 
+El proyecto sigue una estructura de **Clean Architecture / DDD** organizada en capas:
+
 ```bash
-├── api/             # Adaptador Mangum para entrada Vercel
-├── app/             # Lógica central del sistema
-│   ├── routes/      # Endpoints (Identity, Tracking, Pages, Admin)
-│   ├── middleware/  # Filtros de peticiones (Rate Limit, Auth)
-│   ├── static/      # CSS, JS (GSAP, Lenis), Imágenes
-│   └── templates/   # UI con Jinja2
-├── scripts/         # Automatización (Enriquecimiento de datos, Cloudflare)
-├── tests/           # Diamond Standard QA Suite
-│   └── test_architecture_audit.py # Auditoría Maestra (AST-based)
-├── git_sync.py      # Pipeline de despliegue "Iron Gate"
-└── main.py          # Punto de entrada para ejecución local
+├── api/                   # Adaptador Mangum para entrada Vercel
+├── app/                   # Lógica central del sistema (organizada por capas Clean/DDD)
+│   ├── application/       # Capa de Aplicación (Comandos, Consultas, DTOs)
+│   ├── core/              # Capa Core (utilidades, Result types)
+│   ├── domain/            # Capa de Dominio (Entidades, Value Objects)
+│   ├── infrastructure/    # Capa de Infraestructura (repositorios, APIs externas)
+│   └── interfaces/        # Capa de Interfaz (rutas API, middleware)
+│       └── api/
+│           └── routes/    # Endpoints de la API (admin, identity, seo, pages, tracking)
+├── scripts/               # Automatización (Enriquecimiento de datos, Cloudflare)
+├── tests/                 # Suite de QA (Unitarios, Integración, E2E)
+├── git_sync.py            # Pipeline de despliegue "Iron Gate"
+└── main.py                # Punto de entrada para ejecución local
 ```
 
 ---

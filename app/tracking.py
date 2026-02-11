@@ -457,4 +457,3 @@ def track_scroll_depth(
         external_id=external_id,
         custom_data=custom_data
     )
-

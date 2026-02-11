@@ -44,6 +44,7 @@ def _resolve_templates_dirs() -> List[str]:
     # 2. Local/Standard paths
     candidates.append(os.path.join(project_root, "templates"))
     candidates.append(os.path.join(project_root, "api", "templates"))
+    candidates.append(os.path.join(project_root, "app", "templates")) # Add new templates location
     candidates.append(os.path.join(os.getcwd(), "templates"))
     
     # Filter only existing OR likely-to-exist-in-runtime directories

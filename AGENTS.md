@@ -54,7 +54,13 @@ app/
 │
 ├── application/                   # 🎮 Casos de uso (CQRS)
 │   ├── commands/                  # Escrituras (TrackEvent, CreateLead)
+│   │   ├── admin/                 # Comandos para el panel de administración
+│   │   ├── identity/              # Comandos para la gestión de identidad (Google One Tap, WhatsApp)
+│   │   ├── create_lead.py         # Original command
+│   │   └── track_event.py         # Original command
 │   ├── queries/                   # Lecturas (GetVisitor, ListLeads)
+│   │   ├── admin/                 # Queries para el panel de administración
+│   │   └── seo/                   # Queries para la gestión de SEO
 │   ├── dto/                       # Data Transfer Objects
 │   └── interfaces/                # Puertos (ports) para infraestructura
 │       ├── cache_port.py
@@ -77,8 +83,11 @@ app/
 └── interfaces/                    # 🌐 Adaptadores de entrada
     └── api/
         ├── routes/                # Endpoints FastAPI
-        │   ├── pages.py
-        │   └── tracking.py
+        │   ├── admin.py           # Nuevas rutas para el panel de administración
+        │   ├── identity.py        # Nuevas rutas para la gestión de identidad
+        │   ├── seo.py             # Nuevas rutas para SEO (sitemap, robots, metadata)
+        │   ├── pages.py           # Rutas de páginas HTML (funcionalidades SEO migradas)
+        │   └── tracking.py        # Rutas de tracking (existente)
         ├── middleware/            # Security, rate limiting
         └── dependencies.py        # FastAPI Depends factories
 ```
@@ -178,10 +187,14 @@ async def track(
 ## 🧪 Testing
 
 ### Unit Tests (dominio puro)
+Los tests unitarios para los handlers (CommandHandlers y QueryHandlers) deben ser creados bajo `tests/unit/`.
 ```python
-def test_visitor_creation():
-    visitor = Visitor.create(ip="1.2.3.4", user_agent="Mozilla")
-    assert visitor.visit_count == 1
+# Ejemplo de test unitario para un handler
+from app.application.commands.track_event import TrackEventCommand, TrackEventHandler
+# ... mocks de repositorios y puertos
+async def test_track_event_handler_success(handler, mock_deduplicator, mock_visitor_repo, mock_event_repo):
+    # ... test logic
+    pass
 ```
 
 ### Integration Tests (con infraestructura fake)

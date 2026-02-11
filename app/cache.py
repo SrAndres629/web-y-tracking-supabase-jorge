@@ -1,291 +1,116 @@
-# =================================================================
-# CACHE.PY - Redis Cache Layer for Event Deduplication (Upstash)
-# Jorge Aguirre Flores Web
-# =================================================================
-# 
-# PURPOSE: Ultra-fast event deduplication using Redis
-# WHY: Postgres queries for deduplication are slow (50-200ms)
-#      Redis checks are instant (<5ms), improving EMQ score
-#
-# SETUP: 
-# 1. Create free account at https://upstash.com
-# 2. Create Redis database (choose closest region: São Paulo)
-# 3. Copy UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN
-# 4. Add to Vercel Environment Variables
-# =================================================================
+"""
+🧠 Legacy Cache Utilities (Compat Layer).
 
-import logging
+This module keeps legacy call sites working while the
+Clean/DDD cache implementations live in app.infrastructure.cache.
+"""
+
+from __future__ import annotations
+
 import json
-import os
-from typing import Optional, Any, Dict, List
+import time
+import logging
+from typing import Any, Optional, Dict
+
+from app.config import settings
 
 logger = logging.getLogger(__name__)
 
-# Import from centralized config
-try:
-    from app.config import settings
-    UPSTASH_REDIS_REST_URL = settings.UPSTASH_REDIS_REST_URL
-    UPSTASH_REDIS_REST_TOKEN = settings.UPSTASH_REDIS_REST_TOKEN
-except ImportError:
-    import os
-    UPSTASH_REDIS_REST_TOKEN = os.getenv("UPSTASH_REDIS_REST_TOKEN")
 
-# 🛡️ Defensive Check: Ensure it's a real string (Protects against Test Mocks)
-if not isinstance(UPSTASH_REDIS_REST_URL, str):
-    UPSTASH_REDIS_REST_URL = None
+class LegacyRedisCache:
+    """Simple JSON cache wrapper for legacy services."""
 
-# Check if Redis is configured
-REDIS_ENABLED = bool(UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN)
+    def __init__(self):
+        self._client = None
 
-if REDIS_ENABLED:
-    try:
-        from upstash_redis import Redis
-        redis_client = Redis(
-            url=UPSTASH_REDIS_REST_URL,
-            token=UPSTASH_REDIS_REST_TOKEN
-        )
-        logger.info("✅ Upstash Redis connected")
-    except ImportError:
-        logger.warning("⚠️ upstash-redis not installed. Run: pip install upstash-redis")
-        REDIS_ENABLED = False
-        redis_client = None
-    except Exception as e:
-        logger.warning(f"⚠️ Redis connection failed: {e}")
-        REDIS_ENABLED = False
-        redis_client = None
-else:
-    redis_client = None
-    logger.info("ℹ️ Redis not configured - using in-memory fallback")
+    @property
+    def _redis(self):
+        if self._client is None:
+            try:
+                from upstash_redis import Redis
+                if settings.UPSTASH_REDIS_REST_URL and settings.UPSTASH_REDIS_REST_TOKEN:
+                    self._client = Redis(
+                        url=settings.UPSTASH_REDIS_REST_URL,
+                        token=settings.UPSTASH_REDIS_REST_TOKEN,
+                    )
+            except Exception as e:
+                logger.debug(f"Redis not available: {e}")
+        return self._client
 
-# 🧠 GENERIC CACHE WRAPPER (SILICON VALLEY PATTERN)
-class RedisCacheWrapper:
     async def get_json(self, key: str) -> Optional[Any]:
-        if not REDIS_ENABLED or not redis_client: return None
+        if not self._redis:
+            return None
         try:
-            val = redis_client.get(key)
-            return json.loads(val) if val else None
-        except: return None
-
-    async def set_json(self, key: str, value: Any, expire: int = 3600):
-        if not REDIS_ENABLED or not redis_client: return
-        try:
-            redis_client.set(key, json.dumps(value), ex=expire)
-        except: pass
-
-    async def delete(self, key: str):
-        if not REDIS_ENABLED or not redis_client: return
-        try:
-            redis_client.delete(key)
-        except: pass
-
-redis_cache = RedisCacheWrapper()
-
-
-# =================================================================
-# IN-MEMORY FALLBACK (For local development)
-# =================================================================
-# Simple LRU-like cache for when Redis is not available
-_memory_cache = {}
-MAX_MEMORY_CACHE_SIZE = 10000
-
-
-def _memory_set(key: str, value: str, ttl_seconds: int) -> bool:
-    """In-memory fallback for Redis SET"""
-    global _memory_cache
-    
-    # Simple size limit (no proper LRU, just clear if too big)
-    if len(_memory_cache) > MAX_MEMORY_CACHE_SIZE:
-        _memory_cache.clear()
-    
-    _memory_cache[key] = value
-    return True
-
-
-def _memory_get(key: str) -> Optional[str]:
-    """In-memory fallback for Redis GET"""
-    return _memory_cache.get(key)
-
-
-def _memory_exists(key: str) -> bool:
-    """In-memory fallback for Redis EXISTS"""
-    return key in _memory_cache
-
-
-# =================================================================
-# PUBLIC API
-# =================================================================
-
-def is_duplicate_event(event_id: str, event_name: str = "event") -> bool:
-    """
-    Check if an event has already been processed.
-    
-    Args:
-        event_id: Unique event identifier
-        event_name: Event type for logging
-        
-    Returns:
-        True if duplicate (already processed), False if new
-    """
-    cache_key = f"evt:{event_id}"
-    
-    if REDIS_ENABLED and redis_client:
-        try:
-            exists = redis_client.exists(cache_key)
-            if exists:
-                logger.debug(f"🔄 Duplicate {event_name} blocked: {event_id[:16]}...")
-                return True
-            return False
-        except Exception as e:
-            logger.warning(f"⚠️ Redis check failed, allowing event: {e}")
-            return False  # Fail open - allow event if Redis fails
-    else:
-        return _memory_exists(cache_key)
-
-
-def mark_event_processed(event_id: str, ttl_hours: int = 48) -> bool:
-    """
-    Mark an event as processed to prevent duplicates.
-    
-    Args:
-        event_id: Unique event identifier
-        ttl_hours: How long to remember the event (default 48h per Meta best practices)
-        
-    Returns:
-        True if marked successfully
-    """
-    cache_key = f"evt:{event_id}"
-    ttl_seconds = ttl_hours * 3600
-    
-    if REDIS_ENABLED and redis_client:
-        try:
-            redis_client.set(cache_key, "1", ex=ttl_seconds)
-            return True
-        except Exception as e:
-            logger.warning(f"⚠️ Redis set failed: {e}")
-            return _memory_set(cache_key, "1", ttl_seconds)
-    else:
-        return _memory_set(cache_key, "1", ttl_seconds)
-
-
-def deduplicate_event(event_id: str, event_name: str = "event") -> bool:
-    """
-    Combined check-and-mark for event deduplication.
-    
-    Args:
-        event_id: Unique event identifier
-        event_name: Event type for logging
-        
-    Returns:
-        True if event should be processed (new event)
-        False if event should be skipped (duplicate)
-    """
-    # In audit/test runs, avoid external Redis state to keep tests deterministic.
-    if os.getenv("AUDIT_MODE", "").strip() == "1":
-        cache_key = f"evt:{event_id}"
-        if _memory_exists(cache_key):
-            return False
-        _memory_set(cache_key, "1", 48 * 3600)
-        return True
-
-    if is_duplicate_event(event_id, event_name):
-        return False  # Skip duplicate
-    
-    mark_event_processed(event_id)
-    return True  # Process new event
-
-
-# =================================================================
-# RATE LIMITING (Bonus Feature)
-# =================================================================
-
-def check_rate_limit(identifier: str, max_requests: int = 10, window_seconds: int = 60) -> bool:
-    """
-    Simple rate limiting using Redis.
-    
-    Args:
-        identifier: User identifier (IP, user_id, etc.)
-        max_requests: Maximum requests allowed in window
-        window_seconds: Time window in seconds
-        
-    Returns:
-        True if request is allowed, False if rate limited
-    """
-    if not REDIS_ENABLED or not redis_client:
-        return True  # No rate limiting without Redis
-    
-    rate_key = f"rate:{identifier}"
-    
-    try:
-        current = redis_client.get(rate_key)
-        
-        if current is None:
-            redis_client.set(rate_key, "1", ex=window_seconds)
-            return True
-        
-        count = int(current)
-        if count >= max_requests:
-            logger.warning(f"🚫 Rate limit exceeded for {identifier[:16]}...")
-            return False
-        
-        redis_client.incr(rate_key)
-        return True
-        
-    except Exception as e:
-        logger.warning(f"⚠️ Rate limit check failed: {e}")
-        return True  # Fail open
-
-
-# =================================================================
-# VISITOR SESSION CACHE (For EMQ Boost)
-# =================================================================
-
-def cache_visitor_data(external_id: str, data: dict, ttl_hours: int = 24) -> bool:
-    """
-    Cache visitor data for quick retrieval (fbclid, fbp, etc.)
-    Avoids hitting Postgres on every request.
-    """
-    cache_key = f"visitor:{external_id}"
-    ttl_seconds = ttl_hours * 3600
-    
-    if REDIS_ENABLED and redis_client:
-        try:
-            import json
-            redis_client.set(cache_key, json.dumps(data), ex=ttl_seconds)
-            return True
-        except Exception as e:
-            logger.warning(f"⚠️ Visitor cache failed: {e}")
-            return False
-    return False
-
-
-def get_cached_visitor(external_id: str) -> Optional[dict]:
-    """
-    Retrieve cached visitor data.
-    """
-    cache_key = f"visitor:{external_id}"
-    
-    if REDIS_ENABLED and redis_client:
-        try:
-            import json
-            data = redis_client.get(cache_key)
+            data = self._redis.get(key)
             if data:
                 return json.loads(data)
         except Exception as e:
-            logger.warning(f"⚠️ Visitor cache get failed: {e}")
-    return None
+            logger.debug(f"Redis get error: {e}")
+        return None
+
+    async def set_json(self, key: str, value: Any, expire: int = 3600) -> None:
+        if not self._redis:
+            return
+        try:
+            self._redis.set(key, json.dumps(value), ex=expire)
+        except Exception as e:
+            logger.debug(f"Redis set error: {e}")
+
+    async def delete(self, key: str) -> None:
+        if not self._redis:
+            return
+        try:
+            self._redis.delete(key)
+        except Exception as e:
+            logger.debug(f"Redis delete error: {e}")
 
 
-# =================================================================
-# HEALTH CHECK
-# =================================================================
+redis_cache = LegacyRedisCache()
 
-def redis_health_check() -> dict:
-    """Check Redis connection health."""
-    if not REDIS_ENABLED:
-        return {"status": "disabled", "message": "Redis not configured"}
-    
+
+# In-memory fallback for dedup & visitor cache
+_dedup_store: Dict[str, float] = {}
+_visitor_cache: Dict[str, Dict[str, Any]] = {}
+
+
+def deduplicate_event(event_id: str, event_name: str = "event", ttl_hours: int = 24) -> bool:
+    """
+    Returns True if event is unique (not seen), False if duplicate.
+    """
+    key = f"{event_name}:{event_id}"
+    now = time.time()
+    expires = _dedup_store.get(key)
+    if expires and expires > now:
+        return False
+    _dedup_store[key] = now + ttl_hours * 3600
+    return True
+
+
+def cache_visitor_data(external_id: str, data: Dict[str, Any], ttl_hours: int = 24) -> None:
+    """Cache visitor data for quick identity resolution."""
+    _visitor_cache[external_id] = {"data": data, "expires": time.time() + ttl_hours * 3600}
+
+
+def get_cached_visitor(external_id: str) -> Optional[Dict[str, Any]]:
+    """Retrieve cached visitor data if still valid."""
+    item = _visitor_cache.get(external_id)
+    if not item:
+        return None
+    if item["expires"] < time.time():
+        _visitor_cache.pop(external_id, None)
+        return None
+    return item["data"]
+
+
+def redis_health_check() -> Dict[str, Any]:
+    """Check if Redis is configured and reachable."""
+    if not (settings.UPSTASH_REDIS_REST_URL and settings.UPSTASH_REDIS_REST_TOKEN):
+        return {"status": "disabled"}
     try:
-        redis_client.ping()
-        return {"status": "healthy", "provider": "upstash"}
+        # best-effort ping
+        if redis_cache._redis:
+            redis_cache._redis.ping()
+            return {"status": "ok"}
     except Exception as e:
-        return {"status": "unhealthy", "error": str(e)}
+        return {"status": "error", "message": str(e)}
+    return {"status": "unknown"}
