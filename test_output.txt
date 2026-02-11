@@ -1,0 +1,16 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.1, pytest-9.0.2, pluggy-1.6.0 -- C:\Users\acord\OneDrive\Desktop\paginas web\Paginas web y tracking\Web y tracking-supabase Jorge\venv\Scripts\python.exe
+cachedir: .pytest_cache
+hypothesis profile 'default'
+rootdir: C:\Users\acord\OneDrive\Desktop\paginas web\Paginas web y tracking\Web y tracking-supabase Jorge
+configfile: pytest.ini
+plugins: anyio-4.12.1, hypothesis-6.151.5, asyncio-1.3.0, mock-3.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 4 items
+
+tests/02_integration/test_real_connections.py::test_real_redis_connection PASSED [ 25%]
+tests/02_integration/test_real_connections.py::test_real_database_connection PASSED [ 50%]
+tests/02_integration/test_real_connections.py::test_meta_configuration_loaded PASSED [ 75%]
+tests/02_integration/test_real_connections.py::test_qstash_configuration_loaded PASSED [100%]
+
+============================== 4 passed in 3.62s ==============================
