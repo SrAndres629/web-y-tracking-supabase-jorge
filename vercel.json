@@ -7,11 +7,21 @@
             "config": {
                 "includeFiles": [
                     "templates/**",
+                    "api/templates/**",
                     "static/**"
                 ]
             }
         }
     ],
+    "functions": {
+        "api/index.py": {
+            "includeFiles": [
+                "templates/**",
+                "api/templates/**",
+                "static/**"
+            ]
+        }
+    },
     "rewrites": [
         {
             "source": "/static/(.*)",
