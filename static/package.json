@@ -1,6 +1,7 @@
 {
   "name": "jorge-aguirre-static",
   "version": "3.0.0",
+  "_comment": "Version synchronized with app/version.py",
   "description": "Static assets build system for Jorge Aguirre Flores Web",
   "type": "module",
   "scripts": {

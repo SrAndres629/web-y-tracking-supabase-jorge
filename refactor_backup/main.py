@@ -58,8 +58,7 @@ from contextlib import asynccontextmanager
 async def lifespan(app: FastAPI):
     """Ciclo de vida de la aplicación con manejo de contexto"""
     # Startup - OPTIMIZED: No blocking DB init
-    from app.version import VERSION
-    logger.info(f"🚀 Iniciando Jorge Aguirre Flores Web v{VERSION} (Atomic Architecture Mode)")
+    logger.info("🚀 Iniciando Jorge Aguirre Flores Web v2.1.1 (Extreme Performance Mode)")
     
     # DLQ disabled: retry_queue.py uses filesystem (incompatible with Vercel serverless)
     # TODO: Re-enable when migrated to Redis-backed retry queue
@@ -191,49 +190,41 @@ async def internal_exception_handler(request: Request, exc: Exception):
 # Get absolute path to static folder (fixes Docker/Render path issues)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 static_dir = os.path.join(BASE_DIR, "static")
+templates_dir = os.path.join(BASE_DIR, "templates")
 
 # Mount static files with absolute path
 app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 
 # =================================================================
-# ROUTERS - CLEAN ARCHITECTURE
+# ROUTERS - LAZY LOADING
 # =================================================================
-# ❌ Error anterior: Usaba app.routes (legacy)
-# ✅ Solución: Usar app.interfaces.api.routes (Clean Architecture)
 
 # Páginas HTML
-from app.interfaces.api.routes import pages
+from app.routes import pages
 app.include_router(pages.router)
 
-# Tracking endpoints (/track/*)
-from app.interfaces.api.routes import tracking
-app.include_router(tracking.router)
+# Tracking endpoints (/track-lead, /track-viewcontent)
+from app.routes import tracking_routes
+app.include_router(tracking_routes.router)
 
 # Panel de administración (/admin/*)
-from app.interfaces.api.routes import admin
+from app.routes import admin
 app.include_router(admin.router)
 
 # Health checks (/health, /ping)
-from app.interfaces.api.routes import health
+from app.routes import health
 app.include_router(health.router)
 
 # Identity Resolution (/api/identity/*)
-from app.interfaces.api.routes import identity
-app.include_router(identity.router)
+from app.routes import identity_routes
+app.include_router(identity_routes.router)
+
+# Chat routes (Evolution/Natalia) moved to separate microservice
 
 # SEO Routes (sitemap.xml, robots.txt)
-from app.interfaces.api.routes import seo
+from app.routes import seo
 app.include_router(seo.router)
-
-
-# =================================================================
-# ERROR HANDLERS (Clean Architecture)
-# =================================================================
-# ✅ Nuevo: Manejo de errores centralizado
-from app.interfaces.api.middleware.error_handler import setup_error_handlers
-setup_error_handlers(app)
-logger.info("✅ Error handlers configurados")
 
 
 # =================================================================

@@ -269,3 +269,5 @@ Líneas de Código por Responsabilidad:
 ---
 
 *Diagrama generado para análisis arquitectónico*
+# ✅ UPDATE 2026-02-11
+# `main.py` ya referencia `app.interfaces.api.routes`. El diagrama conserva legado histórico.

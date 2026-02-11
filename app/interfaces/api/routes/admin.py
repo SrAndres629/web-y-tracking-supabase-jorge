@@ -1,10 +1,11 @@
 # =================================================================
-# ADMIN.PY - Panel de Administración
+# ADMIN.PY - Panel de Administración (API Interface)
 # Jorge Aguirre Flores Web
 # =================================================================
 from fastapi import APIRouter, Request, HTTPException, BackgroundTasks
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
+import time
 
 from app.config import settings
 from app.models import ConfirmSaleResponse, ErrorResponse
@@ -18,10 +19,15 @@ templates = Jinja2Templates(directory=settings.TEMPLATES_DIR)
 from app.database import get_cursor
 
 
+def verify_admin_key(key: str) -> bool:
+    """Verifica la clave de administrador"""
+    return key == settings.ADMIN_KEY
+
+
 async def _bg_send_meta_event(event_name, event_source_url, client_ip, user_agent, event_id,
                               fbclid=None, fbp=None, fbc=None, external_id=None, custom_data=None):
     try:
-        return await send_elite_event(
+        result = await send_elite_event(
             event_name=event_name,
             event_id=event_id,
             url=event_source_url,
@@ -32,13 +38,9 @@ async def _bg_send_meta_event(event_name, event_source_url, client_ip, user_agen
             fbp=fbp,
             custom_data=custom_data or {},
         )
+        return result
     except Exception:
         return {"status": "error"}
-
-
-def verify_admin_key(key: str) -> bool:
-    """Verifica la clave de administrador"""
-    return key == settings.ADMIN_KEY
 
 
 @router.get("/dashboard", response_class=HTMLResponse)
@@ -108,7 +110,6 @@ async def confirm_sale(visitor_id: int, background_tasks: BackgroundTasks, key: 
         )
     
     # Enviar Purchase a Meta CAPI (Background)
-    # Using FastAPI BackgroundTasks instead of Celery for Vercel/Serverless
     background_tasks.add_task(
         _bg_send_meta_event,
         event_name="Purchase",

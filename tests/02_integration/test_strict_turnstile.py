@@ -49,7 +49,7 @@ def test_zero_tolerance_turnstile_missing(client):
     assert "filtered" in json_resp.get("message", "").lower(), "❌ Expected 'filtered' message for missing token"
 
 
-@patch("app.routes.tracking_routes.validate_turnstile", new_callable=AsyncMock)
+@patch("app.interfaces.api.routes.tracking.validate_turnstile", new_callable=AsyncMock)
 def test_zero_tolerance_turnstile_invalid(mock_validate, client):
     """
     🛡️ ARCHITECTURAL AUDIT: Zero Tolerance Policy (Invalid Token)

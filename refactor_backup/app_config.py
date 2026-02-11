@@ -10,10 +10,6 @@ import json
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from dotenv import load_dotenv
 
-# ✅ Versión centralizada
-from app.version import VERSION
-__version__ = VERSION
-
 # Selective dotenv loading for local development only
 if not os.getenv("VERCEL"):
     try:

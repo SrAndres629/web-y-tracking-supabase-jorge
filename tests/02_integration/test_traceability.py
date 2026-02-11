@@ -77,9 +77,9 @@ def test_capi_traceability_chain(client):
     }
 
     # Mocking the dependencies to trace the data
-    with patch("app.routes.tracking_routes.validate_turnstile", return_value=True), \
-         patch("app.routes.tracking_routes.publish_to_qstash", return_value=False), \
-         patch("app.routes.tracking_routes.bg_send_meta_event", new_callable=AsyncMock) as mock_bg:
+    with patch("app.interfaces.api.routes.tracking.validate_turnstile", return_value=True), \
+         patch("app.interfaces.api.routes.tracking.publish_to_qstash", return_value=False), \
+         patch("app.interfaces.api.routes.tracking.bg_send_meta_event", new_callable=AsyncMock) as mock_bg:
         
         # 1. Execute Request
         response = client.post("/track/event", json=payload)

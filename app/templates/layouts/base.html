@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/static/assets/images/branding/luxury_logo.svg?v={{ system_version }}">
+
+    <!-- 🛡️ GLOBAL CACHE INVALIDATION (Diamond Standard) -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <!-- Component-specific styles loaded on demand -->
+    <link rel="stylesheet" href="/static/molecules/ba-slider/ba-slider.css?v={{ system_version }}">
+    
+    <!-- Global selection style -->
+    <style>
+        ::selection {
+            background-color: #C5A059;
+            color: #000;
+        }
+    </style>
+
+    <!-- SEO Core Tags (Dynamic Silicon Valley Hub) -->
+    <title>{% block title %}{{ seo.title if seo and seo.title else "Jorge Aguirre Flores | Maquillaje Permanente en Santa Cruz" }}{% endblock %}</title>
+    {% block meta_tags %}
+    <meta name="description" content="{{ seo.description if seo and seo.description else "Especialista en Microblading, Delineado Permanente y Labios. 30 años de experiencia en Santa Cruz de la Sierra." }}">
+    <meta name="author" content="Jorge Aguirre Flores">
+    <meta name="robots" content="{{ seo.robots if seo and seo.robots else 'index, follow' }}">
+    <link rel="canonical" href="{{ seo.canonical if seo and seo.canonical else 'https://jorgeaguirreflores.com/' }}">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{{ seo.og_title if seo and seo.og_title else 'Jorge Aguirre Flores | Maquillaje Permanente Premium' }}">
+    <meta property="og:description" content="{{ seo.description if seo and seo.description else '30 años transformando miradas en Santa Cruz. Microblading, Delineado y Labios.' }}">
+    <meta property="og:url" content="{{ seo.canonical if seo and seo.canonical else 'https://jorgeaguirreflores.com/' }}">
+    <meta property="og:image" content="{{ seo.og_image if seo and seo.og_image else 'https://jorgeaguirreflores.com/static/assets/images/meta/og-image.webp' }}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:locale" content="es_BO">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ seo.og_title if seo and seo.og_title else 'Jorge Aguirre Flores | Maquillaje Permanente Premium' }}">
+    <meta name="twitter:description" content="{{ seo.description if seo and seo.description else '30 años transformando miradas en Santa Cruz. Microblading, Delineado y Labios.' }}">
+    <meta name="twitter:image" content="{{ seo.og_image if seo and seo.og_image else 'https://jorgeaguirreflores.com/static/assets/images/meta/og-image.webp' }}">
+    {% endblock %}
+
+    <!-- Semantic Data (JSON-LD) -->
+    {% if seo and seo.json_ld %}
+    {{ seo.json_ld | safe }}
+    {% endif %}
+    {% block extra_schema %}{% endblock %}
+
+    <!-- Cloudflare Zaraz (Offloaded Tracking) -->
+    <!-- Managed via Cloudflare Dashboard -->
+
+    <!-- Tailwind CSS (Local Build) -->
+    <link rel="preload" href="/static/dist/css/app.min.css?v={{ system_version }}" as="style">
+    <link rel="stylesheet" href="/static/dist/css/app.min.css?v={{ system_version }}">
+
+    <!-- Google Fonts + Icons (Apple Standard: Inter Variable) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Cloudflare Turnstile (Anti-Bot Protection) -->
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer data-cfasync="false"></script>
+
+    <!-- GSAP (Core Animation Engine) -->
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+    <!-- Lenis Smooth Scroll (Butter Feel) -->
+    <script defer src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
+
+    <!-- 🛡️ SENTRY (Frontend Error Monitoring) - Configured via Zaraz/backend -->
+
+    <!-- 🚀 MICROSOFT CLARITY (Managed via Cloudflare Zaraz Dashboard) -->
+    <!-- To add Clarity as a Zaraz tool: Cloudflare Dashboard > Zaraz > Tools > Add Tool > Microsoft Clarity -->
+    <!-- This removes inline scripts for better consent management and performance -->
+
+    <!-- Google One Tap (Identity Resolution) -->
+    {% if google_client_id %}
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+        window.addEventListener('load', function () {
+            if (typeof google !== 'undefined' && google.accounts) {
+                google.accounts.id.initialize({
+                    client_id: '{{ google_client_id }}',
+                    callback: function (response) {
+                        console.log('🔍 Google Identity Response received');
+                        fetch('/api/identity/google', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ credential: response.credential })
+                        }).then(function (r) { return r.json(); })
+                            .then(function (data) {
+                                console.log('✅ Identity captured:', data.user?.email);
+                            })
+                            .catch(function (e) {
+                                console.error('❌ Identity capture error:', e);
+                            });
+                    },
+                    auto_select: true,
+                    cancel_on_tap_outside: false
+                });
+
+                // Enhanced monitoring for Google One Tap prompts
+                google.accounts.id.prompt((notification) => {
+                    if (notification.isNotDisplayed()) {
+                        console.warn('⚠️ Google One Tap not displayed:', notification.getNotDisplayedReason());
+                    } else if (notification.isSkippedMoment()) {
+                        console.warn('⚠️ Google One Tap skipped:', notification.getSkippedReason());
+                    } else if (notification.isDismissedMoment()) {
+                        console.warn('⚠️ Google One Tap dismissed:', notification.getDismissedReason());
+                    }
+                });
+            } else {
+                console.error('❌ Google GSI library not loaded or configured.');
+            }
+        });
+    </script>
+    {% endif %}
+    <!-- End Google One Tap -->
+
+    {% block extra_head %}{% endblock %}
+
+    <!-- Dynamic Configuration (Server-side rendered data) -->
+    <script type="application/json" id="app-config">
+        {
+            "META_PIXEL_ID": "{{ pixel_id }}",
+            "META_EVENT_ID": null,
+            "EXTERNAL_ID": null,
+            "SERVICES_CONFIG": {{ services | tojson }},
+            "CONTACT_CONFIG": {{ contact | tojson }}
+        }
+    </script>
+
+    <!-- Initialize config from JSON (lint-safe) -->
+    <script>
+        (function () {
+            try {
+                const configElement = document.getElementById('app-config');
+                if (configElement) {
+                    const config = JSON.parse(configElement.textContent);
+                    window.META_PIXEL_ID = config.META_PIXEL_ID;
+                    window.META_EVENT_ID = config.META_EVENT_ID;
+                    window.EXTERNAL_ID = config.EXTERNAL_ID;
+                    window.SERVICES_CONFIG = config.SERVICES_CONFIG;
+                    window.CONTACT_CONFIG = config.CONTACT_CONFIG;
+                }
+            } catch (e) {
+                console.error("Error loading app-config", e);
+            }
+        })();
+    </script>
+
+    {% block schema %}{% endblock %}
+</head>
+
+<body
+    class="bg-luxury-black text-luxury-text font-sans antialiased selection:bg-luxury-gold selection:text-black relative">
+
+    <!-- Anti-Bot Defense Layer -->
+    <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}" data-callback="onTurnstileSuccess"
+        data-size="invisible"></div>
+
+
+    <!-- Global Ambient Spotlight -->
+    <div id="mouse-spotlight"
+        class="fixed inset-0 pointer-events-none z-0 opacity-40 mix-blend-screen transition-opacity duration-1000">
+    </div>
+
+    <!-- Skip Link for Accessibility -->
+    <a href="#main-content" class="skip-link">Saltar al contenido principal</a>
+
+    <!-- Cloudflare Zaraz (Noscript Fallback) -->
+    <noscript>
+        <img height="1" width="1" style="display:none"
+             src="https://www.facebook.com/tr?id={{ pixel_id }}&ev=PageView&noscript=1" />
+    </noscript>
+
+    <!-- Navigation -->
+    {% include 'components/navbar.html' ignore missing %}
+
+    <!-- Main Content -->
+    <main id="main-content" role="main">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    {% include 'components/footer.html' ignore missing %}
+
+    <!-- Global Scripts (Atomic Architecture v3.0) -->
+    <script type="module" src="/static/engines/legacy-adapter.js?v={{ system_version }}"></script>
+    {% block extra_scripts %}{% endblock %}
+    <!-- Vercel Services (Updated) -->
+    <script>
+        window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
+    <script defer src="/_vercel/speed-insights/script.js"></script>
+
+    <!-- 🌀 MASTER UX ENGINE: Lenis + GSAP Sync -->
+    <script>
+        window.addEventListener('scroll-init', () => {
+            const lenis = new Lenis({
+                duration: 1.2,
+                easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+                smoothWheel: true
+            });
+
+            function raf(time) {
+                lenis.raf(time);
+                requestAnimationFrame(raf);
+            }
+            requestAnimationFrame(raf);
+
+            // Sync with ScrollTrigger
+            if (typeof ScrollTrigger !== 'undefined') {
+                lenis.on('scroll', ScrollTrigger.update);
+                gsap.ticker.add((time) => {
+                    lenis.raf(time * 1000);
+                });
+                gsap.ticker.lagSmoothing(0);
+            }
+            window.lenis = lenis;
+        });
+
+        // Trigger init when libraries are ready
+        window.addEventListener('load', () => {
+            if (typeof Lenis !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('scroll-init'));
+            }
+        });
+    </script>
+</body>
+
+</html>

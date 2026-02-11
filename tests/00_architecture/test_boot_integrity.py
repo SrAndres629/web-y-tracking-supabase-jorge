@@ -32,7 +32,7 @@ def test_module_import_consistency():
         "app.config",
         "app.database",
         "app.tracking",
-        "app.routes.pages",
+        "app.interfaces.api.routes.pages",
         "app.services"
     ]
     for mod in modules:

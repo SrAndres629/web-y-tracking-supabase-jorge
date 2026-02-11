@@ -1,6 +1,6 @@
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
-from app.routes.pages import SYSTEM_VERSION
+from app.interfaces.api.routes.pages import SYSTEM_VERSION
 import logging
 
 logger = logging.getLogger(__name__)

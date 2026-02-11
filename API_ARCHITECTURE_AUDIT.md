@@ -385,3 +385,6 @@ from app.interfaces.api.routes import pages  # Clean Architecture
 ---
 
 *Auditoría generada por Agente de IA - 2026-02-10*
+# ✅ UPDATE 2026-02-11
+# `main.py` ya usa `app.interfaces.api.routes` para pages/tracking/admin/health/identity/seo.
+# Este documento conserva hallazgos históricos; referencias a `app.routes` aplican al legacy.
