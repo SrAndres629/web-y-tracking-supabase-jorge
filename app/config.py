@@ -29,25 +29,38 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-def _resolve_templates_dir() -> str:
-    # 🛡️ SILICON VALLEY STANDARD: Absolute path resolution for serverless stability
+def _resolve_templates_dirs() -> List[str]:
+    """🛡️ SILICON VALLEY STANDARD: Multi-path resolution for serverless stability."""
     current_file_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(current_file_dir)
     
     candidates = []
+    # 1. Precise Vercel paths
     if os.getenv("VERCEL"):
-        # On Vercel, templates are served from the root task directory
-        candidates.append(os.path.join(os.getcwd(), "templates"))
         candidates.append("/var/task/templates")
+        candidates.append("/var/task/api/templates")
+        candidates.append(os.path.join(os.getcwd(), "templates"))
 
-    # Fallbacks for local and other environments
+    # 2. Local/Standard paths
     candidates.append(os.path.join(project_root, "templates"))
     candidates.append(os.path.join(project_root, "api", "templates"))
-
-    # Select the first directory that actually exists
-    template_dir = next((p for p in candidates if os.path.isdir(p)), candidates[0])
-    logger.info(f"🚀 TEMPLATE RESOLUTION: Using {template_dir}")
-    return template_dir
+    candidates.append(os.path.join(os.getcwd(), "templates"))
+    
+    # Filter only existing OR likely-to-exist-in-runtime directories
+    # We keep those that exist locally now, plus the specific /var/task ones 
+    # if we are on Vercel (even if we can't 'see' them during build/init sometimes)
+    is_vercel = bool(os.getenv("VERCEL"))
+    valid_paths = []
+    for p in candidates:
+        if os.path.isdir(p) or (is_vercel and p.startswith("/var/task")):
+            if p not in valid_paths:
+                valid_paths.append(p)
+                
+    if not valid_paths:
+        valid_paths = [os.path.join(project_root, "templates")]
+        
+    logger.info(f"🚀 TEMPLATE RESOLUTION: Found {len(valid_paths)} potential paths")
+    return valid_paths
 
 def _resolve_static_dir() -> str:
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -64,7 +77,8 @@ class Settings(BaseSettings):
 
     # 📂 PHYSICAL PATHS (Serverless Hardening)
     BASE_DIR: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    TEMPLATES_DIR: str = _resolve_templates_dir()
+    TEMPLATES_DIRS: List[str] = _resolve_templates_dirs()
+    TEMPLATES_DIR: str = TEMPLATES_DIRS[0] if TEMPLATES_DIRS else ""
     STATIC_DIR: str = _resolve_static_dir()
 
     # Meta Ads (Pixel + CAPI)

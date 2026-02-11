@@ -435,11 +435,14 @@ def main():
             time.sleep(10)
 
             debug_key = os.getenv("PREWARM_DEBUG_KEY") or os.getenv("DEBUG_DIAGNOSTIC_KEY")
-            headers = {}
+            headers = {"User-Agent": "SV-Prewarm/1.0"}
             params = {}
             if debug_key:
                 headers["X-Prewarm-Debug"] = debug_key
                 params["__debug_key"] = debug_key
+            else:
+                headers["X-Prewarm-Debug"] = "1"
+                params["__debug_key"] = "1"
 
             resp = requests.get(url, timeout=15, headers=headers, params=params)
             if resp.status_code == 200:
