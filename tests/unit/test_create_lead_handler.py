@@ -105,9 +105,13 @@ async def test_handle_new_lead_created_with_matching_visitor(handler, mock_lead_
     mock_lead_repo.get_by_phone.return_value = None # No existing lead
     
     valid_external_id = uuid.uuid4().hex
-    # Mock an existing visitor
-    mock_visitor = Visitor.create(ip="1.1.1.1", user_agent="test", source=VisitorSource.DIRECT)
-    mock_visitor._external_id = ExternalId(valid_external_id) # Manually set for mock with valid format
+    # Create a mock visitor directly with the desired external_id
+    mock_visitor = Visitor.reconstruct(
+        external_id=ExternalId(valid_external_id),
+        ip_address="1.1.1.1",
+        user_agent="test",
+        source=VisitorSource.DIRECT
+    )
     mock_visitor_repo.get_by_external_id.return_value = mock_visitor
     
     cmd = CreateLeadCommand(
@@ -120,7 +124,7 @@ async def test_handle_new_lead_created_with_matching_visitor(handler, mock_lead_
     assert result.is_ok
     mock_lead_repo.create.assert_called_once()
     created_lead = mock_lead_repo.create.call_args[0][0]
-    assert created_lead.external_id == ExternalId(valid_external_id)
+    assert created_lead.external_id.value == valid_external_id
     mock_visitor_repo.get_by_external_id.assert_called_once_with(ExternalId(valid_external_id))
 
 @pytest.mark.asyncio

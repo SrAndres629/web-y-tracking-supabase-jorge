@@ -2,6 +2,7 @@ import pytest
 from unittest.mock import AsyncMock, MagicMock
 from datetime import datetime
 import uuid # Import uuid
+import asyncio
 
 from app.application.commands.track_event import TrackEventHandler, TrackEventCommand
 from app.application.dto.tracking_dto import (
@@ -62,7 +63,7 @@ def base_context():
 
 @pytest.mark.asyncio
 async def test_handle_invalid_event_name(handler, base_request, base_context):
-    cmd = TrackEventCommand(request=base_request._replace(event_name="InvalidEvent"), context=base_context)
+    cmd = TrackEventCommand(request=base_request.copy(update={"event_name": "InvalidEvent"}), context=base_context)
     
     response = await handler.handle(cmd)
     
@@ -71,7 +72,7 @@ async def test_handle_invalid_event_name(handler, base_request, base_context):
 
 @pytest.mark.asyncio
 async def test_handle_invalid_external_id(handler, base_request, base_context):
-    cmd = TrackEventCommand(request=base_request._replace(external_id=""), context=base_context) # Invalid external_id
+    cmd = TrackEventCommand(request=base_request.copy(update={"external_id": ""}), context=base_context) # Invalid external_id
     
     response = await handler.handle(cmd)
     
@@ -83,13 +84,14 @@ async def test_handle_duplicate_event(handler, mock_deduplicator, base_request, 
     mock_deduplicator.is_unique.return_value = False
     
     # Ensure external_id is valid for this test
-    valid_request = base_request._replace(external_id=uuid.uuid4().hex)
+    valid_request = base_request.copy(update={"external_id": uuid.uuid4().hex})
     cmd = TrackEventCommand(request=valid_request, context=base_context)
     
     response = await handler.handle(cmd)
     
-    assert not response.success
+    assert response.success # Duplicate events are handled successfully, not re-processed
     assert response.status == "duplicate"
+    assert "event already processed" in response.message.lower() # Check message content
     mock_deduplicator.is_unique.assert_called_once()
 
 @pytest.mark.asyncio
@@ -100,7 +102,7 @@ async def test_handle_new_visitor_and_event_saved(
     mock_visitor_repo.get_by_external_id.return_value = None # No existing visitor
     
     # Ensure external_id is valid for this test
-    valid_request = base_request._replace(external_id=uuid.uuid4().hex)
+    valid_request = base_request.copy(update={"external_id": uuid.uuid4().hex})
     cmd = TrackEventCommand(request=valid_request, context=base_context)
     
     response = await handler.handle(cmd)
@@ -115,7 +117,7 @@ async def test_handle_new_visitor_and_event_saved(
     mock_visitor_repo.save.assert_called_once()
     saved_visitor = mock_visitor_repo.save.call_args[0][0]
     assert isinstance(saved_visitor, Visitor)
-    assert saved_visitor.ip == base_context.ip_address
+    assert saved_visitor.ip_address == base_context.ip_address
     assert saved_visitor.fbclid == valid_request.fbclid
     
     # Verify event was created and saved
@@ -142,7 +144,7 @@ async def test_handle_existing_visitor_updated_and_event_saved(
     existing_visitor._external_id = ExternalId(valid_external_id) # Manually set external_id for mock
     mock_visitor_repo.get_by_external_id.return_value = existing_visitor
     
-    valid_request = base_request._replace(external_id=valid_external_id)
+    valid_request = base_request.copy(update={"external_id": valid_external_id})
     cmd = TrackEventCommand(request=valid_request, context=base_context)
     
     response = await handler.handle(cmd)
@@ -155,7 +157,7 @@ async def test_handle_existing_visitor_updated_and_event_saved(
     mock_visitor_repo.update.assert_called_once_with(existing_visitor)
     assert existing_visitor.fbclid == valid_request.fbclid # Should be updated
     assert existing_visitor.fbp == valid_request.fbp
-    assert existing_visitor.visits > 1 # record_visit was called
+    assert existing_visitor.visit_count > 1 # record_visit was called
     
     # Verify event was created and saved
     mock_event_repo.save.assert_called_once()
@@ -168,7 +170,7 @@ async def test_handle_exception_during_processing(handler, mock_deduplicator, ba
     mock_deduplicator.is_unique.side_effect = Exception("Deduplicator error")
     
     # Ensure external_id is valid for this test so we hit the deduplicator
-    valid_request = base_request._replace(external_id=uuid.uuid4().hex)
+    valid_request = base_request.copy(update={"external_id": uuid.uuid4().hex})
     cmd = TrackEventCommand(request=valid_request, context=base_context)
     
     response = await handler.handle(cmd)
@@ -201,7 +203,7 @@ async def test_send_to_trackers_tracker_failure(
     mock_tracker_port.track.side_effect = Exception("Tracker network error")
     
     # Ensure external_id is valid for this test
-    valid_request = base_request._replace(external_id=uuid.uuid4().hex)
+    valid_request = base_request.copy(update={"external_id": uuid.uuid4().hex})
     cmd = TrackEventCommand(request=valid_request, context=base_context)
     
     response = await handler.handle(cmd)
