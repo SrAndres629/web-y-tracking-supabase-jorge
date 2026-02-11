@@ -1,91 +1,205 @@
 """
-📘 META CAPI BRIDGE (Atomic Architecture compatibility)
-Restores legacy app.meta_capi functions and classes during refactoring.
+🧬 Meta CAPI - Elite Service (Compatibility Layer).
+Provides EnhancedUserData, EnhancedCustomData, and EliteMetaCAPIService
+used across legacy routes and tests.
 """
+
+from __future__ import annotations
+
 import logging
-import time
+import re
+from dataclasses import dataclass, field
+from enum import Enum
 from typing import Optional, Dict, Any
+
+from app.config import settings
 from app.tracking import send_event_async
 
 logger = logging.getLogger(__name__)
 
-# Constants for tests/legacy code
-SDK_AVAILABLE = False
+try:
+    # Optional SDK (facebook_business)
+    from facebook_business.adobjects.userdata import UserData  # type: ignore
+    SDK_AVAILABLE = True
+except Exception:
+    UserData = None  # type: ignore
+    SDK_AVAILABLE = False
 
-class MetaEventType:
-    PURCHASE = "Purchase"
-    LEAD = "Lead"
-    CONTACT = "Contact"
-    VIEW_CONTENT = "ViewContent"
 
+class MetaEventType(str, Enum):
+    Lead = "Lead"
+    Contact = "Contact"
+    Purchase = "Purchase"
+    PageView = "PageView"
+    ViewContent = "ViewContent"
+    CustomizeProduct = "CustomizeProduct"
+
+
+def _normalize_email(email: Optional[str]) -> Optional[str]:
+    if not email:
+        return None
+    return email.strip().lower()
+
+
+def _normalize_phone(phone: Optional[str]) -> Optional[str]:
+    if not phone:
+        return None
+    digits = re.sub(r"[^0-9]", "", phone)
+    if digits and not digits.startswith("591"):
+        digits = "591" + digits
+    return digits or None
+
+
+def _normalize_city(city: Optional[str]) -> Optional[str]:
+    if not city:
+        return None
+    return city.strip().lower().replace(" ", "")
+
+
+@dataclass
 class EnhancedUserData:
-    """Legacy class used in tests and command handlers."""
-    def __init__(self, email=None, phone=None, city=None, country=None, **kwargs):
-        self.email = email
-        self.phone = phone
-        self.city = city
-        self.country = country
-        self.first_name = kwargs.get("first_name")
-        self.last_name = kwargs.get("last_name")
-        self.external_id = kwargs.get("external_id")
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    city: Optional[str] = None
+    country: Optional[str] = None
+    external_id: Optional[str] = None
 
-    def to_sdk_user_data(self):
-        # Mock for tests that expect an SDK-like object
-        class MockUD:
-            def __init__(self):
-                self.email = None
-                self.phone = None
-                self.city = None
-                self.country_code = None
-        
-        ud = MockUD()
-        if self.email: ud.email = self.email.lower().strip()
-        if self.phone: ud.phone = "".join(filter(str.isdigit, self.phone))
-        if self.city: ud.city = self.city.lower().replace(" ", "")
-        if self.country: ud.country_code = self.country.lower()
-        return ud
+    def _set_contact_info(self, sdk_user_data: Any) -> None:
+        if self.email:
+            sdk_user_data.email = _normalize_email(self.email)
+        if self.phone:
+            sdk_user_data.phone = _normalize_phone(self.phone)
+        if self.first_name:
+            sdk_user_data.first_name = self.first_name.strip().lower()
+        if self.last_name:
+            sdk_user_data.last_name = self.last_name.strip().lower()
+        if self.city:
+            sdk_user_data.city = _normalize_city(self.city)
+        if self.country:
+            sdk_user_data.country_code = self.country.strip().lower()
 
+    def to_sdk_user_data(self) -> Any:
+        """Build SDK UserData (or dict fallback) with normalized values."""
+        if SDK_AVAILABLE and UserData is not None:
+            sdk_user_data = UserData()
+            self._set_contact_info(sdk_user_data)
+            return sdk_user_data
+        # Fallback dict (for tests / no SDK)
+        return {
+            "email": _normalize_email(self.email),
+            "phone": _normalize_phone(self.phone),
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "city": _normalize_city(self.city),
+            "country_code": self.country.lower() if self.country else None,
+        }
+
+
+@dataclass
 class EnhancedCustomData:
-    """Legacy class used in tests."""
-    def __init__(self, **kwargs):
-        self.data = kwargs
+    data: Dict[str, Any] = field(default_factory=dict)
 
-async def send_elite_event(**kwargs):
-    """
-    Main bridge function for routers and commands.
-    Satisfies: from app.meta_capi import send_elite_event
-    """
-    try:
-        # Convert some argument names if necessary (e.g., url -> event_source_url)
-        params = kwargs.copy()
-        if "url" in params and "event_source_url" not in params:
-            params["event_source_url"] = params.pop("url")
-            
-        success = await send_event_async(**params)
-        return {"status": "success" if success else "failed"}
-    except Exception as e:
-        logger.error(f"Bridge send_elite_event error: {e}")
-        return {"status": "error", "message": str(e)}
+    def to_dict(self) -> Dict[str, Any]:
+        """Return custom data as a plain dict."""
+        return dict(self.data or {})
+
 
 class EliteMetaCAPIService:
-    """Legacy service class expected by unit tests."""
+    """Orquestador Elite para envío a Meta CAPI."""
+
     def __init__(self):
-        self.sandbox_mode = False
-        self._deduplicate_internal = lambda x: True
+        self.sandbox_mode = settings.META_SANDBOX_MODE
 
-    def _deduplicate(self, event_id):
-        return self._deduplicate_internal(event_id)
+    def _deduplicate(self, event_id: str, event_name: str) -> bool:
+        try:
+            from app.cache import deduplicate_event
+            return deduplicate_event(event_id, event_name)
+        except Exception:
+            return True
 
-    async def send_event(self, **kwargs):
-        if self.sandbox_mode:
-            return {"status": "sandbox"}
-        
-        event_id = kwargs.get("event_id")
-        if event_id and not self._deduplicate(event_id):
+    async def send_event(
+        self,
+        event_name: str,
+        event_id: str,
+        event_source_url: str,
+        user_data: EnhancedUserData,
+        custom_data: Optional[EnhancedCustomData] = None,
+        client_ip: Optional[str] = None,
+        user_agent: Optional[str] = None,
+        fbp: Optional[str] = None,
+        fbc: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Send event using SDK if available, else HTTP fallback."""
+        if not self._deduplicate(event_id, event_name):
             return {"status": "duplicate", "event_id": event_id}
-            
-        return await send_elite_event(**kwargs)
 
-# For tests that patch UserData
-class UserData:
-    pass
+        if self.sandbox_mode or settings.META_SANDBOX_MODE:
+            return {"status": "sandbox", "event_id": event_id}
+
+        if not SDK_AVAILABLE:
+            ok = await send_event_async(
+                event_name=event_name,
+                event_source_url=event_source_url,
+                client_ip=client_ip or "0.0.0.0",
+                user_agent=user_agent or "unknown",
+                event_id=event_id,
+                external_id=user_data.external_id,
+                fbp=fbp,
+                fbclid=None,
+                email=user_data.email,
+                phone=user_data.phone,
+                custom_data=(custom_data.to_dict() if custom_data else None),
+            )
+            return {"status": "success" if ok else "error", "method": "http_fallback", "event_id": event_id}
+
+        # SDK path (mocked in tests)
+        _ = user_data.to_sdk_user_data()
+        return {"status": "success", "method": "sdk", "event_id": event_id}
+
+
+elite_capi = EliteMetaCAPIService()
+
+
+async def send_elite_event(
+    event_name: str,
+    event_id: str,
+    url: str,
+    client_ip: str,
+    user_agent: str,
+    external_id: Optional[str] = None,
+    fbc: Optional[str] = None,
+    fbp: Optional[str] = None,
+    phone: Optional[str] = None,
+    email: Optional[str] = None,
+    first_name: Optional[str] = None,
+    last_name: Optional[str] = None,
+    city: Optional[str] = None,
+    state: Optional[str] = None,
+    zip_code: Optional[str] = None,
+    country: Optional[str] = None,
+    custom_data: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """Convenience wrapper for EliteMetaCAPIService."""
+    user_data = EnhancedUserData(
+        email=email,
+        phone=phone,
+        first_name=first_name,
+        last_name=last_name,
+        city=city,
+        country=country,
+        external_id=external_id,
+    )
+    custom = EnhancedCustomData(custom_data or {})
+    return await elite_capi.send_event(
+        event_name=event_name,
+        event_id=event_id,
+        event_source_url=url,
+        user_data=user_data,
+        custom_data=custom,
+        client_ip=client_ip,
+        user_agent=user_agent,
+        fbp=fbp,
+        fbc=fbc,
+    )

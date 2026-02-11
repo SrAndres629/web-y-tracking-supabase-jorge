@@ -67,9 +67,11 @@ class LegacyRedisCache:
 
 redis_cache = LegacyRedisCache()
 
+REDIS_ENABLED = bool(settings.UPSTASH_REDIS_REST_URL and settings.UPSTASH_REDIS_REST_TOKEN)
+
 
 # In-memory fallback for dedup & visitor cache
-_dedup_store: Dict[str, float] = {}
+_memory_cache: Dict[str, float] = {}
 _visitor_cache: Dict[str, Dict[str, Any]] = {}
 
 
@@ -77,12 +79,12 @@ def deduplicate_event(event_id: str, event_name: str = "event", ttl_hours: int =
     """
     Returns True if event is unique (not seen), False if duplicate.
     """
-    key = f"{event_name}:{event_id}"
+    key = f"evt:{event_id}"
     now = time.time()
-    expires = _dedup_store.get(key)
+    expires = _memory_cache.get(key)
     if expires and expires > now:
         return False
-    _dedup_store[key] = now + ttl_hours * 3600
+    _memory_cache[key] = now + ttl_hours * 3600
     return True
 
 
