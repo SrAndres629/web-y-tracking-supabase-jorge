@@ -27,7 +27,7 @@ The repository enforces a strict **Zero-Defect Policy** via `tests/` and `git_sy
 | `tests/unit/test_tracking_math.py` | **Mathematical Proofs**. The source of truth for tracking integrity.                    | 🚨 CRITICAL  |
 | `app/config.py`                    | Centralized configuration (Pydantic). Handles env vars and defaults.                    | HIGH        |
 | `app/database.py`                  | Database connection factory. Includes **Deterministic Guard** (SQLite fallback).        | HIGH        |
-| `templates/layouts/base.html`      | Base HTML layout. Contains SEO meta tags and script injections.                         | MEDIUM      |
+| `api/templates/layouts/base.html`  | Base HTML layout. Contains SEO meta tags and script injections.                         | MEDIUM      |
 
 ## 🚀 Deployment Pipeline (`git_sync.py`)
 1.  **Environment Check**: Verifies `pytest`, `hypothesis` installed.

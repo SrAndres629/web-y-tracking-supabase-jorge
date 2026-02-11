@@ -26,23 +26,24 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 def _resolve_templates_dir() -> str:
-    # Use absolute path from current file
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    base_dir = os.path.dirname(current_dir)
-    
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    candidates = []
     if os.getenv("VERCEL"):
-        # Vercel-specific absolute path (usually /var/task)
-        template_dir = os.path.join(os.getcwd(), "templates")
-    else:
-        template_dir = os.path.join(base_dir, "templates")
-    
+        candidates.extend([
+            os.path.join(os.getcwd(), "api", "templates"),
+            os.path.join(os.getcwd(), "templates"),
+        ])
+    candidates.extend([
+        os.path.join(base_dir, "api", "templates"),
+        os.path.join(base_dir, "templates"),
+    ])
+
+    template_dir = next((p for p in candidates if os.path.isdir(p)), candidates[0])
     print(f"DEBUG: Template dir set to: {template_dir}")
     return template_dir
 
 def _resolve_static_dir() -> str:
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    base_dir = os.path.dirname(current_dir)
-    
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     if os.getenv("VERCEL"):
         return os.path.join(os.getcwd(), "static")
     return os.path.join(base_dir, "static")

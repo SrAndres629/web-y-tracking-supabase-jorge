@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/svg+xml" href="/static/images/luxury_logo.svg?v={{ system_version }}">
+    <link rel="icon" type="image/svg+xml" href="/static/assets/images/branding/luxury_logo.svg?v={{ system_version }}">
 
     <!-- 🛡️ GLOBAL CACHE INVALIDATION (Diamond Standard) -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -13,7 +13,7 @@
     <meta http-equiv="Expires" content="0">
 
     <!-- Component-specific styles loaded on demand -->
-    <link rel="stylesheet" href="/static/css/components/ba-slider.css?v={{ system_version }}">
+    <link rel="stylesheet" href="/static/molecules/ba-slider/ba-slider.css?v={{ system_version }}">
     
     <!-- Global selection style -->
     <style>
@@ -36,7 +36,7 @@
     <meta property="og:title" content="{{ seo.og_title if seo and seo.og_title else 'Jorge Aguirre Flores | Maquillaje Permanente Premium' }}">
     <meta property="og:description" content="{{ seo.description if seo and seo.description else '30 años transformando miradas en Santa Cruz. Microblading, Delineado y Labios.' }}">
     <meta property="og:url" content="{{ seo.canonical if seo and seo.canonical else 'https://jorgeaguirreflores.com/' }}">
-    <meta property="og:image" content="{{ seo.og_image if seo and seo.og_image else 'https://jorgeaguirreflores.com/static/images/og-image.webp' }}">
+    <meta property="og:image" content="{{ seo.og_image if seo and seo.og_image else 'https://jorgeaguirreflores.com/static/assets/images/meta/og-image.webp' }}">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:locale" content="es_BO">
@@ -45,7 +45,7 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{{ seo.og_title if seo and seo.og_title else 'Jorge Aguirre Flores | Maquillaje Permanente Premium' }}">
     <meta name="twitter:description" content="{{ seo.description if seo and seo.description else '30 años transformando miradas en Santa Cruz. Microblading, Delineado y Labios.' }}">
-    <meta name="twitter:image" content="{{ seo.og_image if seo and seo.og_image else 'https://jorgeaguirreflores.com/static/images/og-image.webp' }}">
+    <meta name="twitter:image" content="{{ seo.og_image if seo and seo.og_image else 'https://jorgeaguirreflores.com/static/assets/images/meta/og-image.webp' }}">
     {% endblock %}
 
     <!-- Semantic Data (JSON-LD) -->
@@ -58,8 +58,8 @@
     <!-- Managed via Cloudflare Dashboard -->
 
     <!-- Tailwind CSS (Local Build) -->
-    <link rel="preload" href="/static/css/output.css?v={{ system_version }}" as="style">
-    <link rel="stylesheet" href="/static/css/output.css?v={{ system_version }}">
+    <link rel="preload" href="/static/dist/css/app.min.css?v={{ system_version }}" as="style">
+    <link rel="stylesheet" href="/static/dist/css/app.min.css?v={{ system_version }}">
 
     <!-- Google Fonts + Icons (Apple Standard: Inter Variable) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -196,10 +196,8 @@
     <!-- Footer -->
     {% include 'components/footer.html' ignore missing %}
 
-    <!-- Global Scripts -->
-    <script defer src="/static/js/tracking.js?v={{ system_version }}"></script>
-    <script defer src="/static/js/ui.js?v={{ system_version }}"></script>
-    <script defer src="/static/js/motion.js?v={{ system_version }}"></script>
+    <!-- Global Scripts (Atomic Architecture v3.0) -->
+    <script type="module" src="/static/engines/legacy-adapter.js?v={{ system_version }}"></script>
     {% block extra_scripts %}{% endblock %}
     <!-- Vercel Services (Updated) -->
     <script>

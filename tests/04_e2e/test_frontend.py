@@ -36,5 +36,5 @@ def test_static_assets():
     # Based on index.html likely having stylesheet
     # We verify /static/ is mounted correctly
     # If explicit file doesn't exist, 404 is expected, but 500 is not.
-    response = client.get("/static/css/output.css")
+    response = client.get("/static/dist/css/app.min.css")
     assert response.status_code != 500

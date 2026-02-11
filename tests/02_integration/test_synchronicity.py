@@ -23,13 +23,13 @@ def test_deterministic_asset_versioning(client):
     response = client.get("/")
     html = response.text
     
-    # Check output.css
-    # Pattern: /static/css/output.css?v=[any_number]
-    assert "/static/css/output.css?v=" in html
+    # Check app.min.css
+    # Pattern: /static/dist/css/app.min.css?v=[any_number]
+    assert "/static/dist/css/app.min.css?v=" in html
     
     # Extract version
-    match = re.search(r'output\.css\?v=(\d+)', html)
-    assert match is not None, "Version parameter missing from output.css"
+    match = re.search(r'app\.min\.css\?v=(\d+)', html)
+    assert match is not None, "Version parameter missing from app.min.css"
     
     version = match.group(1)
     assert len(version) >= 10, "Version should be a long timestamp"
