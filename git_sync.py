@@ -459,6 +459,17 @@ def main():
                         Console.info(f"Diagnostic Full (RAW): {resp.text}")
                 except Exception as e:
                     Console.warning(f"Pre-Warm response decode failed: {e}")
+                
+                # Secondary probe for full diagnostics (template paths)
+                try:
+                    diag_url = f\"{url}/__prewarm_debug\"
+                    diag_resp = requests.get(diag_url, timeout=15, headers=headers, params=params)
+                    if "application/json" in (diag_resp.headers.get("content-type") or ""):
+                        Console.info(f\"Pre-Warm Diagnostics: {json.dumps(diag_resp.json(), indent=2, ensure_ascii=False)}\")
+                    else:
+                        Console.info(f\"Pre-Warm Diagnostics (RAW): {diag_resp.text}\")
+                except Exception as e:
+                    Console.warning(f\"Pre-Warm diagnostics failed: {e}\")
         except Exception as e:
             Console.warning(f"Pre-Warm failed: {e}")
 

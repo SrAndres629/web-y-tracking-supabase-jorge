@@ -191,10 +191,9 @@ app/application/queries/
 **Ubicación:** `app/_legacy/`
 
 **Contexto actual:**
-Los archivos legacy fueron movidos a `app/_legacy/` con un shim pattern:
-- `app/_legacy/database.py`
-- `app/_legacy/tracking.py`
-- `app/_legacy/meta_capi.py`
+- Los archivos `app/routes/admin.py`, `app/routes/identity_routes.py` y `app/routes/tracking_routes.py` han sido eliminados.
+- Las funcionalidades SEO de `app/routes/pages.py` han sido migradas y el código obsoleto eliminado.
+- Los archivos legacy aún se encuentran en `app/_legacy/` y algunos en la raíz de `app/`.
 
 **Por qué es importante:**
 - **Reducción de deuda técnica:** Menos código = menos mantenimiento
@@ -209,10 +208,6 @@ app/
 │   ├── database.py
 │   ├── tracking.py
 │   └── meta_capi.py
-├── routes/                   ← Eliminar después de migrar rutas
-│   ├── admin.py
-│   ├── identity_routes.py
-│   └── tracking_routes.py
 └── [archivos sueltos en raíz]
     ├── database.py
     ├── tracking.py
@@ -221,8 +216,8 @@ app/
 ```
 
 **Criterios para eliminar:**
-- [ ] Todas las rutas legacy migradas
-- [ ] Tests pasando para nuevas implementaciones
+- [x] Todas las rutas legacy migradas
+- [x] Tests pasando para nuevas implementaciones
 - [ ] 1 semana en producción sin errores
 - [ ] Backup creado en `refactor_backup/`
 
@@ -249,7 +244,7 @@ app/
 ## 📊 MÉTRICAS DE PROGRESO
 
 ```
-Refactorización Total: ████████████████████████ 87%
+Refactorización Total: ██████████████████████████ 88%
 
 Static Assets:         ████████████████████████ 100% ✅
 Entry Point:           ████████████████████████ 100% ✅
@@ -259,7 +254,7 @@ Error Handling:        ███████████████████
 Main.py:               ████████████████████████ 100% ✅
 Rutas Pendientes:      ████████████████████████ 100% ✅
 Tests Unitarios:       ████████████████████████ 100% ✅
-Eliminar Legacy:       ████████░░░░░░░░░░░░░░░░ 30% ⏳
+Eliminar Legacy:       ██████████░░░░░░░░░░░░░░ 40% ⏳
 Documentación:         ████████░░░░░░░░░░░░░░░░ 40% ⏳
 ```
 
