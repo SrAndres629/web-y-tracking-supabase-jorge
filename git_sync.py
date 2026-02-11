@@ -433,18 +433,29 @@ def main():
             url = "https://jorgeaguirreflores.com"
             Console.log(f"🔥 Pre-Warming Global Edge: {url}", "🔥")
             time.sleep(10)
-            resp = requests.get(url, timeout=15)
+
+            debug_key = os.getenv("PREWARM_DEBUG_KEY") or os.getenv("DEBUG_DIAGNOSTIC_KEY")
+            headers = {}
+            params = {}
+            if debug_key:
+                headers["X-Prewarm-Debug"] = debug_key
+                params["__debug_key"] = debug_key
+
+            resp = requests.get(url, timeout=15, headers=headers, params=params)
             if resp.status_code == 200:
                 version_match = re.search(r"\?v=(\d+)", resp.text)
                 new_version = version_match.group(1) if version_match else "Unknown"
                 Console.success(f"PRODUCCIÓN ACTUALIZADA: Versión Atómica {new_version} activa.")
             else:
                 Console.warning(f"Pre-Warm status: {resp.status_code}")
+                Console.info(f"Pre-Warm content-type: {resp.headers.get('content-type', 'unknown')}")
                 try:
-                    error_snippet = resp.text[:500]
-                    Console.info(f"Diagnostic Snippet: {error_snippet}")
-                except:
-                    pass
+                    if "application/json" in (resp.headers.get("content-type") or ""):
+                        Console.info(f"Diagnostic Full (JSON): {json.dumps(resp.json(), indent=2, ensure_ascii=False)}")
+                    else:
+                        Console.info(f"Diagnostic Full (RAW): {resp.text}")
+                except Exception as e:
+                    Console.warning(f"Pre-Warm response decode failed: {e}")
         except Exception as e:
             Console.warning(f"Pre-Warm failed: {e}")
 
