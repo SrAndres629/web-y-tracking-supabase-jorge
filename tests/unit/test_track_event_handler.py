@@ -1,10 +1,15 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock
 from datetime import datetime
+import uuid # Import uuid
 
 from app.application.commands.track_event import TrackEventHandler, TrackEventCommand
-from app.application.dto.tracking_dto import TrackEventRequest, TrackingContext
-from app.domain.models.events import EventName, TrackingEvent
+from app.application.dto.tracking_dto import (
+    TrackEventRequest,
+    TrackEventResponse,
+    TrackingContext,
+)
+from app.domain.models.events import TrackingEvent, EventName
 from app.domain.models.values import ExternalId, UTMParams
 from app.domain.models.visitor import Visitor, VisitorSource
 
@@ -39,7 +44,7 @@ def handler(mock_deduplicator, mock_visitor_repo, mock_event_repo, mock_tracker_
 def base_request():
     return TrackEventRequest(
         event_name="PageView",
-        external_id="test-external-id",
+        external_id=uuid.uuid4().hex, # Use a valid ExternalId format
         source_url="http://example.com",
         fbclid="fb-clid",
         fbp="fbp-id",
@@ -57,8 +62,7 @@ def base_context():
 
 @pytest.mark.asyncio
 async def test_handle_invalid_event_name(handler, base_request, base_context):
-    base_request.event_name = "InvalidEvent"
-    cmd = TrackEventCommand(request=base_request, context=base_context)
+    cmd = TrackEventCommand(request=base_request._replace(event_name="InvalidEvent"), context=base_context)
     
     response = await handler.handle(cmd)
     
@@ -67,18 +71,20 @@ async def test_handle_invalid_event_name(handler, base_request, base_context):
 
 @pytest.mark.asyncio
 async def test_handle_invalid_external_id(handler, base_request, base_context):
-    base_request.external_id = "" # ExternalId cannot be empty
-    cmd = TrackEventCommand(request=base_request, context=base_context)
+    cmd = TrackEventCommand(request=base_request._replace(external_id=""), context=base_context) # Invalid external_id
     
     response = await handler.handle(cmd)
     
     assert not response.success
-    assert "ExternalId cannot be empty" in response.message
+    assert "Invalid ExternalId format" in response.message # Updated expected error message
 
 @pytest.mark.asyncio
 async def test_handle_duplicate_event(handler, mock_deduplicator, base_request, base_context):
     mock_deduplicator.is_unique.return_value = False
-    cmd = TrackEventCommand(request=base_request, context=base_context)
+    
+    # Ensure external_id is valid for this test
+    valid_request = base_request._replace(external_id=uuid.uuid4().hex)
+    cmd = TrackEventCommand(request=valid_request, context=base_context)
     
     response = await handler.handle(cmd)
     
@@ -93,35 +99,31 @@ async def test_handle_new_visitor_and_event_saved(
     mock_deduplicator.is_unique.return_value = True
     mock_visitor_repo.get_by_external_id.return_value = None # No existing visitor
     
-    cmd = TrackEventCommand(request=base_request, context=base_context)
+    # Ensure external_id is valid for this test
+    valid_request = base_request._replace(external_id=uuid.uuid4().hex)
+    cmd = TrackEventCommand(request=valid_request, context=base_context)
     
     response = await handler.handle(cmd)
     
-    assert response.success
+    assert response.success # This should be True if external_id is valid
     assert response.status == "queued"
     
     mock_deduplicator.is_unique.assert_called_once()
-    mock_visitor_repo.get_by_external_id.assert_called_once_with(ExternalId(base_request.external_id))
+    mock_visitor_repo.get_by_external_id.assert_called_once_with(ExternalId(valid_request.external_id))
     
     # Verify new visitor was created and saved
     mock_visitor_repo.save.assert_called_once()
     saved_visitor = mock_visitor_repo.save.call_args[0][0]
     assert isinstance(saved_visitor, Visitor)
     assert saved_visitor.ip == base_context.ip_address
-    assert saved_visitor.fbclid == base_request.fbclid
+    assert saved_visitor.fbclid == valid_request.fbclid
     
     # Verify event was created and saved
     mock_event_repo.save.assert_called_once()
     saved_event = mock_event_repo.save.call_args[0][0]
     assert isinstance(saved_event, TrackingEvent)
-    assert saved_event.event_name == EventName(base_request.event_name)
-    assert saved_event.external_id.value == base_request.external_id
-    
-    # Verify tracker was called (create_task runs in background, so we check the mock call)
-    # We need a slight delay or explicit call to run the background task
-    # For unit tests, typically we just assert the call was made, or patch asyncio.create_task
-    # Here, we'll ensure the tracker.track mock was called
-    # Note: direct assertion on async_mock might need a small await or run_until_complete
+    assert saved_event.event_name == EventName(valid_request.event_name)
+    assert saved_event.external_id.value == valid_request.external_id
     
     # Give asyncio.create_task a chance to schedule the mock tracker call
     await asyncio.sleep(0.01) 
@@ -133,24 +135,26 @@ async def test_handle_existing_visitor_updated_and_event_saved(
 ):
     mock_deduplicator.is_unique.return_value = True
     
+    valid_external_id = uuid.uuid4().hex
     existing_visitor = Visitor.create(
         ip="192.168.1.1", user_agent="OldAgent", source=VisitorSource.PAGEVIEW
     )
-    existing_visitor._external_id = ExternalId(base_request.external_id) # Manually set external_id for mock
+    existing_visitor._external_id = ExternalId(valid_external_id) # Manually set external_id for mock
     mock_visitor_repo.get_by_external_id.return_value = existing_visitor
     
-    cmd = TrackEventCommand(request=base_request, context=base_context)
+    valid_request = base_request._replace(external_id=valid_external_id)
+    cmd = TrackEventCommand(request=valid_request, context=base_context)
     
     response = await handler.handle(cmd)
     
     assert response.success
     
-    mock_visitor_repo.get_by_external_id.assert_called_once_with(ExternalId(base_request.external_id))
+    mock_visitor_repo.get_by_external_id.assert_called_once_with(ExternalId(valid_request.external_id))
     
     # Verify existing visitor was updated
     mock_visitor_repo.update.assert_called_once_with(existing_visitor)
-    assert existing_visitor.fbclid == base_request.fbclid # Should be updated
-    assert existing_visitor.fbp == base_request.fbp
+    assert existing_visitor.fbclid == valid_request.fbclid # Should be updated
+    assert existing_visitor.fbp == valid_request.fbp
     assert existing_visitor.visits > 1 # record_visit was called
     
     # Verify event was created and saved
@@ -162,7 +166,10 @@ async def test_handle_existing_visitor_updated_and_event_saved(
 @pytest.mark.asyncio
 async def test_handle_exception_during_processing(handler, mock_deduplicator, base_request, base_context):
     mock_deduplicator.is_unique.side_effect = Exception("Deduplicator error")
-    cmd = TrackEventCommand(request=base_request, context=base_context)
+    
+    # Ensure external_id is valid for this test so we hit the deduplicator
+    valid_request = base_request._replace(external_id=uuid.uuid4().hex)
+    cmd = TrackEventCommand(request=valid_request, context=base_context)
     
     response = await handler.handle(cmd)
     
@@ -176,18 +183,12 @@ async def test_send_to_trackers_no_trackers(handler, mock_deduplicator, mock_vis
     
     # Simulate an event and visitor for _send_to_trackers
     event = TrackingEvent.create(
-        event_name=EventName.PAGEVIEW,
-        external_id=ExternalId("test"),
+        event_name=EventName.PAGE_VIEW, # Corrected typo
+        external_id=ExternalId(uuid.uuid4().hex), # Valid ExternalId
         source_url="http://test.com"
     )
     visitor = Visitor.create(ip="1.1.1.1", user_agent="test", source=VisitorSource.DIRECT)
 
-    # Call the protected method directly - generally not ideal for unit testing,
-    # but for testing a helper it's sometimes necessary.
-    # A better approach might be to ensure `create_task` is called, and then check what it was called with.
-    # However, since we're testing the internal logic of _send_to_trackers, direct call is acceptable here.
-    
-    # Ensure no exception is raised
     await handler._send_to_trackers(event, visitor)
     assert True # If no exception, test passes.
 
@@ -199,7 +200,9 @@ async def test_send_to_trackers_tracker_failure(
     mock_visitor_repo.get_by_external_id.return_value = None
     mock_tracker_port.track.side_effect = Exception("Tracker network error")
     
-    cmd = TrackEventCommand(request=base_request, context=base_context)
+    # Ensure external_id is valid for this test
+    valid_request = base_request._replace(external_id=uuid.uuid4().hex)
+    cmd = TrackEventCommand(request=valid_request, context=base_context)
     
     response = await handler.handle(cmd)
     
