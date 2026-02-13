@@ -1,17 +1,5 @@
 {
     "version": 2,
-    "builds": [
-        {
-            "src": "api/index.py",
-            "use": "@vercel/python",
-            "config": {
-                "includeFiles": [
-                    "api/templates/**",
-                    "static/**"
-                ]
-            }
-        }
-    ],
     "functions": {
         "api/index.py": {
             "includeFiles": "api/templates/**,static/**,app/**"
