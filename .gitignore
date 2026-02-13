@@ -24,7 +24,7 @@ scratch_*.py
 .cursor/
 .vscode/
 .idea/
-ai/
+# ai/  <-- Unblocked for Agent Context
 ENGINEERING_LOG.md
 *.log
 database/local_fallback.db
