@@ -63,7 +63,10 @@ class InfrastructureAuditor:
                     latest = deployments[0]
                     state = latest.get("state")
                     if state == "ERROR" or state == "CANCELED":
-                        Console.error(f"Vercel Deployment Failure detected: {latest.get('uid') or latest.get('id') or 'Unknown'}")
+                        Console.warning(
+                            f"Pre-deploy Vercel status is {state}: "
+                            f"{latest.get('uid') or latest.get('id') or 'Unknown'}"
+                        )
                         return False
                     Console.success(f"Vercel Deployment State: {state}")
             
@@ -430,18 +433,20 @@ def _run_audit_gates(auditor: SystemAuditor, force: bool) -> bool:
         Console.warning("⚠️ SKIPPING GATES: --force flag detected. You are flying blind.")
         return True
 
-    # --- INFRASTRUCTURE AUDIT (Silicon Valley Zero-Downtime Gate) ---
+    # --- INFRASTRUCTURE AUDIT (Silicon Valley Fix-Forward Protocol) ---
+    # We check remote health, but we DO NOT BLOCK deployment on it.
+    # Why? Because if Prod is down, we need to deploy the fix!
+    # Blocking on a failed Prod state creates a "Death Spiral".
     infra = InfrastructureAuditor()
     vercel_ok = infra.check_vercel_health()
     supabase_ok = infra.check_supabase_health()
     
-    infra_strict = os.getenv("STRICT_INFRA_AUDIT") == "1" or os.getenv("CI") in {"1", "true", "TRUE"}
     if not (vercel_ok and supabase_ok):
-        if infra_strict:
-            Console.error("Infrastructure Audit Failed. Deployment blocked for safety.")
-        else:
-            Console.warning("Infrastructure audit reported remote issues; continuing in non-strict mode.")
+        Console.warning("⚠️ Infrastructure Audit detected remote issues.")
+        Console.info("Proceeding with deployment to ENABLE FIX via 'Red-to-Green' protocol.")
 
+    # --- LOCAL INTEGRITY (Strict Blockers) ---
+    # We NEVER deploy if local tests are failing. That is the true barrier.
     if not env_ok:
         for phase in integrity_phases:
             auditor._add_issue(
@@ -453,10 +458,12 @@ def _run_audit_gates(auditor: SystemAuditor, force: bool) -> bool:
             auditor.run_phase(phase["name"], phase["path"], audit_mode=True)
 
     healthy = auditor.report()
-    infra_gate_ok = (vercel_ok and supabase_ok) or (not infra_strict)
-    if not healthy or not infra_gate_ok:
-        Console.error("Deployment blocked due to failures. Fix issues and re-run.")
+    
+    # Only block on LOCAL HEALTH (Test Suite), not remote infra
+    if not healthy:
+        Console.error("Deployment blocked due to LOCAL TEST FAILURES. Fix code and re-run.")
         return False
+        
     return True
 
 
