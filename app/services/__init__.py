@@ -5,7 +5,7 @@ import json
 import time
 from typing import Optional, Dict, Any, List
 from app.config import settings
-from app.database import get_db_connection
+from app import database as legacy_database
 from app.cache import redis_cache
 
 # Configure Logging
@@ -194,8 +194,7 @@ class ContentManager:
     def _fetch_from_db(cls, key: str) -> Optional[Any]:
         """Synchronous DB fetch (Used for cold starts or refresh)"""
         try:
-            from app.database import get_cursor
-            with get_cursor() as cur:
+            with legacy_database.get_cursor() as cur:
                 # SQL Parameter adaption is handled by get_cursor wrapper if needed (postgres %s vs sqlite ?)
                 # But get_cursor wrapper for sqlite handles %s replacement!
                 cur.execute("SELECT value FROM site_content WHERE key = %s", (key,))

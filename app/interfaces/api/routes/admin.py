@@ -4,6 +4,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 
 from app.config import settings
+from app.interfaces.api.dependencies import get_legacy_facade
 
 from app.application.queries.admin.get_all_visitors_query import GetAllVisitorsQuery
 from app.application.queries.admin.get_signal_audit_query import GetSignalAuditQuery
@@ -11,6 +12,7 @@ from app.application.commands.admin.confirm_sale_command import ConfirmSaleComma
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 templates = Jinja2Templates(directory=settings.TEMPLATES_DIRS)
+legacy = get_legacy_facade()
 
 def verify_admin_key(key: str) -> bool:
     """Verifica la clave de administrador"""
@@ -28,7 +30,7 @@ async def admin_dashboard(request: Request, key: str = ""):
             status_code=403
         )
     
-    get_visitors_query = GetAllVisitorsQuery()
+    get_visitors_query = GetAllVisitorsQuery(list_visitors=legacy.get_all_visitors)
     visitors = await get_visitors_query.execute(limit=50)
     
     return templates.TemplateResponse(
@@ -46,7 +48,7 @@ async def admin_stats(key: str = ""):
     if not verify_admin_key(key):
         return JSONResponse({"error": "Unauthorized"}, status_code=403)
     
-    get_visitors_query = GetAllVisitorsQuery()
+    get_visitors_query = GetAllVisitorsQuery(list_visitors=legacy.get_all_visitors)
     visitors = await get_visitors_query.execute(limit=1000)
     return {
         "total_visitors": len(visitors),
@@ -69,7 +71,10 @@ async def confirm_sale(visitor_id: int, background_tasks: BackgroundTasks, reque
     client_ip = request.client.host if request.client else "unknown"
     user_agent = request.headers.get("User-Agent", "unknown")
 
-    command = ConfirmSaleCommand()
+    command = ConfirmSaleCommand(
+        get_visitor_by_id=legacy.get_visitor_by_id,
+        event_sender=legacy.send_elite_event,
+    )
     # The actual execution of the command (which includes sending the Meta event)
     # is now handled by the command itself. We just need to trigger it.
     # The original _bg_send_meta_event logic is now within ConfirmSaleCommand.execute
@@ -99,7 +104,7 @@ async def audit_signals(key: str = ""):
     if not verify_admin_key(key):
         return JSONResponse({"error": "Unauthorized"}, status_code=403)
 
-    query = GetSignalAuditQuery()
+    query = GetSignalAuditQuery(get_cursor=legacy.get_cursor)
     result = await query.execute()
     
     if "error" in result:

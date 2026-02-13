@@ -1,9 +1,12 @@
 from typing import List, Dict, Any
-from app.database import get_all_visitors
+from typing import Callable
 
 class GetAllVisitorsQuery:
+    def __init__(self, list_visitors: Callable[..., List[Dict[str, Any]]]):
+        self._list_visitors = list_visitors
+
     async def execute(self, limit: int = 50) -> List[Dict[str, Any]]:
         """
         Executes the query to retrieve all visitors.
         """
-        return await get_all_visitors(limit=limit)
+        return self._list_visitors(limit=limit)

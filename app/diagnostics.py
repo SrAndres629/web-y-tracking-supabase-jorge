@@ -38,7 +38,7 @@ def check_database() -> Dict[str, Any]:
     """Verify Supabase connection"""
     status = {"status": "unknown", "backend": "none", "details": ""}
     try:
-        from app.database import check_connection, get_cursor, BACKEND
+        from app import database as legacy_database
         from app.config import settings
         
         # Check if URL is invalid stub
@@ -48,9 +48,9 @@ def check_database() -> Dict[str, Any]:
         if not settings.DATABASE_URL:
              return {"status": "failed", "details": "DATABASE_URL not set"}
 
-        if check_connection():
-            status["backend"] = BACKEND
-            with get_cursor() as cur:
+        if legacy_database.check_connection():
+            status["backend"] = legacy_database.BACKEND
+            with legacy_database.get_cursor() as cur:
                 cur.execute("SELECT version();")
                 v = cur.fetchone()[0]
                 status["status"] = "ok"
@@ -69,8 +69,8 @@ def check_redis() -> Dict[str, Any]:
     """Verify Redis connection"""
     status = {"status": "unknown"}
     try:
-        from app.cache import redis_health_check
-        status = redis_health_check()
+        from app.interfaces.api.dependencies import get_legacy_facade
+        status = get_legacy_facade().redis_health_check()
     except Exception as e:
         status["status"] = "error"
         status["message"] = str(e)

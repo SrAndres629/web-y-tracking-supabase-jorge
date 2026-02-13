@@ -1,11 +1,17 @@
 import time
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Callable, Awaitable
 
-from app.database import get_visitor_by_id
-from app.meta_capi import send_elite_event
 from app.config import settings
 
 class ConfirmSaleCommand:
+    def __init__(
+        self,
+        get_visitor_by_id: Callable[[int], Optional[Dict[str, Any]]],
+        event_sender: Callable[..., Awaitable[Dict[str, Any]]],
+    ):
+        self._get_visitor_by_id = get_visitor_by_id
+        self._event_sender = event_sender
+
     async def execute(
         self,
         visitor_id: int,
@@ -20,7 +26,7 @@ class ConfirmSaleCommand:
         """
         Confirms a sale and sends a Purchase event to Meta CAPI.
         """
-        visitor = await get_visitor_by_id(visitor_id)
+        visitor = self._get_visitor_by_id(visitor_id)
         if not visitor:
             return {"status": "error", "error": "Visitor not found"}
 
@@ -37,7 +43,7 @@ class ConfirmSaleCommand:
 
         # Send Purchase event to Meta CAPI
         try:
-            await send_elite_event(
+            await self._event_sender(
                 event_name="Purchase",
                 event_id=f"purchase_{visitor_id}_{int(time.time())}",
                 url=f"{settings.HOST}/admin", # Event source URL, could be more specific

@@ -6,7 +6,7 @@
             "use": "@vercel/python",
             "config": {
                 "includeFiles": [
-                    "app/templates/**",
+                    "api/templates/**",
                     "static/**"
                 ]
             }
@@ -15,7 +15,7 @@
     "functions": {
         "api/index.py": {
             "includeFiles": [
-                "app/templates/**",
+                "api/templates/**",
                 "static/**"
             ]
         }

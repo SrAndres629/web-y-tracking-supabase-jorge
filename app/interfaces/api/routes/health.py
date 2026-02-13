@@ -6,12 +6,12 @@ from datetime import datetime
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse, PlainTextResponse
 import os
-import traceback
 
-from app.database import check_connection
 from app.config import settings
+from app.interfaces.api.dependencies import get_legacy_facade
 
 router = APIRouter(tags=["Health"])
+legacy = get_legacy_facade()
 
 
 @router.head("/health")
@@ -26,7 +26,7 @@ async def health_check(request: Request):
     Health check completo con verificación de base de datos
     Usado por UptimeRobot, Render, etc.
     """
-    db_status = "connected" if check_connection() else "not configured"
+    db_status = "connected" if legacy.check_connection() else "not configured"
     
     # Check optional integrations
     integrations = []
@@ -70,23 +70,11 @@ async def ping():
     return "pong"
 
 
-@router.get("/__prewarm_debug")
-async def prewarm_debug(request: Request):
-    """
-    Endpoint de diagnóstico forense para prewarm.
-    Devuelve rutas de templates y errores completos.
-    """
-    header_key = request.headers.get("x-prewarm-debug")
-    query_key = request.query_params.get("__debug_key")
-    if header_key is None and query_key is None:
-        return JSONResponse({"status": "error", "message": "Not Found"}, status_code=404)
-
+def _prewarm_probe_payload(request: Request) -> dict:
     candidates = [
         settings.TEMPLATES_DIR,
         os.path.join(os.getcwd(), "api", "templates"),
-        os.path.join(os.getcwd(), "templates"),
         "/var/task/api/templates",
-        "/var/task/templates",
         "api/templates",
     ]
     probe = "pages/public/home.html"
@@ -102,21 +90,39 @@ async def prewarm_debug(request: Request):
                 found.append(path)
         except Exception:
             pass
-
-    if found:
-        return JSONResponse({
-            "status": "ok",
-            "probe": probe,
-            "found": found,
-            "cwd": os.getcwd(),
-            "checked": checked,
-        })
-
-    return JSONResponse({
-        "status": "error",
-        "message": "Template not found",
+    return {
         "probe": probe,
         "cwd": os.getcwd(),
         "checked": checked,
-        "traceback": traceback.format_exc(),
-    }, status_code=500)
+        "found": found,
+    }
+
+
+@router.get("/__prewarm_debug")
+async def prewarm_debug(request: Request):
+    """
+    Endpoint de diagnóstico forense para prewarm.
+    Devuelve rutas de templates y errores completos.
+    """
+    header_key = request.headers.get("x-prewarm-debug")
+    query_key = request.query_params.get("__debug_key")
+    if header_key is None and query_key is None:
+        return JSONResponse({"status": "error", "message": "Not Found"}, status_code=404)
+
+    payload = _prewarm_probe_payload(request)
+    if payload["found"]:
+        return JSONResponse({"status": "ok", **payload})
+    return JSONResponse({"status": "error", "message": "Template not found", **payload}, status_code=500)
+
+
+@router.get("/health/prewarm")
+async def prewarm_health(request: Request):
+    """Health-style prewarm diagnostic endpoint."""
+    header_key = request.headers.get("x-prewarm-debug")
+    query_key = request.query_params.get("__debug_key")
+    if header_key is None and query_key is None:
+        return JSONResponse({"status": "error", "message": "Not Found"}, status_code=404)
+    payload = _prewarm_probe_payload(request)
+    if payload["found"]:
+        return JSONResponse({"status": "ok", **payload})
+    return JSONResponse({"status": "error", "message": "Template not found", **payload}, status_code=500)

@@ -1,14 +1,17 @@
 from typing import Dict, Any
-from app.database import get_cursor
+from typing import Callable
 
 class GetSignalAuditQuery:
+    def __init__(self, get_cursor: Callable[[], Any]):
+        self._get_cursor = get_cursor
+
     async def execute(self) -> Dict[str, Any]:
         """
         Executes the query to perform a signal audit.
         Compares Leads (DB) vs Eventos Enviados (Flag 'sent_to_meta').
         """
         try:
-            with get_cursor() as cur:
+            with self._get_cursor() as cur:
                 # 1. Total Contactos Únicos
                 cur.execute("SELECT COUNT(*) FROM contacts")
                 total_leads = cur.fetchone()[0]

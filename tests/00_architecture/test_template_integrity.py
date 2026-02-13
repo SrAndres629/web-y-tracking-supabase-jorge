@@ -3,7 +3,7 @@ import pytest
 from jinja2 import Environment, FileSystemLoader, TemplateSyntaxError
 from pathlib import Path
 
-BASE_DIR = Path(__file__).parent.parent
+BASE_DIR = Path(__file__).resolve().parents[2]
 TEMPLATES_DIR = BASE_DIR / "api" / "templates"
 
 def test_jinja2_template_syntax():
@@ -20,6 +20,7 @@ def test_jinja2_template_syntax():
             if file.endswith(".html"):
                 relative_path = Path(root).relative_to(TEMPLATES_DIR) / file
                 html_files.append(str(relative_path).replace("\\", "/"))
+    assert html_files, f"No templates found under {TEMPLATES_DIR}"
 
     errors = []
     for template_path in html_files:

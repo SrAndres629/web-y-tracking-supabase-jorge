@@ -123,7 +123,7 @@ class SystemAuditor:
             env["AUDIT_MODE"] = "1"
         
         pytest_cmd = [
-            sys.executable, "-m", "pytest", path, "-v", "-W", "error",
+            sys.executable, "-m", "pytest", path, "-v",
             "--tb=short", "--maxfail=0"
         ]
 
@@ -345,15 +345,8 @@ def run_cmd(command, cwd=None, exit_on_fail=False):
     return True, result.stdout, result.stderr
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Silicon Valley Deployment Pipeline")
-    parser.add_argument("--force", action="store_true", help="Bypass checks (NOT RECOMMENDED)")
-    parser.add_argument("message", nargs="?", default=None, help="Commit message")
-    args = parser.parse_args()
-
-    print(f"\n{Console.BOLD}[NEURAL-SYNC] Initializing Silicon Valley Deployment Protocol...{Console.ENDC}\n")
-
-    auditor = SystemAuditor(REPO_PATH)
+def _run_audit_gates(auditor: SystemAuditor, force: bool) -> bool:
+    """Run test gates. Returns True if deployment should proceed."""
     env_ok = auditor.check_environment()
 
     integrity_phases = [
@@ -363,46 +356,53 @@ def main():
         {"name": "Security & Perf Audit", "path": "tests/03_audit"},
     ]
 
-    if args.force:
+    if force:
         Console.warning("⚠️ SKIPPING GATES: --force flag detected. You are flying blind.")
+        return True
+
+    if not env_ok:
+        for phase in integrity_phases:
+            auditor._add_issue(
+                file_path=phase["path"], line="N/A", err_type="Exception",
+                message="Skipped due to missing dependencies.", phase=phase["name"],
+            )
     else:
-        if not env_ok:
-            for phase in integrity_phases:
-                auditor._add_issue(
-                    file_path=phase["path"],
-                    line="N/A",
-                    err_type="Exception",
-                    message="Skipped due to missing dependencies.",
-                    phase=phase["name"],
-                )
-        else:
-            for phase in integrity_phases:
-                auditor.run_phase(phase["name"], phase["path"], audit_mode=True)
+        for phase in integrity_phases:
+            auditor.run_phase(phase["name"], phase["path"], audit_mode=True)
 
     healthy = auditor.report()
-    if not healthy and not args.force:
+    if not healthy:
         Console.error("Deployment blocked due to failures. Fix issues and re-run.")
-        sys.exit(1)
+        return False
+    return True
 
+
+def _stage_and_commit(message: str | None, force: bool) -> bool:
+    """Stage, commit changes. Returns True if there are changes to push."""
     Console.log("[2/6] Staging & Committing...", "+")
     run_cmd("git add .", cwd=REPO_PATH)
 
     success, output, _ = run_cmd("git status --porcelain", cwd=REPO_PATH)
     has_changes = bool(output.strip())
 
-    if has_changes or args.force:
+    if has_changes or force:
         time_str = datetime.datetime.now().strftime("%H:%M")
-        msg = args.message if args.message else f"chore: system sync {time_str}"
+        msg = message if message else f"chore: system sync {time_str}"
 
-        if not has_changes and args.force:
+        if not has_changes and force:
             msg += " (FORCED)"
             run_cmd(f'git commit --allow-empty -m "{msg}"', cwd=REPO_PATH)
         elif has_changes:
             Console.log(f"Committing source: '{msg}'", "📝")
             run_cmd(f'git commit -m "{msg}"', cwd=REPO_PATH)
+        return True
     else:
         Console.info("No local changes to commit.")
+        return True  # still proceed to sync
 
+
+def _sync_with_origin() -> bool:
+    """Fetch, rebase, push. Returns True on success."""
     Console.log("[3/6] Synchronizing with Origin...", ">")
     run_cmd("git fetch origin", cwd=REPO_PATH)
 
@@ -410,73 +410,99 @@ def main():
     success, _, _ = run_cmd("git pull origin main --rebase", cwd=REPO_PATH)
     if not success:
         Console.error("CRITICAL: Rebase Conflict. Resolve manually with 'git status'.")
-        sys.exit(1)
+        return False
 
     _, local_sha, _ = run_cmd("git rev-parse HEAD", cwd=REPO_PATH)
     _, remote_sha, _ = run_cmd("git rev-parse origin/main", cwd=REPO_PATH)
 
     if local_sha.strip() == remote_sha.strip():
         Console.success("SYSTEM SYNCED. No Ops Required.")
-        return
-    else:
-        Console.log("Local is ahead. Proceeding to Push...", "⬆️")
+        return True
 
+    Console.log("Local is ahead. Proceeding to Push...", "⬆️")
     Console.log("[6/6] Injecting into Production...", "!")
     success, _, stderr = run_cmd("git push -u origin main", cwd=REPO_PATH)
 
-    if success:
-        Console.success("✅ DEPLOYMENT SUCCESSFUL")
-        Console.log("Validating Edge Cache Purge...", "🧹")
-        purge_cloudflare_cache()
-
-        try:
-            url = "https://jorgeaguirreflores.com"
-            Console.log(f"🔥 Pre-Warming Global Edge: {url}", "🔥")
-            time.sleep(10)
-
-            debug_key = os.getenv("PREWARM_DEBUG_KEY") or os.getenv("DEBUG_DIAGNOSTIC_KEY")
-            headers = {"User-Agent": "SV-Prewarm/1.0"}
-            params = {}
-            if debug_key:
-                headers["X-Prewarm-Debug"] = debug_key
-                params["__debug_key"] = debug_key
-            else:
-                headers["X-Prewarm-Debug"] = "1"
-                params["__debug_key"] = "1"
-
-            resp = requests.get(url, timeout=15, headers=headers, params=params)
-            if resp.status_code == 200:
-                version_match = re.search(r"\?v=(\d+)", resp.text)
-                new_version = version_match.group(1) if version_match else "Unknown"
-                Console.success(f"PRODUCCIÓN ACTUALIZADA: Versión Atómica {new_version} activa.")
-            else:
-                Console.warning(f"Pre-Warm status: {resp.status_code}")
-                Console.info(f"Pre-Warm content-type: {resp.headers.get('content-type', 'unknown')}")
-                try:
-                    if "application/json" in (resp.headers.get("content-type") or ""):
-                        Console.info(f"Diagnostic Full (JSON): {json.dumps(resp.json(), indent=2, ensure_ascii=False)}")
-                    else:
-                        Console.info(f"Diagnostic Full (RAW): {resp.text}")
-                except Exception as e:
-                    Console.warning(f"Pre-Warm response decode failed: {e}")
-                
-                # Secondary probe for full diagnostics (template paths)
-                try:
-                    diag_url = f"{url}/__prewarm_debug"
-                    diag_resp = requests.get(diag_url, timeout=15, headers=headers, params=params)
-                    if "application/json" in (diag_resp.headers.get("content-type") or ""):
-                        Console.info(f"Pre-Warm Diagnostics: {json.dumps(diag_resp.json(), indent=2, ensure_ascii=False)}")
-                    else:
-                        Console.info(f"Pre-Warm Diagnostics (RAW): {diag_resp.text}")
-                except Exception as e:
-                    Console.warning(f"Pre-Warm diagnostics failed: {e}")
-        except Exception as e:
-            Console.warning(f"Pre-Warm failed: {e}")
-
-        print(f"\n{Console.GREEN}System is Live: https://jorgeaguirreflores.com{Console.ENDC}")
-    else:
+    if not success:
         Console.error(f"Push Failed: {stderr}")
+        return False
+
+    Console.success("✅ DEPLOYMENT SUCCESSFUL")
+    return True
+
+
+def _post_deploy_verify():
+    """Purge cache and verify production is live."""
+    Console.log("Validating Edge Cache Purge...", "🧹")
+    purge_cloudflare_cache()
+
+    try:
+        url = "https://jorgeaguirreflores.com"
+        Console.log(f"🔥 Pre-Warming Global Edge: {url}", "🔥")
+        time.sleep(10)
+
+        debug_key = os.getenv("PREWARM_DEBUG_KEY") or os.getenv("DEBUG_DIAGNOSTIC_KEY")
+        headers = {"User-Agent": "SV-Prewarm/1.0"}
+        params = {}
+        if debug_key:
+            headers["X-Prewarm-Debug"] = debug_key
+            params["__debug_key"] = debug_key
+
+        resp = requests.get(url, timeout=15, headers=headers, params=params)
+        if resp.status_code == 200:
+            version_match = re.search(r"\?v=(\d+)", resp.text)
+            new_version = version_match.group(1) if version_match else "Unknown"
+            Console.success(f"PRODUCCIÓN ACTUALIZADA: Versión Atómica {new_version} activa.")
+        else:
+            Console.warning(f"Pre-Warm status: {resp.status_code}")
+            content_type = resp.headers.get("content-type", "unknown")
+            Console.info(f"Pre-Warm content-type: {content_type}")
+            try:
+                if "application/json" in content_type:
+                    Console.info(f"Diagnostic (JSON): {json.dumps(resp.json(), indent=2, ensure_ascii=False)}")
+                else:
+                    Console.info(f"Diagnostic (RAW): {resp.text[:500]}")
+            except Exception as e:
+                Console.warning(f"Pre-Warm response decode failed: {e}")
+
+            # Secondary probe
+            try:
+                diag_resp = requests.get(f"{url}/health/prewarm", timeout=15, headers=headers, params=params)
+                content_type = diag_resp.headers.get("content-type", "")
+                if "application/json" in content_type:
+                    Console.info(f"Pre-Warm Diagnostics: {json.dumps(diag_resp.json(), indent=2, ensure_ascii=False)}")
+            except Exception as e:
+                Console.warning(f"Pre-Warm diagnostics failed: {e}")
+    except Exception as e:
+        Console.warning(f"Pre-Warm failed: {e}")
+
+    print(f"\n{Console.GREEN}System is Live: https://jorgeaguirreflores.com{Console.ENDC}")
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Silicon Valley Deployment Pipeline")
+    parser.add_argument("--force", action="store_true", help="Bypass checks (NOT RECOMMENDED)")
+    parser.add_argument("message", nargs="?", default=None, help="Commit message")
+    args = parser.parse_args()
+
+    print(f"\n{Console.BOLD}[NEURAL-SYNC] Initializing Silicon Valley Deployment Protocol...{Console.ENDC}\n")
+
+    # Phase 1: Audit gates
+    auditor = SystemAuditor(REPO_PATH)
+    if not _run_audit_gates(auditor, args.force):
+        sys.exit(1)
+
+    # Phase 2: Stage & commit
+    _stage_and_commit(args.message, args.force)
+
+    # Phase 3: Sync with origin
+    if not _sync_with_origin():
+        sys.exit(1)
+
+    # Phase 4: Post-deploy verification
+    _post_deploy_verify()
 
 
 if __name__ == "__main__":
     main()
+

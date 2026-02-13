@@ -21,7 +21,6 @@ CRITICAL_MODULES = [
     "app/tracking.py",
     "app/meta_capi.py",
     "app/database.py",
-    "app/services.py"
 ]
 
 def get_public_functions(file_path):
@@ -43,8 +42,7 @@ def test_function_integrity(module_path):
     No ghost functions allowed.
     """
     full_path = BASE_DIR / module_path
-    if not full_path.exists():
-        pytest.skip(f"Module {module_path} not found")
+    assert full_path.exists(), f"Critical module {module_path} not found at {full_path}"
 
     functions = get_public_functions(full_path)
     violations = []

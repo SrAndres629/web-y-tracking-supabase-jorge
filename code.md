@@ -1,6 +1,6 @@
 # 📋 ESTADO DE REFACTORIZACIÓN - Jorge Aguirre Flores Web v3.0
 
-**Fecha de actualización:** 2026-02-10  
+**Fecha de actualización:** 2026-02-11  
 **Versión actual:** 3.0.0  
 **Arquitectura:** Clean Architecture + Domain-Driven Design (DDD)
 
@@ -18,11 +18,10 @@
 | JS Modules | 1 archivo grande (200+ líneas) | 24 módulos atómicos |
 | CSS | Archivos dispersos | 7 componentes centralizados |
 
-**Por qué es importante:**
-- Permite carga diferida (lazy loading) de componentes
-- Facilita el trabajo con agentes de IA (archivos pequeños <100 líneas)
-- Sigue el patrón Atomic Design (átomos → moléculas → organismos)
-- Mejora el cacheo y la velocidad de carga
+**Notas senior (impacto técnico):**
+- “Split by responsibility” reduce el tamaño de diffs y acelera la iteración.
+- Facilita invalidación de caché por cambio puntual (CDN-friendly).
+- Reduce riesgo de regresiones al tocar UI/UX (módulos <100 líneas).
 
 ---
 
@@ -33,39 +32,36 @@
 | Métrica | Antes | Después | Mejora |
 |---------|-------|---------|--------|
 | Líneas de código | 81 | 15 | **81% reducción** |
-| Responsabilidades | 4 (bootstrap + error handling + logging + path setup) | 1 (solo bootstrap) | **Separación de concerns** |
+| Responsabilidades | 4 | 1 | **Separación de concerns** |
 
-**Por qué es importante:**
-- Reduce la complejidad cognitiva para agentes de IA
-- Separa responsabilidades (Single Responsibility Principle)
-- Facilita el testing unitario
-- Elimina código duplicado de manejo de errores
+**Notas senior (impacto técnico):**
+- Entry point minimalista = menos side effects en cold start serverless.
+- Error handling movido a middleware dedicado y reutilizable.
 
 ---
 
-### 3. Migración de Templates
+### 3. Templates (Single Source of Truth)
 **Estado:** ✅ COMPLETADO  
-**Archivos:** 13 templates migrados
+**Archivos:** 13 templates consolidados
 
 | Antes | Después |
 |-------|---------|
-| `api/templates/` | `app/templates/` |
-| Estructura plana | Organizado por capas (layouts/, pages/, sections/, components/) |
+| `templates/` + `app/templates/` duplicados | `api/templates/` único |
+| Estructuras divergentes | Estructura única y estable |
 
 **Estructura actual:**
 ```
-app/templates/
-├── layouts/          # 2 templates (base.html, error.html)
-├── pages/            # 2 templates (index.html, landing.html)
-├── sections/         # 7 templates (hero, services, testimonials, etc.)
-└── components/       # 2 templates (navbar, footer)
+api/templates/
+├── layouts/          # base.html, error.html
+├── pages/            # index.html, landing.html
+├── sections/         # hero, services, testimonials, etc.
+└── components/       # navbar, footer
 ```
 
-**Por qué es importante:**
-- Separa la capa de presentación del código de API
-- Facilita la reutilización de componentes
-- Mejora el mantenimiento (cada template tiene responsabilidad única)
-- Compatible con la Clean Architecture
+**Notas senior (impacto técnico):**
+- Un solo root evita inconsistencias entre runtime local y `/var/task`.
+- Reduce errores 500 por rutas inválidas de Jinja2.
+- Permite caching consistente de templates.
 
 ---
 
@@ -81,11 +77,9 @@ VERSION_MINOR = 0
 VERSION_PATCH = 0
 ```
 
-**Por qué es importante:**
-- Single source of truth (única fuente de verdad)
-- Evita inconsistencias entre módulos
-- Facilita el versionado semántico
-- Permite cambios atómicos de versión
+**Notas senior (impacto técnico):**
+- Fuente única para headers, logs, y debugging.
+- Evita divergencias de versión entre módulos.
 
 ---
 
@@ -94,16 +88,13 @@ VERSION_PATCH = 0
 **Archivo:** `app/interfaces/api/middleware/error_handler.py`
 
 **Características:**
-- ErrorHandlerMiddleware clase dedicada
-- Modo debug condicional (muestra traceback solo en desarrollo)
-- HTML de error sin datos sensibles en producción
-- Separación completa del entry point
+- Debug condicional por header/query
+- JSON de diagnóstico para prewarm
+- HTML sin datos sensibles en producción
 
-**Por qué es importante:**
-- Centraliza el manejo de errores
-- Evita filtración de información sensible en producción
-- Facilita personalización de páginas de error
-- Permite logging consistente
+**Notas senior (impacto técnico):**
+- El prewarm obtiene stacktrace completo sin exponerlo al usuario final.
+- El logging se centraliza y reduce duplicaciones.
 
 ---
 
@@ -112,129 +103,128 @@ VERSION_PATCH = 0
 **Archivo:** `main.py`
 
 **Cambios:**
-- Implementación de lifespan para startup/shutdown
-- Uso de rutas Clean Architecture (`app/interfaces/api/routes/`)
+- Lifespan async (startup/shutdown explícitos)
+- Rutas unificadas bajo `app/interfaces/api/routes/`
 - Integración con `app/version.py`
 - Eliminación de sys.path hacks
 
-**Por qué es importante:**
-- Sigue el patrón Factory para la aplicación FastAPI
-- Permite inicialización asíncrona de recursos
-- Facilita el testing con inyección de dependencias
-- Mejora la organización del código
+**Notas senior (impacto técnico):**
+- Inicialización determinística y menos estados globales.
+- Mejora testabilidad y reduce coupling.
 
 ---
 
-## ⏳ TAREAS PENDIENTES
+## 🔬 ANÁLISIS ESTRUCTURAL (ARCHITECTURE GRAPH)
 
-### 1. 🔄 Migrar Rutas Legacy Pendientes
+**Fuente:** `.ai/architecture_graph.json` (snapshot `2026-02-10T22:51:03.013396`)  
+**Tamaño:** 882 nodos, 1194 links
+
+**Centros de gravedad actuales (dependencias salientes):**
+- `app/database.py` (29)
+- `app/tracking.py` (24)
+- `app/meta_capi.py` (13)
+- `app/core/result.py::Result` (19)
+
+**Interpretación senior:**
+- El core operativo sigue apoyado en módulos legacy (`database`, `tracking`, `meta_capi`).
+- Aún no hay aislamiento total hacia los ports/adapters (Clean Architecture pura).
+- Hasta que esos consumidores migren a `application/interfaces/*`, la refactorización no está cerrada.
+
+---
+
+## ⏳ TAREAS PENDIENTES (PARA CERRAR REFACTORIZACIÓN DE `app/`)
+
+### 1. Deploy y verificación de diagnóstico de prewarm
 **Prioridad:** ALTA  
-**Estado:** ✅ COMPLETADO  
-**Rutas afectadas:** Ninguna. Todas las rutas legacy han sido migradas.
+**Estado:** ⏳ PENDIENTE
 
-**Contexto actual:**
-- Las rutas `/admin`, `/identity` y `seo` han sido migradas a Clean Architecture.
+**Qué falta (técnico):**
+- Ejecutar deploy pendiente (`git_sync.py`) que expone `/health/prewarm`.
+- Verificar respuesta JSON:
+  - `templates_dir` real
+  - `search_paths` completos
+  - `cwd` y `base_dir`
+  - stacktrace completo con `filename:line`
 
-**Por qué es importante:**
-- **Consistencia arquitectónica:** Todas las rutas siguen el mismo patrón Clean Architecture
-- **Testabilidad:** Las rutas son fáciles de testear por su bajo acoplamiento
-- **Mantenibilidad:** El código duplicado (legacy vs nuevo) ha sido eliminado
-- **Escalabilidad:** Las nuevas rutas permiten inyección de dependencias y mocking
-
-**Archivos legacy a migrar:**
-- Ninguno pendiente.
-
-**Pasos sugeridos:**
-- Deprecar y eliminar `app/routes/admin.py`, `app/routes/identity_routes.py`, `app/routes/pages.py` (funcionalidades SEO).
+**Impacto si no se completa:**
+- Debug remoto limitado → mayor tiempo de resolución de incidentes.
 
 ---
 
-### 2. 🧪 Crear Tests Unitarios para Nuevos Handlers
+### 2. Auditoría final de imports y paths legacy
 **Prioridad:** ALTA  
-**Estado:** ⏳ PENDIENTE  
-**Ubicación:** `tests/unit/`
+**Estado:** ⏳ PENDIENTE
 
-**Contexto actual:**
-- El archivo `tests/conftest.py` existe pero los tests están desactualizados
-- No hay tests para los nuevos handlers de Clean Architecture
-- Los tests legacy importan código que ya no existe
+**Qué falta (técnico):**
+- Eliminar referencias a:
+  - `app/routes/*`
+  - `templates/`
+  - `app/templates/`
+- Verificar que todos los imports apunten a:
+  - `app/interfaces/api/routes`
+  - `app/interfaces/api/middleware`
+- Confirmar ausencia de shadowing (mismos nombres en legacy y nuevo path).
 
-**Por qué es importante:**
-- **Calidad del código:** Garantiza que los handlers funcionan correctamente
-- **Refactorización segura:** Permite hacer cambios sin miedo a romper funcionalidad
-- **Documentación viva:** Los tests sirven como documentación del comportamiento esperado
-- **CI/CD:** Necesarios para pipelines de integración continua
-
-**Handlers que necesitan tests:**
-```
-app/application/commands/
-├── track_event.py          → tests/unit/test_track_event_handler.py
-├── create_lead.py          → tests/unit/test_create_lead_handler.py
-└── ...
-
-app/application/queries/
-├── get_visitor.py          → tests/unit/test_get_visitor_handler.py
-└── ...
-```
-
-**Estrategia de testing:**
-1. Usar repositorios InMemory para tests unitarios
-2. Mockear servicios externos (Meta CAPI, RudderStack)
-3. Tests de integración para la capa de API
-4. Tests E2E para flujos críticos
+**Impacto si no se completa:**
+- Errores intermitentes en serverless por rutas divergentes.
 
 ---
 
-### 3. 🗑️ Eliminar Código Legacy
-**Prioridad:** MEDIA  
-**Estado:** ✅ COMPLETADO  
-**Ubicación:** (N/A - Tareas de eliminación completadas)
+### 3. Tests unitarios para handlers Clean Architecture
+**Prioridad:** ALTA  
+**Estado:** ⏳ PENDIENTE
 
-**Contexto actual:**
-- Todos los archivos legacy de rutas (`app/routes/admin.py`, `app/routes/identity_routes.py`, `app/routes/tracking_routes.py`) han sido eliminados.
-- Las funcionalidades SEO de `app/routes/pages.py` han sido migradas y el código obsoleto eliminado.
-- Los archivos legacy (`app/database.py`, `app/tracking.py`, `app/meta_capi.py`, `app/cache.py`) de la raíz de `app/` han sido eliminados.
-- La carpeta `app/_legacy/` no se encontró, asumiendo que ya no existe o fue eliminada previamente.
+**Qué falta (plan técnico):**
+- Tests unitarios en `tests/` para handlers en:
+  - `app/application/commands/*`
+  - `app/application/queries/*`
+- Repositorios InMemory para tests.
+- Mock de integraciones externas (Meta CAPI, RudderStack).
+- Validar invariantes de dominio (Email, Phone, EventId).
 
-**Por qué es importante:**
-- **Reducción de deuda técnica:** Menos código = menos mantenimiento
-- **Claridad:** Los desarrolladores no se confunden entre código viejo y nuevo
-- **Tamaño de bundle:** Reduce el tamaño del despliegue
-- **Tiempo de carga:** Menos imports = faster startup
-
-**Archivos a eliminar eventualmente:**
-- Ninguno pendiente.
-
-**Criterios para eliminar:**
-- [x] Todas las rutas legacy migradas
-- [x] Tests pasando para nuevas implementaciones
-- [x] 1 semana en producción sin errores (Asumiendo que esta verificación se hace externamente)
-- [ ] Backup creado en `refactor_backup/` (Se asume que ya existe un backup o se creará en el futuro si es necesario)
+**Impacto si no se completa:**
+- Refactor sin red de seguridad → riesgo alto de regresión.
 
 ---
 
-### 4. 📚 Actualizar Documentación
+### 4. Consolidación definitiva de compatibilidad legacy
 **Prioridad:** MEDIA  
-**Estado:** ✅ COMPLETADO  
-**Archivos:** `AGENTS.md`, `README.md`
+**Estado:** ⏳ PENDIENTE
 
-**Por qué es importante:**
-- **Onboarding:** Nuevos desarrolladores/agentes entienden la arquitectura
-- **Consistencia:** Documenta los patrones que deben seguirse
-- **Mantenibilidad:** Evita que se vuelva a mezclar código legacy
+**Qué falta (técnico):**
+- Confirmar uso real de:
+  - `app/database.py`
+  - `app/tracking.py`
+  - `app/meta_capi.py`
+  - `app/cache.py`
+- Migrar consumidores hacia puertos (`application/interfaces/*`).
+- Documentar lo que debe permanecer o eliminar lo obsoleto.
 
-**Secciones a actualizar:**
-1. Estructura de carpetas actualizada (Actualizado en `AGENTS.md` y `README.md`)
-2. Cómo agregar nuevas rutas (usando Clean Architecture) (Documentado en `AGENTS.md`)
-3. Convenciones de código (Documentado en `AGENTS.md`)
-4. Guía de migración de código legacy (Documentado en `AGENTS.md`)
+**Impacto si no se completa:**
+- Doble lógica y deuda técnica persistente.
+
+---
+
+### 5. Dependencias y rutas de despliegue
+**Prioridad:** MEDIA  
+**Estado:** ⏳ PENDIENTE
+
+**Qué falta (técnico):**
+- Revisar `requirements.txt`/lockfile para imports actuales.
+- Verificar `vercel.json` y `includeFiles`:
+  - `templates/**`
+  - `api/templates/**`
+  - `static/**`
+
+**Impacto si no se completa:**
+- Builds rotos o errores 500 por assets faltantes.
 
 ---
 
 ## 📊 MÉTRICAS DE PROGRESO
 
 ```
-Refactorización Total: ██████████████████████░░ 90%
+Refactorización Total: ███████████████████░░░░ 82%
 
 Static Assets:         ████████████████████████ 100% ✅
 Entry Point:           ████████████████████████ 100% ✅
@@ -242,51 +232,32 @@ Templates:             ███████████████████
 Version Unificada:     ████████████████████████ 100% ✅
 Error Handling:        ████████████████████████ 100% ✅
 Main.py:               ████████████████████████ 100% ✅
-Rutas Pendientes:      ████████████████████████ 100% ✅
-Tests Unitarios:       ████████████████████████ 100% ✅
-Eliminar Legacy:       ████████████████████████ 100% ✅
-Documentación:         ████████████████████████ 100% ✅
+Auditoría Paths:       ████████░░░░░░░░░░░░░░░░ 40% ⏳
+Tests Unitarios:       ██████░░░░░░░░░░░░░░░░░░ 30% ⏳
+Legacy Compat:         ████████░░░░░░░░░░░░░░░░ 40% ⏳
+Dependencias/Deploy:   ████████░░░░░░░░░░░░░░░░ 40% ⏳
 ```
-
----
-
-## 🎯 PRÓXIMOS PASOS INMEDIATOS
-
-### Esta semana:
-1. **Migrar ruta `/admin`** (prioridad alta)
-   - Crear `app/application/commands/admin/`
-   - Implementar `app/interfaces/api/routes/admin.py`
-   - Habilitar en `main.py`
-
-2. **Crear tests básicos** para handlers existentes
-   - `test_track_event_handler.py`
-   - `test_create_lead_handler.py`
-
-### Siguiente semana:
-3. **Migrar ruta `/identity`**
-4. **Migrar ruta SEO**
-5. **Eliminar código legacy** (si todo estable)
 
 ---
 
 ## 🔗 ARCHIVOS RELACIONADOS
 
-- `APP_ARCHITECTURE_AUDIT.md` - Análisis detallado de la arquitectura
-- `refactor_backup/` - Backup de archivos originales
-- `app/version.py` - Single source of truth de versión
-- `main.py` - FastAPI application factory
-- `api/index.py` - Entry point serverless
+- `app/interfaces/api/routes/` - Rutas migradas
+- `app/interfaces/api/middleware/error_handler.py` - Error middleware
+- `app/config.py` - Resolución de templates
+- `api/templates/` - Única fuente de templates
+- `vercel.json` - IncludeFiles para serverless
+- `.ai/architecture_graph.json` - Grafo de dependencias
 
 ---
 
 ## 📝 NOTAS
 
-- La refactorización mantiene **retrocompatibilidad completa**
-- Los cambios están **listos para producción**
-- Se recomienda prueba en staging antes de producción
-- Los archivos legacy tienen warnings de deprecación
+- Refactor mantiene retrocompatibilidad mientras se cierra auditoría legacy.
+- El siguiente paso crítico es desplegar y validar `/health/prewarm`.
+- Se recomienda validación en staging antes de producción.
 
 ---
 
-*Última actualización: 2026-02-10 por Agent de IA*  
-*Versión del documento: 1.0*
+*Última actualización: 2026-02-11 por Agent de IA*  
+*Versión del documento: 1.4*

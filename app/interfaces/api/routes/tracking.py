@@ -19,12 +19,10 @@ import logging
 from app.config import settings
 from app.services import publish_to_qstash, validate_turnstile, normalize_pii
 from app.models import TrackResponse, LeadCreate, InteractionCreate, InteractionResponse
+from app.interfaces.api.dependencies import get_legacy_facade
 
 # Direct imports (bypassing Celery)
-from app.meta_capi import send_elite_event
 from app.rudderstack import rudder_service
-from app.tracking import send_n8n_webhook
-from app.database import save_visitor, upsert_contact_advanced, get_or_create_lead, log_interaction
 from app.limiter import limiter
 
 # Logger
@@ -32,6 +30,7 @@ logger = logging.getLogger("BackgroundWorker")
 
 # Router
 router = APIRouter()
+legacy = get_legacy_facade()
 
 # Meta CAPI Configuration
 PIXEL_ID = settings.META_PIXEL_ID
@@ -46,7 +45,7 @@ TEST_EVENT_CODE = settings.TEST_EVENT_CODE
 def bg_save_visitor(external_id, fbclid, client_ip, user_agent, source, utm_data):
     """Saves visitor to DB without blocking user"""
     try:
-        save_visitor(external_id, fbclid, client_ip, user_agent, source, utm_data)
+        legacy.save_visitor(external_id, fbclid, client_ip, user_agent, source, utm_data)
         logger.info(f"✅ [BG] Visitor saved: {external_id[:16]}...")
     except Exception as e:
         logger.error(f"❌ [BG] Error saving visitor: {e}")
@@ -64,7 +63,7 @@ async def bg_send_meta_event(event_name, event_source_url, client_ip, user_agent
             timestamp = int(time.time())
             fbc_cookie = f"fb.1.{timestamp}.{fbclid}"
             
-        result = await send_elite_event(
+        result = await legacy.send_elite_event(
             event_name=event_name,
             event_id=event_id,
             url=event_source_url,
@@ -101,7 +100,7 @@ async def bg_send_meta_event(event_name, event_source_url, client_ip, user_agent
 def bg_upsert_contact(payload):
     """Syncs contact to CRM without blocking"""
     try:
-        upsert_contact_advanced(payload)
+        legacy.upsert_contact_advanced(payload)
         logger.info(f"✅ [BG] Contact synced: {payload.get('phone', 'unknown')}")
     except Exception as e:
         logger.error(f"❌ [BG] Contact sync failed: {e}")
@@ -110,7 +109,7 @@ def bg_upsert_contact(payload):
 def bg_send_webhook(payload):
     """Sends webhook to n8n without blocking"""
     try:
-        success = send_n8n_webhook(payload)
+        success = legacy.send_n8n_webhook(payload)
         if success:
             logger.info(f"✅ [BG] n8n Webhook sent")
     except Exception as e:
@@ -269,7 +268,7 @@ async def track_lead_context(request: LeadCreate):
         if request.extra_data:
             data.update(request.extra_data)
 
-        lead_id = get_or_create_lead(request.whatsapp_phone, data)
+        lead_id = legacy.get_or_create_lead(request.whatsapp_phone, data)
         
         if lead_id:
              return TrackResponse(status="success", event_id=str(lead_id), category="lead_generated")

@@ -1,13 +1,7 @@
 import logging
 import time
-import base64
-import json
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Callable, Awaitable
 from dataclasses import dataclass
-
-from app.config import settings
-from app.tracking import generate_external_id
-from app.meta_capi import send_elite_event
 
 logger = logging.getLogger(__name__)
 
@@ -21,8 +15,13 @@ class ProcessGoogleOneTapCommand:
     cf_city: Optional[str] = None
 
 class ProcessGoogleOneTapHandler:
-    def __init__(self):
-        pass # No external dependencies for this handler beyond those in meta_capi and tracking
+    def __init__(
+        self,
+        external_id_generator: Callable[[str, str], str],
+        event_sender: Callable[..., Awaitable[Dict[str, Any]]],
+    ):
+        self._external_id_generator = external_id_generator
+        self._event_sender = event_sender
 
     async def handle(self, cmd: ProcessGoogleOneTapCommand) -> Dict[str, Any]:
         try:
@@ -37,11 +36,11 @@ class ProcessGoogleOneTapHandler:
             if not email:
                 raise ValueError("Email not found in credential")
             
-            external_id = generate_external_id(cmd.client_ip, cmd.user_agent)
+            external_id = self._external_id_generator(cmd.client_ip, cmd.user_agent)
             event_id = f"onetap_{int(time.time() * 1000)}"
             
             # Send Lead event to Meta CAPI
-            await send_elite_event(
+            await self._event_sender(
                 event_name="Lead",
                 event_id=event_id,
                 url=cmd.referer or "https://jorgeaguirreflores.com",

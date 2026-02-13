@@ -11,14 +11,13 @@ from fastapi.templating import Jinja2Templates
 from typing import Optional
 
 from app.config import settings
-from app.database import get_visitor_fbclid, save_visitor
-from app.tracking import generate_external_id, generate_fbc, send_event
-from app.cache import cache_visitor_data, get_cached_visitor
 from app.services import get_services_config, get_contact_config
+from app.interfaces.api.dependencies import get_legacy_facade
 
 logger = logging.getLogger("BackgroundWorker")
 
 router = APIRouter()
+legacy = get_legacy_facade()
 
 # 🗄️ TEMPLATE CONFIG (Using Centralized Settings)
 templates = Jinja2Templates(directory=settings.TEMPLATES_DIRS)
@@ -37,7 +36,7 @@ logger.info(f"💎 SYSTEM CORE: Version {SYSTEM_VERSION} initialized.")
 def bg_save_visitor(external_id, fbclid, client_ip, user_agent, source, utm_data):
     """Saves visitor without blocking page render"""
     try:
-        save_visitor(external_id, fbclid, client_ip, user_agent, source, utm_data)
+        legacy.save_visitor(external_id, fbclid, client_ip, user_agent, source, utm_data)
         logger.info(f"✅ [BG] Visitor saved: {external_id[:16]}...")
     except Exception as e:
         logger.error(f"❌ [BG] Error saving visitor: {e}")
@@ -46,15 +45,13 @@ def bg_save_visitor(external_id, fbclid, client_ip, user_agent, source, utm_data
 async def bg_send_pageview(event_source_url, client_ip, user_agent, event_id, fbclid, fbp, external_id, city=None, state=None, country=None):
     """Sends PageView to Meta CAPI via Official SDK (Elite Service)"""
     try:
-        from app.meta_capi import send_elite_event
-        
         # Construct fbc cookie if fbclid is present
         fbc_cookie = None
         if fbclid:
             timestamp = int(time.time())
             fbc_cookie = f"fb.1.{timestamp}.{fbclid}"
 
-        result = await send_elite_event(
+        result = await legacy.send_elite_event(
             event_name="PageView",
             event_id=event_id,
             url=event_source_url,
@@ -105,7 +102,7 @@ async def read_root(
     
     # 2. Tracking Identity
     event_id = str(int(time.time() * 1000))
-    external_id = generate_external_id(ident['ip'], ident['ua'])
+    external_id = legacy.generate_external_id(ident['ip'], ident['ua'])
     fbclid = await _resolve_fbclid_full(request, fbc_cookie, external_id)
     
     # 4. SEO Engine (Silicon Valley Research Standard)
@@ -202,8 +199,7 @@ async def _resolve_fbclid_full(request, fbc_cookie, external_id):
     
     # 3. Redis Cache (L2 Identity)
     try:
-        from app.cache import get_cached_visitor
-        cached = get_cached_visitor(external_id)
+        cached = legacy.get_cached_visitor(external_id)
         if cached and cached.get("fbclid"):
             return cached.get("fbclid")
     except Exception as e:
@@ -221,7 +217,8 @@ def _schedule_tracking(bt, request, ident, ext_id, fbclid, fbp, event_id):
         'utm_medium': request.query_params.get('utm_medium'),
         'utm_campaign': request.query_params.get('utm_campaign'),
     })
-    if fbclid: bt.add_task(cache_visitor_data, ext_id, {"fbclid": fbclid})
+    if fbclid:
+        bt.add_task(legacy.cache_visitor_data, ext_id, {"fbclid": fbclid})
     
     bt.add_task(bg_send_pageview, str(request.url), ident['ip'], ident['ua'], event_id, fbclid, fbp, ext_id, ident['city'], ident['region'], ident['country'])
 

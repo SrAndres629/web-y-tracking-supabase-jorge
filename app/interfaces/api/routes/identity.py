@@ -8,12 +8,14 @@ from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 
 from app.config import settings
+from app.interfaces.api.dependencies import get_legacy_facade
 from app.application.commands.identity.process_google_onetap_command import ProcessGoogleOneTapCommand, ProcessGoogleOneTapHandler
 from app.application.commands.identity.track_whatsapp_redirect_command import TrackWhatsAppRedirectCommand, TrackWhatsAppRedirectHandler
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/identity", tags=["Identity"])
+legacy = get_legacy_facade()
 
 # =================================================================
 # MODELS
@@ -78,7 +80,10 @@ async def receive_google_credential(
         cf_city=cf_city,
     )
     
-    handler = ProcessGoogleOneTapHandler()
+    handler = ProcessGoogleOneTapHandler(
+        external_id_generator=legacy.generate_external_id,
+        event_sender=legacy.send_elite_event,
+    )
     
     # Execute the command in a background task
     background_tasks.add_task(handler.handle, command)
@@ -125,7 +130,10 @@ async def whatsapp_redirect(
         source=source,
     )
     
-    handler = TrackWhatsAppRedirectHandler()
+    handler = TrackWhatsAppRedirectHandler(
+        external_id_generator=legacy.generate_external_id,
+        event_sender=legacy.send_elite_event,
+    )
     
     # Execute the command to get the WhatsApp URL, and send the tracking event in background
     # The handler's handle method now returns the URL. The event sending is part of that handle.

@@ -1,11 +1,9 @@
 import logging
 import time
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Callable, Awaitable
 from dataclasses import dataclass
 
 from app.config import settings
-from app.tracking import generate_external_id
-from app.meta_capi import send_elite_event
 
 logger = logging.getLogger(__name__)
 
@@ -20,18 +18,23 @@ class TrackWhatsAppRedirectCommand:
     source: Optional[str] = "website"
 
 class TrackWhatsAppRedirectHandler:
-    def __init__(self):
-        pass # No external dependencies for this handler beyond those in meta_capi and tracking
+    def __init__(
+        self,
+        external_id_generator: Callable[[str, str], str],
+        event_sender: Callable[..., Awaitable[Dict[str, Any]]],
+    ):
+        self._external_id_generator = external_id_generator
+        self._event_sender = event_sender
 
     async def handle(self, cmd: TrackWhatsAppRedirectCommand) -> str:
         """
         Tracks a WhatsApp click intent and returns the WhatsApp redirect URL.
         """
-        external_id = generate_external_id(cmd.client_ip, cmd.user_agent)
+        external_id = self._external_id_generator(cmd.client_ip, cmd.user_agent)
         event_id = f"wa_click_{int(time.time() * 1000)}"
         
         # Send Contact event to Meta CAPI (High Value Intent)
-        await send_elite_event(
+        await self._event_sender(
             event_name="Contact",
             event_id=event_id,
             url=cmd.referer or "https://jorgeaguirreflores.com",

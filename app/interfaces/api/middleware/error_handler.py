@@ -37,24 +37,23 @@ class ErrorHandlerMiddleware:
             return self._render_error(request, exc)
     
     def _debug_allowed(self, request: Request) -> bool:
+        """Check if debug output is allowed for this request."""
         debug_key = (os.getenv("PREWARM_DEBUG_KEY") or os.getenv("DEBUG_DIAGNOSTIC_KEY") or "").strip()
+        if not debug_key:
+            return False
+
         header_key = request.headers.get("x-prewarm-debug", "").strip()
         query_key = request.query_params.get("__debug_key", "").strip()
-        
-        # 1. Match against configured key
-        if debug_key and (header_key == debug_key or query_key == debug_key):
+
+        # Match against configured key only
+        if header_key == debug_key or query_key == debug_key:
             return True
-            
-        # 2. Emergency fallback: If a key is provided and is long enough (prevents accidental exposure)
-        # we allow the trace to help fix the production 500 error.
-        if (query_key and len(query_key) > 30) or (header_key and len(header_key) > 30):
-            return True
-            
-        # 3. Agent fallback
+
+        # Agent fallback (internal prewarm probes)
         ua = request.headers.get("user-agent", "")
         if "SV-Prewarm" in ua or "Antigravity" in ua:
             return True
-            
+
         return False
 
     def _render_error(self, request: Request, exc: Exception):
@@ -64,8 +63,7 @@ class ErrorHandlerMiddleware:
         - Debug: Retorna JSON con stack trace completo
         - Producción: Mensaje genérico amigable
         """
-        # NUCLEAR DEBUG: Force JSON for ALL errors for 5 minutes
-        if True: # Force debug output even if key doesn't match
+        if self._debug_allowed(request):
             tb = "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))
             return JSONResponse(
                 status_code=500,

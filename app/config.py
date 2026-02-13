@@ -30,36 +30,29 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 def _resolve_templates_dirs() -> List[str]:
-    """🛡️ SILICON VALLEY STANDARD: Multi-path resolution for serverless stability."""
+    """Resolve template paths using api/templates as the single source of truth."""
     current_file_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(current_file_dir)
-    
-    candidates = []
-    # 1. Precise Vercel paths
-    if os.getenv("VERCEL"):
-        candidates.append("/var/task/templates")
-        candidates.append("/var/task/api/templates")
-        candidates.append(os.path.join(os.getcwd(), "templates"))
 
-    # 2. Local/Standard paths
-    candidates.append(os.path.join(project_root, "templates"))
+    candidates = []
+    if os.getenv("VERCEL"):
+        candidates.append("/var/task/api/templates")
+        candidates.append(os.path.join(os.getcwd(), "api", "templates"))
+
     candidates.append(os.path.join(project_root, "api", "templates"))
-    candidates.append(os.path.join(project_root, "app", "templates")) # Add new templates location
-    candidates.append(os.path.join(os.getcwd(), "templates"))
-    
-    # Filter only existing OR likely-to-exist-in-runtime directories
-    # We keep those that exist locally now, plus the specific /var/task ones 
-    # if we are on Vercel (even if we can't 'see' them during build/init sometimes)
+    candidates.append(os.path.join(os.getcwd(), "api", "templates"))
+
+    # Keep only existing directories plus serverless runtime paths on Vercel.
     is_vercel = bool(os.getenv("VERCEL"))
     valid_paths = []
     for p in candidates:
         if os.path.isdir(p) or (is_vercel and p.startswith("/var/task")):
             if p not in valid_paths:
                 valid_paths.append(p)
-                
+
     if not valid_paths:
-        valid_paths = [os.path.join(project_root, "templates")]
-        
+        valid_paths = [os.path.join(project_root, "api", "templates")]
+
     logger.info(f"🚀 TEMPLATE RESOLUTION: Found {len(valid_paths)} potential paths")
     return valid_paths
 
