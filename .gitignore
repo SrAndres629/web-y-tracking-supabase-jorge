@@ -11,7 +11,7 @@ env/
 .hypothesis/
 .coverage
 htmlcov/
-site/
+
 
 # --- Temporary / Local Scripts ---
 check_db.py
