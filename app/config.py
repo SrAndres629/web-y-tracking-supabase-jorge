@@ -37,6 +37,7 @@ def _resolve_templates_dirs() -> List[str]:
     candidates = []
     if os.getenv("VERCEL"):
         candidates.append("/var/task/api/templates")
+        candidates.append("/var/task/templates")
         candidates.append(os.path.join(os.getcwd(), "api", "templates"))
 
     candidates.append(os.path.join(project_root, "api", "templates"))
