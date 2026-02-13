@@ -125,7 +125,7 @@ async def read_root(
     
     # 6. Build Response
     response = templates.TemplateResponse(
-        request=request, name="pages/public/home.html",
+        request=request, name="pages/site/home.html",
         context={
             "pixel_id": settings.META_PIXEL_ID, "pageview_event_id": event_id,
             "external_id": external_id, "fbclid": fbclid or "",
