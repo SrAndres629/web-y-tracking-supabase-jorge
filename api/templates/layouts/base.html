@@ -13,8 +13,8 @@
     <meta http-equiv="Expires" content="0">
 
     <!-- Component-specific styles loaded on demand -->
-    <link rel="stylesheet" href="/static/molecules/ba-slider/ba-slider.css?v={{ system_version }}">
-    
+    <!-- Removed ba-slider.css (Atomic Design Migration) -->
+
     <!-- Global selection style -->
     <style>
         ::selection {
@@ -24,28 +24,37 @@
     </style>
 
     <!-- SEO Core Tags (Dynamic Silicon Valley Hub) -->
-    <title>{% block title %}{{ seo.title if seo and seo.title else "Jorge Aguirre Flores | Maquillaje Permanente en Santa Cruz" }}{% endblock %}</title>
+    <title>{% block title %}{{ seo.title if seo and seo.title else "Jorge Aguirre Flores | Maquillaje Permanente en
+        Santa Cruz" }}{% endblock %}</title>
     {% block meta_tags %}
-    <meta name="description" content="{{ seo.description if seo and seo.description else "Especialista en Microblading, Delineado Permanente y Labios. 30 años de experiencia en Santa Cruz de la Sierra." }}">
+    <meta name="description" content="{{ seo.description if seo and seo.description else " Especialista en Microblading,
+        Delineado Permanente y Labios. 30 años de experiencia en Santa Cruz de la Sierra." }}">
     <meta name="author" content="Jorge Aguirre Flores">
     <meta name="robots" content="{{ seo.robots if seo and seo.robots else 'index, follow' }}">
     <link rel="canonical" href="{{ seo.canonical if seo and seo.canonical else 'https://jorgeaguirreflores.com/' }}">
 
     <!-- Open Graph -->
     <meta property="og:type" content="website">
-    <meta property="og:title" content="{{ seo.og_title if seo and seo.og_title else 'Jorge Aguirre Flores | Maquillaje Permanente Premium' }}">
-    <meta property="og:description" content="{{ seo.description if seo and seo.description else '30 años transformando miradas en Santa Cruz. Microblading, Delineado y Labios.' }}">
-    <meta property="og:url" content="{{ seo.canonical if seo and seo.canonical else 'https://jorgeaguirreflores.com/' }}">
-    <meta property="og:image" content="{{ seo.og_image if seo and seo.og_image else 'https://jorgeaguirreflores.com/static/assets/images/meta/og-image.webp' }}">
+    <meta property="og:title"
+        content="{{ seo.og_title if seo and seo.og_title else 'Jorge Aguirre Flores | Maquillaje Permanente Premium' }}">
+    <meta property="og:description"
+        content="{{ seo.description if seo and seo.description else '30 años transformando miradas en Santa Cruz. Microblading, Delineado y Labios.' }}">
+    <meta property="og:url"
+        content="{{ seo.canonical if seo and seo.canonical else 'https://jorgeaguirreflores.com/' }}">
+    <meta property="og:image"
+        content="{{ seo.og_image if seo and seo.og_image else 'https://jorgeaguirreflores.com/static/assets/images/meta/og-image.webp' }}">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:locale" content="es_BO">
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="{{ seo.og_title if seo and seo.og_title else 'Jorge Aguirre Flores | Maquillaje Permanente Premium' }}">
-    <meta name="twitter:description" content="{{ seo.description if seo and seo.description else '30 años transformando miradas en Santa Cruz. Microblading, Delineado y Labios.' }}">
-    <meta name="twitter:image" content="{{ seo.og_image if seo and seo.og_image else 'https://jorgeaguirreflores.com/static/assets/images/meta/og-image.webp' }}">
+    <meta name="twitter:title"
+        content="{{ seo.og_title if seo and seo.og_title else 'Jorge Aguirre Flores | Maquillaje Permanente Premium' }}">
+    <meta name="twitter:description"
+        content="{{ seo.description if seo and seo.description else '30 años transformando miradas en Santa Cruz. Microblading, Delineado y Labios.' }}">
+    <meta name="twitter:image"
+        content="{{ seo.og_image if seo and seo.og_image else 'https://jorgeaguirreflores.com/static/assets/images/meta/og-image.webp' }}">
     {% endblock %}
 
     <!-- Semantic Data (JSON-LD) -->
@@ -182,7 +191,7 @@
     <!-- Cloudflare Zaraz (Noscript Fallback) -->
     <noscript>
         <img height="1" width="1" style="display:none"
-             src="https://www.facebook.com/tr?id={{ pixel_id }}&ev=PageView&noscript=1" />
+            src="https://www.facebook.com/tr?id={{ pixel_id }}&ev=PageView&noscript=1" />
     </noscript>
 
     <!-- Navigation -->
@@ -197,7 +206,8 @@
     {% include 'components/footer.html' ignore missing %}
 
     <!-- Global Scripts (Atomic Architecture v3.0) -->
-    <script type="module" src="/static/engines/legacy-adapter.js?v={{ system_version }}"></script>
+    <script type="module" src="/static/engines/legacy-adapter.js?v={{ system_version }}" data-cfasync="false"
+        crossorigin="anonymous"></script>
     {% block extra_scripts %}{% endblock %}
     <!-- Vercel Services (Updated) -->
     <script>

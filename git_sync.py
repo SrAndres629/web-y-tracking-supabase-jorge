@@ -396,7 +396,7 @@ def run_cmd(command, cwd=None, exit_on_fail=False):
     return True, result.stdout, result.stderr
 
 
-def _run_audit_gates(auditor: SystemAuditor, force: bool, fix_infra: bool = False) -> bool:
+def _run_audit_gates(auditor: SystemAuditor, force: bool) -> bool:
     """Run test gates. Returns True if deployment should proceed."""
     env_ok = auditor.check_environment()
 
@@ -412,14 +412,9 @@ def _run_audit_gates(auditor: SystemAuditor, force: bool, fix_infra: bool = Fals
         return True
 
     # --- INFRASTRUCTURE AUDIT (Silicon Valley Zero-Downtime Gate) ---
-    if fix_infra:
-        Console.warning("🔧 INFRASTRUCTURE BYPASS: Skipping Vercel/Supabase checks for recovery.")
-        vercel_ok = True
-        supabase_ok = True
-    else:
-        infra = InfrastructureAuditor()
-        vercel_ok = infra.check_vercel_health()
-        supabase_ok = infra.check_supabase_health()
+    infra = InfrastructureAuditor()
+    vercel_ok = infra.check_vercel_health()
+    supabase_ok = infra.check_supabase_health()
     
     if not (vercel_ok and supabase_ok):
         Console.error("Infrastructure Audit Failed. Deployment blocked for safety.")
@@ -548,7 +543,6 @@ def _post_deploy_verify():
 def main():
     parser = argparse.ArgumentParser(description="Silicon Valley Deployment Pipeline")
     parser.add_argument("--force", action="store_true", help="⚠️ DANGER: Bypass all checks")
-    parser.add_argument("--fix-infra", action="store_true", help="🔧 RECOVERY: Bypass infrastructure checks only")
     parser.add_argument("message", nargs="?", default=None, help="Commit message")
     args = parser.parse_args()
 
@@ -556,7 +550,7 @@ def main():
 
     # Phase 1: Audit gates
     auditor = SystemAuditor(REPO_PATH)
-    if not _run_audit_gates(auditor, args.force, args.fix_infra):
+    if not _run_audit_gates(auditor, args.force):
         sys.exit(1)
 
     # Phase 2: Stage & commit
