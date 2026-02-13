@@ -19,7 +19,7 @@ class EarlyHintsMiddleware(BaseHTTPMiddleware):
         if response.status_code == 200 and "text/html" in content_type:
             links = [
                 # 1. Main CSS (Versioned Dynamic)
-                f'</static/css/output.css?v={SYSTEM_VERSION}>; rel=preload; as=style',
+                f'</static/dist/css/app.min.css?v={SYSTEM_VERSION}>; rel=preload; as=style',
                 # 2. Critical Fonts (Google Fonts CSS)
                 '<https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap>; rel=preload; as=style',
                 # 3. Preconnect to Typography CDN
