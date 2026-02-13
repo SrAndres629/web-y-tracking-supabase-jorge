@@ -25,7 +25,9 @@ def test_vercel_includes_required_paths():
             include_paths.extend(include_files)
         elif isinstance(include_files, str):
             # Handle string glob (e.g. "path/a/**,path/b/**")
-            include_paths.extend([p.strip() for p in include_files.split(",")])
+            # Strip braces if present
+            clean_str = include_files.strip("{}")
+            include_paths.extend([p.strip() for p in clean_str.split(",")])
 
     assert "api/templates/**" in include_paths, f"api/templates/** not found in {include_paths}"
     assert "static/**" in include_paths, f"static/** not found in {include_paths}"
