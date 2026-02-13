@@ -21,6 +21,7 @@ import logging
 import gc
 import os
 import time
+import mimetypes
 
 # Configuración de Logging prioritaria
 logging.basicConfig(
@@ -46,8 +47,6 @@ def init_sentry():
         except ImportError:
             logger.warning("⚠️ Sentry not installed")
 
-# Configurar logging (Ya configurado arriba, eliminado bloque duplicado)
-
 # =================================================================
 # EVENTOS DE CICLO DE VIDA
 # =================================================================
@@ -60,10 +59,6 @@ async def lifespan(app: FastAPI):
     # Startup - OPTIMIZED: No blocking DB init
     from app.version import VERSION
     logger.info(f"🚀 Iniciando Jorge Aguirre Flores Web v{VERSION} (Atomic Architecture Mode)")
-    
-    # DLQ disabled: retry_queue.py uses filesystem (incompatible with Vercel serverless)
-    # TODO: Re-enable when migrated to Redis-backed retry queue
-    logger.info("⚠️ DLQ disabled (serverless-incompatible filesystem writes)")
     
     # 1. Initialize Sentry (Parallelizable/Non-blocking)
     init_sentry()
@@ -141,14 +136,15 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # =================================================================
 # DEBUGGING: EXCEPTION HANDLERS
 # =================================================================
-# Error handlers are configured via app.interfaces.api.middleware.error_handler
-
-# Aplicar límite global (opcional, o por ruta)
-# app.add_middleware(SlowAPIMiddleware)
 
 # =================================================================
-# ARCHIVOS ESTÁTICOS (ABSOLUTE PATH FIX)
+# ARCHIVOS ESTÁTICOS (ABSOLUTE PATH FIX + MIME FIX)
 # =================================================================
+
+# Windows Fix: Ensure CSS/JS have correct MIME types
+mimetypes.init()
+mimetypes.add_type('text/css', '.css')
+mimetypes.add_type('application/javascript', '.js')
 
 # Get absolute path to static folder (fixes Docker/Render path issues)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -161,8 +157,6 @@ app.mount("/static", StaticFiles(directory=static_dir), name="static")
 # =================================================================
 # ROUTERS - CLEAN ARCHITECTURE
 # =================================================================
-# ❌ Error anterior: Usaba app.routes (legacy)
-# ✅ Solución: Usar app.interfaces.api.routes (Clean Architecture)
 
 # Páginas HTML
 from app.interfaces.api.routes import pages
@@ -192,16 +186,9 @@ app.include_router(seo.router)
 # =================================================================
 # ERROR HANDLERS (Clean Architecture)
 # =================================================================
-# ✅ Nuevo: Manejo de errores centralizado
 from app.interfaces.api.middleware.error_handler import setup_error_handlers
 setup_error_handlers(app)
 logger.info("✅ Error handlers configurados")
-
-
-# =================================================================
-# EVENTOS DE CICLO DE VIDA (Movido arriba para lifespan)
-# =================================================================
-
 
 
 # =================================================================

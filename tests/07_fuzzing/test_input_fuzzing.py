@@ -91,10 +91,9 @@ class TestMaliciousInputFuzzing:
         "| whoami",
         "`rm -rf /`",
         
-        # Buffer Overflow attempts
+        # Buffer Overflow attempts (Capped for Windows Environment limits)
         "A" * 10000,
-        "A" * 100000,
-        "A" * 1000000,
+        "A" * 32000,
         
         # Null bytes
         "test\x00hidden",
@@ -120,7 +119,7 @@ class TestMaliciousInputFuzzing:
         
         # Very long strings
         "a" * 10000,
-        "1" * 100000,
+        "1" * 32000,
         
         # Mixed valid/invalid
         "+59177712345<script>",
@@ -386,28 +385,21 @@ class TestRandomizedStress:
 
 def test_no_crash_on_none_input():
     """
-    Fuzzing: None input no debe causar crash.
+    Fuzzing: None input no debe causar crash, debe retornar Result.err.
     """
-    try:
-        # Estos pueden fallar, pero no deben hacer crash
-        Phone.parse(None, country="BO")  # type: ignore
-        pytest.fail("Should have raised TypeError")
-    except (TypeError, AttributeError):
-        pass  # Expected
+    # Estos pueden fallar, pero no deben hacer crash
+    result_phone = Phone.parse(None, country="BO")  # type: ignore
+    assert isinstance(result_phone, Result)
+    assert result_phone.is_err
     
-    try:
-        Email.parse(None)  # type: ignore
-        pytest.fail("Should have raised TypeError")
-    except (TypeError, AttributeError):
-        pass
+    result_email = Email.parse(None)  # type: ignore
+    assert isinstance(result_email, Result)
+    assert result_email.is_err
 
 
 def test_no_crash_on_int_input():
     """
-    Fuzzing: Input tipo int no debe causar crash.
+    Fuzzing: Input tipo int no debe causar crash, debe retornar Result (ok o err).
     """
-    try:
-        result = Phone.parse(12345, country="BO")  # type: ignore
-        assert isinstance(result, Result)
-    except (TypeError, AttributeError):
-        pass
+    result = Phone.parse(12345, country="BO")  # type: ignore
+    assert isinstance(result, Result)

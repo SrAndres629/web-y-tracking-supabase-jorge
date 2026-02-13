@@ -181,7 +181,7 @@ class ServerSettings(BaseSettings):
     
     model_config = SettingsConfigDict(env_prefix="", extra="ignore")
     
-    host: str = Field(default="0.0.0.0", alias="HOST")
+    host: str = Field(default="0.0.0.0", alias="HOST")  # nosec B104
     port: int = Field(default=8000, alias="PORT")
     workers: int = Field(default=1, ge=1, le=4)
     reload: bool = Field(default=False)

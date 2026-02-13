@@ -24,8 +24,8 @@ class Database:
     Optimizado para serverless (sin connection pooling global).
     """
     
-    def __init__(self):
-        self._settings = get_settings()
+    def __init__(self, settings: Optional[Settings] = None):
+        self._settings = settings or get_settings()
         self._backend = self._detect_backend()
     
     def _detect_backend(self) -> str:

@@ -3,7 +3,7 @@
 # Jorge Aguirre Flores Web
 # =================================================================
 import logging
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 from app import database as legacy_database
 from app.config import settings
 
@@ -29,7 +29,7 @@ async def clean_garbage_data(authorized: bool = Depends(verify_cron_secret)):
     """
     try:
         deleted_count = 0
-    with legacy_database.get_cursor() as cur:
+        with legacy_database.get_cursor() as cur:
             # PostgreSQL logic for date arithmetic
             # visitors table usually has 'timestamp' or 'created_at' column
             # We assume 'timestamp' based on previous analysis

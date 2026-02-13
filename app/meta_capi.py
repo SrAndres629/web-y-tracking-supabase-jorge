@@ -142,7 +142,7 @@ class EliteMetaCAPIService:
             ok = await send_event_async(
                 event_name=event_name,
                 event_source_url=event_source_url,
-                client_ip=client_ip or "0.0.0.0",
+                client_ip=client_ip or "0.0.0.0",  # nosec B104
                 user_agent=user_agent or "unknown",
                 event_id=event_id,
                 external_id=user_data.external_id,

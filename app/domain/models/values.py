@@ -122,10 +122,12 @@ class Phone:
             >>> Phone.parse("+591 647-14751")
             Ok(Phone(+59164714751))
         """
-        if not raw:
-            return Result.err("Phone is required")
+        if raw is None:
+            return Result.err("Phone is required (None provided)")
+        if not str(raw).strip():
+            return Result.err("Phone is required (Empty string provided)")
         
-        result = validate_phone(raw, country)
+        result = validate_phone(str(raw), country)
         if not result.is_valid:
             return Result.err(result.error or "Invalid phone")
         
@@ -169,10 +171,12 @@ class Email:
     
     @classmethod
     def parse(cls, raw: Optional[str]) -> Result[Self, str]:
-        if not raw:
-            return Result.err("Email is required")
+        if raw is None:
+            return Result.err("Email is required (None provided)")
+        if not str(raw).strip():
+            return Result.err("Email is required (Empty string provided)")
         
-        is_valid, normalized, error = validate_email(raw)
+        is_valid, normalized, error = validate_email(str(raw))
         if not is_valid:
             return Result.err(error or "Invalid email")
         

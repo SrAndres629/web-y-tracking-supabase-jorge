@@ -21,7 +21,7 @@ class SEOEngine:
             "@context": "https://schema.org",
             "@type": "LocalBusiness",
             "name": "Jorge Aguirre Flores",
-            "image": f"{SEOEngine.BASE_URL}/static/images/og-image.webp",
+            "image": f"{SEOEngine.BASE_URL}/static/assets/images/meta/og-image.webp",
             "@id": f"{SEOEngine.BASE_URL}/#organization",
             "url": SEOEngine.BASE_URL,
             "telephone": "+59164714751",
@@ -111,7 +111,7 @@ class SEOEngine:
             "title": "Jorge Aguirre Flores | Maquillaje Permanente Santa Cruz",
             "description": "30 años de experiencia en Microblading y Micropigmentación. El estándar de oro en estética en Bolivia.",
             "og_title": "Jorge Aguirre Flores | Experto en Mirada",
-            "og_image": f"{SEOEngine.BASE_URL}/static/images/og-image.webp",
+            "og_image": f"{SEOEngine.BASE_URL}/static/assets/images/meta/og-image.webp",
             "canonical": f"{SEOEngine.BASE_URL}{path}"
         }
         

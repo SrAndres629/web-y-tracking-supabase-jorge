@@ -136,7 +136,7 @@ class Settings(BaseSettings):
     ADMIN_KEY: str = os.getenv("ADMIN_KEY", "Andromeda2025")
     
     # Server
-    HOST: str = "0.0.0.0"
+    HOST: str = "0.0.0.0"  # nosec B104
     PORT: int = 8000
     
     # WhatsApp (Click Tracking Only)
