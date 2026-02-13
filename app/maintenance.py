@@ -21,7 +21,7 @@ def verify_cron_secret(request: Request):
     return True
 
 @router.get("/clean_garbage_data")
-async def clean_garbage_data(authorized: bool = Depends(verify_cron_secret)):
+async def clean_garbage_data(_authorized: bool = Depends(verify_cron_secret)):
     """
     🧹 GARBAGE COLLECTOR (Silicon Valley Hygiene)
     Elimina registros 'basura' (Visitors sin lead) de más de 90 días.
@@ -37,7 +37,7 @@ async def clean_garbage_data(authorized: bool = Depends(verify_cron_secret)):
             query = """
                 DELETE FROM visitors 
                 WHERE timestamp < NOW() - INTERVAL '90 days'
-                AND external_id NOT IN (SELECT fb_browser_id FROM contacts WHERE fb_browser_id IS NOT NULL)
+                AND external_id NOT IN (SELECT fb_browser_id FROM crm_leads WHERE fb_browser_id IS NOT NULL)
             """
             
             # Adjust for SQLite if running locally (fallback)

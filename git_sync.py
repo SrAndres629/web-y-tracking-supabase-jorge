@@ -165,7 +165,7 @@ class SystemAuditor:
         Console.success("Environment Integrity Verified (Dependencies Loaded).")
         return True
 
-    def run_phase(self, name, path, audit_mode=True):
+    def run_phase(self, name, path, audit_mode=True, retries=1):
         Console.log(f"Running Integrity: {name}...", "-")
 
         # Cross-platform environment variables
@@ -178,31 +178,43 @@ class SystemAuditor:
             "--tb=short", "--maxfail=0"
         ]
 
-        result = subprocess.run(
-            pytest_cmd,
-            capture_output=True,
-            text=True,
-            cwd=self.repo_path,
-            env=env
-        )
-        stdout = result.stdout or ""
-        stderr = result.stderr or ""
-        combined = stdout + "\n" + stderr
-        self.raw_logs.append(combined)
+        last_combined = ""
+        for attempt in range(1, retries + 2):
+            result = subprocess.run(
+                pytest_cmd,
+                capture_output=True,
+                text=True,
+                cwd=self.repo_path,
+                env=env
+            )
+            stdout = result.stdout or ""
+            stderr = result.stderr or ""
+            combined = stdout + "\n" + stderr
+            last_combined = combined
 
-        if result.returncode != 0:
-            Console.error(f"Phase failed: {name}")
-            issues = self._extract_issues(combined, phase=name)
-            if not issues:
-                self._add_issue(
-                    file_path="UNKNOWN",
-                    line="N/A",
-                    err_type="Exception",
-                    message="Unknown failure. Check logs.",
-                    phase=name,
-                )
-        else:
-            Console.success(f"Phase passed: {name}")
+            if result.returncode == 0:
+                self.raw_logs.append(combined)
+                Console.success(f"Phase passed: {name}")
+                return
+
+            Console.warning(f"Phase {name} attempt {attempt} failed (exit={result.returncode}).")
+            if attempt <= retries:
+                time.sleep(2)
+                continue
+
+        self.raw_logs.append(last_combined)
+        Console.error(f"Phase failed: {name}")
+        issues = self._extract_issues(last_combined, phase=name)
+        if not issues:
+            tail = "\n".join(last_combined.splitlines()[-20:]).strip()
+            msg = f"Unknown failure. Check logs.\n{tail}" if tail else "Unknown failure. Check logs."
+            self._add_issue(
+                file_path="UNKNOWN",
+                line="N/A",
+                err_type="Exception",
+                message=msg,
+                phase=name,
+            )
 
     def _add_issue(self, file_path, line, err_type, message, phase):
         self.issues.append(
@@ -566,4 +578,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

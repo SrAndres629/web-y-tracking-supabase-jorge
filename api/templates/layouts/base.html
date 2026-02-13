@@ -142,8 +142,8 @@
     <script type="application/json" id="app-config">
         {
             "META_PIXEL_ID": "{{ pixel_id }}",
-            "META_EVENT_ID": null,
-            "EXTERNAL_ID": null,
+            "META_EVENT_ID": "{{ pageview_event_id }}",
+            "EXTERNAL_ID": "{{ external_id }}",
             "SERVICES_CONFIG": {{ services | tojson }},
             "CONTACT_CONFIG": {{ contact | tojson }}
         }

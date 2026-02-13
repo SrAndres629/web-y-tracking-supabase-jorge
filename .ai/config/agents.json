@@ -1,0 +1,23 @@
+{
+  "version": "2.0",
+  "agents": {
+    "KIMI": {
+      "command": "kimi --quiet --thinking --output-format text -p",
+      "enabled": true
+    },
+    "GEMINI": {
+      "command": "gemini -y -o text -p",
+      "enabled": true
+    }
+  },
+  "mcp": {
+    "source_config": "C:/Users/acord/.gemini/antigravity/mcp_config.json",
+    "use_servers": [
+      "supabase-mcp-server",
+      "my-vercel-mcp",
+      "cloudflare-mcp",
+      "neurovision",
+      "vercel-official"
+    ]
+  }
+}

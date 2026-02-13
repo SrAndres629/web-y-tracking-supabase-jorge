@@ -24,7 +24,7 @@ scratch_*.py
 .cursor/
 .vscode/
 .idea/
-.ai/
+ai/
 ENGINEERING_LOG.md
 *.log
 database/local_fallback.db

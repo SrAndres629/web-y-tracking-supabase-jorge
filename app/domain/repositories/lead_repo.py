@@ -79,7 +79,7 @@ class LeadRepository(ABC):
     @abstractmethod
     async def list_hot_leads(
         self,
-        min_score: int = 70,
+        _min_score: int = 70,
         limit: int = 50,
     ) -> List[Lead]:
         """

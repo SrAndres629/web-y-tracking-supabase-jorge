@@ -35,17 +35,16 @@ def test_schema_integrity(sqlite_db_context):
     """
     db_module = sqlite_db_context
     print(f"DEBUG: BACKEND is {db_module.BACKEND}")
-    
-    # Ensure it's sqlite
     assert db_module.BACKEND == "sqlite"
     
     # Initialize tables (this creates the local sqlite file)
+    print("DEBUG: Calling init_tables")
     db_module.init_tables()
+    print("DEBUG: init_tables finished")
     
     required_tables = {
         "visitors": ["external_id", "fbclid", "source"],
-        "leads": ["whatsapp_phone", "email", "conversion_status"],
-        "contacts": ["whatsapp_number", "lead_score", "service_interest"]
+        "crm_leads": ["whatsapp_phone", "email", "fb_click_id", "lead_score"]
     }
     
     with db_module.get_cursor() as cur:

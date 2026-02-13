@@ -19,7 +19,7 @@ import { Storage } from '../core/storage.js';
 const TrackingEngine = {
   initialized: false,
   debugMode: false,
-  
+
   // Propiedades para compatibilidad con sistema antiguo
   turnstileToken: null,
   isHuman: false,
@@ -47,10 +47,10 @@ const TrackingEngine = {
     // 4. Observers (ViewContent, Sliders)
     TrackingObservers.init();
 
-    // 5. Track PageView via CAPI (Zaraz handles Pixel side)
-    CAPI.trackAsync('PageView', { 
-      event_id: identity.eventId 
-    });
+    // 5. PageView is handled by Backend (Elite CAPI) to ensure single source of truth
+    // CAPI.trackAsync('PageView', { 
+    //   event_id: identity.eventId 
+    // });
 
     this._log('📊 [Tracking Engine] Active (Zaraz + CAPI)');
 
@@ -62,13 +62,13 @@ const TrackingEngine = {
    */
   track(eventName, data, options = {}) {
     const eventId = options.eventId || IdentityManager.generateEventId();
-    
+
     // Client-side
     PixelBridge.track(eventName, data, { eventId });
-    
+
     // Server-side
     CAPI.trackAsync(eventName, { ...data, event_id: eventId });
-    
+
     return { eventId };
   },
 
@@ -77,10 +77,10 @@ const TrackingEngine = {
    */
   trackCustom(eventName, data, options = {}) {
     const eventId = options.eventId || IdentityManager.generateEventId();
-    
+
     PixelBridge.trackCustom(eventName, data, { eventId });
     CAPI.trackAsync(eventName, { ...data, event_id: eventId });
-    
+
     return { eventId };
   },
 
@@ -90,7 +90,7 @@ const TrackingEngine = {
   convert(source) {
     return ConversionHandler.handle(source);
   },
-  
+
   /**
    * Handle conversion - alias para compatibilidad
    * @deprecated Usar handleConversion() global o convert()
@@ -107,7 +107,7 @@ const TrackingEngine = {
       console.log(message, ...args);
     }
   },
-  
+
   /**
    * Track event - alias para compatibilidad
    * @deprecated Usar track()
@@ -115,28 +115,28 @@ const TrackingEngine = {
   trackEvent(eventName, eventData = {}) {
     return this.track(eventName, eventData);
   },
-  
+
   /**
    * Generate UUID - utility para compatibilidad
    */
   generateUUID() {
     return UUID.generate();
   },
-  
+
   /**
    * Set cookie - utility para compatibilidad
    */
   setCookie(name, value, days) {
     Storage.cookies.set(name, value, days);
   },
-  
+
   /**
    * Get cookie - utility para compatibilidad
    */
   getCookie(name) {
     return Storage.cookies.get(name);
   },
-  
+
   /**
    * Safe FBQ wrapper - utility para compatibilidad
    */

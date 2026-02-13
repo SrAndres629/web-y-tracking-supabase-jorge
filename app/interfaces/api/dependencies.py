@@ -64,15 +64,15 @@ def get_visitor_repository() -> VisitorRepository:
 
 def get_event_repository() -> EventRepository:
     """Provee repositorio de eventos."""
-    # TODO: Implementar
     from app.infrastructure.persistence.event_repo import PostgreSQLEventRepository
     return PostgreSQLEventRepository()
 
 
+@lru_cache()
 def get_lead_repository() -> LeadRepository:
     """Provee repositorio de leads."""
-    # TODO: Implementar
-    raise NotImplementedError("Lead repository not yet implemented")
+    from app.infrastructure.persistence.sql_lead_repo import SQLLeadRepository
+    return SQLLeadRepository()
 
 
 # ===== Trackers =====

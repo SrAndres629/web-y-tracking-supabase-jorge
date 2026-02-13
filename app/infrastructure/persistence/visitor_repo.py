@@ -12,7 +12,7 @@ from datetime import datetime
 
 from app.domain.models.visitor import Visitor, VisitorSource
 from app.domain.models.values import ExternalId, UTMParams, GeoLocation
-from app.domain.repositories.visitor_repo import VisitorRepository, VisitorNotFoundError, DuplicateVisitorError
+from app.domain.repositories.visitor_repo import VisitorRepository, DuplicateVisitorError
 from app.infrastructure.persistence.database import db
 
 logger = logging.getLogger(__name__)

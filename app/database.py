@@ -5,6 +5,7 @@
 import logging
 import os
 import sqlite3
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from typing import Optional, List, Dict, Any, Tuple
 from contextlib import contextmanager
 import uuid
@@ -61,13 +62,12 @@ def get_db_connection() -> Any:
 
 def _establish_connection():
     if BACKEND == "postgres":
-        # 🛡️ SILICON VALLEY FIX: specific query params like 'pgbouncer=true' cause libpq to crash.
-        # We strip them for the raw psycopg2 connection.
-        clean_url = settings.DATABASE_URL.replace("?pgbouncer=true", "").replace("&pgbouncer=true", "")
+        # 🛡️ Normalize malformed DSNs and strip problematic params before psycopg2 connect.
+        clean_url = _sanitize_postgres_dsn(settings.DATABASE_URL)
         
         return psycopg2.connect(
             clean_url,
-            connect_timeout=5,
+            connect_timeout=2,
             sslmode='require'
         )
     
@@ -77,6 +77,32 @@ def _establish_connection():
     conn = sqlite3.connect(db_path)
     conn.execute("PRAGMA foreign_keys = ON")
     return conn
+
+
+def _sanitize_postgres_dsn(raw_url: str) -> str:
+    """
+    Normalizes malformed query separators and removes pgbouncer hints
+    that break direct psycopg2 DSN parsing in some environments.
+    """
+    dsn = raw_url.strip()
+
+    # Repair common malformed DSN: .../postgres&connection_limit=1
+    if "?" not in dsn and "&" in dsn:
+        scheme_split = dsn.split("://", 1)
+        tail = scheme_split[1] if len(scheme_split) == 2 else dsn
+        if "/" in tail:
+            left, right = dsn.split("&", 1)
+            dsn = f"{left}?{right}"
+
+    parsed = urlsplit(dsn)
+    if not parsed.query:
+        return dsn
+
+    query_items = parse_qsl(parsed.query, keep_blank_values=True)
+    unsupported = {"pgbouncer", "connection_limit"}
+    filtered = [(k, v) for k, v in query_items if k.lower() not in unsupported]
+    clean_query = urlencode(filtered, doseq=True)
+    return urlunsplit((parsed.scheme, parsed.netloc, parsed.path, clean_query, parsed.fragment))
 
 def _handle_db_error(conn, e):
     if conn:
@@ -227,12 +253,6 @@ def _create_crm_tables(cur, cf):
         id_type_serial=cf['id_type_serial'], timestamp_default=cf['timestamp_default']
     ))
 
-    cur.execute(queries.CREATE_TABLE_LEADS.format(
-        id_type_primary_key=cf['id_type_pk'], timestamp_default=cf['timestamp_default']
-    ))
-    cur.execute(queries.CREATE_INDEX_LEADS_PHONE)
-    cur.execute(queries.CREATE_INDEX_LEADS_META_ID)
-
     cur.execute(queries.CREATE_TABLE_INTERACTIONS.format(
         id_type_serial=cf['id_type_serial'], lead_id_type=cf['lead_id_type'], timestamp_default=cf['timestamp_default']
     ))
@@ -246,19 +266,20 @@ def _run_column_migrations(cur, status_type):
         ("pain_point", "TEXT"), ("service_interest", "TEXT"),
         ("service_booked_date", "TIMESTAMP"), ("appointment_count", "INTEGER DEFAULT 0"),
         ("updated_at", "TIMESTAMP"), ("onboarding_step", "TEXT"), 
-        ("is_admin", "BOOLEAN DEFAULT FALSE")
+        ("is_admin", "BOOLEAN DEFAULT FALSE"),
+        ("email", "TEXT"),
+        ("meta_lead_id", "TEXT")
     ]
     
     for col_name, col_type in new_columns:
         try:
             if BACKEND == "postgres":
-                cur.execute(f"ALTER TABLE contacts ADD COLUMN IF NOT EXISTS {col_name} {col_type};")
+                cur.execute(f"ALTER TABLE crm_leads ADD COLUMN IF NOT EXISTS {col_name} {col_type};")
             else:
-                # SQLite migration logic
                 try:
-                    cur.execute(f"ALTER TABLE contacts ADD COLUMN {col_name} {col_type};")
+                    cur.execute(f"ALTER TABLE crm_leads ADD COLUMN {col_name} {col_type};")
                 except Exception:
-                    pass # Column likely exists
+                    pass
         except Exception:
             pass
 
@@ -308,7 +329,7 @@ def get_visitor_fbclid(external_id: str) -> Optional[str]:
     """Retrieves the Facebook Click ID for a given visitor."""
     try:
         with get_cursor() as cur:
-            query = "SELECT fbclid FROM visitors WHERE external_id = %s"
+            query = queries.SELECT_FBCLID_BY_EXTERNAL_ID
             cur.execute(query, (external_id,))
             res = cur.fetchone()
             if res:
@@ -360,16 +381,16 @@ def upsert_contact_advanced(contact_data: Dict[str, Any]) -> None:
 # Backward compatibility alias
 upsert_contact = upsert_contact_advanced
 
-def save_message(whatsapp_number: str, role: str, content: str) -> None:
+def save_message(whatsapp_phone: str, role: str, content: str) -> None:
     """Persists a chat message in the conversation history."""
     try:
         with get_cursor() as cur:
             # 1. Obtener contact_id
-            cur.execute(queries.SELECT_CONTACT_ID_BY_PHONE, (whatsapp_number,))
+            cur.execute(queries.SELECT_CONTACT_ID_BY_PHONE, (whatsapp_phone,))
             row = cur.fetchone()
             if not row:
-                upsert_contact_advanced({'phone': whatsapp_number, 'status': 'new'})
-                cur.execute(queries.SELECT_CONTACT_ID_BY_PHONE, (whatsapp_number,))
+                upsert_contact_advanced({'phone': whatsapp_phone, 'status': 'new'})
+                cur.execute(queries.SELECT_CONTACT_ID_BY_PHONE, (whatsapp_phone,))
                 row = cur.fetchone()
             
             if row:
@@ -378,12 +399,12 @@ def save_message(whatsapp_number: str, role: str, content: str) -> None:
     except Exception as e:
         logger.error(f"❌ Error guardando mensaje: {e}")
 
-def get_chat_history(whatsapp_number: str, limit: int = 10) -> List[Dict[str, str]]:
+def get_chat_history(whatsapp_phone: str, limit: int = 10) -> List[Dict[str, str]]:
     """Obtiene los últimos N mensajes para contexto de la IA"""
     history = []
     try:
         with get_cursor() as cur:
-            cur.execute(queries.SELECT_CHAT_HISTORY, (whatsapp_number, limit))
+            cur.execute(queries.SELECT_CHAT_HISTORY, (whatsapp_phone, limit))
             rows = cur.fetchall()
             for row in reversed(rows):
                 history.append({"role": row[0], "content": row[1]})
@@ -404,30 +425,30 @@ def check_connection() -> bool:
 # ADDITIONAL FUNCTIONS (Recovers previous lost functions)
 # =================================================================
 
-def mark_lead_sent(whatsapp_number: str) -> bool:
+def mark_lead_sent(whatsapp_phone: str) -> bool:
     """Flags a lead as successfully sent to Meta CAPI."""
     try:
         with get_cursor() as cur:
-            cur.execute(queries.UPDATE_LEAD_SENT_FLAG, (whatsapp_number,))
+            cur.execute(queries.UPDATE_LEAD_SENT_FLAG, (whatsapp_phone,))
             return True
     except Exception:
         return False
 
-def get_user_message_count(whatsapp_number: str) -> int:
+def get_user_message_count(whatsapp_phone: str) -> int:
     """Counts total messages sent by a user."""
     try:
         with get_cursor() as cur:
-            cur.execute(queries.COUNT_USER_MESSAGES, (whatsapp_number,))
+            cur.execute(queries.COUNT_USER_MESSAGES, (whatsapp_phone,))
             row = cur.fetchone()
             return row[0] if row else 0
     except Exception:
         return 0
 
-def check_if_lead_sent(whatsapp_number: str) -> bool:
+def check_if_lead_sent(whatsapp_phone: str) -> bool:
     """Checks if the conversion event was already sent to Meta."""
     try:
         with get_cursor() as cur:
-            cur.execute(queries.CHECK_LEAD_SENT_FLAG, (whatsapp_number,))
+            cur.execute(queries.CHECK_LEAD_SENT_FLAG, (whatsapp_phone,))
             row = cur.fetchone()
             return row[0] if row else False
     except Exception:

@@ -1,5 +1,4 @@
-from typing import Dict, Any
-from typing import Callable
+from typing import Dict, Any, Callable
 
 class GetSignalAuditQuery:
     def __init__(self, get_cursor: Callable[[], Any]):
@@ -8,18 +7,16 @@ class GetSignalAuditQuery:
     async def execute(self) -> Dict[str, Any]:
         """
         Executes the query to perform a signal audit.
-        Compares Leads (DB) vs Eventos Enviados (Flag 'sent_to_meta').
+        Compares Leads (DB) vs Eventos Enviados (Flag 'sent_to_meta' o proxy).
         """
         try:
             with self._get_cursor() as cur:
                 # 1. Total Contactos Únicos
-                cur.execute("SELECT COUNT(*) FROM contacts")
+                cur.execute("SELECT COUNT(*) FROM crm_leads")
                 total_leads = cur.fetchone()[0]
 
-                # 2. Total Enviados a Meta (Usando un campo teórico 'sent_to_meta' o log de events)
-                # Nota: Asumiendo que tenemos una tabla de auditoría o flag. 
-                # Si no, contamos leads con fbclid como proxy de calidad.
-                cur.execute("SELECT COUNT(*) FROM contacts WHERE fbclid IS NOT NULL")
+                # 2. Total con fb_click_id (Proxy de calidad/señal)
+                cur.execute("SELECT COUNT(*) FROM crm_leads WHERE fb_click_id IS NOT NULL")
                 leads_with_signal = cur.fetchone()[0]
                 
                 # 3. Discrepancy
@@ -38,5 +35,4 @@ class GetSignalAuditQuery:
                     "recommendation": "Check 'tracking.js' if Match Rate < 80%"
                 }
         except Exception as e:
-            # In a real scenario, proper logging would be implemented here.
             return {"error": str(e)}

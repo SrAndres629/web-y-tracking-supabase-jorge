@@ -1,0 +1,43 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2026-02-11T01:39:36.206053",
+  "active_tasks": [
+    {
+      "id": "task_1770773976_cce57aac",
+      "agent": "codex",
+      "status": "running",
+      "content": "Test task lifecycle",
+      "permissions": {
+        "read": [
+          "app/"
+        ],
+        "write": [],
+        "deny": []
+      },
+      "created_at": "2026-02-11T01:39:36.204922",
+      "started_at": "2026-02-11T01:39:36.206047",
+      "completed_at": null,
+      "content_hash": "1db945df1ce10b18",
+      "retry_count": 0,
+      "max_retries": 3,
+      "metadata": {},
+      "history": [
+        {
+          "from": "pending",
+          "to": "running",
+          "timestamp": "2026-02-11T01:39:36.206039",
+          "metadata": {}
+        }
+      ]
+    }
+  ],
+  "task_history": [],
+  "metrics": {
+    "total_tasks": 1,
+    "completed_tasks": 0,
+    "failed_tasks": 0,
+    "cancelled_tasks": 0,
+    "average_task_duration": 0.0,
+    "last_audit": null
+  }
+}

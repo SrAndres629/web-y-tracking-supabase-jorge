@@ -1,0 +1,376 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# NEXUS-7: REGISTRY - Single Source of Truth
+# ═══════════════════════════════════════════════════════════════════════════════
+# Este archivo es la ÚNICA fuente de verdad para:
+# - Configuración de agentes
+# - Permisos del sistema
+# - Versiones de protocolos
+# - Skills registrados
+#
+# ⚠️  CRÍTICO: Cualquier cambio aquí afecta a TODO el sistema
+# 🔄  VERSIONADO: Seguir semver (major.minor.patch)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+system:
+  name: "NEXUS-7"
+  version: "1.0.0"
+  description: "AI Operating System for Fullstack Architecture"
+  
+  # Protocolos del sistema
+  protocols:
+    message:
+      version: "1.0.0"
+      schema: ".ai/core/schemas/message_v1.json"
+    
+    task:
+      version: "1.0.0"
+      schema: ".ai/core/schemas/task_v1.json"
+    
+    skill:
+      version: "1.0.0"
+      schema: ".ai/core/schemas/skill_v1.json"
+    
+    hive_mind:
+      version: "1.0.0"
+      prompt: ".ai/core/hive_mind_protocol.md"
+
+  # Estado del sistema
+  state:
+    engine: ".ai/core/state.json"
+    backup_interval: 3600  # segundos
+    max_history: 1000      # tareas guardadas
+
+  # Comunicación
+  messaging:
+    inbox: ".ai/messages/inbox"
+    archive: ".ai/messages/archive"
+    max_message_age: 86400  # 24 horas
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# AGENTES
+# ═══════════════════════════════════════════════════════════════════════════════
+# Cada agente tiene:
+# - Identidad única
+# - Capacidades declarativas
+# - Permisos explícitos
+# - Binding a skills
+# ═══════════════════════════════════════════════════════════════════════════════
+
+agents:
+  codex:
+    id: "codex"
+    name: "Codex"
+    role: "implementation_specialist"
+    description: "Mathematical Logic & Algorithms. Pure code generation."
+    
+    execution:
+      command: "codex"
+      args: ["exec"]
+      timeout: 1800  # 30 minutos
+      max_retries: 3
+    
+    capabilities:
+      - "code_generation"
+      - "algorithm_design"
+      - "refactoring"
+      - "bug_fixing"
+      - "migration_scripts"
+    
+    permissions:
+      read:
+        - "app/"
+        - "tests/"
+        - ".ai/skills/"
+      write:
+        - "app/"
+        - "tests/"
+      deny:
+        - ".ai/core/"        # Protegido: solo orchestrator
+        - "venv/"
+        - ".env"
+    
+    skills:
+      - "core.orchestrator"
+      - "domain.meta_ads"
+    
+    constraints:
+      max_file_size: 50000   # 50KB por archivo
+      preferred_language: "python"
+
+  kimi:
+    id: "kimi"
+    name: "Kimi"
+    role: "architecture_specialist"
+    description: "Structural & Documentation. Large context understanding."
+    
+    execution:
+      command: "kimi"
+      args: []
+      timeout: 3600  # 60 minutos (tareas largas de refactor)
+      max_retries: 2
+    
+    capabilities:
+      - "large_context"
+      - "refactoring"
+      - "documentation"
+      - "architecture_design"
+      - "import_hygiene"
+      - "code_review"
+    
+    permissions:
+      read:
+        - "**/*"              # Acceso total lectura
+      write:
+        - ".ai/"              # Control total de .ai/
+        - "docs/"
+        - "*.md"
+      deny:
+        - "venv/"
+        - ".env"
+    
+    skills:
+      - "core.orchestrator"
+      - "core.auditor"
+      - "domain.web_cro"
+    
+    constraints:
+      max_file_size: 100000  # 100KB (mejor con archivos grandes)
+
+  gemini:
+    id: "gemini"
+    name: "Gemini"
+    role: "security_auditor"
+    description: "Data Flow & Logic Specialist. Security auditing."
+    
+    execution:
+      command: "gemini"
+      args: ["-p"]
+      timeout: 2400  # 40 minutos
+      max_retries: 3
+    
+    capabilities:
+      - "security_analysis"
+      - "test_validation"
+      - "logic_tracing"
+      - "audit"
+      - "compliance_check"
+    
+    permissions:
+      read:
+        - "**/*"
+      write:
+        - ".ai/sensory/"      # Solo reportes
+        - ".ai/memory/"
+      deny:
+        - "app/"              # NO modifica código directamente
+        - "tests/"
+        - "venv/"
+        - ".env"
+    
+    skills:
+      - "core.auditor"
+      - "domain.meta_ads"
+    
+    constraints:
+      requires_approval: true  # Siempre notificar al usuario
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SKILLS REGISTRY
+# ═══════════════════════════════════════════════════════════════════════════════
+# Skills son capacidades especializadas que los agentes pueden usar.
+# Cada skill define:
+# - Triggers (cómo se activa)
+# - Conocimiento (contexto)
+# - Permisos específicos
+# ═══════════════════════════════════════════════════════════════════════════════
+
+skills:
+  # Core Skills - Sistema
+  core.orchestrator:
+    id: "core.orchestrator"
+    version: "1.0.0"
+    name: "Hive Mind Orchestrator"
+    description: "Coordination and task distribution"
+    
+    triggers:
+      - type: "signal"
+        pattern: "WAKE_UP_ANTIGRAVITY"
+      - type: "manual"
+        command: "orquestar"
+    
+    bindings:
+      agents: ["kimi", "codex"]
+      default: "kimi"
+    
+    config:
+      max_parallel_tasks: 3
+      require_approval: false
+
+  core.auditor:
+    id: "core.auditor"
+    version: "1.0.0"
+    name: "Continuous Auditor"
+    description: "Architecture and security auditing"
+    
+    triggers:
+      - type: "cron"
+        schedule: "0 * * * *"  # Cada hora
+      - type: "file_change"
+        pattern: ["app/**/*.py", "tests/**/*.py"]
+      - type: "manual"
+        command: "auditar"
+    
+    bindings:
+      agents: ["gemini", "kimi"]
+      default: "gemini"
+    
+    rules:
+      - id: "ARCH001"
+        name: "No circular imports"
+        severity: "error"
+        check: "import_cycles"
+      
+      - id: "ARCH002"
+        name: "Clean Architecture compliance"
+        severity: "error"
+        check: "layer_independence"
+      
+      - id: "SEC001"
+        name: "No hardcoded secrets"
+        severity: "critical"
+        check: "secret_scan"
+        autofix: true
+      
+      - id: "PERF001"
+        name: "Async/await correctness"
+        severity: "warning"
+        check: "async_patterns"
+
+  # Domain Skills - Negocio
+  domain.meta_ads:
+    id: "domain.meta_ads"
+    version: "1.0.0"
+    name: "Meta Signal Maximizer"
+    description: "CAPI optimization and CPA reduction"
+    
+    triggers:
+      - type: "file_change"
+        pattern: ["app/meta_capi.py", "app/tracking.py"]
+      - type: "manual"
+        command: "optimizar tracking"
+    
+    bindings:
+      agents: ["gemini", "codex"]
+      default: "gemini"
+    
+    knowledge:
+      - ".ai/skills/domain/meta_ads/knowledge/capi_best_practices.md"
+      - ".ai/skills/domain/meta_ads/knowledge/pixel_deduplication.md"
+    
+    config:
+      event_match_quality_threshold: 8.0
+
+  domain.web_cro:
+    id: "domain.web_cro"
+    version: "1.0.0"
+    name: "Web CRO Optimizer"
+    description: "Conversion Rate Optimization"
+    
+    triggers:
+      - type: "file_change"
+        pattern: ["app/templates/**/*.html", "static/**/*.css", "static/**/*.js"]
+      - type: "manual"
+        command: "optimizar cro"
+    
+    bindings:
+      agents: ["kimi", "codex"]
+      default: "kimi"
+    
+    knowledge:
+      - ".ai/skills/domain/web_cro/knowledge/ux_patterns.md"
+      - ".ai/skills/domain/web_cro/knowledge/performance_optimization.md"
+    
+    config:
+      target_lcp: 1.2  # Largest Contentful Paint objetivo
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# WORKFLOWS
+# ═══════════════════════════════════════════════════════════════════════════════
+# Flujos de trabajo predefinidos que coordinan múltiples agentes
+# ═══════════════════════════════════════════════════════════════════════════════
+
+workflows:
+  code_review:
+    name: "Code Review Pipeline"
+    description: "Review completo de código antes de merge"
+    steps:
+      - agent: "gemini"
+        skill: "core.auditor"
+        action: "security_audit"
+      
+      - agent: "kimi"
+        skill: "core.auditor"
+        action: "architecture_review"
+        depends_on: [0]
+      
+      - agent: "codex"
+        skill: "core.orchestrator"
+        action: "fix_issues"
+        condition: "issues_found"
+        depends_on: [1]
+
+  deployment:
+    name: "Deployment Pipeline"
+    description: "Preparación y validación para producción"
+    steps:
+      - agent: "gemini"
+        skill: "core.auditor"
+        action: "full_audit"
+      
+      - agent: "codex"
+        skill: "core.orchestrator"
+        action: "run_tests"
+        depends_on: [0]
+      
+      - agent: "kimi"
+        skill: "core.orchestrator"
+        action: "generate_changelog"
+        depends_on: [1]
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# GLOBAL POLICIES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+policies:
+  # Política de seguridad
+  security:
+    deny_patterns:
+      - "(?i)password\\s*=\\s*['\"][^'\"]+['\"]"
+      - "(?i)api_key\\s*=\\s*['\"][^'\"]+['\"]"
+      - "(?i)secret\\s*=\\s*['\"][^'\"]+['\"]"
+      - "(?i)token\\s*=\\s*['\"][^'\"]{20,}['\"]"
+    
+    protected_paths:
+      - ".env"
+      - ".env.*"
+      - "*.key"
+      - "*.pem"
+  
+  # Política de calidad
+  quality:
+    min_test_coverage: 0.8
+    max_file_lines: 300
+    max_function_lines: 50
+    require_type_hints: true
+    
+  # Política de operación
+  operation:
+    require_approval_for:
+      - "production_deploy"
+      - "database_migration"
+      - "delete_file"
+    
+    auto_retry_errors:
+      - "timeout"
+      - "connection_error"
+      - "rate_limit"

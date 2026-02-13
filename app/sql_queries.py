@@ -38,10 +38,12 @@ CREATE_TABLE_VISITORS = """
 CREATE_INDEX_VISITORS_EXTERNAL_ID = "CREATE INDEX IF NOT EXISTS idx_visitors_external_id ON visitors(external_id);"
 
 CREATE_TABLE_CONTACTS = """
-    CREATE TABLE IF NOT EXISTS contacts (
+    CREATE TABLE IF NOT EXISTS crm_leads (
         id {id_type_primary_key},
-        whatsapp_number TEXT UNIQUE NOT NULL,
+        whatsapp_phone TEXT UNIQUE NOT NULL,
         full_name TEXT,
+        email TEXT, -- Agregado para paridad
+        meta_lead_id TEXT, -- Agregado para paridad
         profile_pic_url TEXT,
         
         fb_click_id TEXT,
@@ -67,8 +69,8 @@ CREATE_TABLE_CONTACTS = """
     );
 """
 
-CREATE_INDEX_CONTACTS_WHATSAPP = "CREATE INDEX IF NOT EXISTS idx_contacts_whatsapp ON contacts(whatsapp_number);"
-CREATE_INDEX_CONTACTS_STATUS = "CREATE INDEX IF NOT EXISTS idx_contacts_status ON contacts(status);"
+CREATE_INDEX_CONTACTS_WHATSAPP = "CREATE INDEX IF NOT EXISTS idx_contacts_whatsapp ON crm_leads(whatsapp_phone);"
+CREATE_INDEX_CONTACTS_STATUS = "CREATE INDEX IF NOT EXISTS idx_contacts_status ON crm_leads(status);"
 
 CREATE_TABLE_MESSAGES = """
     CREATE TABLE IF NOT EXISTS messages (
@@ -77,7 +79,7 @@ CREATE_TABLE_MESSAGES = """
         role TEXT CHECK (role IN ('user', 'assistant', 'system', 'tool')),
         content TEXT,
         created_at TIMESTAMP DEFAULT {timestamp_default},
-        FOREIGN KEY (contact_id) REFERENCES contacts(id) ON DELETE CASCADE
+        FOREIGN KEY (contact_id) REFERENCES crm_leads(id) ON DELETE CASCADE
     );
 """
 
@@ -91,26 +93,11 @@ CREATE_TABLE_APPOINTMENTS = """
         service_type TEXT,
         status TEXT DEFAULT 'pending',
         created_at TIMESTAMP DEFAULT {timestamp_default},
-        FOREIGN KEY (contact_id) REFERENCES contacts(id)
+        FOREIGN KEY (contact_id) REFERENCES crm_leads(id)
     );
 """
 
-CREATE_TABLE_LEADS = """
-    CREATE TABLE IF NOT EXISTS leads (
-        id {id_type_primary_key},
-        whatsapp_phone TEXT UNIQUE NOT NULL,
-        meta_lead_id TEXT,
-        click_id TEXT, -- fbclid
-        email TEXT,
-        name TEXT,
-        conversion_status TEXT DEFAULT 'NEW',
-        created_at TIMESTAMP DEFAULT {timestamp_default},
-        last_interaction TIMESTAMP DEFAULT {timestamp_default}
-    );
-"""
-
-CREATE_INDEX_LEADS_PHONE = "CREATE INDEX IF NOT EXISTS idx_leads_phone ON leads(whatsapp_phone);"
-CREATE_INDEX_LEADS_META_ID = "CREATE INDEX IF NOT EXISTS idx_leads_meta_id ON leads(meta_lead_id);"
+# Note: redundant leads table definitions removed. Everything points to crm_leads.
 
 CREATE_TABLE_INTERACTIONS = """
     CREATE TABLE IF NOT EXISTS interactions (
@@ -119,7 +106,7 @@ CREATE_TABLE_INTERACTIONS = """
         role TEXT NOT NULL, -- 'user', 'system', 'assistant'
         content TEXT,
         timestamp TIMESTAMP DEFAULT {timestamp_default},
-        FOREIGN KEY (lead_id) REFERENCES leads(id) ON DELETE CASCADE
+        FOREIGN KEY (lead_id) REFERENCES crm_leads(id) ON DELETE CASCADE
     );
 """
 
@@ -135,46 +122,46 @@ INSERT_VISITOR = """
 """
 
 UPSERT_CONTACT_SQLITE = """
-    INSERT INTO contacts (whatsapp_number, full_name, utm_source, status)
+    INSERT INTO crm_leads (whatsapp_phone, full_name, utm_source, status)
     VALUES (%s, %s, %s, %s)
-    ON CONFLICT(whatsapp_number) DO UPDATE SET
+    ON CONFLICT(whatsapp_phone) DO UPDATE SET
         full_name = EXCLUDED.full_name,
-        utm_source = COALESCE(EXCLUDED.utm_source, contacts.utm_source),
+        utm_source = COALESCE(EXCLUDED.utm_source, crm_leads.utm_source),
         last_interaction = CURRENT_TIMESTAMP
 """
 
 UPSERT_CONTACT_POSTGRES = """
-    INSERT INTO contacts (
-        whatsapp_number, full_name, profile_pic_url,
+    INSERT INTO crm_leads (
+        whatsapp_phone, full_name, profile_pic_url,
         fb_click_id, fb_browser_id,
         utm_source, utm_medium, utm_campaign, utm_term, utm_content,
         status, lead_score, pain_point, service_interest,
         last_interaction
     ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
-    ON CONFLICT (whatsapp_number) 
+    ON CONFLICT (whatsapp_phone) 
     DO UPDATE SET 
-        full_name = COALESCE(EXCLUDED.full_name, contacts.full_name),
-        profile_pic_url = COALESCE(EXCLUDED.profile_pic_url, contacts.profile_pic_url),
-        fb_click_id = COALESCE(EXCLUDED.fb_click_id, contacts.fb_click_id),
-        utm_source = COALESCE(EXCLUDED.utm_source, contacts.utm_source),
-        status = COALESCE(EXCLUDED.status, contacts.status),
-        lead_score = COALESCE(EXCLUDED.lead_score, contacts.lead_score),
-        pain_point = COALESCE(EXCLUDED.pain_point, contacts.pain_point),
-        service_interest = COALESCE(EXCLUDED.service_interest, contacts.service_interest),
+        full_name = COALESCE(EXCLUDED.full_name, crm_leads.full_name),
+        profile_pic_url = COALESCE(EXCLUDED.profile_pic_url, crm_leads.profile_pic_url),
+        fb_click_id = COALESCE(EXCLUDED.fb_click_id, crm_leads.fb_click_id),
+        utm_source = COALESCE(EXCLUDED.utm_source, crm_leads.utm_source),
+        status = COALESCE(EXCLUDED.status, crm_leads.status),
+        lead_score = COALESCE(EXCLUDED.lead_score, crm_leads.lead_score),
+        pain_point = COALESCE(EXCLUDED.pain_point, crm_leads.pain_point),
+        service_interest = COALESCE(EXCLUDED.service_interest, crm_leads.service_interest),
         last_interaction = NOW(),
-        web_visit_count = contacts.web_visit_count + 1,
+        web_visit_count = crm_leads.web_visit_count + 1,
         updated_at = NOW();
 """
 
-SELECT_CONTACT_ID_BY_PHONE = "SELECT id FROM contacts WHERE whatsapp_number = %s"
+SELECT_CONTACT_ID_BY_PHONE = "SELECT id FROM crm_leads WHERE whatsapp_phone = %s"
 
 INSERT_MESSAGE = "INSERT INTO messages (contact_id, role, content) VALUES (%s, %s, %s)"
 
 SELECT_CHAT_HISTORY = """
     SELECT m.role, m.content 
     FROM messages m
-    JOIN contacts c ON m.contact_id = c.id
-    WHERE c.whatsapp_number = %s
+    JOIN crm_leads c ON m.contact_id = c.id
+    WHERE c.whatsapp_phone = %s
     ORDER BY m.created_at DESC
     LIMIT %s
 """
@@ -187,15 +174,15 @@ SELECT_VISITOR_BY_ID = "SELECT id, external_id, fbclid, source, timestamp FROM v
 
 # --- Operations: Leads (W-003) ---
 
-UPDATE_LEAD_SENT_FLAG = "UPDATE contacts SET conversion_sent_to_meta = TRUE WHERE whatsapp_number = %s"
+UPDATE_LEAD_SENT_FLAG = "UPDATE crm_leads SET conversion_sent_to_meta = TRUE WHERE whatsapp_phone = %s"
 
 COUNT_USER_MESSAGES = """
     SELECT COUNT(*) FROM messages m
-    JOIN contacts c ON m.contact_id = c.id
-    WHERE c.whatsapp_number = %s AND m.role = 'user'
+    JOIN crm_leads c ON m.contact_id = c.id
+    WHERE c.whatsapp_phone = %s AND m.role = 'user'
 """
 
-CHECK_LEAD_SENT_FLAG = "SELECT conversion_sent_to_meta FROM contacts WHERE whatsapp_number = %s"
+CHECK_LEAD_SENT_FLAG = "SELECT conversion_sent_to_meta FROM crm_leads WHERE whatsapp_phone = %s"
 
 SELECT_META_DATA_BY_REF = """
     SELECT fbclid, user_agent, ip_address, utm_source, utm_medium, utm_campaign
@@ -204,26 +191,26 @@ SELECT_META_DATA_BY_REF = """
     ORDER BY timestamp DESC LIMIT 1
 """
 
-SELECT_LEAD_ID_BY_PHONE = "SELECT id FROM leads WHERE whatsapp_phone = %s"
+SELECT_LEAD_ID_BY_PHONE = "SELECT id FROM crm_leads WHERE whatsapp_phone = %s"
 
 UPDATE_LEAD_METADATA = """
-    UPDATE leads SET 
+    UPDATE crm_leads SET 
         meta_lead_id = COALESCE(%s, meta_lead_id),
-        click_id = COALESCE(%s, click_id),
+        fb_click_id = COALESCE(%s, fb_click_id),
         email = COALESCE(%s, email),
-        name = COALESCE(%s, name),
+        full_name = COALESCE(%s, full_name),
         last_interaction = CURRENT_TIMESTAMP
     WHERE id = %s
 """
 
 INSERT_LEAD_RETURNING_ID = """
-    INSERT INTO leads (whatsapp_phone, meta_lead_id, click_id, email, name)
+    INSERT INTO crm_leads (whatsapp_phone, meta_lead_id, fb_click_id, email, full_name)
     VALUES (%s, %s, %s, %s, %s)
     RETURNING id
 """
 
 INSERT_LEAD_SQLITE = """
-    INSERT INTO leads (id, whatsapp_phone, meta_lead_id, click_id, email, name)
+    INSERT INTO crm_leads (id, whatsapp_phone, meta_lead_id, fb_click_id, email, full_name)
     VALUES (%s, %s, %s, %s, %s, %s)
 """
 
