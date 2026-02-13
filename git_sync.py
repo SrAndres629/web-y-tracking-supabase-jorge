@@ -1,6 +1,7 @@
 import argparse
 import datetime
 import json
+import logging
 import os
 import re
 import subprocess
@@ -60,8 +61,8 @@ class InfrastructureAuditor:
                 if deployments:
                     latest = deployments[0]
                     state = latest.get("state")
-                    if state == "ERROR":
-                        Console.error(f"Vercel Deployment Failure detected: {latest.get('id')}")
+                    if state == "ERROR" or state == "CANCELED":
+                        Console.error(f"Vercel Deployment Failure detected: {latest.get('uid') or latest.get('id') or 'Unknown'}")
                         return False
                     Console.success(f"Vercel Deployment State: {state}")
             
@@ -141,6 +142,7 @@ class SystemAuditor:
 
     def check_environment(self):
         Console.log("Verifying Execution Environment...", "🔍")
+        # Check for dev dependencies (pytest) to ensuring we can run tests
         required_modules = ["pytest", "hypothesis", "httpx"]
         missing = []
         for mod in required_modules:
@@ -153,14 +155,13 @@ class SystemAuditor:
             self._add_issue(
                 file_path="ENVIRONMENT",
                 line="N/A",
-                err_type="Exception",
-                message=f"Missing modules: {', '.join(missing)}",
+                err_type="Missing Critical Dev Dependencies",
+                message=f"Modules not found: {', '.join(missing)}. Run: pip install -r requirements-dev.txt",
                 phase="Environment",
             )
-            Console.error(f"CRITICAL: Missing core engineering mandates: {', '.join(missing)}")
-            Console.info("Run: pip install -r requirements.txt")
+            Console.error(f"Missing modules: {missing}")
             return False
-
+            
         Console.success("Environment Integrity Verified (Dependencies Loaded).")
         return True
 
@@ -395,7 +396,7 @@ def run_cmd(command, cwd=None, exit_on_fail=False):
     return True, result.stdout, result.stderr
 
 
-def _run_audit_gates(auditor: SystemAuditor, force: bool) -> bool:
+def _run_audit_gates(auditor: SystemAuditor, force: bool, fix_infra: bool = False) -> bool:
     """Run test gates. Returns True if deployment should proceed."""
     env_ok = auditor.check_environment()
 
@@ -411,9 +412,14 @@ def _run_audit_gates(auditor: SystemAuditor, force: bool) -> bool:
         return True
 
     # --- INFRASTRUCTURE AUDIT (Silicon Valley Zero-Downtime Gate) ---
-    infra = InfrastructureAuditor()
-    vercel_ok = infra.check_vercel_health()
-    supabase_ok = infra.check_supabase_health()
+    if fix_infra:
+        Console.warning("🔧 INFRASTRUCTURE BYPASS: Skipping Vercel/Supabase checks for recovery.")
+        vercel_ok = True
+        supabase_ok = True
+    else:
+        infra = InfrastructureAuditor()
+        vercel_ok = infra.check_vercel_health()
+        supabase_ok = infra.check_supabase_health()
     
     if not (vercel_ok and supabase_ok):
         Console.error("Infrastructure Audit Failed. Deployment blocked for safety.")
@@ -541,7 +547,8 @@ def _post_deploy_verify():
 
 def main():
     parser = argparse.ArgumentParser(description="Silicon Valley Deployment Pipeline")
-    parser.add_argument("--force", action="store_true", help="Bypass checks (NOT RECOMMENDED)")
+    parser.add_argument("--force", action="store_true", help="⚠️ DANGER: Bypass all checks")
+    parser.add_argument("--fix-infra", action="store_true", help="🔧 RECOVERY: Bypass infrastructure checks only")
     parser.add_argument("message", nargs="?", default=None, help="Commit message")
     args = parser.parse_args()
 
@@ -549,7 +556,7 @@ def main():
 
     # Phase 1: Audit gates
     auditor = SystemAuditor(REPO_PATH)
-    if not _run_audit_gates(auditor, args.force):
+    if not _run_audit_gates(auditor, args.force, args.fix_infra):
         sys.exit(1)
 
     # Phase 2: Stage & commit
