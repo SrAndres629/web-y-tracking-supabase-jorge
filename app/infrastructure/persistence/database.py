@@ -32,6 +32,16 @@ class Database:
         """Detecta qué backend usar."""
         if self._settings.db.is_configured:
             return "postgres"
+        
+        # 🚨 FAIL FAST IN PRODUCTION
+        # Si estamos en Vercel y no hay DB configurada, NO hacer fallback a SQLite.
+        # Esto evita errores silenciosos o "invalid dsn" por mezcla de drivers.
+        if os.getenv("VERCEL"):
+            raise RuntimeError(
+                "🔥 CRITICAL: DATABASE_URL is missing or invalid in Vercel. "
+                "Cannot fall back to SQLite in a serverless environment."
+            )
+            
         return "sqlite"
     
     @property

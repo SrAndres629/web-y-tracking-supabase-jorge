@@ -28,7 +28,8 @@ class DatabaseSettings(BaseSettings):
     
     url: Optional[str] = Field(
         default=None,
-        description="PostgreSQL connection URL (Supabase)"
+        description="PostgreSQL connection URL (Supabase)",
+        alias="DATABASE_URL"
     )
     pool_size: int = Field(default=5, ge=1, le=20)
     max_overflow: int = Field(default=10, ge=0)
