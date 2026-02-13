@@ -9,7 +9,7 @@ load_dotenv()
 
 # Credentials from user or .env
 EMAIL = "Acordero629@gmail.com"
-GLOBAL_KEY = "6094d6fa8c138d93409de2f59a3774cd8795a"
+GLOBAL_KEY = "CLOUDFLARE_API_KEY_REEMPLAZAR"
 ZONE_ID = "19bd9bdd7abf8f74b4e95d75a41e8583"
 ACCOUNT_ID = "18d305c823dc9ab6f0663bde930a9fc2"
 
@@ -95,3 +95,4 @@ def deploy_token():
 
 if __name__ == "__main__":
     deploy_token()
+

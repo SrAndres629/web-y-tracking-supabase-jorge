@@ -2,7 +2,7 @@ import requests
 import json
 
 CLOUDFLARE_EMAIL = "Acordero629@gmail.com"
-CLOUDFLARE_API_KEY = "6094d6fa8c138d93409de2f59a3774cd8795a"
+CLOUDFLARE_API_KEY = "CLOUDFLARE_API_KEY_REEMPLAZAR"
 
 HEADERS = {
     "X-Auth-Email": CLOUDFLARE_EMAIL,
@@ -25,3 +25,4 @@ def list_permission_groups():
 
 if __name__ == "__main__":
     list_permission_groups()
+

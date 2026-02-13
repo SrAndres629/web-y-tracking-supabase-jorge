@@ -48,31 +48,31 @@ def _safe_print(text: str, *, is_error: bool = False) -> None:
 TEST_PROFILES = {
     "quick": {
         "description": "Tests rápidos para desarrollo (< 5s)",
-        "paths": ["tests/unit", "tests/test_new_architecture"],
+        "paths": ["tests/backend/unit", "tests/backend/architecture", "tests/frontend/rendering"],
         "args": ["-x", "--tb=short"],  # Fail fast, short traceback
         "markers": "not slow",
     },
     "unit": {
         "description": "Tests unitarios completos",
-        "paths": ["tests/unit", "tests/test_new_architecture"],
+        "paths": ["tests/backend/unit"],
         "args": ["-v", "--tb=short"],
         "markers": None,
     },
     "integration": {
         "description": "Tests de integración con infraestructura fake",
-        "paths": ["tests/02_integration"],
+        "paths": ["tests/backend/integration", "tests/platform/infra"],
         "args": ["-v", "--tb=short"],
         "markers": None,
     },
     "architecture": {
         "description": "Tests de arquitectura y gobernanza",
-        "paths": ["tests/00_architecture"],
+        "paths": ["tests/backend/architecture", "tests/platform/deployment"],
         "args": ["-v", "--tb=long"],
         "markers": None,
     },
     "audit": {
         "description": "Audit completo de infraestructura",
-        "paths": ["tests/03_audit"],
+        "paths": ["tests/backend/quality", "tests/backend/security", "tests/platform/cloudflare", "tests/platform/observability"],
         "args": ["-v", "--tb=short"],
         "markers": None,
     },
@@ -170,7 +170,7 @@ def run_coverage_analysis() -> int:
     cmd = [
         "python", "-m", "pytest",
         "-c", "pytest.ini",
-        "tests/unit", "tests/test_new_architecture",
+        "tests/backend/unit", "tests/backend/integration", "tests/frontend",
         "--cov=app",
         "--cov-report=term-missing",
         "--cov-report=html:htmlcov",

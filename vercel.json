@@ -22,7 +22,7 @@
     "redirects": [
         {
             "source": "/favicon.ico",
-            "destination": "/static/images/luxury_logo.svg",
+            "destination": "/static/assets/images/branding/luxury_logo.svg",
             "permanent": true
         }
     ],

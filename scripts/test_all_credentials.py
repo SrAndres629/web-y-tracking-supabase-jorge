@@ -8,36 +8,26 @@ load_dotenv()
 # List of credentials to test
 CREDENTIALS = [
     {
-        "name": "User Provided Token (7kVI...)",
-        "token": "7kVIFNy4qq0wwUgC82czs8kzMeYxNgIIoV9cvReL",
-        "type": "token"
-    },
-    {
-        "name": "User Curl Token (QbGb...)",
-        "token": "QbGb88wydH9URjGjjaHUHfcakpA8Yd7Zs0HgG8ja",
-        "type": "token"
-    },
-    {
-        "name": "Found Token (_f1Q...)",
-        "token": "_f1QrJImGK0Qg5eSACM1DGnkF6xd9yRMGGXvGUA8",
-        "type": "token"
-    },
-    {
-        "name": "User Provided Global Key (6094...)",
-        "email": "Acordero629@gmail.com",
-        "key": "6094d6fa8c138d93409de2f59a3774cd8795a",
-        "type": "global"
-    },
-    {
-        "name": ".env Global Key (d2e7...)",
-        "email": "Acordero629@gmail.com",
-        "key": "d2e7046c39d277ae1e1d2afa9eccd2058c860",
-        "type": "global"
-    },
-    {
-        "name": ".env API Token (if any)",
+        "name": "Env API Token",
         "token": os.getenv("CLOUDFLARE_API_TOKEN"),
         "type": "token"
+    },
+    {
+        "name": "Env Secondary Token",
+        "token": os.getenv("CLOUDFLARE_API_TOKEN_SECONDARY"),
+        "type": "token"
+    },
+    {
+        "name": "Env Global Key",
+        "email": os.getenv("CLOUDFLARE_EMAIL"),
+        "key": os.getenv("CLOUDFLARE_API_KEY"),
+        "type": "global"
+    },
+    {
+        "name": "Env Backup Global Key",
+        "email": os.getenv("CLOUDFLARE_EMAIL_BACKUP"),
+        "key": os.getenv("CLOUDFLARE_API_KEY_BACKUP"),
+        "type": "global"
     }
 ]
 

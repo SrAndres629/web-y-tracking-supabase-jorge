@@ -6,6 +6,7 @@ from datetime import datetime
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse, PlainTextResponse
 import os
+from pathlib import Path
 
 from app.config import settings
 from app.interfaces.api.dependencies import get_legacy_facade
@@ -62,6 +63,37 @@ async def health_diagnostics_full(request: Request):
     from app.diagnostics import run_full_diagnostics
     report = run_full_diagnostics()
     return JSONResponse(report)
+
+
+@router.get("/health/assets")
+async def health_assets():
+    """
+    Verifica que los assets críticos existan en runtime serverless.
+    """
+    project_root = Path(__file__).resolve().parents[4]
+    static_root = Path(settings.STATIC_DIR)
+    if not static_root.exists():
+        static_root = project_root / "static"
+
+    required = [
+        static_root / "dist" / "css" / "app.min.css",
+        static_root / "engines" / "legacy-adapter.js",
+        static_root / "assets" / "images" / "branding" / "luxury_logo.svg",
+    ]
+    status = {
+        str(path.relative_to(static_root) if path.exists() else path.name): path.exists()
+        for path in required
+    }
+
+    all_ok = all(status.values())
+    return JSONResponse(
+        {
+            "status": "ok" if all_ok else "error",
+            "static_dir": str(static_root),
+            "assets": status,
+        },
+        status_code=200 if all_ok else 500,
+    )
 
 
 @router.get("/ping", response_class=PlainTextResponse)

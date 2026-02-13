@@ -1,4 +1,4 @@
-@codex debes agregar estos mcp {
+{
   "mcpServers": {
     "supabase-mcp-server": {
       "command": "npx",
@@ -30,7 +30,7 @@
         "CLOUDFLARE_API_TOKEN": "REEMPLAZAR_EN_ENTORNO_SEGURO",
         "CLOUDFLARE_ACCOUNT_ID": "18d305c823dc9ab6f0663bde930a9fc2",
         "CLOUDFLARE_ZONE_ID": "19bd9bdd7abf8f74b4e95d75a41e8583"
-      },
+      ],
       "disabled": false
     },
     "docker-mcp": {
@@ -58,4 +58,4 @@
       }
     }
   }
-} a tus datos internos y luego verificar que estan funcionando correectamente luego usa los mcp de vercel para arreglar los problemas
+}

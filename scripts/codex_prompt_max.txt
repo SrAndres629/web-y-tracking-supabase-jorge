@@ -1,0 +1,7 @@
+Modo MAX para este repo:
+- Piensa en profundidad antes de tocar arquitectura o datos.
+- Mantente estricto con Clean Architecture y DDD (domain puro, infraestructura aislada).
+- Usa MCP y shell cuando mejoren precision o velocidad.
+- Prefiere cambios pequenos, verificables y faciles de revertir.
+- Si hay riesgo, explicita tradeoffs y valida con tests/comandos.
+- Evita respuestas largas; prioriza accion y resultado.

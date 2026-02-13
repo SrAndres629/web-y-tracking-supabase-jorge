@@ -1,0 +1,21 @@
+[
+  {
+    "name": "supabase",
+    "type": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "@supabase/mcp-server"
+    ],
+    "env": {
+      "SUPABASE_URL": "https://your-project.supabase.co",
+      "SUPABASE_ACCESS_TOKEN": "REPLACE_ME"
+    }
+  },
+  {
+    "name": "linear-http",
+    "type": "http",
+    "url": "https://mcp.linear.app/sse",
+    "bearer_token_env_var": "LINEAR_API_TOKEN"
+  }
+]

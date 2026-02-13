@@ -2,7 +2,7 @@ import requests
 import json
 
 CLOUDFLARE_EMAIL = "Acordero629@gmail.com"
-CLOUDFLARE_API_KEY = "6094d6fa8c138d93409de2f59a3774cd8795a"
+CLOUDFLARE_API_KEY = "CLOUDFLARE_API_KEY_REEMPLAZAR"
 ACCOUNT_ID = "18d305c823dc9ab6f0663bde930a9fc2"
 
 HEADERS = {
@@ -41,3 +41,4 @@ def create_new_token():
 
 if __name__ == "__main__":
     create_new_token()
+

@@ -2,7 +2,7 @@ import requests
 import json
 
 # THE NEW TOKEN
-TOKEN = "_f1QrJImGK0Qg5eSACM1DGnkF6xd9yRMGGXvGUA8"
+TOKEN = "CLOUDFLARE_TOKEN_REEMPLAZAR"
 ZONE_ID = "19bd9bdd7abf8f74b4e95d75a41e8583"
 
 HEADERS = {
@@ -21,3 +21,4 @@ def test_new_token():
 
 if __name__ == "__main__":
     test_new_token()
+
