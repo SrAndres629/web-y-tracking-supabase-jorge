@@ -4,7 +4,11 @@
         "api/index.py": {
             "includeFiles": [
                 "api/templates/**",
-                "static/**"
+                "static/dist/**",
+                "static/assets/**",
+                "static/engines/**",
+                "static/css/**",
+                "static/js/**"
             ]
         }
     },
