@@ -65,6 +65,24 @@ class ErrorHandlerMiddleware:
         """
         if self._debug_allowed(request):
             tb = "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))
+            
+            # 🕵️ DIAGOSTIC: List Vercel Filesystem
+            fs_debug = {}
+            try:
+                search_paths = ["/var/task", "/var/task/api", "/var/task/templates", os.getcwd()]
+                for p in search_paths:
+                    if os.path.exists(p):
+                        fs_debug[p] = []
+                        for root, dirs, files in os.walk(p):
+                            if "venv" in root or "__pycache__" in root: continue
+                            for f in files:
+                                fs_debug[p].append(os.path.join(root, f))
+                                if len(fs_debug[p]) > 50: break # Limit output
+                    else:
+                        fs_debug[p] = "NOT_FOUND"
+            except Exception as e:
+                fs_debug["error"] = str(e)
+
             return JSONResponse(
                 status_code=500,
                 content={
@@ -74,6 +92,7 @@ class ErrorHandlerMiddleware:
                     "type": type(exc).__name__,
                     "path": request.url.path,
                     "method": request.method,
+                    "filesystem": fs_debug, 
                     "traceback": tb,
                 }
             )
