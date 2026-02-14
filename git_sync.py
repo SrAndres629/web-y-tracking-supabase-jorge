@@ -262,6 +262,12 @@ class SystemAuditor:
 
         self.raw_logs.append(last_combined)
         Console.error(f"Phase failed: {name}")
+        
+        # 🚀 SILICON VALLEY UX: Show me the logs immediately!
+        print(f"\n{Console.FAIL}>>> FAILURE LOGS FOR {name} <<<{Console.ENDC}")
+        # Print the last 40 lines which usually contains the failure summary
+        log_tail = "\n".join(last_combined.splitlines()[-40:])
+        print(f"{log_tail}\n")
         issues = self._extract_issues(last_combined, phase=name)
         if not issues:
             tail = "\n".join(last_combined.splitlines()[-20:]).strip()
@@ -321,11 +327,24 @@ class SystemAuditor:
                 continue
 
             fail_match = re.match(r"^FAILED\s+(.+?)\s+-\s+(.*)$", line)
+            error_match_pytest = re.match(r"^ERROR\s+(.+?)\s+-\s+(.*)$", line)
+
             if fail_match:
                 msg = fail_match.group(2)
                 err_type = self._classify_error_type(msg)
                 self._add_issue(
                     file_path=last_file or fail_match.group(1),
+                    line=last_line or "N/A",
+                    err_type=err_type,
+                    message=msg,
+                    phase=phase,
+                )
+                issues_added += 1
+            elif error_match_pytest:
+                msg = error_match_pytest.group(2)
+                err_type = "FixtureError"
+                self._add_issue(
+                    file_path=last_file or error_match_pytest.group(1),
                     line=last_line or "N/A",
                     err_type=err_type,
                     message=msg,
