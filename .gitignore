@@ -31,5 +31,16 @@ database/local_fallback.db
 *~
 *.swp
 *.bak
-Thumbs.db
+
+# --- Node / Frontend Bloat ---
+node_modules/
+static/dist/
+package-lock.json
+yarn.lock
+
+# --- Agent Configuration ---
+.agentignore
+
+# --- Other ---
 .DS_Store
+Thumbs.db
