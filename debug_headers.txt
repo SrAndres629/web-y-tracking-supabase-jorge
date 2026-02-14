@@ -1,0 +1,22 @@
+HTTP/1.1 200 OK
+Date: Sat, 14 Feb 2026 00:04:54 GMT
+Content-Type: text/css; charset=utf-8
+Connection: keep-alive
+Speculation-Rules: "/cdn-cgi/speculation"
+access-control-allow-origin: *
+Report-To: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=XluRvarNz0oajdhYRLD%2FIXt%2FUlkWLJloxkJtxK%2FMy%2BJ%2BBXOfgnKut05jV8FnQy%2FsLWEe5rpvr004PcRXRgkhl5qUOqXwCJE7%2F1%2F0x9m5nHLNyCFoTKY%3D"}]}
+Cache-Control: public, max-age=31536000, immutable, stale-while-revalidate=604800
+content-disposition: inline; filename="app.min.css"
+Nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+last-modified: Sat, 14 Feb 2026 00:01:07 GMT
+Server: cloudflare
+strict-transport-security: max-age=63072000
+x-vercel-cache: HIT
+x-vercel-id: bom1::mxcxk-1771027288945-164efcefada3
+vary: accept-encoding
+Age: 205
+cf-cache-status: HIT
+etag: W/"cf4509dc110de3468633eb258f272d2f"
+CF-RAY: 9cd84f8f6d9b9ce3-EZE
+alt-svc: h3=":443"; ma=86400
+
