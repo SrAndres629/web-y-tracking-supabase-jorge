@@ -1,0 +1,3 @@
+# 👤 IDENTITY & OAUTH
+google-auth>=2.20.0       # Google One Tap / OAuth Verification
+python-jose[cryptography]>=3.3.0 # JWT Processing

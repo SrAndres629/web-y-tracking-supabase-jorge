@@ -1,33 +1,12 @@
-# 🌐 WEB FRAMEWORK & API
-fastapi>=0.110.0
-uvicorn>=0.23.0
-jinja2>=3.1.3
-python-multipart>=0.0.7
-slowapi>=0.1.9            # Rate Limiting
-pydantic>=2.6.0
-pydantic-settings>=2.1.0
-orjson>=3.9.15            # Fast JSON
-itsdangerous>=2.1.2       # Security tokens
-starlette>=0.50.0
+# =================================================================
+# Jorge Aguirre Flores Web - MASTER REQUIREMENTS
+# =================================================================
+# Silicon Valley Production Standard
+# =================================================================
 
-# 📊 TRACKING & AD-TECH (Tracking)
-facebook-business>=18.0.0 # Meta CAPI
-rudder-sdk-python>=2.0.2  # RudderStack
-
-# 🗄️ PERSISTENCE & CACHING (Supabase, Redis)
-supabase>=2.3.0
-gotrue>=2.3.0            # Supabase Auth
-postgrest>=2.27.3        # Supabase DB
-storage3>=2.27.3         # Supabase Storage
-redis>=5.0.1             # Redis Client
-upstash-redis>=1.0.0     # Serverless Redis
-SQLAlchemy>=2.0.46       # ORM
-psycopg2-binary>=2.9.11  # Postgres Driver
-alembic>=1.18.3          # Migrations
-
-# 🛠️ PRODUCCIÓN & OPS (Producción)
-sentry-sdk[fastapi]>=1.40.0
-python-dotenv>=1.0.0
-requests>=2.31.0
-httpx[http2]>=0.25.2      # Async HTTP
-# anyio>=4.0.0            # (Optional) Implicit dependency of Starlette/FastAPI, kept implicit.
+-r requirements/00-core.txt
+-r requirements/01-persistence.txt
+-r requirements/02-tracking.txt
+-r requirements/03-platform.txt
+-r requirements/04-identity.txt
+-r requirements/05-stability.txt

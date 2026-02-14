@@ -1,4 +1,4 @@
-# 💎 Jorge Aguirre Flores - High-Performance Web & Tracking Core
+### 💎 Jorge Aguirre Flores - High-Performance Web & Tracking Core
 
 Este es el motor central de la presencia digital de Jorge Aguirre Flores. Un sistema diseñado bajo el **Silicon Valley Standard** de rendimiento, utilizando una arquitectura híbrida Serverless para garantizar tiempos de respuesta ultra-rápidos (<100ms TTFB) y un tracking de conversiones de grado industrial.
 
@@ -34,24 +34,34 @@ graph TD
 
 ---
 
+## 📦 Arquitectura de Dependencias (Modularized)
+
+Para maximizar la mantenibilidad y la velocidad de construcción, el sistema utiliza una estructura de dependencias segmentada en la carpeta `requirements/`:
+
+*   **`00-core.txt`**: El motor base (FastAPI) + `beartype` para validación de tipos O(1) de alto rendimiento.
+*   **`01-persistence.txt`**: Puente de datos. Integra **Supabase (Postgres)** y **Redis** (Dual-mode: Sync para tests, REST/Upstash para producción serverless).
+*   **`02-tracking.txt`**: SDKs industriales para **Meta CAPI** y **RudderStack**.
+*   **`03-platform.txt`**: Suite de Observabilidad Élite. Combina **Sentry**, **Structlog** (logs legibles por máquinas) y **Logfire** (trazabilidad profunda de Pydantic).
+*   **`04-identity.txt`**: Seguridad y Verificación. Manejo de **OAuth (Google Auth)** y **JWT Processing**.
+*   **`05-stability.txt`**: Capa de Resiliencia. Incluye `tenacity` (retries), `slowapi` (rate limiting), **HTMX** (UI reactiva) y **BeautifulSoup4** (Auditoría SEO en cada build).
+
+---
+
 ## 🛠️ Stack Tecnológico (Deep Dive)
 
 ### 🐍 Backend: FastAPI & Pythonic Excellence
 *   **Engine**: FastAPI (Async) para máximo rendimiento I/O.
-*   **Validation**: Pydantic para esquemas de datos estrictos.
-*   **Database Management**: `psycopg2` implementado con un patrón de conexión única por petición para optimizar el handshaking de TLS en PostgreSQL.
-*   **Limiter & Cache**: Implementación nativa en `app/limiter.py` que consulta Upstash Redis para prevenir ataques de fuerza bruta y scraping sin penalizar a usuarios legítimos.
+*   **Validation & Perf**: Pydantic v2 + `beartype` para asegurar que el sistema sea un "Zero-Defect system" sin penalización de velocidad.
+*   **Observability**: **Logfire** proporciona telemetría en tiempo real sobre el ciclo de vida de cada petición.
+
+### 🗄️ Persistence & Distributed Cache
+*   **Supabase**: Base de datos Postgres con gestión de identidades integrada.
+*   **Upstash Redis**: Fundamental para la **Deduplicación de Eventos**. Evita el "Split-Brain" en el tracking de conversiones mediante un cache global distribuido.
 
 ### 🎨 Frontend: Premium Motion & UX
-*   **Jinja2 Templates**: Renderizado del lado del servidor (SSR) para SEO máximo.
-*   **GSAP (GreenSock)**: Motor de animaciones de alto rendimiento para interacciones fluidas.
-*   **Lenis Scroll**: Suavizado de scroll (Smooth Scroll) para una experiencia de navegación "premium".
-*   **Asset Pipeline**: CSS puro y JS modular, servidos con compresión Brotli/Gzip desde el Edge.
-
-### 📈 Tracking & Data: Diamond Standard
-*   **Hybrid Tracking**: Sistema dual que combina el Meta Pixel (Browser) con la Meta Conversions API (Server) mediante `app/meta_capi.py`.
-*   **Deduplication Core**: Uso de Redis para almacenar `event_id` y asegurar que Meta no cuente dos veces la misma conversión, mejorando la eficiencia de los Ads.
-*   **Identity Middleware**: `app/middleware/identity.py` captura huellas digitales anónimas para mantener la atribución a lo largo de la sesión sin comprometer la privacidad.
+*   **HTMX**: Implementado para transiciones de UIX fluidas en dispositivos móviles sin el overhead de un framework JS pesado.
+*   **GSAP & Lenis**: Animaciones y scroll de grado cinematográfico.
+*   **SEO Monitoring**: Cada despliegue es auditado automáticamente por un motor basado en `bs4` para verificar la jerarquía semántica.
 
 ---
 
@@ -60,41 +70,35 @@ graph TD
 El proyecto sigue una estructura de **Clean Architecture / DDD** organizada en capas:
 
 ```bash
-├── api/                   # Adaptador Mangum para entrada Vercel
-├── app/                   # Lógica central del sistema (organizada por capas Clean/DDD)
-│   ├── application/       # Capa de Aplicación (Comandos, Consultas, DTOs)
-│   ├── core/              # Capa Core (utilidades, Result types)
-│   ├── domain/            # Capa de Dominio (Entidades, Value Objects)
-│   ├── infrastructure/    # Capa de Infraestructura (repositorios, APIs externas)
-│   └── interfaces/        # Capa de Interfaz (rutas API, middleware)
-│       └── api/
-│           └── routes/    # Endpoints de la API (admin, identity, seo, pages, tracking)
-├── scripts/               # Automatización (Enriquecimiento de datos, Cloudflare)
-├── tests/                 # Suite de QA (Unitarios, Integración, E2E)
-├── git_sync.py            # Pipeline de despliegue "Iron Gate"
-└── main.py                # Punto de entrada para ejecución local
+├── api/                   # Entrada Vercel & Templates
+├── app/                   # Lógica central (Clean/DDD)
+│   ├── application/       # Comandos, Handlers, DTOs
+│   ├── core/              # Utilidades de bajo nivel
+│   ├── domain/            # Entidades y Repositorios Port
+│   ├── infrastructure/    # Adaptadores (Postgres, Redis, Meta)
+│   └── interfaces/        # Rutas API, Middlewares
+├── requirements/          # Dependencias segmentadas (Core, Infra, Stability)
+├── scripts/               # Herramientas de soporte y legacy
+├── tests/                 # QA Pipeline (L1-L6 Supervisor System)
+├── git_sync.py            # Pipeline de despliegue automatizado
+└── main.py                # Entrada para desarrollo local
 ```
 
 ---
 
-## 🚀 Guía de Despliegue y Desarrollo
+## 🚀 Guía de Desarrollo
 
 ### Ejecución Local
-1.  **Entorno**: Crear un `venv` y activar: `python -m venv venv`.
-2.  **Dependencias**: `pip install -r requirements.txt`.
-3.  **Variables**: Configurar `.env` con las credenciales de Supabase y Meta.
-4.  **Run**: `python main.py` o `uvicorn main:app --reload`.
+1.  **Entorno**: `python -m venv venv` e inyectar `.env`.
+2.  **Modular Deps**: `pip install -r requirements-dev.txt`.
+3.  **Run**: `python main.py`.
 
-### The Iron Gate (Despliegue)
-Para desplegar, utiliza exclusivamente:
-```bash
-python git_sync.py "Descripción del cambio"
-```
-Este script ejecutará la **Auditoría de Arquitectura Diamond**, bloqueando el despliegue si detecta:
-*   Secretos hardcodeados o placeholders.
-*   Funciones de más de 50 líneas sin `# noqa`.
-*   Prints de debug en producción.
-*   Warning de cualquier tipo en la suite de tests.
+### Pipeline "Iron Gate"
+Para desplegar: `python git_sync.py "Commit message"`.
+Este script bloquea el despliegue si falla la **Auditoría Diamante** (seguridad, tests L1-L5, integridad de assets y SEO).
+
+---
+
 
 ---
 

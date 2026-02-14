@@ -1,0 +1,10 @@
+# 🗄️ PERSISTENCE & CACHING
+supabase>=2.3.0
+gotrue>=2.3.0            # Supabase Auth
+postgrest>=2.27.3        # Supabase DB
+storage3>=2.27.3         # Supabase Storage
+redis>=5.0.1             # Redis Client (Platform/Sync)
+upstash-redis>=1.0.0     # Serverless Redis (REST)
+SQLAlchemy>=2.0.46       # ORM
+psycopg2-binary>=2.9.11  # Postgres Driver
+alembic>=1.18.3          # Migrations

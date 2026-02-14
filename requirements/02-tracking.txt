@@ -1,0 +1,3 @@
+# 📊 TRACKING & AD-TECH
+facebook-business>=18.0.0 # Meta CAPI SDK
+rudder-sdk-python>=2.0.2  # RudderStack SDK

@@ -1,0 +1,7 @@
+# 🛠️ PLATFORM & OPS
+sentry-sdk[fastapi]>=1.40.0
+python-dotenv>=1.0.0
+requests>=2.31.0
+httpx[http2]>=0.25.2      # Async HTTP
+structlog>=24.1.0         # Structured machine-readable logging
+logfire[fastapi]>=0.51.0  # Deep observability & tracing
