@@ -33,10 +33,10 @@ logger.info(f"💎 SYSTEM CORE: Version {SYSTEM_VERSION} initialized.")
 # MINI-WORKERS (Execute after HTTP response)
 # =================================================================
 
-def bg_save_visitor(external_id, fbclid, client_ip, user_agent, source, utm_data):
+def bg_save_visitor(external_id, fbclid, client_ip, user_agent, source, utm_data, email=None, phone=None):
     """Saves visitor without blocking page render"""
     try:
-        legacy.save_visitor(external_id, fbclid, client_ip, user_agent, source, utm_data)
+        legacy.save_visitor(external_id, fbclid, client_ip, user_agent, source, utm_data, email=email, phone=phone)
         logger.info(f"✅ [BG] Visitor saved: {external_id[:16]}...")
     except Exception as e:
         logger.error(f"❌ [BG] Error saving visitor: {e}")
@@ -216,7 +216,7 @@ def _schedule_tracking(bt, request, ident, ext_id, fbclid, fbp, event_id):
         'utm_source': request.query_params.get('utm_source'),
         'utm_medium': request.query_params.get('utm_medium'),
         'utm_campaign': request.query_params.get('utm_campaign'),
-    })
+    }, email=None, phone=None)
     if fbclid:
         bt.add_task(legacy.cache_visitor_data, ext_id, {"fbclid": fbclid})
     

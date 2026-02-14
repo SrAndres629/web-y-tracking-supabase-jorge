@@ -17,17 +17,17 @@ import { MotionEngine } from './motion/index.js';
 function initLegacy() {
   // Check for debug mode
   const debug = new URLSearchParams(window.location.search).has('debug');
-  
+
   // Initialize engines
   if (!window.TrackingEngine) {
     TrackingEngine.init({ debug });
   }
-  
+
   if (!window.UIEngine) {
     UIEngine.init();
   }
-  
-  if (!window.MotionEngine && typeof gsap !== 'undefined') {
+
+  if (MotionEngine && !MotionEngine.initialized && typeof gsap !== 'undefined') {
     MotionEngine.init();
   }
 
@@ -48,7 +48,7 @@ window.UIEngine = UIEngine;
 window.MotionEngine = MotionEngine;
 
 // Turnstile callback (Anti-Bot) - requerido por templates
-window.onTurnstileSuccess = function(token) {
+window.onTurnstileSuccess = function (token) {
   if (TrackingEngine.initialized) {
     TrackingEngine.turnstileToken = token;
     TrackingEngine.isHuman = true;

@@ -1,0 +1,427 @@
+tests/L1_atoms/test_tracking_math.py::test_entropy_collision_resistance
+tests/L1_atoms/test_tracking_math.py::test_id_structure_strictness
+tests/L1_atoms/test_tracking_math.py::test_monotonicity
+tests/L1_atoms/test_tracking_math.py::test_fbp_statistical_distribution
+tests/L1_atoms/test_tracking_math.py::test_hashing_consistency_math_email
+tests/L1_atoms/test_tracking_math.py::test_hashing_consistency_math_phone
+tests/L1_atoms/test_tracking_math.py::test_deduplication_idempotency_math
+tests/L2_components/test_database_mock.py::test_db_config_logic
+tests/L2_components/test_database_mock.py::test_check_connection_mock
+tests/L2_components/test_meta_capi.py::test_enhanced_user_data_hashing
+tests/L2_components/test_meta_capi.py::test_deduplication_logic
+tests/L2_components/test_meta_capi.py::test_sandbox_interception
+tests/L2_components/test_meta_capi.py::test_fallback_mechanism
+tests/L2_components/test_services.py::test_pii_normalization
+tests/L2_components/test_services.py::test_content_manager_ram_cache[asyncio]
+tests/L2_components/test_services.py::test_content_manager_fallback[asyncio]
+tests/L2_components/test_tracking.py::test_generate_event_id_uniqueness
+tests/L2_components/test_tracking.py::test_generate_fbc_cookie_logic
+tests/L2_components/test_tracking.py::test_generate_fbp_cookie_logic
+tests/L2_components/test_tracking.py::test_fbc_persistence_logic
+tests/L4_supervisor/test_import_integrity.py::test_no_circular_imports
+tests/L4_supervisor/test_import_integrity.py::test_api_entrypoint_latency
+tests/L5_system/test_assets_integrity.py::test_build_config_exists
+tests/L5_system/test_assets_integrity.py::test_css_integrity
+tests/L5_system/test_real_connection.py::test_real_database_connection
+tests/frontend/rendering/test_browser_render.py::test_frontend_full_render
+tests/frontend/rendering/test_playwright_smoke.py::test_production_smoke_200
+tests/frontend/rendering/test_playwright_smoke.py::test_local_smoke_200
+tests/frontend/templates/test_template_integrity.py::test_jinja2_template_syntax
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_banned_patterns[components/footer.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_banned_patterns[components/navbar.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_banned_patterns[pages/admin/dashboard.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_banned_patterns[pages/site/home.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_banned_patterns[layouts/base.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_banned_patterns[layouts/base_admin.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_banned_patterns[sections/services.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_banned_patterns[sections/cta_final.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_banned_patterns[sections/hero.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_banned_patterns[sections/gallery.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_banned_patterns[sections/faq.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_banned_patterns[sections/process.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_banned_patterns[sections/testimonials.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_inline_clarity[components/footer.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_inline_clarity[components/navbar.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_inline_clarity[pages/admin/dashboard.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_inline_clarity[pages/site/home.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_inline_clarity[layouts/base.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_inline_clarity[layouts/base_admin.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_inline_clarity[sections/services.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_inline_clarity[sections/cta_final.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_inline_clarity[sections/hero.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_inline_clarity[sections/gallery.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_inline_clarity[sections/faq.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_inline_clarity[sections/process.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_inline_clarity[sections/testimonials.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_duplicate_pixel_init[components/footer.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_duplicate_pixel_init[components/navbar.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_duplicate_pixel_init[pages/admin/dashboard.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_duplicate_pixel_init[pages/site/home.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_duplicate_pixel_init[layouts/base.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_duplicate_pixel_init[layouts/base_admin.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_duplicate_pixel_init[sections/services.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_duplicate_pixel_init[sections/cta_final.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_duplicate_pixel_init[sections/hero.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_duplicate_pixel_init[sections/gallery.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_duplicate_pixel_init[sections/faq.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_duplicate_pixel_init[sections/process.html]
+tests/frontend/templates/test_zaraz_templates.py::TestNoTrackingConflicts::test_no_duplicate_pixel_init[sections/testimonials.html]
+tests/frontend/templates/test_zaraz_templates.py::TestBaseTemplateZaraz::test_zaraz_comment_exists
+tests/frontend/templates/test_zaraz_templates.py::TestBaseTemplateZaraz::test_noscript_fallback_exists
+tests/frontend/templates/test_zaraz_templates.py::TestBaseTemplateZaraz::test_noscript_has_pixel
+tests/frontend/templates/test_zaraz_templates.py::TestBaseTemplateZaraz::test_no_duplicate_zaraz_script
+tests/frontend/templates/test_zaraz_templates.py::TestBaseTemplateZaraz::test_clarity_not_inline
+tests/frontend/templates/test_zaraz_templates.py::TestBaseTemplateZaraz::test_clarity_has_zaraz_comment
+tests/frontend/templates/test_zaraz_templates.py::TestTrackingJsZaraz::test_zaraz_track_bridge_exists
+tests/frontend/templates/test_zaraz_templates.py::TestTrackingJsZaraz::test_no_duplicate_pageview_pixel
+tests/frontend/templates/test_zaraz_templates.py::TestTrackingJsZaraz::test_capi_pageview_exists
+tests/frontend/templates/test_zaraz_templates.py::TestTrackingJsZaraz::test_zaraz_first_priority
+tests/frontend/templates/test_zaraz_templates.py::TestTrackingJsZaraz::test_retry_queue_supports_zaraz
+tests/frontend/templates/test_zaraz_templates.py::TestCTATrackingHooks::test_hero_has_conversion_handler
+tests/frontend/templates/test_zaraz_templates.py::TestCTATrackingHooks::test_cta_final_has_conversion_handler
+tests/frontend/templates/test_zaraz_templates.py::TestCTATrackingHooks::test_services_has_data_attributes
+tests/frontend/templates/test_zaraz_templates.py::TestCTATrackingHooks::test_gallery_has_conversion_handler
+tests/platform/cloudflare/test_zaraz.py::TestZarazConnectivity::test_api_token_is_valid
+tests/platform/cloudflare/test_zaraz.py::TestZarazConnectivity::test_zaraz_config_accessible
+tests/platform/cloudflare/test_zaraz.py::TestZarazSettings::test_auto_inject_enabled
+tests/platform/cloudflare/test_zaraz.py::TestZarazSettings::test_data_layer_enabled
+tests/platform/cloudflare/test_zaraz.py::TestZarazSettings::test_history_change_tracking
+tests/platform/cloudflare/test_zaraz.py::TestZarazSettings::test_debug_key_matches
+tests/platform/cloudflare/test_zaraz.py::TestZarazFacebookPixel::test_facebook_pixel_exists
+tests/platform/cloudflare/test_zaraz.py::TestZarazFacebookPixel::test_facebook_pixel_enabled
+tests/platform/cloudflare/test_zaraz.py::TestZarazFacebookPixel::test_pixel_id_correct
+tests/platform/cloudflare/test_zaraz.py::TestZarazFacebookPixel::test_access_token_present
+tests/platform/cloudflare/test_zaraz.py::TestZarazFacebookPixel::test_test_event_code_present
+tests/platform/cloudflare/test_zaraz.py::TestZarazFacebookPixel::test_ecommerce_enabled
+tests/platform/cloudflare/test_zaraz.py::TestZarazActions::test_pageview_action_exists
+tests/platform/cloudflare/test_zaraz.py::TestZarazActions::test_pageview_action_enabled
+tests/platform/cloudflare/test_zaraz.py::TestZarazActions::test_custom_event_action_exists
+tests/platform/cloudflare/test_zaraz.py::TestZarazActions::test_pageview_fires_on_pageview_trigger
+tests/platform/cloudflare/test_zaraz.py::TestZarazTriggers::test_pageview_trigger_exists
+tests/platform/cloudflare/test_zaraz.py::TestZarazTriggers::test_pageview_trigger_is_pageload
+tests/platform/cloudflare/test_zaraz.py::TestZarazTriggers::test_all_tracks_trigger_exists
+tests/platform/cloudflare/test_zaraz.py::TestZarazTriggers::test_all_tracks_has_exclusion_rules
+tests/platform/cloudflare/test_zaraz.py::TestZarazWorkflow::test_workflow_is_realtime
+tests/platform/deployment/test_environment_contracts.py::test_database_url_alias_contract
+tests/platform/deployment/test_environment_contracts.py::test_critical_env_visibility
+tests/platform/deployment/test_environment_contracts.py::test_vercel_fail_fast_contract
+tests/platform/deployment/test_serverless_packaging.py::test_vercel_includes_required_paths
+tests/platform/deployment/test_serverless_packaging.py::test_required_directories_exist_for_serverless_packaging
+tests/platform/deployment/test_vercel_manifest.py::test_vercel_include_files_physical_contract
+tests/platform/deployment/test_vercel_manifest.py::test_critical_templates_not_ignored_by_git
+tests/platform/deployment/test_vercel_manifest.py::test_public_folder_name_taboo
+tests/platform/infra/test_infrastructure.py::test_environment_variables
+tests/platform/infra/test_infrastructure.py::test_database_connection
+tests/platform/infra/test_infrastructure.py::test_redis_connection
+tests/platform/infra/test_real_connections.py::test_real_redis_connection
+tests/platform/infra/test_real_connections.py::test_real_database_connection
+tests/platform/infra/test_real_connections.py::test_meta_configuration_loaded
+tests/platform/infra/test_real_connections.py::test_qstash_configuration_loaded
+tests/platform/observability/test_live_infrastructure.py::test_supabase_security_audit
+tests/platform/observability/test_live_infrastructure.py::test_cloudflare_access_integrity
+tests/platform/observability/test_live_infrastructure.py::test_vercel_deployment_health
+
+==================================== ERRORS ====================================
+____________ ERROR collecting tests/L1_atoms/test_dto_snapshots.py _____________
+ImportError while importing test module '/home/jorand/antigravityobuntu/tests/L1_atoms/test_dto_snapshots.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/L1_atoms/test_dto_snapshots.py:16: in <module>
+    from app.domain.models.values import ExternalId, Phone, Email
+app/domain/models/__init__.py:10: in <module>
+    from app.domain.models.values import EventId, ExternalId, Phone, Email
+app/domain/models/values.py:19: in <module>
+    from typing import Optional, Self
+E   ImportError: cannot import name 'Self' from 'typing' (/usr/lib/python3.10/typing.py)
+__________ ERROR collecting tests/L1_atoms/test_lead_state_machine.py __________
+ImportError while importing test module '/home/jorand/antigravityobuntu/tests/L1_atoms/test_lead_state_machine.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/L1_atoms/test_lead_state_machine.py:12: in <module>
+    from app.domain.models.lead import Lead, LeadStatus
+app/domain/models/__init__.py:10: in <module>
+    from app.domain.models.values import EventId, ExternalId, Phone, Email
+app/domain/models/values.py:19: in <module>
+    from typing import Optional, Self
+E   ImportError: cannot import name 'Self' from 'typing' (/usr/lib/python3.10/typing.py)
+__________ ERROR collecting tests/L1_atoms/test_values_properties.py ___________
+ImportError while importing test module '/home/jorand/antigravityobuntu/tests/L1_atoms/test_values_properties.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/L1_atoms/test_values_properties.py:11: in <module>
+    from app.domain.models.values import (
+app/domain/models/__init__.py:10: in <module>
+    from app.domain.models.values import EventId, ExternalId, Phone, Email
+app/domain/models/values.py:19: in <module>
+    from typing import Optional, Self
+E   ImportError: cannot import name 'Self' from 'typing' (/usr/lib/python3.10/typing.py)
+_______ ERROR collecting tests/L3_modules/test_concurrent_operations.py ________
+ImportError while importing test module '/home/jorand/antigravityobuntu/tests/L3_modules/test_concurrent_operations.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/L3_modules/test_concurrent_operations.py:14: in <module>
+    from app.domain.models.values import ExternalId, Phone
+app/domain/models/__init__.py:10: in <module>
+    from app.domain.models.values import EventId, ExternalId, Phone, Email
+app/domain/models/values.py:19: in <module>
+    from typing import Optional, Self
+E   ImportError: cannot import name 'Self' from 'typing' (/usr/lib/python3.10/typing.py)
+____________ ERROR collecting tests/L3_modules/test_integration.py _____________
+ImportError while importing test module '/home/jorand/antigravityobuntu/tests/L3_modules/test_integration.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/L3_modules/test_integration.py:9: in <module>
+    from main import app
+main.py:119: in <module>
+    from app.middleware.early_hints import EarlyHintsMiddleware
+app/middleware/early_hints.py:3: in <module>
+    from app.interfaces.api.routes.pages import SYSTEM_VERSION
+app/interfaces/api/routes/pages.py:15: in <module>
+    from app.interfaces.api.dependencies import get_legacy_facade
+app/interfaces/api/dependencies.py:18: in <module>
+    from app.application.commands.track_event import TrackEventHandler
+app/application/commands/__init__.py:8: in <module>
+    from app.application.commands.track_event import TrackEventCommand, TrackEventHandler
+app/application/commands/track_event.py:17: in <module>
+    from app.domain.models.events import TrackingEvent, EventName
+app/domain/models/__init__.py:10: in <module>
+    from app.domain.models.values import EventId, ExternalId, Phone, Email
+app/domain/models/values.py:19: in <module>
+    from typing import Optional, Self
+E   ImportError: cannot import name 'Self' from 'typing' (/usr/lib/python3.10/typing.py)
+__________ ERROR collecting tests/L3_modules/test_strict_turnstile.py __________
+ImportError while importing test module '/home/jorand/antigravityobuntu/tests/L3_modules/test_strict_turnstile.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/L3_modules/test_strict_turnstile.py:2: in <module>
+    from main import app
+main.py:119: in <module>
+    from app.middleware.early_hints import EarlyHintsMiddleware
+app/middleware/early_hints.py:3: in <module>
+    from app.interfaces.api.routes.pages import SYSTEM_VERSION
+app/interfaces/api/routes/pages.py:15: in <module>
+    from app.interfaces.api.dependencies import get_legacy_facade
+app/interfaces/api/dependencies.py:18: in <module>
+    from app.application.commands.track_event import TrackEventHandler
+app/application/commands/__init__.py:8: in <module>
+    from app.application.commands.track_event import TrackEventCommand, TrackEventHandler
+app/application/commands/track_event.py:17: in <module>
+    from app.domain.models.events import TrackingEvent, EventName
+app/domain/models/__init__.py:10: in <module>
+    from app.domain.models.values import EventId, ExternalId, Phone, Email
+app/domain/models/values.py:19: in <module>
+    from typing import Optional, Self
+E   ImportError: cannot import name 'Self' from 'typing' (/usr/lib/python3.10/typing.py)
+___________ ERROR collecting tests/L3_modules/test_synchronicity.py ____________
+ImportError while importing test module '/home/jorand/antigravityobuntu/tests/L3_modules/test_synchronicity.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/L3_modules/test_synchronicity.py:3: in <module>
+    from main import app
+main.py:119: in <module>
+    from app.middleware.early_hints import EarlyHintsMiddleware
+app/middleware/early_hints.py:3: in <module>
+    from app.interfaces.api.routes.pages import SYSTEM_VERSION
+app/interfaces/api/routes/pages.py:15: in <module>
+    from app.interfaces.api.dependencies import get_legacy_facade
+app/interfaces/api/dependencies.py:18: in <module>
+    from app.application.commands.track_event import TrackEventHandler
+app/application/commands/__init__.py:8: in <module>
+    from app.application.commands.track_event import TrackEventCommand, TrackEventHandler
+app/application/commands/track_event.py:17: in <module>
+    from app.domain.models.events import TrackingEvent, EventName
+app/domain/models/__init__.py:10: in <module>
+    from app.domain.models.values import EventId, ExternalId, Phone, Email
+app/domain/models/values.py:19: in <module>
+    from typing import Optional, Self
+E   ImportError: cannot import name 'Self' from 'typing' (/usr/lib/python3.10/typing.py)
+____________ ERROR collecting tests/L3_modules/test_traceability.py ____________
+ImportError while importing test module '/home/jorand/antigravityobuntu/tests/L3_modules/test_traceability.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/L3_modules/test_traceability.py:13: in <module>
+    from main import app
+main.py:119: in <module>
+    from app.middleware.early_hints import EarlyHintsMiddleware
+app/middleware/early_hints.py:3: in <module>
+    from app.interfaces.api.routes.pages import SYSTEM_VERSION
+app/interfaces/api/routes/pages.py:15: in <module>
+    from app.interfaces.api.dependencies import get_legacy_facade
+app/interfaces/api/dependencies.py:18: in <module>
+    from app.application.commands.track_event import TrackEventHandler
+app/application/commands/__init__.py:8: in <module>
+    from app.application.commands.track_event import TrackEventCommand, TrackEventHandler
+app/application/commands/track_event.py:17: in <module>
+    from app.domain.models.events import TrackingEvent, EventName
+app/domain/models/__init__.py:10: in <module>
+    from app.domain.models.values import EventId, ExternalId, Phone, Email
+app/domain/models/values.py:19: in <module>
+    from typing import Optional, Self
+E   ImportError: cannot import name 'Self' from 'typing' (/usr/lib/python3.10/typing.py)
+_______ ERROR collecting tests/frontend/rendering/test_asset_delivery.py _______
+ImportError while importing test module '/home/jorand/antigravityobuntu/tests/frontend/rendering/test_asset_delivery.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/frontend/rendering/test_asset_delivery.py:4: in <module>
+    from main import app
+main.py:119: in <module>
+    from app.middleware.early_hints import EarlyHintsMiddleware
+app/middleware/early_hints.py:3: in <module>
+    from app.interfaces.api.routes.pages import SYSTEM_VERSION
+app/interfaces/api/routes/pages.py:15: in <module>
+    from app.interfaces.api.dependencies import get_legacy_facade
+app/interfaces/api/dependencies.py:18: in <module>
+    from app.application.commands.track_event import TrackEventHandler
+app/application/commands/__init__.py:8: in <module>
+    from app.application.commands.track_event import TrackEventCommand, TrackEventHandler
+app/application/commands/track_event.py:17: in <module>
+    from app.domain.models.events import TrackingEvent, EventName
+app/domain/models/__init__.py:10: in <module>
+    from app.domain.models.values import EventId, ExternalId, Phone, Email
+app/domain/models/values.py:19: in <module>
+    from typing import Optional, Self
+E   ImportError: cannot import name 'Self' from 'typing' (/usr/lib/python3.10/typing.py)
+_______________ ERROR collecting tests/frontend/seo/test_seo.py ________________
+ImportError while importing test module '/home/jorand/antigravityobuntu/tests/frontend/seo/test_seo.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/frontend/seo/test_seo.py:3: in <module>
+    from main import app
+main.py:119: in <module>
+    from app.middleware.early_hints import EarlyHintsMiddleware
+app/middleware/early_hints.py:3: in <module>
+    from app.interfaces.api.routes.pages import SYSTEM_VERSION
+app/interfaces/api/routes/pages.py:15: in <module>
+    from app.interfaces.api.dependencies import get_legacy_facade
+app/interfaces/api/dependencies.py:18: in <module>
+    from app.application.commands.track_event import TrackEventHandler
+app/application/commands/__init__.py:8: in <module>
+    from app.application.commands.track_event import TrackEventCommand, TrackEventHandler
+app/application/commands/track_event.py:17: in <module>
+    from app.domain.models.events import TrackingEvent, EventName
+app/domain/models/__init__.py:10: in <module>
+    from app.domain.models.values import EventId, ExternalId, Phone, Email
+app/domain/models/values.py:19: in <module>
+    from typing import Optional, Self
+E   ImportError: cannot import name 'Self' from 'typing' (/usr/lib/python3.10/typing.py)
+____________ ERROR collecting tests/frontend/ux/test_ux_fluidity.py ____________
+ImportError while importing test module '/home/jorand/antigravityobuntu/tests/frontend/ux/test_ux_fluidity.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/frontend/ux/test_ux_fluidity.py:3: in <module>
+    from main import app
+main.py:119: in <module>
+    from app.middleware.early_hints import EarlyHintsMiddleware
+app/middleware/early_hints.py:3: in <module>
+    from app.interfaces.api.routes.pages import SYSTEM_VERSION
+app/interfaces/api/routes/pages.py:15: in <module>
+    from app.interfaces.api.dependencies import get_legacy_facade
+app/interfaces/api/dependencies.py:18: in <module>
+    from app.application.commands.track_event import TrackEventHandler
+app/application/commands/__init__.py:8: in <module>
+    from app.application.commands.track_event import TrackEventCommand, TrackEventHandler
+app/application/commands/track_event.py:17: in <module>
+    from app.domain.models.events import TrackingEvent, EventName
+app/domain/models/__init__.py:10: in <module>
+    from app.domain.models.values import EventId, ExternalId, Phone, Email
+app/domain/models/values.py:19: in <module>
+    from typing import Optional, Self
+E   ImportError: cannot import name 'Self' from 'typing' (/usr/lib/python3.10/typing.py)
+______ ERROR collecting tests/platform/deployment/test_assets_runtime.py _______
+ImportError while importing test module '/home/jorand/antigravityobuntu/tests/platform/deployment/test_assets_runtime.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/platform/deployment/test_assets_runtime.py:4: in <module>
+    from main import app
+main.py:119: in <module>
+    from app.middleware.early_hints import EarlyHintsMiddleware
+app/middleware/early_hints.py:3: in <module>
+    from app.interfaces.api.routes.pages import SYSTEM_VERSION
+app/interfaces/api/routes/pages.py:15: in <module>
+    from app.interfaces.api.dependencies import get_legacy_facade
+app/interfaces/api/dependencies.py:18: in <module>
+    from app.application.commands.track_event import TrackEventHandler
+app/application/commands/__init__.py:8: in <module>
+    from app.application.commands.track_event import TrackEventCommand, TrackEventHandler
+app/application/commands/track_event.py:17: in <module>
+    from app.domain.models.events import TrackingEvent, EventName
+app/domain/models/__init__.py:10: in <module>
+    from app.domain.models.values import EventId, ExternalId, Phone, Email
+app/domain/models/values.py:19: in <module>
+    from typing import Optional, Self
+E   ImportError: cannot import name 'Self' from 'typing' (/usr/lib/python3.10/typing.py)
+__________ ERROR collecting tests/platform/infra/test_performance.py ___________
+ImportError while importing test module '/home/jorand/antigravityobuntu/tests/platform/infra/test_performance.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/platform/infra/test_performance.py:16: in <module>
+    from main import app
+main.py:119: in <module>
+    from app.middleware.early_hints import EarlyHintsMiddleware
+app/middleware/early_hints.py:3: in <module>
+    from app.interfaces.api.routes.pages import SYSTEM_VERSION
+app/interfaces/api/routes/pages.py:15: in <module>
+    from app.interfaces.api.dependencies import get_legacy_facade
+app/interfaces/api/dependencies.py:18: in <module>
+    from app.application.commands.track_event import TrackEventHandler
+app/application/commands/__init__.py:8: in <module>
+    from app.application.commands.track_event import TrackEventCommand, TrackEventHandler
+app/application/commands/track_event.py:17: in <module>
+    from app.domain.models.events import TrackingEvent, EventName
+app/domain/models/__init__.py:10: in <module>
+    from app.domain.models.values import EventId, ExternalId, Phone, Email
+app/domain/models/values.py:19: in <module>
+    from typing import Optional, Self
+E   ImportError: cannot import name 'Self' from 'typing' (/usr/lib/python3.10/typing.py)
+=============================== warnings summary ===============================
+tests/L5_system/test_assets_integrity.py:32
+  /home/jorand/antigravityobuntu/tests/L5_system/test_assets_integrity.py:32: PytestUnknownMarkWarning: Unknown pytest.mark.audit - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.audit
+
+tests/L5_system/test_assets_integrity.py:47
+  /home/jorand/antigravityobuntu/tests/L5_system/test_assets_integrity.py:47: PytestUnknownMarkWarning: Unknown pytest.mark.audit - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.audit
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+ERROR tests/L1_atoms/test_dto_snapshots.py
+ERROR tests/L1_atoms/test_lead_state_machine.py
+ERROR tests/L1_atoms/test_values_properties.py
+ERROR tests/L3_modules/test_concurrent_operations.py
+ERROR tests/L3_modules/test_integration.py
+ERROR tests/L3_modules/test_strict_turnstile.py
+ERROR tests/L3_modules/test_synchronicity.py
+ERROR tests/L3_modules/test_traceability.py
+ERROR tests/frontend/rendering/test_asset_delivery.py
+ERROR tests/frontend/seo/test_seo.py
+ERROR tests/frontend/ux/test_ux_fluidity.py
+ERROR tests/platform/deployment/test_assets_runtime.py
+ERROR tests/platform/infra/test_performance.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 13 errors during collection !!!!!!!!!!!!!!!!!!!
+122 tests collected, 13 errors in 0.92s

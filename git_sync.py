@@ -29,12 +29,12 @@ CLOUDFLARE_EMAIL = os.getenv("CLOUDFLARE_EMAIL")
 CLOUDFLARE_ZONE_ID = os.getenv("CLOUDFLARE_ZONE_ID")
 
 VERCEL_TOKEN = os.getenv("VERCEL_TOKEN")
-VERCEL_TEAM_ID = "team_VrT30Jn8hOQ8OBW89aErcCkZ"
-VERCEL_PROJECT_ID = "prj_W6Q6T34VawNikJ0JCVFsXm9qj9aN"
+VERCEL_TEAM_ID = os.getenv("VERCEL_TEAM_ID", "team_VrT30Jn8hOQ8OBW89aErcCkZ")
+VERCEL_PROJECT_ID = os.getenv("VERCEL_PROJECT_ID", "prj_W6Q6T34VawNikJ0JCVFsXm9qj9aN")
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-SUPABASE_PROJECT_ID = "eycumxvxyqzznjkwaumx"
+SUPABASE_PROJECT_ID = os.getenv("SUPABASE_PROJECT_ID", "eycumxvxyqzznjkwaumx")
 
 REPO_PATH = os.path.dirname(os.path.abspath(__file__))
 # -------------------------------------------------------

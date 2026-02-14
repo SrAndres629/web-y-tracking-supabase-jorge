@@ -47,10 +47,9 @@ const TrackingEngine = {
     // 4. Observers (ViewContent, Sliders)
     TrackingObservers.init();
 
-    // 5. PageView is handled by Backend (Elite CAPI) to ensure single source of truth
-    // CAPI.trackAsync('PageView', { 
-    //   event_id: identity.eventId 
-    // });
+    // 5. PageView - Fire Pixel (Frontend) with shared eventId for Deduplication
+    // Note: CAPI is handled by Backend for PageView.
+    PixelBridge.track('PageView', {}, { eventId: identity.eventId });
 
     this._log('📊 [Tracking Engine] Active (Zaraz + CAPI)');
 

@@ -123,6 +123,10 @@ app.add_middleware(EarlyHintsMiddleware)
 from app.middleware.security import SecurityHeadersMiddleware
 app.add_middleware(SecurityHeadersMiddleware)
 
+# Middleware: Cache Control (CPM Optimization)
+from app.middleware.cache import CacheControlMiddleware
+app.add_middleware(CacheControlMiddleware)
+
 # =================================================================
 # SECURITY: RATE LIMITING (Redis-Backed)
 # =================================================================

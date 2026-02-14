@@ -229,9 +229,32 @@ def check_motor_cortex():
         sys.exit(0)
 
     for filename in files:
-        if filename == "task_halt.md" or filename == "task_user.md": continue
-        
+        if filename == "task_halt.md": continue
+
         task_path = os.path.join(MOTOR_DIR, filename)
+        
+        # Handle user-generated tasks by assigning them to Kimi for planning
+        if filename.startswith("task_user_"):
+            log(f"New user directive received: {filename}. Assigning to Kimi for planning.", "🧑‍💻")
+            new_filename = filename.replace("user_", "kimi_plan_")
+            new_task_path = os.path.join(MOTOR_DIR, new_filename)
+
+            try:
+                with open(task_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+                
+                prepended_content = f"# PARENT-TASK: {filename}\n\n{content}"
+
+                with open(task_path, "w", encoding="utf-8") as f:
+                    f.write(prepended_content)
+                
+                shutil.move(task_path, new_task_path)
+                log(f"Task reassigned to Kimi: {new_filename}", "🤖")
+                continue # Continue to the next loop iteration to process the newly named file
+            except Exception as e:
+                log(f"Error reassigning user task: {e}", "❌")
+                continue
+
         parts = filename.replace("task_", "").replace(".md", "").split("_")
         agent_name = parts[0] 
         

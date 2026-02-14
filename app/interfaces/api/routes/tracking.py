@@ -42,10 +42,10 @@ TEST_EVENT_CODE = settings.TEST_EVENT_CODE
 # 1. MINI-WORKERS (Execute after HTTP response is sent)
 # =================================================================
 
-def bg_save_visitor(external_id, fbclid, client_ip, user_agent, source, utm_data):
+def bg_save_visitor(external_id, fbclid, client_ip, user_agent, source, utm_data, email=None, phone=None):
     """Saves visitor to DB without blocking user"""
     try:
-        legacy.save_visitor(external_id, fbclid, client_ip, user_agent, source, utm_data)
+        legacy.save_visitor(external_id, fbclid, client_ip, user_agent, source, utm_data, email=email, phone=phone)
         logger.info(f"✅ [BG] Visitor saved: {external_id[:16]}...")
     except Exception as e:
         logger.error(f"❌ [BG] Error saving visitor: {e}")
@@ -159,7 +159,8 @@ async def track_event(
         bg_save_visitor,
         external_id=ctx['ext_id'] or "anon",
         fbclid=ctx['fb_id'], client_ip=ctx['ip'], user_agent=ctx['ua'],
-        source=event.event_name, utm_data=ctx['utm']
+        source=event.event_name, utm_data=ctx['utm'],
+        email=ctx['email'], phone=ctx['phone']
     )
     
     # 3. Lead Sync (Background)

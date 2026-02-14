@@ -77,28 +77,9 @@ class MetaTracker(TrackerPort):
     
     def _build_payload(self, event: TrackingEvent, visitor: Visitor) -> dict:
         """Construye payload para Meta CAPI."""
-        from app.core.validators import hash_sha256
         
-        # User Data (hashed)
-        user_data = {
-            "external_id": hash_sha256(visitor.external_id.value),
-        }
-        
-        if visitor.fbclid:
-            user_data["fbc"] = f"fb.1.{int(time.time())}.{visitor.fbclid}"
-        
-        if visitor.fbp:
-            user_data["fbp"] = visitor.fbp
-        
-        if visitor.ip_address:
-            user_data["client_ip_address"] = visitor.ip_address
-        
-        if visitor.user_agent:
-            user_data["client_user_agent"] = visitor.user_agent
-        
-        # Geo data (hashed)
-        if visitor.geo.country:
-            user_data["country"] = hash_sha256(visitor.geo.country.lower())
+        # User Data (Formatted in Domain Entity)
+        user_data = visitor.to_meta_user_data()
         
         # Event Data
         event_data = {

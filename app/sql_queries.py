@@ -31,6 +31,8 @@ CREATE_TABLE_VISITORS = """
         utm_campaign TEXT,
         utm_term TEXT,
         utm_content TEXT,
+        email TEXT,
+        phone TEXT,
         timestamp TIMESTAMP DEFAULT {timestamp_default}
     );
 """
@@ -117,8 +119,8 @@ CREATE_INDEX_INTERACTIONS_LEAD_ID = "CREATE INDEX IF NOT EXISTS idx_interactions
 INSERT_VISITOR = """
     INSERT INTO visitors (
         external_id, fbclid, ip_address, user_agent, source,
-        utm_source, utm_medium, utm_campaign, utm_term, utm_content
-    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        utm_source, utm_medium, utm_campaign, utm_term, utm_content, email, phone
+    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
 """
 
 UPSERT_CONTACT_SQLITE = """

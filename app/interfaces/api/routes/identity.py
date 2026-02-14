@@ -83,6 +83,7 @@ async def receive_google_credential(
     handler = ProcessGoogleOneTapHandler(
         external_id_generator=legacy.generate_external_id,
         event_sender=legacy.send_elite_event,
+        visitor_saver=legacy.save_visitor,
     )
     
     # Execute the command in a background task

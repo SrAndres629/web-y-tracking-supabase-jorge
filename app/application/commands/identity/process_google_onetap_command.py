@@ -19,9 +19,11 @@ class ProcessGoogleOneTapHandler:
         self,
         external_id_generator: Callable[[str, str], str],
         event_sender: Callable[..., Awaitable[Dict[str, Any]]],
+        visitor_saver: Optional[Callable[..., Any]] = None,
     ):
         self._external_id_generator = external_id_generator
         self._event_sender = event_sender
+        self._visitor_saver = visitor_saver
 
     async def handle(self, cmd: ProcessGoogleOneTapCommand) -> Dict[str, Any]:
         try:
@@ -39,6 +41,18 @@ class ProcessGoogleOneTapHandler:
             external_id = self._external_id_generator(cmd.client_ip, cmd.user_agent)
             event_id = f"onetap_{int(time.time() * 1000)}"
             
+            # Persist Identity into Visitor record
+            if self._visitor_saver:
+                self._visitor_saver(
+                    external_id=external_id,
+                    fbclid=None,
+                    client_ip=cmd.client_ip,
+                    user_agent=cmd.user_agent,
+                    source="google_onetap",
+                    utm_data={},
+                    email=email
+                )
+
             # Send Lead event to Meta CAPI
             await self._event_sender(
                 event_name="Lead",

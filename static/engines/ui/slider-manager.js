@@ -34,38 +34,28 @@ export const SliderManager = {
   _setupSlider(container) {
     if (container.dataset.initialized) return;
 
-    const slider = container.querySelector('.ba-slider');
     const range = container.querySelector('.slider-range');
-    const resizeImg = container.querySelector('.resize');
+    const resizeImg = container.querySelector('.foreground-img');
+    const thumb = container.querySelector('.slider-thumb');
 
-    if (!slider || !range || !resizeImg) return;
+    if (!range || !resizeImg) return;
 
     const updateSlider = () => {
       const value = range.value;
-      resizeImg.style.width = `${value}%`;
-      slider.classList.toggle('show-after', value > 50);
+
+      // Update clip-path of foreground image
+      resizeImg.style.clipPath = `polygon(0 0, ${value}% 0, ${value}% 100%, 0 100%)`;
+
+      // Update thumb position
+      if (thumb) {
+        thumb.style.left = `${value}%`;
+      }
     };
 
     range.addEventListener('input', updateSlider);
+
+    // Initial call to set positions
     updateSlider();
-
-    // Arrow controls
-    const leftArrow = container.querySelector('.slider-arrow.left');
-    const rightArrow = container.querySelector('.slider-arrow.right');
-
-    if (leftArrow) {
-      leftArrow.addEventListener('click', () => {
-        range.value = 25;
-        updateSlider();
-      });
-    }
-
-    if (rightArrow) {
-      rightArrow.addEventListener('click', () => {
-        range.value = 75;
-        updateSlider();
-      });
-    }
 
     container.dataset.initialized = 'true';
     this.sliders.push({ update: updateSlider });

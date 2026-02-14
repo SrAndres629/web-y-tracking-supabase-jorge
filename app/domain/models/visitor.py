@@ -54,6 +54,10 @@ class Visitor:
     fbclid: Optional[str] = None
     fbp: Optional[str] = None
     
+    # Personal data (for higher EMQ)
+    email: Optional[Email] = None
+    phone: Optional[Phone] = None
+    
     # Technical data
     ip_address: Optional[str] = None
     user_agent: Optional[str] = None
@@ -78,6 +82,8 @@ class Visitor:
         source: VisitorSource = VisitorSource.PAGEVIEW,
         utm: Optional[UTMParams] = None,
         geo: Optional[GeoLocation] = None,
+        email: Optional[Email] = None,
+        phone: Optional[Phone] = None,
     ) -> Self:
         """
         Factory method para crear nuevo visitante.
@@ -94,6 +100,8 @@ class Visitor:
             source=source,
             utm=utm or UTMParams(),
             geo=geo or GeoLocation(),
+            email=email,
+            phone=phone,
         )
     
     @classmethod
@@ -110,6 +118,8 @@ class Visitor:
         created_at: Optional[datetime] = None,
         last_seen: Optional[datetime] = None,
         visit_count: int = 1,
+        email: Optional[Email] = None,
+        phone: Optional[Phone] = None,
     ) -> Self:
         """
         Reconstruye visitante desde datos persistidos.
@@ -128,6 +138,8 @@ class Visitor:
             created_at=created_at or datetime.utcnow(),
             last_seen=last_seen or datetime.utcnow(),
             visit_count=visit_count,
+            email=email,
+            phone=phone,
         )
     
     def record_visit(self) -> None:
@@ -169,6 +181,18 @@ class Visitor:
         
         if self.fbp:
             data["fbp"] = self.fbp
+        
+        if self.email:
+            data["em"] = self.email.hash
+            
+        if self.phone:
+            data["ph"] = self.phone.hash
+
+        if self.ip_address:
+            data["client_ip_address"] = self.ip_address
+
+        if self.user_agent:
+            data["client_user_agent"] = self.user_agent
         
         # Geo data (hashed)
         geo_data = self.geo.to_meta_format()

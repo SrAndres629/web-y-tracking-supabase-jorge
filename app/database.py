@@ -275,11 +275,20 @@ def _run_column_migrations(cur, status_type):
         try:
             if BACKEND == "postgres":
                 cur.execute(f"ALTER TABLE crm_leads ADD COLUMN IF NOT EXISTS {col_name} {col_type};")
+                # Also migrate visitors table
+                if col_name in ['email', 'phone']:
+                    cur.execute(f"ALTER TABLE visitors ADD COLUMN IF NOT EXISTS {col_name} {col_type};")
             else:
                 try:
                     cur.execute(f"ALTER TABLE crm_leads ADD COLUMN {col_name} {col_type};")
                 except Exception:
                     pass
+                # Also migrate visitors table for SQLite
+                if col_name in ['email', 'phone']:
+                    try:
+                        cur.execute(f"ALTER TABLE visitors ADD COLUMN {col_name} {col_type};")
+                    except Exception:
+                        pass
         except Exception:
             pass
 
@@ -287,7 +296,7 @@ def _run_column_migrations(cur, status_type):
 # OPERATIONS (Domain Logic - Persisted)
 # =================================================================
 
-def save_visitor(external_id, fbclid, ip_address, user_agent, source="pageview", utm_data=None) -> None:
+def save_visitor(external_id, fbclid, ip_address, user_agent, source="pageview", utm_data=None, email=None, phone=None) -> None:
     """Saves visitor data for attribution tracking."""
     if utm_data is None:
         utm_data = {}
@@ -304,22 +313,24 @@ def save_visitor(external_id, fbclid, ip_address, user_agent, source="pageview",
                 utm_data.get('utm_medium'),
                 utm_data.get('utm_campaign'),
                 utm_data.get('utm_term'),
-                utm_data.get('utm_content')
+                utm_data.get('utm_content'),
+                email,
+                phone
             )
             
             if BACKEND == "postgres":
                 stmt = """
                     INSERT INTO visitors 
-                    (external_id, fbclid, ip_address, user_agent, source, utm_source, utm_medium, utm_campaign, utm_term, utm_content)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    (external_id, fbclid, ip_address, user_agent, source, utm_source, utm_medium, utm_campaign, utm_term, utm_content, email, phone)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     ON CONFLICT DO NOTHING
                 """
                 cur.execute(stmt, params)
             else:
                 stmt = """
                     INSERT OR IGNORE INTO visitors 
-                    (external_id, fbclid, ip_address, user_agent, source, utm_source, utm_medium, utm_campaign, utm_term, utm_content, created_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+                    (external_id, fbclid, ip_address, user_agent, source, utm_source, utm_medium, utm_campaign, utm_term, utm_content, email, phone, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
                 """
                 cur.execute(stmt, params)
     except Exception as e:
