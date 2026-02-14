@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom Layer Overrides if needed */
+@layer components {
+  .btn-luxury {
+    @apply px-6 py-3 bg-luxury-gold text-luxury-black font-semibold rounded-lg hover:bg-luxury-gold-light transition-all duration-300;
+  }
+}

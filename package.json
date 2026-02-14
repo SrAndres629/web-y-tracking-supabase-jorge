@@ -1,0 +1,22 @@
+{
+    "name": "jorge-aguirre-web-build",
+    "version": "2.0.0",
+    "description": "Build system for Jorge Aguirre Flores Web (Silicon Valley Architecture)",
+    "main": "index.js",
+    "scripts": {
+        "build:css": "tailwindcss -i ./static/src/input.css -o ./static/dist/css/app.min.css --minify",
+        "watch:css": "tailwindcss -i ./static/src/input.css -o ./static/dist/css/app.min.css --watch"
+    },
+    "keywords": [
+        "css",
+        "build",
+        "tailwind"
+    ],
+    "author": "Antigravity",
+    "license": "UNLICENSED",
+    "devDependencies": {
+        "autoprefixer": "^10.4.17",
+        "postcss": "^8.4.35",
+        "tailwindcss": "^3.4.1"
+    }
+}

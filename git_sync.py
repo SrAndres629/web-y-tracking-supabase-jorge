@@ -144,6 +144,51 @@ class SystemAuditor:
         self.raw_logs = []
         self.suggestions = []
 
+    def check_assets(self):
+        """Run the Asset Integrity Audit (Silicon Valley Standard)."""
+        Console.log("Verifying Asset Integrity (Build System)...", "🎨")
+        # dynamic import to avoid circular dependency issues at top level if script is missing
+        try:
+            sys.path.append(os.path.join(self.repo_path, "scripts"))
+            import audit_assets
+            
+            # Reset logger to avoid double logging
+            audit_assets.logger.setLevel(logging.ERROR) 
+            
+            if audit_assets.check_build_config() and audit_assets.check_css_integrity():
+                Console.success("Assets Verified: Build config and CSS are valid.")
+                return True
+            else:
+                self._add_issue(
+                    file_path="ASSETS",
+                    line="N/A",
+                    err_type="BuildIntegrityError",
+                    message="Critical assets or config missing. Run 'npm run build:css'.",
+                    phase="Asset Audit",
+                )
+                Console.error("Asset Audit Failed. Check logs above.")
+                return False
+        except ImportError:
+             self._add_issue(
+                file_path="scripts/audit_assets.py",
+                line="0",
+                err_type="ImportError",
+                message="audit_assets.py script not found.",
+                phase="Asset Audit",
+            )
+             Console.error("Could not find scripts/audit_assets.py")
+             return False
+        except Exception as e:
+            self._add_issue(
+                file_path="ASSETS",
+                line="N/A",
+                err_type="Exception",
+                message=str(e),
+                phase="Asset Audit",
+            )
+            Console.error(f"Asset Audit Crashed: {e}")
+            return False
+
     def check_environment(self):
         Console.log("Verifying Execution Environment...", "🔍")
         # Check for dev dependencies (pytest) to ensuring we can run tests
@@ -428,6 +473,15 @@ def _run_audit_gates(auditor: SystemAuditor, force: bool) -> bool:
         {"name": "Integration & Sync", "path": "tests/backend/integration tests/platform/infra"},
         {"name": "Security & Perf Audit", "path": "tests/backend/quality tests/backend/security tests/frontend tests/platform/cloudflare tests/platform/deployment tests/platform/observability"},
     ]
+
+    # --- ASSET AUDIT (Institutional Standard) ---
+    # We must ensure the build system is intact before running heavier tests.
+    if not auditor.check_assets():
+        if not force:
+            Console.error("Deployment blocked: Asset Audit Failed.")
+            return False
+        else:
+            Console.warning("⚠️ Forcing deployment despite failed Asset Audit.")
 
     if force:
         Console.warning("⚠️ SKIPPING GATES: --force flag detected. You are flying blind.")
