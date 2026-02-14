@@ -1,14 +1,11 @@
-"""
-🔴 Redis Cache Implementation.
-
-Usa Upstash Redis para serverless.
-"""
+"""Redis cache layer with async-friendly wrappers."""
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
-from typing import Any, Optional
+from typing import Any, Optional, Callable
 
 from app.application.interfaces.cache_port import DeduplicationPort, ContentCachePort
 from app.infrastructure.config import get_settings
@@ -17,7 +14,8 @@ logger = logging.getLogger(__name__)
 
 
 class RedisDeduplication(DeduplicationPort):
-    """Deduplicación usando Redis SET NX (atomic)."""
+    """Deduplicación usando Redis SET NX con wrappers async."""
+    DEFAULT_TTL_SECONDS = 86400
     
     def __init__(self, redis_client=None):
         self._client = redis_client
@@ -25,7 +23,6 @@ class RedisDeduplication(DeduplicationPort):
     
     @property
     def _redis(self):
-        """Lazy load Redis client."""
         if self._client is None:
             try:
                 from upstash_redis import Redis
@@ -37,47 +34,45 @@ class RedisDeduplication(DeduplicationPort):
             except Exception as e:
                 logger.warning(f"Redis not available: {e}")
         return self._client
+
+    async def _call_redis(self, func: Callable, *args, **kwargs):
+        return await asyncio.to_thread(func, *args, **kwargs)
     
     async def is_unique(self, event_key: str) -> bool:
-        """
-        Verifica unicidad usando SET NX (set if not exists).
-        
-        Retorna True si era nuevo (se seteó), False si ya existía.
-        """
         if not self._redis:
-            # Fallback: permitir todo
             return True
-        
+
         try:
             cache_key = f"dedup:{event_key}"
-            # SET key value NX EX seconds
-            result = self._redis.set(
+            result = await self._call_redis(
+                self._redis.set,
                 cache_key,
                 "1",
-                nx=True,  # Only if not exists
-                ex=86400,  # 24 hours TTL
+                nx=True,
+                ex=self.DEFAULT_TTL_SECONDS,
             )
-            # SET NX retorna None si ya existía, OK si se seteó
             is_new = result is not None
             if not is_new:
                 logger.debug(f"🔄 Duplicate event detected: {event_key}")
             return is_new
-            
         except Exception as e:
-            logger.error(f"Redis dedup error: {e}")
-            # Fail open: permitir si Redis falla
+            logger.warning(f"Redis dedup error: {e}")
             return True
     
     async def mark_processed(self, event_key: str, ttl_seconds: int = 86400) -> None:
-        """Marca evento como procesado."""
         if not self._redis:
             return
-        
+
         try:
             cache_key = f"dedup:{event_key}"
-            self._redis.set(cache_key, "1", ex=ttl_seconds)
+            await self._call_redis(
+                self._redis.set,
+                cache_key,
+                "1",
+                ex=ttl_seconds,
+            )
         except Exception as e:
-            logger.error(f"Redis mark_processed error: {e}")
+            logger.warning(f"Redis mark_processed error: {e}")
 
 
 class RedisContentCache(ContentCachePort):

@@ -8,7 +8,6 @@
 .text-liquid-gold {
   /* Gradient text */
   background: var(--gradient-gold-text);
-  -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   
@@ -35,7 +34,7 @@
   font-size: var(--text-4xl);
 }
 
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .text-liquid-gold.hero {
     font-size: var(--text-4xl);
   }

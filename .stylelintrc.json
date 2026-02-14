@@ -15,6 +15,21 @@
             }
         ],
         "declaration-block-no-duplicate-properties": true,
-        "no-duplicate-selectors": true
+        "no-duplicate-selectors": true,
+        "selector-class-pattern": "^.*$",
+        "property-no-vendor-prefix": [true, {
+            "ignoreProperties": [
+                "backdrop-filter",
+                "text-fill-color",
+                "background-clip",
+                "text-size-adjust",
+                "font-smoothing",
+                "tap-highlight-color",
+                "appearance",
+                "tab-size",
+                "clip"
+            ]
+        }],
+        "import-notation": "url"
     }
 }

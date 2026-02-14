@@ -9,9 +9,9 @@
  * con el sistema de diseño, eliminando los estilos por defecto del navegador.
  */
 .accordion-item {
-    background-color: var(--color-white-alpha-05, rgba(255, 255, 255, 0.05));
+    background-color: var(--color-white-alpha-05, rgb(255 255 255 / 5%));
     border-radius: var(--rounded-lg, 0.5rem);
-    border: 1px solid var(--color-luxury-gold-alpha-10, rgba(197, 160, 89, 0.1));
+    border: 1px solid var(--color-luxury-gold-alpha-10, rgb(197 160 89 / 10%));
     margin-bottom: var(--spacing-4, 1rem);
     overflow: hidden; /* Para contener los bordes redondeados */
 }

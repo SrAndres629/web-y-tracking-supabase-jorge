@@ -1,56 +1,48 @@
-🔍 ANÁLISIS FORENSE DEL FRONTEND (ACTUALIZADO)
-════════════════════════════════════════
+🔍 ANÁLISIS FORENSE DEL FRONTEND (ACTUALIZADO - 14/02/2026)
+════════════════════════════════════════════════════════════════
 
 RESUMEN EJECUTIVO
 
-Tu frontend sufría de "Diseño Diamante con Implementación de Carbón". Se han corregido las inconsistencias críticas (CSS duplicado, variables faltantes, gradientes de texto y botones principales).
+Tu frontend ha pasado de sufrir de "Diseño Diamante con Implementación de Carbón" a tener una base sólida y estandarizada. Se han corregido todas las inconsistencias críticas identificadas inicialmente, se ha limpiado el código CSS y HTML, y se han resuelto problemas de accesibilidad básicos.
 
-Ahora nos enfocamos en estandarizar los componentes restantes y mejorar la robustez del sistema.
-
-──────────────────────────────────────────────────────────────────────────────────
-🚨 PROBLEMAS PENDIENTES
-
-1. PROBLEMA: Botón de Asesoría sin Componente Atómico
-
-En `services.html`, el botón para pedir asesoría gratuita no utiliza un componente re-utilizable, sino clases de Tailwind sueltas, lo que crea inconsistencia visual en los efectos `hover`.
-
-   Ubicación           Problema             Estado Actual        Debería Ser
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   services.html:112   Botón asesoría sin   `bg-transparent` y   Un átomo CSS como `btn-secondary`
-                       efecto hover glow    `border-2` planos    con `hover:glow`
-
-Análisis del código:
-<!-- ❌ PROBLEMA: El botón de asesoría no tiene un estilo estandarizado. -->
-<button class="px-8 py-4 bg-transparent border-2 border-luxury-gold ... hover:bg-luxury-gold hover:text-black ...">
-    Pedir Asesoría Gratis
-</button>
-
-2. PROBLEMA: Acordeón de FAQ con Estilo Inconsistente
-
-El componente de preguntas frecuentes (`faq.html`) utiliza la etiqueta semántica `<summary>`, pero carece de los estilos adecuados del design system, provocando que se renderice con una fuente y apariencia por defecto que no coincide con el resto de la página.
-
-Causa raíz en `faq.html`:
-<details class="group bg-white/5 p-6 rounded-lg...">
-    <summary class="flex justify-between items-center...">  <!-- ← CARECE DE ESTILOS DE TEXTO Y CURSOR -->
-        <span>¿Es doloroso el microblading...</span>
-    </summary>
-    <p class="text-gray-400 mt-4...">...</p>
-</details>
+Las correcciones implementadas han mejorado significativamente la calidad y mantenibilidad del codebase.
 
 ──────────────────────────────────────────────────────────────────────────────────
-🔧 LISTA DE ACCIONES REQUERIDAS
+✅ PROBLEMAS CRÍTICOS INICIALES RESUELTOS (FASE 1 COMPLETADA)
 
-FASE 1: Correcciones Finales
+Todas las tareas de la Fase 1 han sido abordadas:
+*   Eliminación de CSS duplicado.
+*   Variables CSS faltantes añadidas.
+*   Definición de `text-gradient-gold`.
+*   Estandarización de botones (`btn-gold-liquid`, `btn-outline-gold`).
+*   Estilización del acordeón de FAQ.
+*   Limpieza general de linting CSS (con `stylelint`).
+*   Auditoría y corrección de problemas semánticos y de accesibilidad en HTML (imágenes sin `alt`, botones sin `type`).
 
-   #   Acción                        Archivo(s)          Prioridad
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   1   Estandarizar botón Asesoría   services.html       🟡 Media
-   2   Estilizar acordeón FAQ        faq.html            🟡 Media
+──────────────────────────────────────────────────────────────────────────────────
+🚨 PROBLEMAS PENDIENTES (FASE 2 - Próximos Pasos)
 
-FASE 2: Estandarización y Robustez (Próximos pasos)
+Nos enfocamos ahora en la estandarización continua, la robustez y la optimización de rendimiento:
 
-   #   Acción                   Descripción
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   3   Crear audit de clases    Script que verifique que todas las clases usadas en los templates existen en el CSS compilado.
-   4   Sincronizar tests        Asegurar que /tests/frontend/ use los mismos templates que el sitio principal para evitar regresiones.
-   5   Documentar componentes   Crear una guía simple (en `docs/`) de los átomos CSS disponibles (`btn-gold-liquid`, etc.) para futuros desarrollos.
+   #   Acción                        Descripción                                   Prioridad
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   1   Crear audit de clases         Script que verifique que todas las clases usadas en los templates existen en el CSS compilado. (Pendiente de refinar para manejar Tailwind)
+   2   Sincronizar tests             Asegurar que `/tests/frontend/` use los mismos templates que el sitio principal para evitar regresiones.
+   3   Documentar componentes        Crear una guía simple (en `docs/`) de los átomos CSS disponibles (`btn-gold-liquid`, etc.) para futuros desarrollos.
+   4   Optimización de Rendimiento   Verificar la carga y velocidad del frontend a través de Vercel y Cloudflare (JS, CSS, caché, Zaraz, Redis). Investigar el uso de "upsh".
+
+──────────────────────────────────────────────────────────────────────────────────
+✨ PRÓXIMAS AUDITORÍAS RECOMENDADAS
+
+Más allá de los problemas estructurales, la siguiente fase de una auditoría frontend exhaustiva incluiría:
+
+*   **Rendimiento en Carga:** Métricas de Core Web Vitals (LCP, FID, CLS), tiempo de interacción (TTI).
+*   **Gestión de Activos:** Optimización de imágenes (compresión, formatos modernos como WebP/AVIF), carga diferida de recursos (lazy loading).
+*   **JavaScript:** Reducción de tamaño (tree-shaking, code-splitting), optimización de ejecución (evitar blocking rendering).
+*   **CSS:** Purga de CSS no usado, optimización de selectores.
+*   **Accesibilidad Avanzada:** Evaluación con herramientas como Lighthouse/Axe, pruebas con teclado, lectores de pantalla.
+*   **Compatibilidad Cross-Browser:** Pruebas en diferentes navegadores y dispositivos.
+*   **Uso de Caché y CDNs:** Confirmar configuraciones óptimas de caché en Cloudflare y otros CDNs.
+*   **Edge Functions/Workers:** Evaluar la oportunidad de mover lógica al Edge para reducir latencia.
+
+Estas son áreas para una exploración futura, una vez que la base actual esté completamente optimizada y validada.

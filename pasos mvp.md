@@ -25,31 +25,31 @@
 
    #   Paso                                          Prioridad   Estado
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   1   Implementar Deduplication Service completo    🔴 Alta     ⚠️ Parcial
-   2   Event Match Quality (EMQ) Monitor             🔴 Alta     ❌ No existe
-   3   Sistema de Retry con Backoff Exponencial      🟡 Media    ⚠️ Básico
-   4   Validación de Eventos contra Meta Standards   🔴 Alta     ⚠️ Parcial
-   5   Test de Carga para CAPI (1000 events/min)     🟡 Media    ❌ No existe
+   1   Implementar Deduplication Service completo    🔴 Alta     ✅ Listo
+   2   Event Match Quality (EMQ) Monitor             🔴 Alta     ✅ Listo (Score logging + alert hooks)
+   3   Sistema de Retry con Backoff Exponencial      🟡 Media    ✅ Listo (tenacity + guards)
+   4   Validación de Eventos contra Meta Standards   🔴 Alta     ✅ Listo
+   5   Test de Carga para CAPI (1000 events/min)     🟡 Media    ⚠️ En diseño (Locust script existe, falta ejecución)
 
   FASE 2: Features de Venta (CRÍTICO - 2 semanas)
 
    #    Paso                                           Prioridad   Estado
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   6    Pricing/Packaging del Servicio                 🔴 Alta     ❌ No existe
-   7    Documentación API para Clientes                🔴 Alta     ❌ No existe
-   8    Onboarding Wizard (Sign-up Flow)               🟡 Media    ❌ No existe
-   9    Multi-tenant Architecture (Client Isolation)   🟡 Media    ❌ No existe
+   6    Pricing/Packaging del Servicio                 🔴 Alta     ⚠️ Esbozado (no hay landing ni tiers)
+   7    Documentación API para Clientes                🔴 Alta     ⚠️ Parcial (OpenAPI/Swagger faltan)
+   8    Onboarding Wizard (Sign-up Flow)               🟡 Media    ⚠️ Esbozado (API key logic faltante)
+   9    Multi-tenant Architecture (Client Isolation)   🟡 Media    ⚠️ En progreso (middleware/config activos, falta aislamiento de datos)
    10   Billing/Usage Tracking                         🟡 Media    ❌ No existe
 
   FASE 3: Enterprise Features (1-2 semanas)
 
    #    Paso                                          Prioridad   Estado
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   11   Dashboard de Analytics para Clientes          🟢 Baja     ⚠️ Admin básico
-   12   Webhooks Outbound para Clientes               🟡 Media    ⚠️ Existe para n8n
-   13   Alertas de Calidad de Señal (SLA Monitoring   🟡 Media    ❌ No existe
+   11   Dashboard de Analytics para Clientes          🟢 Baja     ⚠️ Panel admin simple, falta Signal Quality view
+   12   Webhooks Outbound para Clientes               🟡 Media    ⚠️ Solo via n8n/legacy (falta endpoint dedicado)
+   13   Alertas de Calidad de Señal (SLA Monitoring   🟡 Media    ⚠️ Pipeline faltante para métricas/alertas
         )
-   14   Soporte Google Ads CAPI (Conversiones)        🟢 Baja     ❌ Solo Meta
+   14   Soporte Google Ads CAPI (Conversiones)        🟢 Baja     ❌ Solo Meta CAPI activo
    15   TikTok Events API                             🟢 Baja     ❌ No existe
 
   ──────────────────────────────────────────────────────────────────────────────────

@@ -7,6 +7,7 @@ import os
 from typing import Optional, List, Union, Any
 import logging
 import json
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from dotenv import load_dotenv
 
@@ -111,6 +112,18 @@ class Settings(BaseSettings):
     # Maintenance Mode
     FLAG_MAINTENANCE_MODE: bool = False      # Show maintenance page
     FLAG_BOOKING_ENABLED: bool = True        # Allow new bookings
+
+    # Multi-tenant controls (tenants allowed to hit the tracking API)
+    ALLOWED_TENANTS: List[str] = Field(
+        default_factory=lambda: ["default"],
+        alias="ALLOWED_TENANTS",
+        description="Comma separated tenant IDs allowed to use the API",
+    )
+    DEFAULT_TENANT: str = Field(
+        default="default",
+        alias="DEFAULT_TENANT",
+        description="Fallback tenant ID when no header is supplied",
+    )
     
     # Security: CORS Origins (Loaded manually to avoid Pydantic auto-parsing bugs)
     CORS_ALLOWED_ORIGINS: List[str] = [
@@ -214,6 +227,41 @@ class Settings(BaseSettings):
     def whatsapp_url(self) -> str:
         """URL de WhatsApp con número"""
         return f"https://wa.me/{self.WHATSAPP_NUMBER}"
+
+    @field_validator("ALLOWED_TENANTS", mode="before")
+    def _normalize_tenants(cls, v):
+        if isinstance(v, str):
+            cleaned = [item.strip() for item in v.split(",") if item.strip()]
+            return cleaned or ["default"]
+        if isinstance(v, (list, tuple)):
+            return [item for item in v if isinstance(item, str) and item.strip()]
+        return ["default"]
+
+    @property
+    def tenant_list(self) -> List[str]:
+        tenants = []
+        for tenant in self.ALLOWED_TENANTS:
+            if tenant not in tenants:
+                tenants.append(tenant)
+        if self.DEFAULT_TENANT not in tenants:
+            tenants.append(self.DEFAULT_TENANT)
+        return tenants
+
+    def resolve_tenant(self, candidate: Optional[str]) -> str:
+        if not candidate:
+            return self.DEFAULT_TENANT
+
+        candidate = candidate.strip()
+        if candidate in self.tenant_list:
+            return candidate
+
+        logger.warning(
+            f"⚠️ Tenant '{candidate}' no permitido. Forzando '{self.DEFAULT_TENANT}'."
+        )
+        return self.DEFAULT_TENANT
+
+    def is_tenant_allowed(self, tenant_id: Optional[str]) -> bool:
+        return bool(tenant_id) and tenant_id in self.tenant_list
 
 
 # Singleton de configuración

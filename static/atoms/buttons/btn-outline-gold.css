@@ -30,7 +30,7 @@
 .btn-outline-gold:focus {
     background-color: var(--color-luxury-gold, #C5A059);
     color: var(--color-black, #121212);
-    box-shadow: var(--shadow-button-gold-hover, 0 8px 30px rgba(197, 160, 89, 0.6));
+    box-shadow: var(--shadow-button-gold-hover, 0 8px 30px rgb(197 160 89 / 60%));
     outline: none;
 }
 

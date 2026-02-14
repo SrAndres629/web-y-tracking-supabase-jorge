@@ -1,19 +1,19 @@
 /* 💎 DESIGN SYSTEM & TOKENS */
-@import '../design-system/tokens/index.css';
+@import url('../design-system/tokens/index.css');
 
 /* 🧩 ATOMIC COMPONENTS */
-@import '../atoms/buttons/button-gold-liquid.css';
-@import '../atoms/buttons/btn-outline-gold.css';
-@import '../atoms/buttons/button-service-cta.css';
-@import '../atoms/text/text-liquid-gold.css';
-@import '../atoms/cards/card-glass.css';
-@import '../atoms/cards/card-service-premium.css';
+@import url('../atoms/buttons/button-gold-liquid.css');
+@import url('../atoms/buttons/btn-outline-gold.css');
+@import url('../atoms/buttons/button-service-cta.css');
+@import url('../atoms/text/text-liquid-gold.css');
+@import url('../atoms/cards/card-glass.css');
+@import url('../atoms/cards/card-service-premium.css');
 
 /* 🧬 MOLECULAR COMPONENTS */
-@import '../molecules/accordion.css';
+@import url('../molecules/accordion.css');
 
 /* 🏗️ LAYOUTS */
-@import '../layouts/navigation/glass-nav.css';
+@import url('../layouts/navigation/glass-nav.css');
 
 @tailwind base;
 @tailwind components;

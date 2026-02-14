@@ -15,6 +15,7 @@ import time
 from functools import lru_cache
 from typing import List, Optional, Any, Dict, Tuple
 
+from fastapi import Depends, Header, HTTPException, Request
 from app.application.commands.track_event import TrackEventHandler
 from app.application.commands.create_visitor import CreateVisitorHandler
 from app.application.queries.get_content import GetContentHandler
@@ -23,6 +24,7 @@ from app.application.interfaces.tracker_port import TrackerPort
 from app.domain.repositories.visitor_repo import VisitorRepository
 from app.domain.repositories.event_repo import EventRepository
 from app.domain.repositories.lead_repo import LeadRepository
+from app.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +51,7 @@ def get_content_cache() -> ContentCachePort:
     
     settings = get_settings()
     if settings.redis.is_configured:
-        return RedisContentCache()
+    return RedisContentCache()
     return InMemoryContentCache()
 
 
@@ -97,14 +99,19 @@ def get_trackers() -> List[TrackerPort]:
 
 # ===== Handlers =====
 
-def get_track_event_handler() -> TrackEventHandler:
+def get_track_event_handler(tenant_id: Optional[str] = Header(None, alias="x-tenant-id")) -> TrackEventHandler:
     """Provee handler para tracking de eventos."""
-    return TrackEventHandler(
+    resolved = settings.resolve_tenant(tenant_id)
+    if not settings.is_tenant_allowed(resolved):
+        raise HTTPException(status_code=403, detail="Tenant no permitido")
+    handler = TrackEventHandler(
         deduplicator=get_deduplicator(),
         visitor_repo=get_visitor_repository(),
         event_repo=get_event_repository(),
         trackers=get_trackers(),
     )
+    handler.tenant_id = resolved  # type: ignore[attr-defined]
+    return handler
 
 
 def get_create_visitor_handler() -> CreateVisitorHandler:
