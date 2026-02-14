@@ -145,17 +145,27 @@ class SystemAuditor:
         self.suggestions = []
 
     def check_assets(self):
-        """Run the Asset Integrity Audit (Silicon Valley Standard)."""
+        """Run the Asset Integrity Audit (Silicon Valley Standard) via Pytest."""
         Console.log("Verifying Asset Integrity (Build System)...", "🎨")
-        # dynamic import to avoid circular dependency issues at top level if script is missing
+        
+        # We now run the L5 test instead of the legacy script
+        test_path = "tests/L5_system/test_assets_integrity.py"
+        
+        # Use existing run_phase method to execute pytest
+        # Note: We need to adapt run_phase or just call subprocess here directly 
+        # to match the boolean return signature expected by _run_audit_gates
+        
+        cmd = [sys.executable, "-m", "pytest", test_path, "-v", "--tb=short"]
+        
         try:
-            sys.path.append(os.path.join(self.repo_path, "scripts"))
-            import audit_assets
+            result = subprocess.run(
+                cmd,
+                capture_output=True, 
+                text=True,
+                cwd=self.repo_path
+            )
             
-            # Reset logger to avoid double logging
-            audit_assets.logger.setLevel(logging.ERROR) 
-            
-            if audit_assets.check_build_config() and audit_assets.check_css_integrity():
+            if result.returncode == 0:
                 Console.success("Assets Verified: Build config and CSS are valid.")
                 return True
             else:
@@ -163,21 +173,14 @@ class SystemAuditor:
                     file_path="ASSETS",
                     line="N/A",
                     err_type="BuildIntegrityError",
-                    message="Critical assets or config missing. Run 'npm run build:css'.",
+                    message="Critical assets or config missing. Check 'tests/L5_system/test_assets_integrity.py' output.",
                     phase="Asset Audit",
                 )
-                Console.error("Asset Audit Failed. Check logs above.")
+                Console.error("Asset Audit Failed. See details:")
+                print(result.stdout)
+                print(result.stderr)
                 return False
-        except ImportError:
-             self._add_issue(
-                file_path="scripts/audit_assets.py",
-                line="0",
-                err_type="ImportError",
-                message="audit_assets.py script not found.",
-                phase="Asset Audit",
-            )
-             Console.error("Could not find scripts/audit_assets.py")
-             return False
+
         except Exception as e:
             self._add_issue(
                 file_path="ASSETS",
@@ -468,10 +471,13 @@ def _run_audit_gates(auditor: SystemAuditor, force: bool) -> bool:
     env_ok = auditor.check_environment()
 
     integrity_phases = [
-        {"name": "Architecture & Boot", "path": "tests/backend/architecture"},
-        {"name": "Unit Ops", "path": "tests/backend/unit"},
-        {"name": "Integration & Sync", "path": "tests/backend/integration tests/platform/infra"},
-        {"name": "Security & Perf Audit", "path": "tests/backend/quality tests/backend/security tests/frontend tests/platform/cloudflare tests/platform/deployment tests/platform/observability"},
+        {"name": "L1: Atomic Logic", "path": "tests/L1_atoms"},
+        {"name": "L2: Component Logic", "path": "tests/L2_components"},
+        {"name": "L3: Module Integrations", "path": "tests/L3_modules"},
+        {"name": "L4: Supervisor/Arch", "path": "tests/L4_supervisor"},
+        {"name": "L5: System Reality", "path": "tests/L5_system"},
+        # L6 is Omni (External), maybe optional for quick deploys, but good for validity
+        # {"name": "L6: Omni-Integration", "path": "tests/L6_omni"},
     ]
 
     # --- ASSET AUDIT (Institutional Standard) ---
