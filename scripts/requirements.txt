@@ -1,0 +1,4 @@
+fastmcp>=0.1.0
+mcp>=1.0.0
+networkx>=3.0
+matplotlib>=3.5
