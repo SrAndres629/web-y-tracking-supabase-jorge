@@ -58,3 +58,10 @@
   --gradient-glow: radial-gradient(circle at center, rgba(197, 160, 89, 0.15) 0%, transparent 70%);
   --gradient-border: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.02) 100%);
 }
+
+.text-gradient-gold {
+  background: var(--gradient-gold-text);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}

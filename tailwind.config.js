@@ -2,7 +2,11 @@
 module.exports = {
     content: [
         "./api/templates/**/*.html",
-        "./api/static/**/*.js"
+        "./static/**/*.js",
+        "./static/atoms/**/*.html",
+        "./static/molecules/**/*.html",
+        "./static/organisms/**/*.html",
+        "./tests/frontend/templates/**/*.html"
     ],
     theme: {
         extend: {

@@ -11,7 +11,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 from datetime import datetime
 from fastmcp import FastMCP
-from neuro_architect import get_neuro_architect
+# from neuro_architect import get_neuro_architect  <-- REMOVED: improperly referenced
+
 
 # --- Advanced Logging ---
 logging.basicConfig(

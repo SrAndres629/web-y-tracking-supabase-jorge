@@ -3,10 +3,14 @@
 
 /* 🧩 ATOMIC COMPONENTS */
 @import '../atoms/buttons/button-gold-liquid.css';
+@import '../atoms/buttons/btn-outline-gold.css';
 @import '../atoms/buttons/button-service-cta.css';
 @import '../atoms/text/text-liquid-gold.css';
 @import '../atoms/cards/card-glass.css';
 @import '../atoms/cards/card-service-premium.css';
+
+/* 🧬 MOLECULAR COMPONENTS */
+@import '../molecules/accordion.css';
 
 /* 🏗️ LAYOUTS */
 @import '../layouts/navigation/glass-nav.css';

@@ -8,13 +8,14 @@ import yaml
 AI_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".ai")
 MOTOR_DIR = os.path.join(AI_DIR, "motor")
 
-def create_task(prompt, autonomous_mode=False, thinkers=1, workers=2):
+def create_task(prompt, autonomous_mode=False, thinkers=1, workers=2, agent="user"):
     """Creates a task file from a user prompt."""
     if not os.path.exists(MOTOR_DIR):
         os.makedirs(MOTOR_DIR)
 
     timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-    task_filename = f"task_user_{timestamp}.md"
+    action_type = "directive" if agent == "user" else "manual"
+    task_filename = f"task_{agent}_{action_type}_{timestamp}.md"
     task_filepath = os.path.join(MOTOR_DIR, task_filename)
 
     # --- METADATA (YAML Front Matter) ---
@@ -95,6 +96,13 @@ def main():
         help="Number of 'worker' agents for execution."
     )
 
+    parser.add_argument(
+        "-a", "--agent",
+        type=str,
+        default="user",
+        help="Target agent (user, kimi, codex, gemini, manual)."
+    )
+
     args = parser.parse_args()
 
     prompt = ""
@@ -115,7 +123,8 @@ def main():
         prompt.strip(),
         autonomous_mode=args.autonomous_mode,
         thinkers=args.pensadores,
-        workers=args.trabajadores
+        workers=args.trabajadores,
+        agent=args.agent
     )
 
 

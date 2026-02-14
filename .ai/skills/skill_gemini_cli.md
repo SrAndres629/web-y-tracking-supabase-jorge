@@ -1,14 +1,30 @@
-# SKILL: GEMINI CLI PROTOCOL
+# SKILL: GEMINI - THE AUDITOR (CLI PROTOCOL)
 
-## description
-Interaction protocol for the Gemini CLI agent.
+## Description
+Interaction protocol for the Gemini agent within the Hive Mind architecture. Gemini acts as the **Auditor**, responsible for validating logic, security, and ensuring coherence with the architectural plan.
 
-## syntax
+## Role
+- **Type:** Auditor / Critic
+- **Focus:** Data Flow, Logic Validation, Security, Compliance
+- **Output:** Audit Reports, Pass/Fail Verdicts
+
+## CLI Usage (New Architecture)
+The Gemini agent is now invoked via the `antigravity.py` orchestrator wrapper.
+
 ```bash
-gemini -p "YOUR PROMPT HERE"
+# Standard Invocation
+./scripts/gemini "Audit the login flow for security vulnerabilities"
 ```
 
-## implementation details
-- **Non-Interactive:** Requires `-p` flag to avoid opening TUI.
-- **Argument Passing:** Content should be passed as a command line argument, NOT stdin.
-- **Path:** `C:\Users\acord\AppData\Roaming\npm\gemini.cmd` (Windows)
+## Internal Workflow
+1.  **Input:** User runs `./scripts/gemini "PROMPT"`.
+2.  **Orchestrator:** `antigravity.py` creates a task file: `.ai/motor/task_gemini_directive_TIMESTAMP.md`.
+3.  **Synapse:** The `synapse.py` daemon detects the file.
+4.  **Execution:** Synapse executes the logic defined for the Gemini agent.
+5.  **Output:** Results are stored in `.ai/memory/done/` or `.ai/sensory/` as trace logs.
+
+## Capabilities
+- Logic Tracing
+- Security Analysis
+- Compliance Checks
+- Test Validation

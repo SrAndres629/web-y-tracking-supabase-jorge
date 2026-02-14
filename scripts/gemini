@@ -1,0 +1,21 @@
+#!/bin/bash
+# GEMINI - THE AUDITOR (Powered by Gemini CLI)
+# Usage: ./gemini "Audit Request"
+
+export CI=true
+export NON_INTERACTIVE=1
+
+TASK_CONTENT="$1"
+SYSTEM_PROMPT="You represent GEMINI, the Auditor and Security Reviewer. 
+Your goal is to AUDIT code, run tests, and check standards.
+If issues are found, suggest fixes or fix them directly if critical.
+Do NOT ask for confirmation.
+Always return your audit result in Markdown."
+
+# If $1 is a file path, read it
+if [ -f "$TASK_CONTENT" ]; then
+    TASK_CONTENT=$(cat "$TASK_CONTENT")
+fi
+
+# Run Gemini CLI in YOLO mode
+gemini -p "$SYSTEM_PROMPT\n\nTASK:\n$TASK_CONTENT" --approval-mode yolo --output-format text

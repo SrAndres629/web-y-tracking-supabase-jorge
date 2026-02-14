@@ -5,7 +5,8 @@
     "main": "index.js",
     "scripts": {
         "build:css": "tailwindcss -i ./static/src/input.css -o ./static/dist/css/app.min.css --minify",
-        "watch:css": "tailwindcss -i ./static/src/input.css -o ./static/dist/css/app.min.css --watch"
+        "watch:css": "tailwindcss -i ./static/src/input.css -o ./static/dist/css/app.min.css --watch",
+        "audit:css": "tailwindcss -i ./static/src/input.css -o ./static/dist/css/app.audit.css"
     },
     "keywords": [
         "css",

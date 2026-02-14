@@ -1,0 +1,52 @@
+/* ==========================================================================
+   MOLECULE: Accordion
+   ========================================================================== */
+
+/**
+ * Componente de acordeón para secciones de FAQ.
+ *
+ * Estiliza las etiquetas <details> y <summary> para que sean consistentes
+ * con el sistema de diseño, eliminando los estilos por defecto del navegador.
+ */
+.accordion-item {
+    background-color: var(--color-white-alpha-05, rgba(255, 255, 255, 0.05));
+    border-radius: var(--rounded-lg, 0.5rem);
+    border: 1px solid var(--color-luxury-gold-alpha-10, rgba(197, 160, 89, 0.1));
+    margin-bottom: var(--spacing-4, 1rem);
+    overflow: hidden; /* Para contener los bordes redondeados */
+}
+
+.accordion-item summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-5, 1.25rem);
+    color: var(--color-luxury-text, #EAE6E1);
+    font-weight: var(--font-medium, 500);
+    cursor: pointer;
+    list-style: none; /* Oculta el marcador de flecha en Firefox */
+}
+
+/* Oculta el marcador de flecha en Chrome/Safari */
+.accordion-item summary::-webkit-details-marker {
+    display: none;
+}
+
+/* Icono de "+"/"-" para indicar el estado */
+.accordion-item summary::after {
+    content: '+';
+    font-size: 1.5em;
+    color: var(--color-luxury-gold, #C5A059);
+    transition: transform 0.3s ease;
+}
+
+.accordion-item[open] summary::after {
+    content: '−'; /* Carácter de resta, no guion */
+    transform: rotate(180deg);
+}
+
+.accordion-item .accordion-content {
+    padding: 0 var(--spacing-5, 1.25rem) var(--spacing-5, 1.25rem);
+    color: var(--color-gray-400, #9CA3AF);
+    line-height: 1.7;
+}

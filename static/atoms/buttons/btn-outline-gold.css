@@ -1,0 +1,40 @@
+/* ==========================================================================
+   ATOM: Botón Secundario (Outline Gold)
+   ========================================================================== */
+
+/**
+ * .btn-outline-gold
+ *
+ * Botón secundario para acciones importantes pero no principales.
+ * Usa un borde dorado y un efecto de relleno en hover para mantener
+ * la consistencia con la paleta de lujo.
+ *
+ * Utiliza variables del sistema de diseño para colores, sombras y tipografía.
+ */
+.btn-outline-gold {
+    padding: 0.875rem 2rem; /* 14px 32px - Ajustado para consistencia */
+    background-color: transparent;
+    border: 2px solid var(--color-luxury-gold, #C5A059);
+    color: var(--color-luxury-gold, #C5A059);
+    font-weight: var(--font-bold, 700);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border-radius: 0.5rem;
+    cursor: pointer;
+    text-align: center;
+    display: inline-block;
+}
+
+.btn-outline-gold:hover,
+.btn-outline-gold:focus {
+    background-color: var(--color-luxury-gold, #C5A059);
+    color: var(--color-black, #121212);
+    box-shadow: var(--shadow-button-gold-hover, 0 8px 30px rgba(197, 160, 89, 0.6));
+    outline: none;
+}
+
+.btn-outline-gold > .fab,
+.btn-outline-gold > .fas {
+    margin-right: 0.5rem;
+}

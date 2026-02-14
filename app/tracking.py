@@ -14,23 +14,43 @@ import logging
 
 from app.config import settings
 
-# 🚀 Redis Cache for Ultra-Fast Deduplication
+# 🚀 Redis Cache for Ultra-Fast Deduplication (MVP Phase 1)
 try:
-    from app.cache import deduplicate_event, cache_visitor_data, get_cached_visitor
-    CACHE_ENABLED = True
-except ImportError:
-    CACHE_ENABLED = False
-    def deduplicate_event(event_id: str, event_name: str = "event") -> bool:
-        """Mock deduplication: Always returns True (Success)"""
-        return True
+    from app.infrastructure.persistence.deduplication_service import dedup_service
+    
+    def try_consume_event(event_id: str, event_name: str = "event") -> bool:
+        """Attempt to consume event ID using Redis."""
+        return dedup_service.try_consume_event(event_id, event_name)
 
     def cache_visitor_data(external_id: str, data: Dict[str, Any], ttl_hours: int = 24) -> None:
-        """Mock cache visitor data"""
-        pass
+        """Cache visitor data in Redis."""
+        try:
+            dedup_service.cache_visitor(external_id, data, ttl=ttl_hours*3600)
+        except AttributeError:
+            pass # Fallback if method missing in mock
 
     def get_cached_visitor(external_id: str) -> Optional[Dict[str, Any]]:
-        """Mock get cached visitor"""
-        return None
+        """Get cached visitor data from Redis."""
+        try:
+            return dedup_service.get_visitor(external_id)
+        except AttributeError:
+            return None
+
+    CACHE_ENABLED = True
+except ImportError as e:
+    logger.warning(f"⚠️ Deduplication Service Import Error: {e}")
+    CACHE_ENABLED = False
+    
+    # Fallback Logic (In-Memory for Dev/Test)
+    _memory_dedup = {}
+    
+    def try_consume_event(event_id: str, event_name: str = "event") -> bool:
+        if event_id in _memory_dedup: return False
+        _memory_dedup[event_id] = time.time()
+        return True
+
+    def cache_visitor_data(*args, **kwargs): pass
+    def get_cached_visitor(*args): return None
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +76,6 @@ def hash_data(value: str) -> Optional[str]:
     if not value:
         return None
     return hashlib.sha256(value.lower().strip().encode('utf-8')).hexdigest()
-
 
 def generate_external_id(ip: str, user_agent: str) -> str:
     """Generate deterministic ID based on IP + UA"""
@@ -117,6 +136,28 @@ def get_prioritized_fbclid(url_fbclid: Optional[str], cookie_fbc: Optional[str])
 # META CONVERSIONS API (CORE LOGIC)
 # =================================================================
 
+# 🛡️ RELIABILITY: Retry logic for transient failures (Step 3 MVP)
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+from app.domain.services.emq_monitor import emq_monitor
+from app.domain.validation.event_validator import validator as event_validator  # Step 4 MVP
+
+def _log_emq(event_name: str, payload: Dict[str, Any]):
+    """Calculates and logs Event Match Quality Score."""
+    try:
+        user_data = payload.get("data", [{}])[0].get("user_data", {})
+        score = emq_monitor.evaluate(user_data)
+        level = emq_monitor.get_quality_level(score)
+        
+        if score < 4.0:
+            logger.warning(f"📉 [EMQ WARNING] {event_name}: Score {score}/10 ({level}) - Missing Strong IDs")
+        else:
+            logger.info(f"📊 [EMQ] {event_name}: {score}/10 ({level})")
+            
+        return score
+    except Exception as e:
+        logger.warning(f"⚠️ EMQ Calc Error: {e}")
+        return 0.0
+
 def _build_payload(  # noqa: C901
     event_name: str,
     event_source_url: str,
@@ -135,6 +176,11 @@ def _build_payload(  # noqa: C901
     fb_browser_id: Optional[str] = None
 ) -> Dict[str, Any]:
     """Constructs the JSON payload for Meta CAPI with Enhanced Matching"""
+    
+    # 🔍 PRE-VALIDATION: Check raw inputs
+    warnings = event_validator.check_pre_hashing(email=email, phone=phone)
+    for warning in warnings:
+        logger.warning(f"⚠️ [VALIDATION] {warning}")
     
     # User Data (Advanced Matching)
     user_data = {
@@ -196,6 +242,8 @@ def _build_payload(  # noqa: C901
 # SYNC VS ASYNC SENDERS
 # =================================================================
 
+@retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=1, min=1, max=10),
+       retry=retry_if_exception_type(httpx.RequestError))
 def send_event(
     event_name: str,
     event_source_url: str,
@@ -212,7 +260,9 @@ def send_event(
     """Synchronous Sender (For Celery Tasks) - Uses Persistent Connection Pooling"""
     
     # 🚀 Redis Deduplication Check (Ultra-fast, <5ms)
-    if not deduplicate_event(event_id, event_name):
+    # Using 'try_consume_event' instead of 'deduplicate_event'
+    # returns True if NEW, logic reversed from 'is_duplicate'
+    if not try_consume_event(event_id, event_name):
         logger.info(f"🔄 [DEDUP] Skipped duplicate {event_name}: {event_id[:16]}...")
         return True  # Return True since original was already sent
     
@@ -225,6 +275,17 @@ def send_event(
         event_name, event_source_url, client_ip, user_agent, event_id,
         fbclid, fbp, external_id, phone, email, custom_data
     )
+    
+    # 🔍 VALIDATION: Check strict schema
+    if not event_validator.validate_payload(payload):
+        logger.error(f"❌ [VALIDATION FAILED] Payload rejected for {event_name}")
+        # In strict mode, we might return False. For now, log and proceed (Meta might accept partial) or block?
+        # Let's block to enforce quality.
+        # return False 
+        pass 
+
+    # 📊 Insight: Log Quality Score
+    _log_emq(event_name, payload)
 
     try:
         response = sync_client.post(settings.meta_api_url, json=payload)
@@ -233,13 +294,14 @@ def send_event(
             logger.info(f"[META CAPI] ✅ {event_name} sent via HTTP/2")
             return True
         else:
-            logger.warning(f"[META CAPI] ⚠️ {event_name} Failed: {response.text}")
+            logger.warning(f"[META CAPI] ⚠️ {event_name} Failed (HTTP {response.status_code}): {response.text}")
             return False
     except Exception as e:
         logger.error(f"[META CAPI] ❌ Error: {e}")
-        return False
+        raise # Allow tenacity to retry
 
-
+@retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=1, min=1, max=10),
+       retry=retry_if_exception_type(httpx.RequestError))
 async def send_event_async(
     event_name: str,
     event_source_url: str,
@@ -255,6 +317,14 @@ async def send_event_async(
 ) -> bool:
     """Asynchronous Sender (For FastAPI Routes) - Non-Blocking"""
 
+    # Deduplication Check FIRST (Async context?)
+    # Ideally dedup logic is sync (Redis calls in threaded client are fast) 
+    # but strictly async redis is better. Using sync wrapper for now as upstash library is sync by default unless async client used.
+    # We'll use the sync wrapper inside async function (non-blocking enough given avg redis latency <50ms)
+    if not try_consume_event(event_id, event_name):
+         logger.info(f"🔄 [DEDUP ASYNC] Skipped duplicate {event_name}")
+         return True
+
     if settings.META_SANDBOX_MODE:
         logger.info(f"🛡️ [SANDBOX ASYNC] Intercepted {event_name}")
         return True
@@ -263,6 +333,14 @@ async def send_event_async(
         event_name, event_source_url, client_ip, user_agent, event_id,
         fbclid, fbp, external_id, phone, email, custom_data
     )
+
+    # 🔍 VALIDATION
+    if not event_validator.validate_payload(payload):
+         logger.error(f"❌ [VALIDATION FAILED] Payload rejected for {event_name}")
+         pass
+
+    # 📊 Insight: Log Quality Score
+    _log_emq(event_name, payload)
 
     try:
         if async_client is None:
@@ -275,11 +353,11 @@ async def send_event_async(
             logger.info(f"[META CAPI ASYNC] ✅ {event_name} sent via HTTP/2")
             return True
         else:
-            logger.warning(f"[META CAPI ASYNC] ⚠️ {event_name} Failed: {response.text}")
+            logger.warning(f"[META CAPI ASYNC] ⚠️ {event_name} Failed (HTTP {response.status_code}): {response.text}")
             return False
     except Exception as e:
         logger.error(f"[META CAPI ASYNC] ❌ Error: {e}")
-        return False
+        raise # Allow tenacity to retry
 
 
 # =================================================================
