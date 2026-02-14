@@ -10,3 +10,4 @@
 -r requirements/03-platform.txt
 -r requirements/04-identity.txt
 -r requirements/05-stability.txt
+pyyaml

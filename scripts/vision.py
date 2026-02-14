@@ -67,12 +67,23 @@ class VisionArchitect:
                             modules = [node.module]
                         
                         for mod in modules:
-                            # Normalize: app.database -> app/database.py
-                            mod_path = mod.replace('.', '/')
-                            if self._is_internal_module(mod_path):
-                                edges.append(DependencyEdge(file_id, mod_path + ".py", "import"))
+                            # Normalize dotted paths to file paths
+                            # e.g. app.database -> app/database.py
+                            possible_paths = [
+                                mod.replace('.', '/') + ".py",
+                                mod.replace('.', '/') + "/__init__.py"
+                            ]
+                            
+                            resolved = None
+                            for p in possible_paths:
+                                if (self._project_root / p).exists():
+                                    resolved = p
+                                    break
+                            
+                            if resolved:
+                                edges.append(DependencyEdge(file_id, resolved, "import"))
                             elif self._is_internal_module(mod.split('.')[0]):
-                                # Fallback to top-level module
+                                # Fallback: partial match on top-level package
                                 edges.append(DependencyEdge(file_id, mod.split('.')[0], "import"))
                     
                     # 2. Classes -> Internal Nodes

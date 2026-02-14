@@ -1,14 +1,14 @@
-
 import os
 import sys
 import argparse
 import datetime
+import yaml
 
 # Configuration
 AI_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".ai")
 MOTOR_DIR = os.path.join(AI_DIR, "motor")
 
-def create_task(prompt):
+def create_task(prompt, autonomous_mode=False, thinkers=1, workers=2):
     """Creates a task file from a user prompt."""
     if not os.path.exists(MOTOR_DIR):
         os.makedirs(MOTOR_DIR)
@@ -17,6 +17,22 @@ def create_task(prompt):
     task_filename = f"task_user_{timestamp}.md"
     task_filepath = os.path.join(MOTOR_DIR, task_filename)
 
+    # --- METADATA (YAML Front Matter) ---
+    metadata = {
+        "task_id": f"user-{timestamp}",
+        "created_at": datetime.datetime.now().isoformat(),
+        "status": "pending",
+        "parent_task": None,
+    }
+    if autonomous_mode:
+        metadata["autonomous_mode"] = {
+            "enabled": True,
+            "thinkers": thinkers,
+            "workers": workers,
+            "status": "PLANNING" # Initial state for autonomous mode
+        }
+    
+    # --- CONTENT ---
     task_content = f"""
 # TASK: USER DIRECTIVE
 
@@ -30,10 +46,16 @@ This is a high-level directive from the user.
 3.  **Generate** the corresponding `task_AGENT_ACTION.md` files in the motor cortex.
 """
 
+    # --- WRITE FILE with YAML Front Matter ---
     with open(task_filepath, "w", encoding="utf-8") as f:
+        f.write("---\n")
+        yaml.dump(metadata, f, default_flow_style=False)
+        f.write("---\n")
         f.write(task_content)
 
     print(f"✅ Task created: {task_filename}")
+    if autonomous_mode:
+        print("🤖 Autonomous mode activated.")
     print(f"⏳ `synapse.py` will now process this task.")
 
 def main():
@@ -53,6 +75,25 @@ def main():
         action="store_true",
         help="Enter interactive mode to provide a multi-line prompt."
     )
+    # --- AUTONOMOUS MODE ARGUMENTS ---
+    parser.add_argument(
+        "--modo-autonomo",
+        dest="autonomous_mode",
+        action="store_true",
+        help="Activate the autonomous mode with thinkers and workers."
+    )
+    parser.add_argument(
+        "--pensadores",
+        type=int,
+        default=1,
+        help="Number of 'thinker' agents for planning."
+    )
+    parser.add_argument(
+        "--trabajadores",
+        type=int,
+        default=2,
+        help="Number of 'worker' agents for execution."
+    )
 
     args = parser.parse_args()
 
@@ -70,7 +111,12 @@ def main():
         print("❌ Error: Prompt cannot be empty.")
         sys.exit(1)
 
-    create_task(prompt.strip())
+    create_task(
+        prompt.strip(),
+        autonomous_mode=args.autonomous_mode,
+        thinkers=args.pensadores,
+        workers=args.trabajadores
+    )
 
 
 if __name__ == "__main__":
