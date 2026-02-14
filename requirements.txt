@@ -3,7 +3,6 @@ fastapi>=0.110.0
 uvicorn>=0.23.0
 jinja2>=3.1.3
 python-multipart>=0.0.7
-mangum>=0.17.0            # AWS Lambda/Vercel Adapter
 slowapi>=0.1.9            # Rate Limiting
 pydantic>=2.6.0
 pydantic-settings>=2.1.0
@@ -14,9 +13,6 @@ starlette>=0.50.0
 # 📊 TRACKING & AD-TECH (Tracking)
 facebook-business>=18.0.0 # Meta CAPI
 rudder-sdk-python>=2.0.2  # RudderStack
-google-auth>=2.27.0       # Google API Auth
-google-auth-oauthlib>=1.2.0
-phonenumbers>=8.13.30     # Lead validation
 
 # 🗄️ PERSISTENCE & CACHING (Supabase, Redis)
 supabase>=2.3.0
@@ -31,14 +27,7 @@ alembic>=1.18.3          # Migrations
 
 # 🛠️ PRODUCCIÓN & OPS (Producción)
 sentry-sdk[fastapi]>=1.40.0
-tenacity>=8.2.0           # Retry logic
-circuitbreaker>=1.4.0     # Fault tolerance
-structlog>=24.1.0         # Structured logging
-beartype>=0.16.0          # Runtime type checking
 python-dotenv>=1.0.0
-dependency-injector>=4.41.0
-inject>=5.2.1
-apscheduler>=3.10.4       # Background Tasks
 requests>=2.31.0
 httpx[http2]>=0.25.2      # Async HTTP
-
+# anyio>=4.0.0            # (Optional) Implicit dependency of Starlette/FastAPI, kept implicit.
