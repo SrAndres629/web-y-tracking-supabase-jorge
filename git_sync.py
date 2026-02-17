@@ -877,8 +877,7 @@ def main():
     if findings and not args.force:
         Console.warning(f"Found {len(findings)} potential issues.")
         Console.info("Run: python git_sync.py --bug-hunt")
-        # response = input("Continue with deployment? (yes/no): ")
-        response = "yes"
+        response = input("Continue with deployment? (yes/no): ")
         if response.lower() != "yes":
             Console.info("Deployment cancelled.")
             sys.exit(0)
