@@ -1,0 +1,19 @@
+{
+  "name": "yolo-mode",
+  "version": "1.0.0",
+  "description": "Modo YOLO - Ejecución autónoma con pensamiento profundo",
+  "slash_commands": {
+    "yolo": {
+      "description": "Activa/desactiva el modo YOLO para ejecución autónoma",
+      "handler": "python3 .kimi/skills/yolo-mode/yolo_slash.py",
+      "args": [
+        {
+          "name": "level",
+          "description": "Nivel de pensamiento (surface, standard, deep, profound, meta, off, stats)",
+          "required": false,
+          "default": "deep"
+        }
+      ]
+    }
+  }
+}

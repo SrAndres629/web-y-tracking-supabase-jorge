@@ -81,15 +81,17 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "accelerometer=()"
         )
 
-        # 10. Content Security Policy (CSP) - OPTIMIZED FOR GOOGLE & CLOUDFLARE
-        # Prevents XSS while allowing necessary third-party services
+        # 10. Content Security Policy (CSP) - SILICON VALLEY GOD MODE
+        # Total compatibility with Google Identity, Meta, Cloudflare and Unpkg
         csp_policy = (
             "default-src 'self'; "
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://*.googleapis.com https://*.gstatic.com https://cdnjs.cloudflare.com https://unpkg.com https://accounts.google.com https://connect.facebook.net https://static.cloudflareinsights.com; "
+            "script-src-elem 'self' 'unsafe-inline' https://challenges.cloudflare.com https://*.googleapis.com https://*.gstatic.com https://cdnjs.cloudflare.com https://unpkg.com https://accounts.google.com https://connect.facebook.net https://static.cloudflareinsights.com; "
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://accounts.google.com; "
+            "style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://accounts.google.com https://*.google.com; "
             "img-src 'self' data: blob: https:; "
-            "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; "
-            "connect-src 'self' https://*.upstash.io https://*.facebook.com https://*.googleapis.com https://accounts.google.com https://*.cloudflareinsights.com; "
+            "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; "
+            "connect-src 'self' https://*.upstash.io https://*.facebook.com https://*.googleapis.com https://accounts.google.com https://*.cloudflareinsights.com https://unpkg.com https://*.google.com; "
             "frame-src 'self' https://challenges.cloudflare.com https://accounts.google.com https://*.facebook.com; "
             "object-src 'none'; "
             "base-uri 'self'; "

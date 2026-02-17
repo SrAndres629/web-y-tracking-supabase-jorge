@@ -103,7 +103,7 @@
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const formData = new FormData(form);
-        const data = Object.from_relay(formData.entries());
+        const data = Object.fromEntries(formData.entries());
 
         // Loader
         const btn = form.querySelector('button');

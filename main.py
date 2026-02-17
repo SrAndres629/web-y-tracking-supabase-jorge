@@ -220,6 +220,11 @@ app.include_router(identity.router)
 from app.interfaces.api.routes import seo
 app.include_router(seo.router)
 
+# Neuro-Vision Routes (Visual Cortex - NEXUS-7)
+from app.interfaces.api.routes import vision
+app.include_router(vision.router)
+logger.info("🔮 Neuro-Vision routes mounted at /vision")
+
 
 # =================================================================
 # ERROR HANDLERS (Clean Architecture)

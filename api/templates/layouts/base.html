@@ -65,9 +65,146 @@
     <!-- Cloudflare Zaraz handles Meta Pixel (Auto-Injected) -->
     <!-- End Meta Pixel -->
 
-    <!-- Cloudflare Zaraz (Offloaded Tracking - Fallback/Others) -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- 🚀 CRITICAL CSS - Above the Fold (Render-blocking optimization) -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <style>
+        /* Critical CSS: Only what's needed for first viewport */
+        :root {
+            --luxury-gold: #c5a059;
+            --luxury-gold-light: #e5c585;
+            --luxury-black: #050505;
+            --luxury-black-deep: #0a0a0a;
+            --luxury-text: #f5f5f7;
+            --luxury-text-muted: hsla(0,0%,100%,.6);
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        html {
+            font-family: Inter, system-ui, -apple-system, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        body {
+            background: var(--luxury-black);
+            color: var(--luxury-text);
+            line-height: 1.5;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* Hero critical styles */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            padding: 2rem;
+        }
+        
+        .hero h1 {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            font-weight: 700;
+            text-align: center;
+            line-height: 1.1;
+            margin-bottom: 1rem;
+        }
+        
+        .hero h1 .text-gradient-gold {
+            background: linear-gradient(135deg, var(--luxury-gold) 0%, var(--luxury-gold-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero h2 {
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            color: var(--luxury-text-muted);
+            text-align: center;
+            font-weight: 400;
+            margin-bottom: 2rem;
+        }
+        
+        /* CTA Button critical styles */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            min-height: 48px;
+            min-width: 48px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--luxury-gold) 0%, var(--luxury-gold-light) 100%);
+            color: var(--luxury-black);
+        }
+        
+        /* Navbar critical */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            padding: 1rem 2rem;
+            background: rgba(5, 5, 5, 0.8);
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Skip link for accessibility */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--luxury-gold);
+            color: var(--luxury-black);
+            padding: 8px;
+            text-decoration: none;
+            z-index: 100;
+        }
+        
+        .skip-link:focus {
+            top: 0;
+        }
+        
+        /* Loading state */
+        .page-loading {
+            opacity: 0;
+            animation: fadeIn 0.3s ease forwards;
+        }
+        
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        
+        /* Mobile touch targets */
+        @media (max-width: 768px) {
+            a, button {
+                min-height: 44px;
+                min-width: 44px;
+            }
+        }
+    </style>
+    
+    <!-- Async load non-critical CSS -->
     <link rel="preload" href="/static/dist/css/app.min.css?v={{ system_version }}" as="style">
-    <link rel="stylesheet" href="/static/dist/css/app.min.css?v={{ system_version }}">
+    <link rel="stylesheet" href="/static/dist/css/app.min.css?v={{ system_version }}" media="print" onload="this.media='all'">
+    <noscript>
+        <link rel="stylesheet" href="/static/dist/css/app.min.css?v={{ system_version }}">
+    </noscript>
 
     <!-- Google Fonts + Icons (Apple Standard: Inter Variable) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -105,6 +242,7 @@
             if (typeof google !== 'undefined' && google.accounts) {
                 google.accounts.id.initialize({
                     client_id: '{{ google_client_id }}',
+                    use_fedcm_for_prompt: true, // Silicon Valley Compliance: FedCM Migration
                     callback: function (response) {
                         const debug = new URLSearchParams(window.location.search).has('debug');
                         if (debug) Logger.debug('🔍 Google Identity Response received');

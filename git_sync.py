@@ -835,6 +835,7 @@ def main():
     parser.add_argument("--find-related", metavar="FILE", help="🔍 Find files related to FILE")
     parser.add_argument("--pattern", metavar="PATTERN", help="🔍 Find files matching pattern")
     parser.add_argument("message", nargs="?", default=None, help="Commit message")
+    parser.add_argument("--yes-to-deploy", action="store_true", help="Bypass confirmation for deployment after bug hunt")
     args = parser.parse_args()
     
     # Modo: Find Related Files
@@ -874,7 +875,7 @@ def main():
     # Ejecutar caza de bugs
     hunter = BugHunter(REPO_PATH)
     findings = hunter.hunt()
-    if findings and not args.force:
+    if findings and not args.force and not args.yes_to_deploy:
         Console.warning(f"Found {len(findings)} potential issues.")
         Console.info("Run: python git_sync.py --bug-hunt")
         response = input("Continue with deployment? (yes/no): ")
