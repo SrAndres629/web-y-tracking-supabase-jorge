@@ -12,8 +12,15 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional, Self
+from typing import Optional
+import sys
 from enum import Enum, auto
+
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
+
 
 from app.domain.models.values import ExternalId, UTMParams, GeoLocation
 

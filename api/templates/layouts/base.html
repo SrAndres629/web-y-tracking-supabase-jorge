@@ -23,11 +23,9 @@
     </style>
 
     <!-- SEO Core Tags (Dynamic Silicon Valley Hub) -->
-    <title>{% block title %}{{ seo.title if seo and seo.title else "Jorge Aguirre Flores | Maquillaje Permanente en
-        Santa Cruz" }}{% endblock %}</title>
+    <title>{% block title %}{{ seo.title if seo and seo.title else "Jorge Aguirre Flores | Maquillaje Permanente en Santa Cruz" }}{% endblock %}</title>
     {% block meta_tags %}
-    <meta name="description" content="{{ seo.description if seo and seo.description else " Especialista en Microblading,
-        Delineado Permanente y Labios. 30 años de experiencia en Santa Cruz de la Sierra." }}">
+    <meta name="description" content="{{ seo.description if seo and seo.description else 'Especialista en Microblading, Delineado Permanente y Labios. 30 años de experiencia en Santa Cruz de la Sierra.' }}">
     <meta name="author" content="Jorge Aguirre Flores">
     <meta name="robots" content="{{ seo.robots if seo and seo.robots else 'index, follow' }}">
     <link rel="canonical" href="{{ seo.canonical if seo and seo.canonical else 'https://jorgeaguirreflores.com/' }}">

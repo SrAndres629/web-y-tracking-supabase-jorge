@@ -16,7 +16,14 @@ import random
 import string
 import time
 from dataclasses import dataclass
-from typing import Optional, Self
+from typing import Optional
+import sys
+
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
+
 
 from app.core.result import Result
 from app.core.validators import (

@@ -1,11 +1,14 @@
 import pytest
 import time
 import re
+import logging
 from unittest.mock import patch
 from hypothesis import given, strategies as st, settings as h_settings, Verbosity
 from app.tracking import generate_event_id, generate_fbc, generate_fbp, hash_data
 from app.services import normalize_pii
 from app.cache import deduplicate_event, _memory_cache, REDIS_ENABLED
+
+logger = logging.getLogger(__name__)
 
 # =================================================================
 # SILICON VALLEY STANDARD: MATHEMATICAL PROOF OF CORRECTNESS

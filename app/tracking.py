@@ -12,6 +12,8 @@ import asyncio
 from typing import Optional, Dict, Any
 import logging
 
+logger = logging.getLogger(__name__)
+
 from app.config import settings
 from app.database import save_emq_score
 
@@ -53,7 +55,6 @@ except ImportError as e:
     def cache_visitor_data(*args, **kwargs): pass
     def get_cached_visitor(*args): return None
 
-logger = logging.getLogger(__name__)
 
 # =================================================================
 # HTTP CLIENTS (SINGLETONS FOR PERSISTENT POOLING)

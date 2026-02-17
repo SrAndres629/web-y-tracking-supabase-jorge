@@ -12,3 +12,6 @@ mock>=5.1.0
 playwright>=1.41.0        # Cross-browser E2E testing
 faker>=22.6.0             # Fake data generation
 hypothesis>=6.92.0        # Property-based testing
+python-dotenv>=1.0.0      # For git_sync.py
+requests>=2.31.0          # For git_sync.py
+httpx>=0.27.0             # For git_sync.py
