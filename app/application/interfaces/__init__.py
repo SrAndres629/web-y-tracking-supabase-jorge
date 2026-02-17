@@ -9,7 +9,7 @@ Esto invierte la dependencia:
 - Infraestructura depende de Application (implementa sus puertos)
 """
 
-from app.application.interfaces.cache_port import DeduplicationPort, ContentCachePort
+from app.application.interfaces.cache_port import ContentCachePort, DeduplicationPort
 from app.application.interfaces.tracker_port import TrackerPort
 
 __all__ = [

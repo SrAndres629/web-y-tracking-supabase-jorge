@@ -7,12 +7,12 @@ pero son usadas por todas. Siguiendo el principio de Stable Dependencies:
 - Core no debe depender de ningún otro módulo de la aplicación
 """
 
-from app.core.result import Result, Ok, Err
-from app.core.decorators import retry, circuit_breaker, timed
+from app.core.decorators import circuit_breaker, retry, timed
+from app.core.result import Err, Ok, Result
 
 __all__ = [
     "Result",
-    "Ok", 
+    "Ok",
     "Err",
     "retry",
     "circuit_breaker",

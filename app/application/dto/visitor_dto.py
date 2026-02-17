@@ -4,20 +4,21 @@
 
 from __future__ import annotations
 
-from typing import Optional
 from datetime import datetime
-from pydantic import BaseModel, Field
-from pydantic import ConfigDict
+from typing import Optional
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class CreateVisitorRequest(BaseModel):
     """Request para crear visitante."""
+
     ip_address: str
     user_agent: str
     fbclid: Optional[str] = None
     fbp: Optional[str] = None
     source: str = Field(default="pageview")
-    
+
     # UTM
     utm_source: Optional[str] = None
     utm_medium: Optional[str] = None
@@ -28,6 +29,7 @@ class CreateVisitorRequest(BaseModel):
 
 class VisitorResponse(BaseModel):
     """Response con datos de visitante."""
+
     external_id: str
     fbclid: Optional[str]
     fbp: Optional[str]
@@ -40,6 +42,7 @@ class VisitorResponse(BaseModel):
 
 class VisitorListResponse(BaseModel):
     """Lista paginada de visitantes."""
+
     items: list[VisitorResponse]
     total: int
     limit: int

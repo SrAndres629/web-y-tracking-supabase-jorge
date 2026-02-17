@@ -87,40 +87,6 @@
 
 
 
-<!-- ========== PREMIUM WHATSAPP & CRO (Dual-Display) ========== -->
-<div class="whatsapp-premium-container">
-    <!-- Experience Badge (Appears near button) -->
-    <div id="experienceBadge" class="experience-mini-badge">
-        <img src="/static/assets/images/hero/jorge_hero_new.webp" alt="Jorge Aguirre Flores">
-        <span>30 Años de Arte</span>
-    </div>
-
-    <!-- Tooltip Bubble -->
-    <div id="whatsappTooltip" class="whatsapp-tooltip">
-        ¿Dudas? Habla con el especialista aquí
-    </div>
-
-    <!-- Premium Button -->
-    <button id="whatsappPremium" type="button" onclick="handleConversion('Floating Button')"
-        class="whatsapp-premium-btn" aria-label="Contactar por WhatsApp"> <i class="fab fa-whatsapp"></i>
-    </button>
-</div>
-
-<!-- 🚀 SILICON VALLEY CONVERSION HACK: Mobile Sticky CTA Bar -->
-<div
-    class="fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-xl border-t border-white/10 p-4 flex items-center justify-between z-[1000] md:hidden shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
-    <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-full border border-luxury-gold p-0.5">
-            <img src="/static/assets/images/hero/jorge_hero_new.webp" class="w-full h-full object-cover rounded-full"
-                alt="Jorge Aguirre">
-        </div>
-        <div>
-            <p class="text-white text-xs font-bold leading-tight">Jorge Aguirre Flores</p>
-            <p class="text-luxury-gold text-[10px] uppercase tracking-tighter">Especialista Elite</p>
-        </div>
-    </div>
-    <button type="button" onclick="handleConversion('Sticky Mobile CTA')"
-        class="bg-luxury-gold text-black px-5 py-2.5 rounded-full text-[10px] font-bold shadow-lg shadow-luxury-gold/30 active:scale-95 transition-transform animate-pulse whitespace-nowrap">
-        AGENDAR CITA
-    </button>
-</div>
+{# WhatsApp Buttons - Usando componente reutilizable #}
+{% with variant='floating' %}{% include 'components/whatsapp-button.html' %}{% endwith %}
+{% with variant='sticky-mobile' %}{% include 'components/whatsapp-button.html' %}{% endwith %}

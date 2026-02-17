@@ -60,7 +60,9 @@ CREATE_TABLE_BUSINESS_KNOWLEDGE = """
     );
 """
 
-CREATE_INDEX_KNOWLEDGE_SLUG = "CREATE INDEX IF NOT EXISTS idx_knowledge_slug ON business_knowledge(slug);"
+CREATE_INDEX_KNOWLEDGE_SLUG = (
+    "CREATE INDEX IF NOT EXISTS idx_knowledge_slug ON business_knowledge(slug);"
+)
 
 CREATE_TABLE_VISITORS = """
     CREATE TABLE IF NOT EXISTS visitors (
@@ -81,7 +83,9 @@ CREATE_TABLE_VISITORS = """
     );
 """
 
-CREATE_INDEX_VISITORS_EXTERNAL_ID = "CREATE INDEX IF NOT EXISTS idx_visitors_external_id ON visitors(external_id);"
+CREATE_INDEX_VISITORS_EXTERNAL_ID = (
+    "CREATE INDEX IF NOT EXISTS idx_visitors_external_id ON visitors(external_id);"
+)
 
 CREATE_TABLE_CONTACTS = """
     CREATE TABLE IF NOT EXISTS crm_leads (
@@ -114,8 +118,12 @@ CREATE_TABLE_CONTACTS = """
     );
 """
 
-CREATE_INDEX_CONTACTS_WHATSAPP = "CREATE INDEX IF NOT EXISTS idx_contacts_whatsapp ON crm_leads(whatsapp_phone);"
-CREATE_INDEX_CONTACTS_STATUS = "CREATE INDEX IF NOT EXISTS idx_contacts_status ON crm_leads(status);"
+CREATE_INDEX_CONTACTS_WHATSAPP = (
+    "CREATE INDEX IF NOT EXISTS idx_contacts_whatsapp ON crm_leads(whatsapp_phone);"
+)
+CREATE_INDEX_CONTACTS_STATUS = (
+    "CREATE INDEX IF NOT EXISTS idx_contacts_status ON crm_leads(status);"
+)
 
 CREATE_TABLE_MESSAGES = """
     CREATE TABLE IF NOT EXISTS messages (
@@ -128,7 +136,9 @@ CREATE_TABLE_MESSAGES = """
     );
 """
 
-CREATE_INDEX_MESSAGES_CONTACT_ID = "CREATE INDEX IF NOT EXISTS idx_messages_contact_id ON messages(contact_id);"
+CREATE_INDEX_MESSAGES_CONTACT_ID = (
+    "CREATE INDEX IF NOT EXISTS idx_messages_contact_id ON messages(contact_id);"
+)
 
 CREATE_TABLE_APPOINTMENTS = """
     CREATE TABLE IF NOT EXISTS appointments (
@@ -155,7 +165,9 @@ CREATE_TABLE_INTERACTIONS = """
     );
 """
 
-CREATE_INDEX_INTERACTIONS_LEAD_ID = "CREATE INDEX IF NOT EXISTS idx_interactions_lead_id ON interactions(lead_id);"
+CREATE_INDEX_INTERACTIONS_LEAD_ID = (
+    "CREATE INDEX IF NOT EXISTS idx_interactions_lead_id ON interactions(lead_id);"
+)
 
 # --- DML: Operations ---
 
@@ -215,11 +227,15 @@ SELECT_FBCLID_BY_EXTERNAL_ID = "SELECT fbclid FROM visitors WHERE external_id = 
 
 SELECT_RECENT_VISITORS = "SELECT id, external_id, source, timestamp, ip_address FROM visitors ORDER BY timestamp DESC LIMIT %s"
 
-SELECT_VISITOR_BY_ID = "SELECT id, external_id, fbclid, source, timestamp FROM visitors WHERE id = %s"
+SELECT_VISITOR_BY_ID = (
+    "SELECT id, external_id, fbclid, source, timestamp FROM visitors WHERE id = %s"
+)
 
 # --- Operations: Leads (W-003) ---
 
-UPDATE_LEAD_SENT_FLAG = "UPDATE crm_leads SET conversion_sent_to_meta = TRUE WHERE whatsapp_phone = %s"
+UPDATE_LEAD_SENT_FLAG = (
+    "UPDATE crm_leads SET conversion_sent_to_meta = TRUE WHERE whatsapp_phone = %s"
+)
 
 COUNT_USER_MESSAGES = """
     SELECT COUNT(*) FROM messages m

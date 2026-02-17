@@ -1,10 +1,11 @@
-
 import hashlib
 import logging
-from typing import Optional, Dict, Any
-from app.database import get_cursor, BACKEND
+from typing import Any, Dict, Optional
+
+from app.database import BACKEND, get_cursor
 
 logger = logging.getLogger(__name__)
+
 
 class ClientService:
     @staticmethod
@@ -12,9 +13,9 @@ class ClientService:
         """Look up client by hashed API key."""
         if not api_key:
             return None
-            
+
         key_hash = hashlib.sha256(api_key.encode()).hexdigest()
-        
+
         try:
             with get_cursor() as cur:
                 query = """
@@ -25,7 +26,7 @@ class ClientService:
                 """
                 if BACKEND != "postgres":
                     query = query.replace("%s", "?")
-                
+
                 cur.execute(query, (key_hash,))
                 row = cur.fetchone()
                 if row:
@@ -38,12 +39,20 @@ class ClientService:
             return None
 
     @staticmethod
-    async def create_client(name: str, email: str, company: str, meta_pixel_id: str, meta_access_token: str, plan: str = 'starter') -> Optional[Dict[str, Any]]:
+    async def create_client(
+        name: str,
+        email: str,
+        company: str,
+        meta_pixel_id: str,
+        meta_access_token: str,
+        plan: str = "starter",
+    ) -> Optional[Dict[str, Any]]:
         """Create a new client and return client_id and raw API key."""
         import secrets
+
         api_key = f"ag_{secrets.token_urlsafe(32)}"
         key_hash = hashlib.sha256(api_key.encode()).hexdigest()
-        
+
         try:
             with get_cursor() as cur:
                 # 1. Insert Client
@@ -54,26 +63,27 @@ class ClientService:
                 """
                 if BACKEND != "postgres":
                     query_client = "INSERT INTO clients (name, email, company, meta_pixel_id, meta_access_token, plan) VALUES (?, ?, ?, ?, ?, ?)"
-                    cur.execute(query_client, (name, email, company, meta_pixel_id, meta_access_token, plan))
+                    cur.execute(
+                        query_client, (name, email, company, meta_pixel_id, meta_access_token, plan)
+                    )
                     client_id = cur.lastrowid
                 else:
-                    cur.execute(query_client, (name, email, company, meta_pixel_id, meta_access_token, plan))
+                    cur.execute(
+                        query_client, (name, email, company, meta_pixel_id, meta_access_token, plan)
+                    )
                     client_id = cur.fetchone()[0]
 
                 if not client_id:
                     return None
-                
+
                 # 2. Insert API Key
                 query_key = "INSERT INTO api_keys (client_id, key_hash, name) VALUES (%s, %s, %s)"
                 if BACKEND != "postgres":
                     query_key = query_key.replace("%s", "?")
-                
+
                 cur.execute(query_key, (client_id, key_hash, "Default Key"))
-            
-            return {
-                "client_id": client_id,
-                "api_key": api_key
-            }
+
+            return {"client_id": client_id, "api_key": api_key}
         except Exception as e:
             logger.error(f"Error creating client: {e}")
             return None

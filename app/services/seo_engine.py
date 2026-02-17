@@ -3,17 +3,17 @@
 # Jorge Aguirre Flores Web
 # =================================================================
 import json
-from typing import Dict, Any, List, Optional
-from app.config import settings
+from typing import Any, Dict, List, Optional
+
 
 class SEOEngine:
     """
     Motor avanzado de SEO semántico y estructuración de datos.
     Genera metadatos y JSON-LD de alto impacto para SERPs.
     """
-    
+
     BASE_URL = "https://jorgeaguirreflores.com"
-    
+
     @staticmethod
     def get_global_schema() -> Dict[str, Any]:
         """Schema BeautySalon: Máxima relevancia para clínicas de estética"""
@@ -23,7 +23,7 @@ class SEOEngine:
             "name": "Jorge Aguirre Flores - Arte Facial & Microblading",
             "image": [
                 f"{SEOEngine.BASE_URL}/static/assets/images/hero/jorge_hero_premium.webp",
-                f"{SEOEngine.BASE_URL}/static/assets/images/meta/og-image.webp"
+                f"{SEOEngine.BASE_URL}/static/assets/images/meta/og-image.webp",
             ],
             "@id": f"{SEOEngine.BASE_URL}/#organization",
             "url": SEOEngine.BASE_URL,
@@ -36,43 +36,39 @@ class SEOEngine:
                 "addressLocality": "Santa Cruz de la Sierra",
                 "addressRegion": "Santa Cruz",
                 "postalCode": "0000",
-                "addressCountry": "BO"
+                "addressCountry": "BO",
             },
-            "geo": {
-                "@type": "GeoCoordinates",
-                "latitude": -17.7815,
-                "longitude": -63.1821
-            },
+            "geo": {"@type": "GeoCoordinates", "latitude": -17.7815, "longitude": -63.1821},
             "openingHoursSpecification": [
                 {
                     "@type": "OpeningHoursSpecification",
                     "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
                     "opens": "09:00",
-                    "closes": "18:00"
+                    "closes": "18:00",
                 },
                 {
                     "@type": "OpeningHoursSpecification",
                     "dayOfWeek": "Saturday",
                     "opens": "09:00",
-                    "closes": "14:00"
-                }
+                    "closes": "14:00",
+                },
             ],
             "sameAs": [
                 "https://facebook.com/jorgeaguirreflores",
                 "https://instagram.com/jorgeaguirreflores",
-                "https://tiktok.com/@jorgeaguirreflores"
+                "https://tiktok.com/@jorgeaguirreflores",
             ],
             "founder": {
                 "@type": "Person",
                 "name": "Jorge Aguirre Flores",
                 "jobTitle": "Especialista en Micropigmentación",
-                "image": f"{SEOEngine.BASE_URL}/static/assets/images/hero/jorge_hero_premium.webp"
+                "image": f"{SEOEngine.BASE_URL}/static/assets/images/hero/jorge_hero_premium.webp",
             },
             "aggregateRating": {
                 "@type": "AggregateRating",
                 "ratingValue": "5.0",
-                "reviewCount": "127"
-            }
+                "reviewCount": "127",
+            },
         }
 
     @staticmethod
@@ -82,10 +78,7 @@ class SEOEngine:
             "@context": "https://schema.org",
             "@type": "Service",
             "serviceType": service.get("title", "Beauty Service"),
-            "provider": {
-                "@type": "LocalBusiness",
-                "name": "Jorge Aguirre Flores"
-            },
+            "provider": {"@type": "LocalBusiness", "name": "Jorge Aguirre Flores"},
             "description": service.get("description", ""),
             "areaServed": "Santa Cruz de la Sierra",
             "hasOfferCatalog": {
@@ -94,13 +87,10 @@ class SEOEngine:
                 "itemListElement": [
                     {
                         "@type": "Offer",
-                        "itemOffered": {
-                            "@type": "Service",
-                            "name": service.get("title")
-                        }
+                        "itemOffered": {"@type": "Service", "name": service.get("title")},
                     }
-                ]
-            }
+                ],
+            },
         }
 
     @staticmethod
@@ -108,17 +98,19 @@ class SEOEngine:
         """Breadcrumbs: Claridad jerárquica para Google"""
         elements = []
         for i, item in enumerate(items):
-            elements.append({
-                "@type": "ListItem",
-                "position": i + 1,
-                "name": item["name"],
-                "item": f"{SEOEngine.BASE_URL}{item['path']}"
-            })
-        
+            elements.append(
+                {
+                    "@type": "ListItem",
+                    "position": i + 1,
+                    "name": item["name"],
+                    "item": f"{SEOEngine.BASE_URL}{item['path']}",
+                }
+            )
+
         return {
             "@context": "https://schema.org",
             "@type": "BreadcrumbList",
-            "itemListElement": elements
+            "itemListElement": elements,
         }
 
     @staticmethod
@@ -130,17 +122,19 @@ class SEOEngine:
         return output
 
     @staticmethod
-    def get_page_metadata(path: str, custom_meta: Optional[Dict[str, str]] = None) -> Dict[str, str]:
+    def get_page_metadata(
+        path: str, custom_meta: Optional[Dict[str, str]] = None
+    ) -> Dict[str, str]:
         """Gestor de metatags dinámicos"""
         defaults = {
             "title": "Jorge Aguirre Flores | Maquillaje Permanente Santa Cruz",
             "description": "30 años de experiencia en Microblading y Micropigmentación. El estándar de oro en estética en Bolivia.",
             "og_title": "Jorge Aguirre Flores | Experto en Mirada",
             "og_image": f"{SEOEngine.BASE_URL}/static/assets/images/meta/og-image.webp",
-            "canonical": f"{SEOEngine.BASE_URL}{path}"
+            "canonical": f"{SEOEngine.BASE_URL}{path}",
         }
-        
+
         if custom_meta:
             defaults.update(custom_meta)
-            
+
         return defaults

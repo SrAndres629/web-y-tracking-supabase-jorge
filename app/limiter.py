@@ -1,11 +1,13 @@
 # =================================================================
 # LIMITER.PY - Shared Rate Limiter Instance
 # =================================================================
-from slowapi import Limiter
-from slowapi.util import get_remote_address
-from app.config import settings
 import logging
 import os
+
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+
+from app.config import settings
 
 logger = logging.getLogger(__name__)
 

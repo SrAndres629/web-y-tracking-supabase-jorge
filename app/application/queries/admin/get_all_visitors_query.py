@@ -1,5 +1,5 @@
-from typing import List, Dict, Any
-from typing import Callable
+from typing import Any, Callable, Dict, List
+
 
 class GetAllVisitorsQuery:
     def __init__(self, list_visitors: Callable[..., List[Dict[str, Any]]]):

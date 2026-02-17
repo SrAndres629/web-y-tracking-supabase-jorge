@@ -1,10 +1,11 @@
-import pytest
-import os
 import logging
-import requests
+import os
 import re
+from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
+
 import psycopg2
-from urllib.parse import urlparse, parse_qsl, urlencode, urlunparse
+import pytest
+import requests
 
 # =================================================================
 # SENIOR LIVE INFRASTRUCTURE AUDIT (Architectural Sentinel)
@@ -22,9 +23,11 @@ def _cloudflare_egress_reachable() -> bool:
     except requests.RequestException:
         return False
 
+
 @pytest.fixture
 def anyio_backend():
-    return 'asyncio'
+    return "asyncio"
+
 
 @pytest.mark.anyio
 async def test_supabase_security_audit():
@@ -81,14 +84,13 @@ async def test_supabase_security_audit():
         ignore_raw = os.getenv("SUPABASE_POLICY_IGNORE", "")
         ignore = {t.strip() for t in ignore_raw.split(",") if t.strip()}
 
-        missing_policy = sorted(t for t in public_tables if t not in tables_with_policies and t not in ignore)
+        missing_policy = sorted(
+            t for t in public_tables if t not in tables_with_policies and t not in ignore
+        )
         rls_off = sorted(t for t, enabled in rls_map.items() if not enabled and t not in ignore)
 
         if missing_policy or rls_off:
-            msg = (
-                f"🛡️ Supabase Security Gap: "
-                f"missing policies={missing_policy} rls_off={rls_off}"
-            )
+            msg = f"🛡️ Supabase Security Gap: missing policies={missing_policy} rls_off={rls_off}"
             if is_strict:
                 pytest.fail(msg)
             logger.warning(msg)
@@ -104,6 +106,7 @@ async def test_supabase_security_audit():
         except Exception:
             pass
 
+
 @pytest.mark.anyio
 async def test_cloudflare_access_integrity():
     """
@@ -111,6 +114,7 @@ async def test_cloudflare_access_integrity():
     Uses Global API Key for high-privilege audit of the edge.
     """
     from app.config import settings
+
     if os.getenv("AUDIT_MODE") != "1":
         pytest.skip("Cloudflare live audit requires AUDIT_MODE=1.")
     if not _cloudflare_egress_reachable():
@@ -159,12 +163,14 @@ async def test_cloudflare_access_integrity():
             if result:
                 resolved_zone_id = result[0].get("id")
                 if resolved_zone_id and resolved_zone_id != zone_id:
-                    logger.warning("⚠️ Cloudflare Zone ID mismatch. Using resolved zone id from API.")
+                    logger.warning(
+                        "⚠️ Cloudflare Zone ID mismatch. Using resolved zone id from API."
+                    )
                     zone_id = resolved_zone_id
     except Exception:
         # If lookup fails, continue with provided zone_id
         pass
-    
+
     # 1. Verify Zaraz Status
     url = f"https://api.cloudflare.com/client/v4/zones/{zone_id}/zaraz/config"
     try:
@@ -174,7 +180,7 @@ async def test_cloudflare_access_integrity():
             pytest.fail(f"🔥 Cloudflare Global Audit FAILED: {exc}")
         logger.warning(f"🌑 Cloudflare Audit: API request error. Skipping checks. ({exc})")
         return
-    
+
     if resp.status_code == 200:
         zaraz_config = resp.json().get("result", {})
         enabled = zaraz_config.get("enabled", False)
@@ -183,7 +189,9 @@ async def test_cloudflare_access_integrity():
     else:
         if os.getenv("CLOUDFLARE_STRICT_AUDIT") == "1":
             pytest.fail(f"🔥 Cloudflare Global Audit FAILED: {resp.status_code} - {resp.text}")
-        logger.warning(f"🌑 Cloudflare Audit: Non-200 response ({resp.status_code}). Skipping checks.")
+        logger.warning(
+            f"🌑 Cloudflare Audit: Non-200 response ({resp.status_code}). Skipping checks."
+        )
         return
 
     # 2. Verify Speed Settings (Brotli)
@@ -200,6 +208,7 @@ async def test_cloudflare_access_integrity():
         assert brotli == "on", "⚠️ Performance Warning: Brotli compression is OFF."
         logger.info("✅ Cloudflare Speed: Brotli is ON.")
 
+
 @pytest.mark.anyio
 async def test_vercel_deployment_health():
     """
@@ -208,7 +217,7 @@ async def test_vercel_deployment_health():
     """
     # [Architecture Note]
     # Current live state shows: 0 critical errors in last 5 deployments.
-    
+
     critical_errors_count = 0
-    
+
     assert critical_errors_count == 0, "🔥 CRITICAL: Production deployment has active error logs!"

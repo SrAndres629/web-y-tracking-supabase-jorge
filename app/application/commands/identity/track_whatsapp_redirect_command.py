@@ -1,11 +1,12 @@
 import logging
 import time
-from typing import Optional, Dict, Any, Callable, Awaitable
 from dataclasses import dataclass
+from typing import Any, Awaitable, Callable, Dict, Optional
 
 from app.config import settings
 
 logger = logging.getLogger(__name__)
+
 
 @dataclass(frozen=True)
 class TrackWhatsAppRedirectCommand:
@@ -16,6 +17,7 @@ class TrackWhatsAppRedirectCommand:
     cf_city: Optional[str] = None
     service: Optional[str] = None
     source: Optional[str] = "website"
+
 
 class TrackWhatsAppRedirectHandler:
     def __init__(
@@ -32,7 +34,7 @@ class TrackWhatsAppRedirectHandler:
         """
         external_id = self._external_id_generator(cmd.client_ip, cmd.user_agent)
         event_id = f"wa_click_{int(time.time() * 1000)}"
-        
+
         # Send Contact event to Meta CAPI (High Value Intent)
         await self._event_sender(
             event_name="Contact",
@@ -46,14 +48,14 @@ class TrackWhatsAppRedirectHandler:
             custom_data={
                 "content_name": cmd.service or "general_inquiry",
                 "content_category": "whatsapp_click",
-                "lead_source": cmd.source
-            }
+                "lead_source": cmd.source,
+            },
         )
-        
+
         # Build WhatsApp URL with pre-filled message
         message = f"Hola, me interesa información sobre {cmd.service or 'sus servicios'}."
         wa_url = f"https://wa.me/{settings.WHATSAPP_NUMBER}?text={message.replace(' ', '%20')}"
-        
+
         logger.info(f"📱 [WA TRACK] Redirecting IP {cmd.client_ip} to WhatsApp")
-        
+
         return wa_url

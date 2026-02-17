@@ -1,0 +1,29 @@
+{
+  "name": "antigravity",
+  "version": "1.0.0",
+  "description": "Extensión nativa Antigravity - Quota, modelos y MCP",
+  "author": "NEXUS-7",
+  "commands": {
+    "quota": {
+      "description": "Muestra quota disponible en tiempo real",
+      "handler": "python3 .kimi/skills/antigravity/quota.py"
+    },
+    "models": {
+      "description": "Lista todos los modelos disponibles",
+      "handler": "python3 .kimi/skills/antigravity/models.py"
+    },
+    "mcp": {
+      "description": "Usa un MCP de Antigravity",
+      "handler": "python3 .kimi/skills/antigravity/mcp_bridge.py",
+      "args": ["name"]
+    },
+    "status": {
+      "description": "Status completo de Antigravity",
+      "handler": "python3 .kimi/skills/antigravity/status.py"
+    }
+  },
+  "env": {
+    "ANTIGRAVITY_API_KEY": "${ANTIGRAVITY_API_KEY}",
+    "ANTIGRAVITY_BASE_URL": "https://api.antigravity.ai/v1"
+  }
+}

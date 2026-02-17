@@ -2,12 +2,11 @@
 # VISION.PY - Rutas para Neuro-Vision (Visual Cortex)
 # Jorge Aguirre Flores Web - NEXUS-7 Integration
 # =================================================================
-import os
 import logging
 from pathlib import Path
+
 from fastapi import APIRouter, Request
-from fastapi.responses import HTMLResponse, FileResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse, HTMLResponse
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +36,7 @@ async def neuro_vision_root(request: Request):
     Visualizador 3D de arquitectura de código
     """
     template_path = get_vision_template("neuro_map_v2.html")
-    
+
     if not template_path.exists():
         logger.error(f"❌ Neuro-Vision template not found: {template_path}")
         return HTMLResponse(
@@ -52,16 +51,17 @@ async def neuro_vision_root(request: Request):
             </body>
             </html>
             """,
-            status_code=503
+            status_code=503,
         )
-    
+
     try:
-        content = template_path.read_text(encoding='utf-8')
-        
+        content = template_path.read_text(encoding="utf-8")
+
         # Inject cache-busting version
         from app.config import settings
-        content = content.replace('{{ system_version }}', settings.system_version)
-        
+
+        content = content.replace("{{ system_version }}", settings.system_version)
+
         return HTMLResponse(
             content=content,
             headers={
@@ -70,25 +70,22 @@ async def neuro_vision_root(request: Request):
                 "Expires": "0",
                 "X-Frame-Options": "SAMEORIGIN",
                 "X-Content-Type-Options": "nosniff",
-            }
+            },
         )
     except Exception as e:
         logger.error(f"❌ Error serving Neuro-Vision: {e}")
-        return HTMLResponse(
-            content=f"<h1>Error</h1><p>{str(e)}</p>",
-            status_code=500
-        )
+        return HTMLResponse(content=f"<h1>Error</h1><p>{str(e)}</p>", status_code=500)
 
 
 @router.get("/v1", response_class=HTMLResponse)
 async def neuro_vision_legacy(request: Request):
     """Legacy Neuro-Vision v1.0 (Original monolithic version)"""
     template_path = VISION_TEMPLATES / "neuro_map.html"
-    
+
     if not template_path.exists():
         return HTMLResponse("Legacy template not found", status_code=404)
-    
-    content = template_path.read_text(encoding='utf-8')
+
+    content = template_path.read_text(encoding="utf-8")
     return HTMLResponse(content=content)
 
 
@@ -101,9 +98,9 @@ async def vision_status():
         "template_v1_exists": (VISION_TEMPLATES / "neuro_map.html").exists(),
         "css_exists": (VISION_STATIC / "css" / "neuro_map.css").exists(),
         "js_exists": (VISION_STATIC / "js" / "neuro_core.js").exists(),
-        "static_files": []
+        "static_files": [],
     }
-    
+
     # List available static files
     if VISION_STATIC.exists():
         for file_type in ["css", "js"]:
@@ -112,7 +109,7 @@ async def vision_status():
                 for file in type_dir.iterdir():
                     if file.is_file():
                         status["static_files"].append(f"{file_type}/{file.name}")
-    
+
     return status
 
 
@@ -123,7 +120,7 @@ async def vision_static(file_path: str):
     """Serve Neuro-Vision static files (CSS, JS)"""
     # Security: Prevent directory traversal
     safe_path = Path(file_path).resolve()
-    
+
     # Ensure the path is within the vision static directory
     try:
         full_path = (VISION_STATIC / safe_path).resolve()
@@ -132,26 +129,26 @@ async def vision_static(file_path: str):
     except (ValueError, RuntimeError):
         logger.warning(f"🚫 Attempted directory traversal: {file_path}")
         return HTMLResponse("Forbidden", status_code=403)
-    
+
     if not full_path.exists() or not full_path.is_file():
         return HTMLResponse("Not found", status_code=404)
-    
+
     # Determine content type
     content_type = "application/octet-stream"
-    if file_path.endswith('.css'):
+    if file_path.endswith(".css"):
         content_type = "text/css"
-    elif file_path.endswith('.js'):
+    elif file_path.endswith(".js"):
         content_type = "application/javascript"
-    elif file_path.endswith('.html'):
+    elif file_path.endswith(".html"):
         content_type = "text/html"
-    elif file_path.endswith('.json'):
+    elif file_path.endswith(".json"):
         content_type = "application/json"
-    
+
     return FileResponse(
         path=full_path,
         media_type=content_type,
         headers={
             "Cache-Control": "public, max-age=3600",
             "X-Content-Type-Options": "nosniff",
-        }
+        },
     )

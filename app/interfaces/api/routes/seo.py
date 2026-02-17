@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Response, Request
-from fastapi.responses import HTMLResponse
+from fastapi import APIRouter, Request, Response
+
 from app.application.queries.seo.get_page_seo_data_query import GetPageSEODataQuery
-from app.services.seo_engine import SEOEngine # Assuming SEOEngine is still needed for sitemap/robots if not handled by query
 
 router = APIRouter()
+
 
 @router.get("/sitemap.xml", response_class=Response, summary="XML Sitemap")
 async def sitemap_xml():
@@ -23,6 +23,7 @@ async def sitemap_xml():
 """
     return Response(content=content, media_type="application/xml")
 
+
 @router.get("/robots.txt", response_class=Response, summary="Robots exclusion file")
 async def robots_txt():
     """Provides instructions for web robots."""
@@ -33,6 +34,7 @@ Sitemap: https://jorgeaguirreflores.com/sitemap.xml
 """
     return Response(content=content, media_type="text/plain")
 
+
 @router.get("/seo-meta", summary="Get SEO metadata for a page (JSON)")
 async def get_seo_metadata(request: Request, path: str = "/"):
     """
@@ -42,6 +44,7 @@ async def get_seo_metadata(request: Request, path: str = "/"):
     # Pass path directly, context_data can be added if needed for dynamic metadata
     seo_data = await query.execute(path=path)
     return seo_data
+
 
 # The actual SEO metadata for pages will be fetched by the pages themselves
 # using GetPageSEODataQuery, not via a separate endpoint from the browser.

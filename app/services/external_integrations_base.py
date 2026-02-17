@@ -1,8 +1,9 @@
-from abc import ABC, abstractmethod
 import logging
-from typing import Dict, Any, Optional
+from abc import ABC, abstractmethod
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
+
 
 class ExternalIntegrationBase(ABC):
     """
@@ -19,7 +20,12 @@ class ExternalIntegrationBase(ABC):
         logger.info(f"Initialized {self.platform_name} Integration Base.")
 
     @abstractmethod
-    async def send_event(self, event_name: str, payload: Dict[str, Any], user_context: Optional[Dict[str, Any]] = None) -> bool:
+    async def send_event(
+        self,
+        event_name: str,
+        payload: Dict[str, Any],
+        user_context: Optional[Dict[str, Any]] = None,
+    ) -> bool:
         """
         Abstract method to send a generic event to the external platform.
 

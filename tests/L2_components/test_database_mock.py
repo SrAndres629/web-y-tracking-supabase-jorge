@@ -1,5 +1,3 @@
-
-import pytest
 from app.database import _get_db_config, check_connection
 
 # 🛡️ THE DATABASE AUDITOR (Unit Level)
@@ -8,6 +6,7 @@ from app.database import _get_db_config, check_connection
 # This file tests logic that does not require a live DB connection,
 # satisfying the Function Coverage Audit.
 # =================================================================
+
 
 def test_db_config_logic():
     """
@@ -18,6 +17,7 @@ def test_db_config_logic():
     config = _get_db_config()
     assert "id_type_uuid" in config
     assert "status_type" in config
+
 
 def test_check_connection_mock():
     """

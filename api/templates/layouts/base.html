@@ -14,13 +14,11 @@
 
     <!-- Component-specific styles loaded on demand -->
 
+    <!-- Theme Bridge: Unificación Luxury ↔ Neuro-Vision -->
+    <link rel="stylesheet" href="/static/design-system/tokens/theme-bridge.css?v={{ system_version }}">
+    
     <!-- Global selection style -->
-    <style>
-        ::selection {
-            background-color: #C5A059;
-            color: #000;
-        }
-    </style>
+    <style>::selection{background-color:#C5A059;color:#000}</style>
 
     <!-- SEO Core Tags (Dynamic Silicon Valley Hub) -->
     <title>{% block title %}{{ seo.title if seo and seo.title else "Jorge Aguirre Flores | Maquillaje Permanente en
@@ -65,139 +63,8 @@
     <!-- Cloudflare Zaraz handles Meta Pixel (Auto-Injected) -->
     <!-- End Meta Pixel -->
 
-    <!-- ═══════════════════════════════════════════════════════════════ -->
-    <!-- 🚀 CRITICAL CSS - Above the Fold (Render-blocking optimization) -->
-    <!-- ═══════════════════════════════════════════════════════════════ -->
-    <style>
-        /* Critical CSS: Only what's needed for first viewport */
-        :root {
-            --luxury-gold: #c5a059;
-            --luxury-gold-light: #e5c585;
-            --luxury-black: #050505;
-            --luxury-black-deep: #0a0a0a;
-            --luxury-text: #f5f5f7;
-            --luxury-text-muted: hsla(0,0%,100%,.6);
-        }
-        
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        
-        html {
-            font-family: Inter, system-ui, -apple-system, sans-serif;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-        
-        body {
-            background: var(--luxury-black);
-            color: var(--luxury-text);
-            line-height: 1.5;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-        
-        /* Hero critical styles */
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            padding: 2rem;
-        }
-        
-        .hero h1 {
-            font-size: clamp(2.5rem, 8vw, 5rem);
-            font-weight: 700;
-            text-align: center;
-            line-height: 1.1;
-            margin-bottom: 1rem;
-        }
-        
-        .hero h1 .text-gradient-gold {
-            background: linear-gradient(135deg, var(--luxury-gold) 0%, var(--luxury-gold-light) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .hero h2 {
-            font-size: clamp(1rem, 3vw, 1.5rem);
-            color: var(--luxury-text-muted);
-            text-align: center;
-            font-weight: 400;
-            margin-bottom: 2rem;
-        }
-        
-        /* CTA Button critical styles */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 1rem 2rem;
-            font-size: 1rem;
-            font-weight: 600;
-            text-decoration: none;
-            border-radius: 0.5rem;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            border: none;
-            min-height: 48px;
-            min-width: 48px;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, var(--luxury-gold) 0%, var(--luxury-gold-light) 100%);
-            color: var(--luxury-black);
-        }
-        
-        /* Navbar critical */
-        nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 50;
-            padding: 1rem 2rem;
-            background: rgba(5, 5, 5, 0.8);
-            backdrop-filter: blur(10px);
-        }
-        
-        /* Skip link for accessibility */
-        .skip-link {
-            position: absolute;
-            top: -40px;
-            left: 0;
-            background: var(--luxury-gold);
-            color: var(--luxury-black);
-            padding: 8px;
-            text-decoration: none;
-            z-index: 100;
-        }
-        
-        .skip-link:focus {
-            top: 0;
-        }
-        
-        /* Loading state */
-        .page-loading {
-            opacity: 0;
-            animation: fadeIn 0.3s ease forwards;
-        }
-        
-        @keyframes fadeIn {
-            to { opacity: 1; }
-        }
-        
-        /* Mobile touch targets */
-        @media (max-width: 768px) {
-            a, button {
-                min-height: 44px;
-                min-width: 44px;
-            }
-        }
-    </style>
+    <!-- Critical CSS: Solo above-the-fold esencial -->
+    <style>:root{--bg:#050505;--text:#f5f5f7;--gold:#c5a059}*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}html{font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}body{background:var(--bg);color:var(--text);line-height:1.5;min-height:100vh;overflow-x:hidden}.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;position:relative;padding:2rem}.hero h1{font-size:clamp(2rem,5vw,4rem);font-weight:700;text-align:center;line-height:1.1;margin-bottom:1rem}.hero h1 .text-gradient-gold{background:linear-gradient(135deg,var(--gold) 0%,#e5c585 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}.hero h2{font-size:clamp(1rem,3vw,1.5rem);color:hsla(0,0%,100%,.6);text-align:center;font-weight:400;margin-bottom:2rem}.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:1rem 2rem;font-size:1rem;font-weight:600;text-decoration:none;border-radius:.5rem;transition:all .3s ease;cursor:pointer;border:none;min-height:48px;min-width:48px}.btn-primary{background:linear-gradient(135deg,var(--gold) 0%,#e5c585 100%);color:var(--bg)}nav{position:fixed;top:0;left:0;right:0;z-index:50;padding:1rem 2rem;background:rgba(5,5,5,.8);backdrop-filter:blur(10px)}.skip-link{position:absolute;top:-40px;left:0;background:var(--gold);color:var(--bg);padding:8px;text-decoration:none;z-index:100}.skip-link:focus{top:0}@media(max-width:768px){a,button{min-height:44px;min-width:44px}}</style>
     
     <!-- Async load non-critical CSS -->
     <link rel="preload" href="/static/dist/css/app.min.css?v={{ system_version }}" as="style">
@@ -221,12 +88,12 @@
     <!-- Cloudflare Turnstile (Anti-Bot Protection) -->
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer data-cfasync="false"></script>
 
-    <!-- GSAP (Core Animation Engine) -->
-    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <!-- GSAP (Core Animation Engine) with SRI -->
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtP6WfhtNe0ewW+EJ1OBoF8qP5dd1l9QvG9+N/Px/xCq7R8lQ==" crossorigin="anonymous"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" integrity="sha512-onMTRKJBKz8M1TnqqDuGBlowlP7gC/Oqg2LbLl1Q9WekJ1Cq8bM5w1K8lqmMA4x2oV8U5P5v5sXKM5C8Ba0HlQ==" crossorigin="anonymous"></script>
 
-    <!-- Lenis Smooth Scroll (Butter Feel) -->
-    <script defer src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
+    <!-- Lenis Smooth Scroll -->
+    <script defer src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js" crossorigin="anonymous"></script>
 
     <!-- 🛡️ SENTRY (Frontend Error Monitoring) - Configured via Zaraz/backend -->
 
@@ -393,12 +260,12 @@
 
         function initEngines() {
             const debug = new URLSearchParams(window.location.search).has('debug_pixel');
+            const isMobile = window.matchMedia('(pointer: coarse)').matches;
 
             // 1. Lenis Smooth Scroll + GSAP Sync
             const lenis = LenisSetup.init();
             if (lenis) {
                 LenisSetup.syncWithGSAP();
-                // Expose globally for debugging
                 window.lenis = lenis;
             }
 
@@ -408,9 +275,28 @@
                 window.TrackingEngine = TrackingEngine;
             }
 
-            // 3. Sliders (Before/After)
-            if (typeof SliderManager !== 'undefined') {
-                SliderManager.init();
+            // 3. Sliders (Before/After) - Enhanced version for mobile
+            if (isMobile) {
+                // Load enhanced slider with Hammer.js for mobile
+                import('/static/engines/ui/slider-manager-enhanced.js?v={{ system_version }}')
+                    .then(module => {
+                        if (module.SliderManagerEnhanced) {
+                            const slider = new module.SliderManagerEnhanced();
+                            slider.init();
+                            window.SliderManager = slider;
+                        }
+                    })
+                    .catch(() => {
+                        // Fallback to basic slider
+                        if (typeof SliderManager !== 'undefined') {
+                            SliderManager.init();
+                        }
+                    });
+            } else {
+                // Desktop: use basic slider
+                if (typeof SliderManager !== 'undefined') {
+                    SliderManager.init();
+                }
             }
 
             // 4. Animaciones (AOS Replacement)
@@ -418,7 +304,10 @@
                 AOSReplacement.init();
             }
 
-            if (debug) Logger.debug('[MainEngine] All engines initialized');
+            // 5. Theme Bridge initialization
+            document.body.classList.add('theme-bridge-loaded');
+            
+            if (debug) Logger.debug('[MainEngine] All engines initialized. Mobile:', isMobile);
         }
     </script>
     {% block extra_scripts %}{% endblock %}

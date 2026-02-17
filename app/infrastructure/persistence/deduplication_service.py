@@ -5,13 +5,16 @@ Ensures idempotency for tracking events using Upstash Redis.
 Implementing Step 1 of MVP Phase 1.
 """
 
-import logging
 import json
-from typing import Optional, Any
+import logging
+from typing import Optional
+
 from upstash_redis import Redis
+
 from app.config import settings
 
 logger = logging.getLogger(__name__)
+
 
 class DeduplicationService:
     def __init__(self):
@@ -28,7 +31,9 @@ class DeduplicationService:
                 )
                 logger.info("✅ DeduplicationService: Redis connected.")
             else:
-                logger.warning("⚠️ DeduplicationService: Redis credentials missing. Falling back to memory (NOT PROD READY).")
+                logger.warning(
+                    "⚠️ DeduplicationService: Redis credentials missing. Falling back to memory (NOT PROD READY)."
+                )
         except Exception as e:
             logger.error(f"❌ DeduplicationService: Redis init failed: {e}")
 
@@ -40,36 +45,37 @@ class DeduplicationService:
             False: Event is DUPLICATE (already processed).
         """
         if not event_id:
-            return True # No ID, assume new (or invalid, but handled elsewhere)
+            return True  # No ID, assume new (or invalid, but handled elsewhere)
 
         key = f"evt:{event_id}"
-        
+
         # Strategy: SETNX (Set if Not Exists)
         if self._redis:
             try:
-                # Upstash Redis REST API 'set' with nk (nx) argument? 
+                # Upstash Redis REST API 'set' with nk (nx) argument?
                 # The python client uses .set(..., nx=True)
                 # But upstash-redis might differ slightly from standard redis-py
                 # Let's check typical usage or assume standard-ish.
                 # Actually, upstash-redis-py usually supports .set(key, value, ex=ttl, nx=True)
-                
+
                 # We store a lightweight value, e.g., timestamp
                 import time
+
                 val = str(int(time.time()))
-                
+
                 # If set returns True/OK, it was set (New). If None, it existed (Duplicate).
                 # Note: upstash-redis implementation dependent.
                 result = self._redis.set(key, val, ex=ttl, nx=True)
-                
-                if result: 
-                    return True # New
+
+                if result:
+                    return True  # New
                 else:
                     logger.info(f"🛑 Duplicate detected: {key}")
-                    return False # Duplicate
-                    
+                    return False  # Duplicate
+
             except Exception as e:
                 logger.error(f"⚠️ Redis Error in is_duplicate: {e}")
-                return True # Fallback: process it to avoid data loss
+                return True  # Fallback: process it to avoid data loss
         else:
             # Fallback to in-memory (handled in cache.py but duplication here for safety?)
             # Ideally we shouldn't reach here in PROD.
@@ -79,7 +85,7 @@ class DeduplicationService:
         """Cache resolved visitor data for subsequent requests."""
         if not self._redis or not external_id:
             return
-            
+
         key = f"vis:{external_id}"
         try:
             self._redis.set(key, json.dumps(data), ex=ttl)
@@ -90,7 +96,7 @@ class DeduplicationService:
         """Get cached visitor data."""
         if not self._redis or not external_id:
             return None
-            
+
         key = f"vis:{external_id}"
         try:
             data = self._redis.get(key)
@@ -100,6 +106,7 @@ class DeduplicationService:
             logger.error(f"⚠️ Redis Error in get_visitor: {e}")
             return None
         return None
+
 
 # Singleton Instance
 dedup_service = DeduplicationService()

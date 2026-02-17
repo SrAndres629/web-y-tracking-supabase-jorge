@@ -1,19 +1,21 @@
 import os
+from pathlib import Path
+
 import pytest
 from jinja2 import Environment, FileSystemLoader, TemplateSyntaxError
-from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parents[3]
 TEMPLATES_DIR = BASE_DIR / "api" / "templates"
 
+
 def test_jinja2_template_syntax():
     """
-    Scans all .html files in the templates directory and attempts to 
-    compile them with Jinja2. This catches missing endblocks, 
+    Scans all .html files in the templates directory and attempts to
+    compile them with Jinja2. This catches missing endblocks,
     incorrect tags, and structural errors.
     """
     env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)))
-    
+
     html_files = []
     for root, _, files in os.walk(str(TEMPLATES_DIR)):
         for file in files:

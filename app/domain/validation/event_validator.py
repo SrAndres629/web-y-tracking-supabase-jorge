@@ -5,42 +5,45 @@ Validates tracking events against Meta's standards and best practices.
 Ensures data integrity before sending to CAPI.
 """
 
-import re
-from typing import Dict, Any, List, Optional
-from pydantic import BaseModel, Field, EmailStr, field_validator
 import logging
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, field_validator
 
 logger = logging.getLogger(__name__)
+
 
 class UserDataSchema(BaseModel):
     client_ip_address: Optional[str] = None
     client_user_agent: Optional[str] = None
-    em: Optional[str] = None # Hashed email
-    ph: Optional[str] = None # Hashed phone
+    em: Optional[str] = None  # Hashed email
+    ph: Optional[str] = None  # Hashed phone
     fbp: Optional[str] = None
     fbc: Optional[str] = None
     external_id: Optional[str] = None
     country: Optional[str] = None
-    ct: Optional[str] = None # City
-    st: Optional[str] = None # State
-    zp: Optional[str] = None # Zip
-    fn: Optional[str] = None # First Name
-    ln: Optional[str] = None # Last Name
-    
-    @field_validator('em', 'ph', 'country', 'ct', 'st', 'zp', 'fn', 'ln', mode='before')
+    ct: Optional[str] = None  # City
+    st: Optional[str] = None  # State
+    zp: Optional[str] = None  # Zip
+    fn: Optional[str] = None  # First Name
+    ln: Optional[str] = None  # Last Name
+
+    @field_validator("em", "ph", "country", "ct", "st", "zp", "fn", "ln", mode="before")
     @classmethod
     def check_hashed(cls, v):
         # Allow None
-        if v is None: return None
+        if v is None:
+            return None
         # Must be a SHA256 hash (64 hex chars) unless testing
         if len(v) != 64:
-             # In a real heavy validator we'd force hash, but tracking.py might pass raw for tests?
-             # No, tracking.py hashes it. So this should check hash format.
-             # However, tracking.py currently does the hashing inside _build_payload, 
-             # so the input to validator (if called before payload build) would be raw.
-             # If called AFTER payload build, it enters as hash.
-             pass
+            # In a real heavy validator we'd force hash, but tracking.py might pass raw for tests?
+            # No, tracking.py hashes it. So this should check hash format.
+            # However, tracking.py currently does the hashing inside _build_payload,
+            # so the input to validator (if called before payload build) would be raw.
+            # If called AFTER payload build, it enters as hash.
+            pass
         return v
+
 
 class EventSchema(BaseModel):
     event_name: str
@@ -51,16 +54,18 @@ class EventSchema(BaseModel):
     custom_data: Optional[Dict[str, Any]] = None
     event_source_url: Optional[str] = None
 
+
 class BatchPayloadSchema(BaseModel):
     data: List[EventSchema]
     access_token: str
     test_event_code: Optional[str] = None
 
+
 class EventValidator:
     """
     Validates event payloads against schema rules.
     """
-    
+
     def validate_payload(self, payload: Dict[str, Any]) -> bool:
         """
         Validates the full CAPI payload structure.
@@ -73,7 +78,9 @@ class EventValidator:
             logger.warning(f"❌ Validation Error: {e}")
             return False
 
-    def check_pre_hashing(self, email: str = None, phone: str = None) -> List[str]:
+    def check_pre_hashing(
+        self, email: Optional[str] = None, phone: Optional[str] = None
+    ) -> List[str]:
         """
         Checks raw values before hashing for common errors.
         Returns list of warnings.
@@ -84,8 +91,9 @@ class EventValidator:
         if phone:
             clean = "".join(filter(str.isdigit, phone))
             if len(clean) < 7:
-                 warnings.append(f"Phone too short: {phone}")
+                warnings.append(f"Phone too short: {phone}")
         return warnings
+
 
 # Singleton
 validator = EventValidator()

@@ -1,7 +1,8 @@
 import time
-from typing import Dict, Any, Optional, Callable, Awaitable
+from typing import Any, Awaitable, Callable, Dict, Optional
 
 from app.config import settings
+
 
 class ConfirmSaleCommand:
     def __init__(
@@ -32,10 +33,7 @@ class ConfirmSaleCommand:
 
         # Prepare custom_data with default values if not provided
         if custom_data is None:
-            custom_data = {
-                "value": 350.00,
-                "currency": "USD"
-            }
+            custom_data = {"value": 350.00, "currency": "USD"}
         else:
             # Ensure default values are present if not explicitly overridden
             custom_data.setdefault("value", 350.00)
@@ -46,18 +44,20 @@ class ConfirmSaleCommand:
             await self._event_sender(
                 event_name="Purchase",
                 event_id=f"purchase_{visitor_id}_{int(time.time())}",
-                url=f"{settings.HOST}/admin", # Event source URL, could be more specific
+                url=f"{settings.HOST}/admin",  # Event source URL, could be more specific
                 client_ip=client_ip,
                 user_agent=user_agent,
                 external_id=visitor.get("external_id") or external_id,
                 fbc=visitor.get("fbc") or fbc,
                 fbp=visitor.get("fbp") or fbp,
+                email=visitor.get("email"),
+                phone=visitor.get("phone"),
                 custom_data=custom_data,
             )
             return {
                 "status": "success",
                 "visitor_id": visitor_id,
-                "message": "Purchase event queued successfully"
+                "message": "Purchase event queued successfully",
             }
         except Exception as e:
             # In a real scenario, proper logging would be implemented here.

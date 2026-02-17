@@ -8,9 +8,9 @@ Clean/DDD cache implementations live in app.infrastructure.cache.
 from __future__ import annotations
 
 import json
-import time
 import logging
-from typing import Any, Optional, Dict
+import time
+from typing import Any, Dict, Optional
 
 from app.config import settings
 
@@ -28,6 +28,7 @@ class LegacyRedisCache:
         if self._client is None:
             try:
                 from upstash_redis import Redis
+
                 if settings.UPSTASH_REDIS_REST_URL and settings.UPSTASH_REDIS_REST_TOKEN:
                     self._client = Redis(
                         url=settings.UPSTASH_REDIS_REST_URL,

@@ -15,19 +15,22 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+
 try:
-    from typing import Optional, Self, Any
+    from typing import Any, Optional, Self
 except ImportError:
-    from typing import Optional, Any
+    from typing import Any, Optional
+
     from typing_extensions import Self
 
-from enum import Enum, auto
+from enum import Enum
 
 from app.domain.models.values import EventId, ExternalId, UTMParams
 
 
 class EventName(Enum):
     """Eventos estándar soportados."""
+
     PAGE_VIEW = "PageView"
     VIEW_CONTENT = "ViewContent"
     LEAD = "Lead"
@@ -37,7 +40,7 @@ class EventName(Enum):
     COMPLETE_REGISTRATION = "CompleteRegistration"
     SCHEDULE = "Schedule"
     CUSTOMIZE_PRODUCT = "CustomizeProduct"
-    
+
     # Custom events
     SLIDER_INTERACTION = "SliderInteraction"
     WHATSAPP_CLICK = "WhatsAppClick"
@@ -47,10 +50,10 @@ class EventName(Enum):
 class TrackingEvent:
     """
     Value Object: Evento de tracking inmutable.
-    
+
     Los eventos son inmutables porque representan algo
     que ocurrió en un momento específico del tiempo.
-    
+
     Attributes:
         event_id: ID único del evento
         event_name: Tipo de evento
@@ -60,6 +63,7 @@ class TrackingEvent:
         custom_data: Datos específicos del evento
         utm: Parámetros UTM (snapshot al momento del evento)
     """
+
     event_id: EventId
     event_name: EventName
     external_id: ExternalId
@@ -67,7 +71,7 @@ class TrackingEvent:
     source_url: str
     custom_data: dict[str, Any] = field(default_factory=dict)
     utm: UTMParams = field(default_factory=UTMParams)
-    
+
     @classmethod
     def create(
         cls,
@@ -87,7 +91,7 @@ class TrackingEvent:
             custom_data=custom_data or {},
             utm=utm or UTMParams(),
         )
-    
+
     @classmethod
     def reconstruct(
         cls,
@@ -109,7 +113,7 @@ class TrackingEvent:
             custom_data=custom_data or {},
             utm=utm or UTMParams(),
         )
-    
+
     def with_custom_data(self, **kwargs: Any) -> TrackingEvent:
         """Retorna nuevo evento con datos adicionales (inmutable)."""
         new_data = {**self.custom_data, **kwargs}
@@ -122,36 +126,38 @@ class TrackingEvent:
             custom_data=new_data,
             utm=self.utm,
         )
-    
+
     def to_meta_payload(self, visitor) -> dict[str, Any]:
         """
         Convierte a payload para Meta CAPI.
-        
+
         Args:
             visitor: Objeto Visitor con datos adicionales
         """
         from app.core.validators import hash_sha256
-        
+
         payload = {
             "event_name": self.event_name.value,
             "event_time": int(self.timestamp.timestamp()),
             "event_id": self.event_id.value,
             "event_source_url": self.source_url,
             "action_source": "website",
-            "user_data": visitor.to_meta_user_data() if visitor else {
+            "user_data": visitor.to_meta_user_data()
+            if visitor
+            else {
                 "external_id": hash_sha256(self.external_id.value),
             },
         }
-        
+
         if self.custom_data:
             payload["custom_data"] = self.custom_data
-        
+
         return payload
-    
+
     def is_duplicate_of(self, other: TrackingEvent) -> bool:
         """True si es duplicado (mismo ID)."""
         return self.event_id.value == other.event_id.value
-    
+
     @property
     def is_conversion_event(self) -> bool:
         """True si es evento de conversión (Lead, Purchase, etc)."""
@@ -161,6 +167,6 @@ class TrackingEvent:
             EventName.PURCHASE,
             EventName.SCHEDULE,
         ]
-    
+
     def __repr__(self) -> str:
         return f"TrackingEvent({self.event_name.value}, {self.event_id})"

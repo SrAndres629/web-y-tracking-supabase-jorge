@@ -22,16 +22,16 @@
         <!-- Service Cards Grid -->
         <div class="grid md:grid-cols-3 gap-8">
             {% for service in services %}
-            <!-- Servicio Dynamic: {{ service.title }} -->
-            <div data-service-category="{{ service.id }}" class="service-card-premium group" data-aos="fade-up"
+            <!-- Servicio Dynamic: {{ service.title | e }} -->
+            <div data-service-category="{{ service.id | e }}" class="service-card-premium group" data-aos="fade-up"
                 data-aos-delay="{{ loop.index0 * 150 }}">
                 <!-- Image Container -->
                 <div class="relative h-[280px] md:h-[320px] overflow-hidden rounded-t-2xl">
                     <picture>
-                        <source srcset="{{ service.image }}" type="image/webp">
-                        <img src="{{ service.image }}"
+                        <source srcset="{{ service.image | e }}" type="image/webp">
+                        <img src="{{ service.image | e }}"
                             class="absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:scale-110"
-                            alt="{{ service.title }} - {{ service.subtitle }}" loading="lazy" width="400" height="320">
+                            alt="{{ service.title | e }} - {{ service.subtitle | e }}" loading="lazy" width="400" height="320">
                     </picture>
                     <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
 

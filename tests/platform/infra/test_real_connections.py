@@ -1,9 +1,10 @@
-import pytest
 import os
-import asyncio
+
+import pytest
+from redis import asyncio as aioredis
+
 from app.config import settings
 from app.database import get_db_connection
-from redis import asyncio as aioredis
 
 # 🛡️ SILICON VALLEY STANDARD: REAL INFRASTRUCTURE VERIFICATION
 # These tests verify actual connectivity to production infrastructure.
@@ -22,6 +23,7 @@ def _is_network_blocked(exc: Exception) -> bool:
     )
     return any(marker in msg for marker in blocked_markers)
 
+
 @pytest.mark.asyncio
 async def test_real_redis_connection():
     """
@@ -29,7 +31,7 @@ async def test_real_redis_connection():
     """
     redis_url = settings.UPSTASH_REDIS_REST_URL
     redis_token = settings.UPSTASH_REDIS_REST_TOKEN
-    
+
     assert redis_url and "upstash.io" in redis_url, "❌ Redis URL invalid or missing in .env"
     assert redis_token, "❌ Redis Token missing in .env"
 
@@ -47,12 +49,15 @@ async def test_real_redis_connection():
     finally:
         await client.aclose()
 
+
 def test_real_database_connection():
     """
     Verifies actual connection to Supabase Postgres using credentials from .env
     """
-    assert "supabase.com" in settings.DATABASE_URL, "❌ DATABASE_URL does not look like a Supabase URL"
-    
+    assert "supabase.com" in settings.DATABASE_URL, (
+        "❌ DATABASE_URL does not look like a Supabase URL"
+    )
+
     try:
         with get_db_connection() as conn:
             with conn.cursor() as cur:
@@ -64,18 +69,20 @@ def test_real_database_connection():
             pytest.skip(f"Database egress blocked in current runtime: {e}")
         pytest.fail(f"❌ Failed to connect to REAL Database: {str(e)}")
 
+
 def test_meta_configuration_loaded():
     """
     Verifies that Meta Pixels and Tokens are loaded (not placeholders)
     """
     pixel_id = settings.META_PIXEL_ID
     token = settings.META_ACCESS_TOKEN
-    
+
     assert pixel_id != "SET_IN_PRODUCTION", "❌ META_PIXEL_ID is still a placeholder!"
     assert token != "SET_IN_PRODUCTION", "❌ META_ACCESS_TOKEN is still a placeholder!"
-    
+
     assert pixel_id.isdigit(), f"❌ META_PIXEL_ID should be numeric, got: {pixel_id}"
     assert len(token) > 20, "❌ META_ACCESS_TOKEN looks too short to be valid"
+
 
 def test_qstash_configuration_loaded():
     """

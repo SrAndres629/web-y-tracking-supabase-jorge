@@ -1,12 +1,14 @@
-import os
-import sys
 import argparse
 import datetime
+import os
+import sys
+
 import yaml
 
 # Configuration
 AI_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".ai")
 MOTOR_DIR = os.path.join(AI_DIR, "motor")
+
 
 def create_task(prompt, autonomous_mode=False, thinkers=1, workers=2, agent="user"):
     """Creates a task file from a user prompt."""
@@ -30,9 +32,9 @@ def create_task(prompt, autonomous_mode=False, thinkers=1, workers=2, agent="use
             "enabled": True,
             "thinkers": thinkers,
             "workers": workers,
-            "status": "PLANNING" # Initial state for autonomous mode
+            "status": "PLANNING",  # Initial state for autonomous mode
         }
-    
+
     # --- CONTENT ---
     task_content = f"""
 # TASK: USER DIRECTIVE
@@ -57,50 +59,44 @@ This is a high-level directive from the user.
     print(f"✅ Task created: {task_filename}")
     if autonomous_mode:
         print("🤖 Autonomous mode activated.")
-    print(f"⏳ `synapse.py` will now process this task.")
+    print("⏳ `synapse.py` will now process this task.")
+
 
 def main():
     """Main entry point for the antigravity orchestrator."""
     parser = argparse.ArgumentParser(
         description="Antigravity: AI Agent Orchestrator. "
-                    "Provide a high-level objective and the Hive Mind will execute it."
+        "Provide a high-level objective and the Hive Mind will execute it."
     )
     parser.add_argument(
-        "prompt",
-        type=str,
-        nargs='?',
-        help="The high-level objective for the AI agents."
+        "prompt", type=str, nargs="?", help="The high-level objective for the AI agents."
     )
     parser.add_argument(
-        "-i", "--interactive",
+        "-i",
+        "--interactive",
         action="store_true",
-        help="Enter interactive mode to provide a multi-line prompt."
+        help="Enter interactive mode to provide a multi-line prompt.",
     )
     # --- AUTONOMOUS MODE ARGUMENTS ---
     parser.add_argument(
         "--modo-autonomo",
         dest="autonomous_mode",
         action="store_true",
-        help="Activate the autonomous mode with thinkers and workers."
+        help="Activate the autonomous mode with thinkers and workers.",
     )
     parser.add_argument(
-        "--pensadores",
-        type=int,
-        default=1,
-        help="Number of 'thinker' agents for planning."
+        "--pensadores", type=int, default=1, help="Number of 'thinker' agents for planning."
     )
     parser.add_argument(
-        "--trabajadores",
-        type=int,
-        default=2,
-        help="Number of 'worker' agents for execution."
+        "--trabajadores", type=int, default=2, help="Number of 'worker' agents for execution."
     )
 
     parser.add_argument(
-        "-a", "--agent",
+        "-a",
+        "--agent",
         type=str,
         default="user",
-        help="Target agent (user, kimi, codex, gemini, manual)."
+        help="Target agent (user, kimi, codex, gemini, manual).",
     )
 
     args = parser.parse_args()
@@ -124,7 +120,7 @@ def main():
         autonomous_mode=args.autonomous_mode,
         thinkers=args.pensadores,
         workers=args.trabajadores,
-        agent=args.agent
+        agent=args.agent,
     )
 
 

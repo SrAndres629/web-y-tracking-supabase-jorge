@@ -1,17 +1,22 @@
-import sys
 import os
-import pytest
-from importlib import import_module
 import pkgutil
+import sys
+from importlib import import_module
+
+import pytest
 
 # 🛡️ SILICON VALLEY STRICT AUDIT
 # Verifies architectural integrity and prevents circular dependencies.
 
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+PROJECT_ROOT = os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
 sys.path.insert(0, PROJECT_ROOT)
+
 
 def log_error(msg):
     print(f"❌ ARCHITECTURE VIOLATION: {msg}")
+
 
 def test_no_circular_imports():
     """
@@ -19,15 +24,15 @@ def test_no_circular_imports():
     This is a cheap way to catch 'chicken-and-egg' dependency loops.
     """
     print("\n🔍 SCANNING FOR CIRCULAR DEPENDENCIES...")
-    
-    package_name = 'app'
+
+    package_name = "app"
     try:
         package = import_module(package_name)
     except ImportError:
         pytest.fail(f"Could not import root '{package_name}' package.")
 
     problems = []
-    
+
     # Walk through all modules in 'app' package
     prefix = package_name + "."
     for _, name, _ in pkgutil.walk_packages(package.__path__, prefix):
@@ -40,8 +45,8 @@ def test_no_circular_imports():
             if "circular import" in err_msg.lower() or "cannot import name" in err_msg.lower():
                 problems.append(f"{name}: {err_msg}")
             else:
-                 # Log other errors but maybe don't fail immediately if it's missing deps (mock check later)
-                 print(f"⚠️ Warning importing {name}: {e}")
+                # Log other errors but maybe don't fail immediately if it's missing deps (mock check later)
+                print(f"⚠️ Warning importing {name}: {e}")
         except Exception as e:
             problems.append(f"{name} CRASHED on import: {e}")
 
@@ -49,8 +54,9 @@ def test_no_circular_imports():
         for p in problems:
             log_error(p)
         pytest.fail(f"Found {len(problems)} modules with import errors (likely circular deps).")
-    
+
     print("✅ No circular dependencies detected in scanned modules.")
+
 
 def test_api_entrypoint_latency():
     """
@@ -58,33 +64,36 @@ def test_api_entrypoint_latency():
     """
     print("\n⚡ CHECKING VERCEL COLD START IMPACT...")
     import time
-    
+
     start_time = time.time()
     try:
         # We try to import the vercel entry point
         # It's usually at project root or api/ folder.
         # Based on file structure, it's 'api.index' or just 'api' package.
         # But 'api' folder might not be a package. Let's try file path.
-        
+
         # This is tricky because api/index.py might not be in python path as a module.
         # We will assume if we can import 'main', we are checking the heavy lifting.
         import main
-        
+
     except ImportError:
-         print("⚠️ Could not import 'main' to test cold start.")
-         return
+        print("⚠️ Could not import 'main' to test cold start.")
+        return
 
     duration = time.time() - start_time
     print(f"   ⏱️ Import time: {duration:.4f}s")
-    
-    # Threshold: 200ms is a generous limit for imports. 
+
+    # Threshold: 200ms is a generous limit for imports.
     # Real world optimized should be <50ms.
-    if duration > 1.0: 
-        pytest.fail(f"❌ SLOW STARTUP: Importing 'main' took {duration:.4f}s. Eliminate global DB connections!")
+    if duration > 1.0:
+        pytest.fail(
+            f"❌ SLOW STARTUP: Importing 'main' took {duration:.4f}s. Eliminate global DB connections!"
+        )
     elif duration > 0.2:
         print("⚠️ WARNING: Startup is getting slow. Profile imports.")
     else:
         print("✅ FAST COLD START confirmed.")
+
 
 if __name__ == "__main__":
     try:

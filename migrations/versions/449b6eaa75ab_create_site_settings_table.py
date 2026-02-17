@@ -5,15 +5,15 @@ Revises: 997c4c43c564
 Create Date: 2026-02-06 04:22:15.410447
 
 """
+
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = '449b6eaa75ab'
-down_revision: Union[str, Sequence[str], None] = '997c4c43c564'
+revision: str = "449b6eaa75ab"
+down_revision: Union[str, Sequence[str], None] = "997c4c43c564"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -22,10 +22,12 @@ def upgrade() -> None:
     """Create site_content table and seed default data"""
     # 1. Create Table
     op.create_table(
-        'site_content',
-        sa.Column('key', sa.String(50), primary_key=True),
-        sa.Column('value', sa.JSON(), nullable=False),
-        sa.Column('updated_at', sa.DateTime(), server_default=sa.func.now(), onupdate=sa.func.now())
+        "site_content",
+        sa.Column("key", sa.String(50), primary_key=True),
+        sa.Column("value", sa.JSON(), nullable=False),
+        sa.Column(
+            "updated_at", sa.DateTime(), server_default=sa.func.now(), onupdate=sa.func.now()
+        ),
     )
 
     # 2. Seed Initial Data (Broke Superstar Trick: No separate script needed)
@@ -49,4 +51,4 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Drop site_content table"""
-    op.drop_table('site_content')
+    op.drop_table("site_content")

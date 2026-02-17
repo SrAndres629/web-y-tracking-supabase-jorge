@@ -4,15 +4,17 @@
 Implementación con SQL nativo para crm_leads.
 """
 
-from typing import Optional, List
-from app.domain.models.lead import Lead, LeadStatus
-from app.domain.models.values import ExternalId, Phone, Email
-from app.domain.repositories.lead_repo import LeadRepository
+import logging
+from typing import List, Optional
+
 from app import database
 from app import sql_queries as queries
-import logging
+from app.domain.models.lead import Lead, LeadStatus
+from app.domain.models.values import Email, ExternalId, Phone
+from app.domain.repositories.lead_repo import LeadRepository
 
 logger = logging.getLogger(__name__)
+
 
 class SQLLeadRepository(LeadRepository):
     """
@@ -63,16 +65,18 @@ class SQLLeadRepository(LeadRepository):
     async def create(self, lead: Lead) -> None:
         try:
             # Reutilizamos la lógica de database.py por ahora o implementamos SQL aquí
-            database.upsert_contact_advanced({
-                "phone": str(lead.phone),
-                "name": lead.name,
-                "email": str(lead.email) if lead.email else None,
-                "fbclid": lead.fbclid,
-                "fbp": str(lead.external_id) if lead.external_id else None,
-                "status": lead.status.value,
-                "lead_score": lead.score,
-                "service_interest": lead.service_interest
-            })
+            database.upsert_contact_advanced(
+                {
+                    "phone": str(lead.phone),
+                    "name": lead.name,
+                    "email": str(lead.email) if lead.email else None,
+                    "fbclid": lead.fbclid,
+                    "fbp": str(lead.external_id) if lead.external_id else None,
+                    "status": lead.status.value,
+                    "lead_score": lead.score,
+                    "service_interest": lead.service_interest,
+                }
+            )
         except Exception as e:
             logger.error(f"Error creating lead: {e}")
 
@@ -80,7 +84,9 @@ class SQLLeadRepository(LeadRepository):
         # Simplificamos usando upsert_contact_advanced
         await self.create(lead)
 
-    async def list_by_status(self, status: LeadStatus, limit: int = 50, offset: int = 0) -> List[Lead]:
+    async def list_by_status(
+        self, status: LeadStatus, limit: int = 50, offset: int = 0
+    ) -> List[Lead]:
         # Implementación mínima para dashboard
         return []
 
@@ -110,5 +116,5 @@ class SQLLeadRepository(LeadRepository):
             external_id=ExternalId.from_string(row[7]).unwrap_or(None) if row[7] else None,
             status=LeadStatus(row[13] if len(row) > 13 else "new"),
             score=row[14] if len(row) > 14 else 50,
-            service_interest=row[16] if len(row) > 16 else None
+            service_interest=row[16] if len(row) > 16 else None,
         )

@@ -1,0 +1,39 @@
+╔════════════════════════════════════════════════════════════════╗
+║           🔮 EXTENSIÓN ANTIGRAVITY - COMPLETADA ✅              ║
+╠════════════════════════════════════════════════════════════════╣
+║                                                                ║
+║  📊 QUOTA EN TIEMPO REAL                                       ║
+║  ├── Comando: /antigravity quota                              ║
+║  ├── Barras de progreso visuales                              ║
+║  └── Alertas por niveles de uso                               ║
+║                                                                ║
+║  🤖 MODELOS DISPONIBLES                                        ║
+║  ├── Comando: /antigravity models                             ║
+║  ├── Filtros por capacidad                                    ║
+║  └── Información de pricing                                   ║
+║                                                                ║
+║  🔌 MCP NATIVO PARA TODOS LOS CLI                              ║
+║  ├── Servidor MCP (stdio)                                     ║
+║  ├── Tools: get_quota, list_models, use_model                 ║
+║  └── Integración Kimi CLI nativa                              ║
+║                                                                ║
+║  📁 ARCHIVOS CREADOS (17)                                      ║
+║  ├── client.py           - Cliente API                        ║
+║  ├── mcp_server.py       - Servidor MCP                       ║
+║  ├── quota.py            - Comando quota                      ║
+║  ├── models.py           - Comando models                     ║
+║  ├── status.py           - Comando status                     ║
+║  ├── mcp_bridge.py       - Bridge MCP                         ║
+║  ├── setup_mcp.py        - Setup automático                   ║
+║  ├── install.sh          - Instalador                         ║
+║  ├── demo.py             - Demo                               ║
+║  └── ... (8 más)                                              ║
+║                                                                ║
+║  🚀 INSTALACIÓN                                                ║
+║  cd .kimi/skills/antigravity && ./install.sh                  ║
+║                                                                ║
+║  ✨ SIN ARCHIVOS DUPLICADOS                                    ║
+║  ✨ SINGLE SOURCE OF TRUTH                                     ║
+║  ✨ ESTRUCTURA PROFESIONAL                                     ║
+║                                                                ║
+╚════════════════════════════════════════════════════════════════╝

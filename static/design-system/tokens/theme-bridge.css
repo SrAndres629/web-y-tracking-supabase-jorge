@@ -1,0 +1,328 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * THEME BRIDGE - Unificación Luxury ↔ Neuro-Vision
+ * ═══════════════════════════════════════════════════════════════════════════
+ * 
+ * Problema: El sitio principal (Luxury) y Neuro-Vision parecen dos sitios
+ * diferentes. Este bridge crea tokens compartidos para coherencia visual.
+ * 
+ * Usage: Importar en ambos sistemas
+ *   @import url('/static/design-system/tokens/theme-bridge.css');
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TOKENS COMPARTIDOS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Brand Core - Común a ambos sistemas */
+  --brand-primary: var(--luxury-gold, #c5a059);
+  --brand-primary-light: var(--luxury-gold-light, #e5c585);
+  --brand-primary-dark: var(--luxury-gold-dark, #b08d45);
+  
+  /* Brand Accent - Para highlights y CTAs */
+  --brand-accent: var(--accent-cyan, #00e5ff);
+  --brand-accent-magenta: var(--accent-magenta, #ff00e5);
+  
+  /* Backgrounds - Unificados */
+  --bg-primary: var(--luxury-black, #050505);
+  --bg-secondary: var(--luxury-black-deep, #0a0a0a);
+  --bg-tertiary: var(--luxury-charcoal, #1a1a1a);
+  
+  /* Texto - Consistente */
+  --text-primary: var(--luxury-text, #f5f5f7);
+  --text-secondary: var(--luxury-text-muted, hsla(0,0%,100%,.6));
+  --text-tertiary: var(--luxury-text-subtle, hsla(0,0%,100%,.4));
+  
+  /* Estados funcionales */
+  --state-success: var(--color-success, #4ade80);
+  --state-warning: #fbbf24;
+  --state-error: #f87171;
+  --state-info: #60a5fa;
+  
+  /* Efectos compartidos */
+  --glass-bg: hsla(0, 0%, 100%, 0.03);
+  --glass-border: hsla(0, 0%, 100%, 0.08);
+  --glass-border-hover: rgba(197, 160, 89, 0.3);
+  
+  /* Tipografía base */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  
+  /* Transiciones */
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.3s ease;
+  --transition-slow: 0.5s ease;
+  
+  /* Espaciado */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  
+  /* Radios */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 1rem;
+  --radius-full: 9999px;
+  
+  /* Sombras */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  --shadow-gold: 0 0 20px rgba(197, 160, 89, 0.15);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   COMPONENTES COMPARTIDOS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Botón primario unificado */
+.btn-brand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-xl);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-primary-light) 100%);
+  color: var(--bg-primary);
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-gold);
+  min-height: 48px;
+  min-width: 48px;
+}
+
+.btn-brand:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(197, 160, 89, 0.3);
+}
+
+.btn-brand:active {
+  transform: translateY(0);
+}
+
+/* Botón secundario (outline) */
+.btn-brand-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-xl);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--brand-primary);
+  border: 1px solid var(--brand-primary);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  min-height: 48px;
+  min-width: 48px;
+}
+
+.btn-brand-outline:hover {
+  background: var(--brand-primary);
+  color: var(--bg-primary);
+}
+
+/* Card unificada */
+.card-brand {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  transition: all var(--transition-base);
+}
+
+.card-brand:hover {
+  border-color: var(--glass-border-hover);
+  box-shadow: var(--shadow-gold);
+}
+
+/* Glass effect unificado */
+.glass-brand {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+}
+
+/* Texto con gradiente de marca */
+.text-gradient-brand {
+  background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   UTILIDADES RESPONSIVE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Touch targets mínimos */
+@media (max-width: 768px) {
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  a, button, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Reduce motion para accesibilidad */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Dark mode (por defecto en este sistema) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Ya está optimizado para dark mode */
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CLASES DE UTILIDAD SEMÁNTICAS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Espaciado */
+.brand-p-xs { padding: var(--space-xs); }
+.brand-p-sm { padding: var(--space-sm); }
+.brand-p-md { padding: var(--space-md); }
+.brand-p-lg { padding: var(--space-lg); }
+.brand-p-xl { padding: var(--space-xl); }
+
+.brand-m-xs { margin: var(--space-xs); }
+.brand-m-sm { margin: var(--space-sm); }
+.brand-m-md { margin: var(--space-md); }
+.brand-m-lg { margin: var(--space-lg); }
+.brand-m-xl { margin: var(--space-xl); }
+
+/* Tipografía */
+.brand-text-xs { font-size: 0.75rem; }
+.brand-text-sm { font-size: 0.875rem; }
+.brand-text-base { font-size: 1rem; }
+.brand-text-lg { font-size: 1.125rem; }
+.brand-text-xl { font-size: 1.25rem; }
+.brand-text-2xl { font-size: 1.5rem; }
+
+.brand-font-sans { font-family: var(--font-sans); }
+.brand-font-display { font-family: var(--font-display); }
+.brand-font-mono { font-family: var(--font-mono); }
+
+/* Colores */
+.brand-text-primary { color: var(--text-primary); }
+.brand-text-secondary { color: var(--text-secondary); }
+.brand-text-brand { color: var(--brand-primary); }
+.brand-text-accent { color: var(--brand-accent); }
+
+.brand-bg-primary { background-color: var(--bg-primary); }
+.brand-bg-secondary { background-color: var(--bg-secondary); }
+.brand-bg-glass { background-color: var(--glass-bg); }
+
+/* Estados */
+.brand-state-success { color: var(--state-success); }
+.brand-state-warning { color: var(--state-warning); }
+.brand-state-error { color: var(--state-error); }
+.brand-state-info { color: var(--state-info); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ANIMACIONES KEYFRAMES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@keyframes brand-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes brand-fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes brand-pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(197, 160, 89, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(197, 160, 89, 0.4);
+  }
+}
+
+@keyframes brand-shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+/* Clases de animación */
+.brand-animate-fade-in {
+  animation: brand-fade-in 0.5s ease forwards;
+}
+
+.brand-animate-fade-in-up {
+  animation: brand-fade-in-up 0.6s ease forwards;
+}
+
+.brand-animate-pulse-glow {
+  animation: brand-pulse-glow 2s ease-in-out infinite;
+}
+
+.brand-animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(197, 160, 89, 0.1) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: brand-shimmer 2s infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PRINT STYLES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media print {
+  .brand-no-print,
+  nav,
+  .glass-brand {
+    display: none !important;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+  }
+}

@@ -3,11 +3,12 @@
 # Jorge Aguirre Flores Web
 # =================================================================
 import json
-import time
-import asyncio
 import logging
-from typing import Dict, Any, Optional
+import time
+from typing import Any, Dict, Optional
+
 from upstash_redis import Redis
+
 from app.config import settings
 
 logger = logging.getLogger("DistQueue")
@@ -16,6 +17,7 @@ logger = logging.getLogger("DistQueue")
 DLQ_KEY = "meta_capi:dlq"
 MAX_RETRIES = 5
 RETRY_BACKOFF_BASE = 300  # 5 minutes
+
 
 class RedisDLQ:
     def __init__(self):
@@ -46,20 +48,23 @@ class RedisDLQ:
             "payload": payload,
             "failed_at": int(time.time()),
             "attempt": attempt,
-            "next_retry": int(time.time()) + (RETRY_BACKOFF_BASE * (2 ** (attempt - 1)))
+            "next_retry": int(time.time()) + (RETRY_BACKOFF_BASE * (2 ** (attempt - 1))),
         }
 
         try:
             # RPUSH to append to the end of the queue
             self._redis.rpush(DLQ_KEY, json.dumps(item))
-            logger.info(f"📥 [DLQ] Saved '{event_name}' for retry #{attempt} (Next: +{item['next_retry']-int(time.time())}s)")
+            logger.info(
+                f"📥 [DLQ] Saved '{event_name}' for retry #{attempt} (Next: +{item['next_retry'] - int(time.time())}s)"
+            )
         except Exception as e:
             logger.error(f"❌ [DLQ] Failed to save event: {e}")
 
     def pop_batch(self, batch_size: int = 10) -> list:
         """Atomic fetch of pending items (simulated with LPOP)"""
-        if not self._redis: return []
-        
+        if not self._redis:
+            return []
+
         items = []
         try:
             # We fetch up to batch_size items
@@ -72,8 +77,9 @@ class RedisDLQ:
                 items.append(json.loads(raw))
         except Exception as e:
             logger.error(f"❌ [DLQ] Fetch error: {e}")
-        
+
         return items
+
 
 # Singleton
 dlq = RedisDLQ()
@@ -98,10 +104,10 @@ async def process_retry_queue(batch_size: int = 20):
         return
 
     logger.info(f"🔄 [DLQ] Processing {len(items)} events from Redis...")
-    
+
     # We need to import here to avoid circular dependencies
-    from app.meta_capi import elite_capi, EnhancedUserData, EnhancedCustomData
-    
+    from app.meta_capi import EnhancedCustomData, EnhancedUserData, elite_capi
+
     requeued_count = 0
     success_count = 0
     drop_count = 0
@@ -112,9 +118,9 @@ async def process_retry_queue(batch_size: int = 20):
         # 1. check timing
         if item["next_retry"] > now:
             # Not ready yet, push back (re-queue)
-            # In a perfect world we'd use a ZSET for scheduled jobs, 
+            # In a perfect world we'd use a ZSET for scheduled jobs,
             # but a List is simpler for MVP. We just push it back.
-            dlq.push(item["event_name"], item["payload"], item["attempt"]) 
+            dlq.push(item["event_name"], item["payload"], item["attempt"])
             requeued_count += 1
             continue
 
@@ -129,16 +135,16 @@ async def process_retry_queue(batch_size: int = 20):
             # Reconstruct Data Objects
             # The payload structure depends on how it was saved.
             # Usually users pass what goes into `send_event`.
-            # Let's assume payload matches `elite_capi.send_event` kwargs, 
-            # OR raw dictionary. 
-            
+            # Let's assume payload matches `elite_capi.send_event` kwargs,
+            # OR raw dictionary.
+
             # Helper to safely get nested dicts
             user_data_raw = payload.get("user_data", {})
             custom_data_raw = payload.get("custom_data", {})
-            
+
             # Fix: If user_data is already a dict, great.
             # If it's a Pydantic model serialized, it's a dict.
-            
+
             user_data = EnhancedUserData(**user_data_raw)
             custom_data = EnhancedCustomData(**custom_data_raw) if custom_data_raw else None
 
@@ -150,10 +156,10 @@ async def process_retry_queue(batch_size: int = 20):
                 custom_data=custom_data,
                 client_ip=payload.get("client_ip"),
                 user_agent=payload.get("user_agent"),
-                # Pass explicit 'fbp'/'fbc' if they were raw in payload, 
+                # Pass explicit 'fbp'/'fbc' if they were raw in payload,
                 # though usually they are inside user_data.
             )
-            
+
             status = result.get("status")
             if status in ["success", "duplicate", "sandbox"]:
                 logger.info(f"✅ [DLQ] Success: '{event_name}' recovered.")
@@ -163,7 +169,7 @@ async def process_retry_queue(batch_size: int = 20):
 
         except Exception as e:
             logger.warning(f"⚠️ [DLQ] Validation/Send Error: {e}")
-            
+
             if attempt < MAX_RETRIES:
                 dlq.push(event_name, payload, attempt + 1)
                 requeued_count += 1
@@ -172,4 +178,6 @@ async def process_retry_queue(batch_size: int = 20):
                 drop_count += 1
 
     if success_count > 0:
-        logger.info(f"🏁 [DLQ] Batch Complete. Recovered: {success_count}, Re-queued: {requeued_count}, Dropped: {drop_count}")
+        logger.info(
+            f"🏁 [DLQ] Batch Complete. Recovered: {success_count}, Re-queued: {requeued_count}, Dropped: {drop_count}"
+        )

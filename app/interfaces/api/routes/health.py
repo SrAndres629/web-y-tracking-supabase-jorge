@@ -2,11 +2,12 @@
 # HEALTH.PY - Health Check Endpoints (API Interface)
 # Jorge Aguirre Flores Web
 # =================================================================
+import os
 from datetime import datetime
+from pathlib import Path
+
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse, PlainTextResponse
-import os
-from pathlib import Path
 
 from app.config import settings
 from app.interfaces.api.dependencies import get_legacy_facade
@@ -33,7 +34,7 @@ async def health_check(request: Request):
         db_status = "skipped_in_test_mode"
     else:
         db_status = "connected" if legacy.check_connection() else "not configured"
-    
+
     # Check optional integrations
     integrations = []
     if settings.redis_enabled:
@@ -42,22 +43,23 @@ async def health_check(request: Request):
         integrations.append("clarity")
     if settings.rudderstack_enabled:
         integrations.append("rudderstack")
-        
+
     # Check Cloudflare
     if request.headers.get("cf-ray"):
         integrations.append("cloudflare_proxy")
-        
+
     if settings.SENTRY_DSN:
         integrations.append("sentry")
 
-    
-    return JSONResponse({
-        "status": "healthy",
-        "database": db_status,
-        "integrations": integrations,
-        "timestamp": datetime.now().isoformat(),
-        "service": "Jorge Aguirre Flores Web"
-    })
+    return JSONResponse(
+        {
+            "status": "healthy",
+            "database": db_status,
+            "integrations": integrations,
+            "timestamp": datetime.now().isoformat(),
+            "service": "Jorge Aguirre Flores Web",
+        }
+    )
 
 
 @router.get("/health/diagnostics")
@@ -66,6 +68,7 @@ async def health_diagnostics_full(request: Request):
     Reporte de diagnóstico completo (sistema, DB, Redis, env)
     """
     from app.diagnostics import run_full_diagnostics
+
     report = run_full_diagnostics()
     return JSONResponse(report)
 
@@ -149,7 +152,9 @@ async def prewarm_debug(request: Request):
     payload = _prewarm_probe_payload(request)
     if payload["found"]:
         return JSONResponse({"status": "ok", **payload})
-    return JSONResponse({"status": "error", "message": "Template not found", **payload}, status_code=500)
+    return JSONResponse(
+        {"status": "error", "message": "Template not found", **payload}, status_code=500
+    )
 
 
 @router.get("/health/prewarm")
@@ -162,4 +167,6 @@ async def prewarm_health(request: Request):
     payload = _prewarm_probe_payload(request)
     if payload["found"]:
         return JSONResponse({"status": "ok", **payload})
-    return JSONResponse({"status": "error", "message": "Template not found", **payload}, status_code=500)
+    return JSONResponse(
+        {"status": "error", "message": "Template not found", **payload}, status_code=500
+    )

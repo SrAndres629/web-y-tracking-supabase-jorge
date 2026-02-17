@@ -10,9 +10,9 @@ Patrón Repository:
 - Facilita testing con implementaciones fake
 """
 
-from app.domain.repositories.visitor_repo import VisitorRepository
-from app.domain.repositories.lead_repo import LeadRepository
 from app.domain.repositories.event_repo import EventRepository
+from app.domain.repositories.lead_repo import LeadRepository
+from app.domain.repositories.visitor_repo import VisitorRepository
 
 __all__ = [
     "VisitorRepository",

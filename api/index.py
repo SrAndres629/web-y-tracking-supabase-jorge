@@ -11,8 +11,8 @@ Toda la lógica de manejo de errores ahora está en:
   app/interfaces/api/middleware/error_handler.py
 """
 
-import sys
 import os
+import sys
 
 # Setup path para imports (único hack permitido en entry point)
 current_dir = os.path.dirname(os.path.abspath(__file__))

@@ -5,20 +5,17 @@ High-performance architectural analysis & live telemetry.
 Optimized for WSL/Linux environments.
 """
 
-import os
 import logging
-from pathlib import Path
-from typing import Any, Dict, List, Optional
 from datetime import datetime
+from pathlib import Path
+
 from fastmcp import FastMCP
+
 # from neuro_architect import get_neuro_architect  <-- REMOVED: improperly referenced
 
 
 # --- Advanced Logging ---
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logger = logging.getLogger("neurovision.mcp")
 
 # --- Server Init ---
@@ -26,7 +23,8 @@ mcp = FastMCP("Vision Neuronal")
 
 # --- Professional Path Management (God Mode) ---
 # PROJECT_ROOT is now just a reference, not a jail.
-PROJECT_ROOT = Path("/home/jorand/antigravityobuntu").resolve() 
+PROJECT_ROOT = Path("/home/jorand/antigravityobuntu").resolve()
+
 
 def validate_path(path_str: str, allow_sensitive: bool = True) -> Path:
     """
@@ -50,9 +48,11 @@ def validate_path(path_str: str, allow_sensitive: bool = True) -> Path:
         logger.error(f"Path Error: {e}")
         raise
 
+
 from neuro_architect import get_cortex
 
 # --- Core Tools (Mathematical Integrity) ---
+
 
 @mcp.tool()
 async def list_files(directory: str = ".", recursive: bool = False) -> dict:
@@ -61,25 +61,29 @@ async def list_files(directory: str = ".", recursive: bool = False) -> dict:
         root = validate_path(directory)
         files = []
         pattern = "**/*" if recursive else "*"
-        
+
         for p in root.glob(pattern):
             # Reduced noise filter for God Mode
             if any(part in SENSITIVE_DIRS for part in p.parts):
-                 continue
-            
+                continue
+
             is_dir = p.is_dir()
-            files.append({
-                "name": p.name,
-                "path": str(p), # Absolute path for God Mode
-                "type": "directory" if is_dir else "file",
-                "size": p.stat().st_size if not is_dir else 0,
-                "modified": datetime.fromtimestamp(p.stat().st_mtime).isoformat()
-            })
-            if len(files) >= 1000: break 
-                
+            files.append(
+                {
+                    "name": p.name,
+                    "path": str(p),  # Absolute path for God Mode
+                    "type": "directory" if is_dir else "file",
+                    "size": p.stat().st_size if not is_dir else 0,
+                    "modified": datetime.fromtimestamp(p.stat().st_mtime).isoformat(),
+                }
+            )
+            if len(files) >= 1000:
+                break
+
         return {"success": True, "files": files, "count": len(files)}
     except Exception as e:
         return {"success": False, "error": str(e)}
+
 
 @mcp.tool()
 async def read_file(path: str) -> dict:
@@ -92,6 +96,7 @@ async def read_file(path: str) -> dict:
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+
 @mcp.tool()
 async def write_file(path: str, content: str) -> dict:
     """Write files anywhere (God Mode)."""
@@ -103,6 +108,7 @@ async def write_file(path: str, content: str) -> dict:
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+
 @mcp.tool()
 async def refresh_vision(target_project: str = ".") -> dict:
     """Deep Cortical Scan: Builds the holographic memory."""
@@ -113,6 +119,7 @@ async def refresh_vision(target_project: str = ".") -> dict:
         return {"success": True, "message": "Cortex synced with reality."}
     except Exception as e:
         return {"success": False, "error": str(e)}
+
 
 @mcp.tool()
 async def consult_memory(query: str, target_project: str = ".") -> dict:
@@ -128,6 +135,7 @@ async def consult_memory(query: str, target_project: str = ".") -> dict:
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+
 @mcp.tool()
 async def visualize_cortex(target_project: str = ".") -> dict:
     """Generates the advanced 3D Holographic Map of the project brain."""
@@ -139,8 +147,11 @@ async def visualize_cortex(target_project: str = ".") -> dict:
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+
 @mcp.tool()
-async def send_telemetry(node: str, event_type: str, metadata: dict = None, project: str = ".") -> dict:
+async def send_telemetry(
+    node: str, event_type: str, metadata: dict = None, project: str = "."
+) -> dict:
     """Injects 'feelings' (execution/error events) into the Cortex."""
     try:
         root = validate_path(project)
@@ -149,6 +160,7 @@ async def send_telemetry(node: str, event_type: str, metadata: dict = None, proj
         return {"success": True}
     except Exception as e:
         return {"success": False, "error": str(e)}
+
 
 if __name__ == "__main__":
     logger.info(f"Cortex Online: Jail set to {PROJECT_ROOT}")

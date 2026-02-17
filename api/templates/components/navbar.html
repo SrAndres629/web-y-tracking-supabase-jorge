@@ -49,21 +49,60 @@
 
     <!-- Mobile Menu Overlay -->
     <div id="mobileMenu"
-        class="fixed inset-0 bg-luxury-black/98 backdrop-blur-xl z-[60] hidden flex-col items-center justify-center space-y-8 touch-none">
+        class="fixed inset-0 bg-luxury-black/98 backdrop-blur-xl z-[60] hidden flex-col items-center justify-center space-y-8 touch-none"
+        onclick="closeMobileMenuOnOutside(event)">
         <button type="button" class="absolute top-6 right-6 text-white/50 hover:text-white text-4xl"
             aria-label="Cerrar menú"
-            onclick="document.getElementById('mobileMenuBtn').style.display='block'; document.getElementById('mobileMenu').classList.add('hidden'); document.body.style.overflow='';">
+            onclick="closeMobileMenu()">
             &times;
         </button>
-        <a href="#galeria" class="text-2xl font-serif text-white hover:text-luxury-gold transition-colors">Galería</a>
+        <a href="#galeria" class="text-2xl font-serif text-white hover:text-luxury-gold transition-colors" onclick="closeMobileMenu()">Galería</a>
         <a href="#servicios"
-            class="text-2xl font-serif text-white hover:text-luxury-gold transition-colors">Servicios</a>
-        <a href="#proceso" class="text-2xl font-serif text-white hover:text-luxury-gold transition-colors">Proceso</a>
+            class="text-2xl font-serif text-white hover:text-luxury-gold transition-colors" onclick="closeMobileMenu()">Servicios</a>
+        <a href="#proceso" class="text-2xl font-serif text-white hover:text-luxury-gold transition-colors" onclick="closeMobileMenu()">Proceso</a>
         <a href="#testimonios"
-            class="text-2xl font-serif text-white hover:text-luxury-gold transition-colors">Testimonios</a>
-        <button type="button" onclick="handleConversion('Mobile Menu CTA')"
+            class="text-2xl font-serif text-white hover:text-luxury-gold transition-colors" onclick="closeMobileMenu()">Testimonios</a>
+        <button type="button" onclick="handleConversion('Mobile Menu CTA'); closeMobileMenu();"
             class="mt-8 px-8 py-3 border border-luxury-gold text-luxury-gold uppercase tracking-widest text-sm hover:bg-luxury-gold hover:text-black transition-all">
             Agendar Cita
         </button>
     </div>
 </nav>
+
+<script>
+    // Mobile menu handlers
+    function closeMobileMenu() {
+        document.getElementById('mobileMenu').classList.add('hidden');
+        document.getElementById('mobileMenuBtn').style.display = 'block';
+        document.body.style.overflow = '';
+    }
+    
+    function closeMobileMenuOnOutside(event) {
+        if (event.target.id === 'mobileMenu') {
+            closeMobileMenu();
+        }
+    }
+    
+    // Close on ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const menu = document.getElementById('mobileMenu');
+            if (menu && !menu.classList.contains('hidden')) {
+                closeMobileMenu();
+            }
+        }
+    });
+    
+    // Close on scroll (optional UX improvement)
+    let lastScrollY = window.scrollY;
+    window.addEventListener('scroll', function() {
+        const menu = document.getElementById('mobileMenu');
+        if (menu && !menu.classList.contains('hidden')) {
+            // Close if scrolled more than 100px
+            if (Math.abs(window.scrollY - lastScrollY) > 100) {
+                closeMobileMenu();
+            }
+        }
+        lastScrollY = window.scrollY;
+    }, { passive: true });
+</script>

@@ -10,13 +10,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Optional
 
-from app.core.result import Result
 from app.application.interfaces.cache_port import ContentCachePort
+from app.core.result import Result
 
 
 @dataclass(frozen=True)
 class GetContentQuery:
     """Input para la query."""
+
     key: str
     use_fallback: bool = True  # Usar fallback si no está en cache
 
@@ -24,13 +25,13 @@ class GetContentQuery:
 class GetContentHandler:
     """
     Handler para obtener contenido con cache.
-    
+
     Implementa patrón Cache-Aside:
     1. Intentar leer de cache (RAM/Redis)
     2. Si miss: leer de DB
     3. Guardar en cache para próximas lecturas
     """
-    
+
     # Fallbacks hardcodeados para resilience
     FALLBACKS = {
         "services_config": [
@@ -44,7 +45,7 @@ class GetContentHandler:
                 "rating": "4.9",
                 "clients": "+620",
                 "badges": ["Más Pedido", "100% Natural", "2-3 años"],
-                "benefits": ["2 hrs sesión", "Sin dolor", "Retoque incluido"]
+                "benefits": ["2 hrs sesión", "Sin dolor", "Retoque incluido"],
             },
             {
                 "id": "eyeliner",
@@ -56,7 +57,7 @@ class GetContentHandler:
                 "rating": "4.9",
                 "clients": "+480",
                 "badges": ["Sin Dolor", "Efecto Pestañas", "2-3 años"],
-                "benefits": ["1.5 hrs sesión", "Anestesia tópica", "Resultados inmediatos"]
+                "benefits": ["1.5 hrs sesión", "Anestesia tópica", "Resultados inmediatos"],
             },
             {
                 "id": "lips",
@@ -68,8 +69,8 @@ class GetContentHandler:
                 "rating": "5.0",
                 "clients": "+400",
                 "badges": ["Premium", "Color Natural", "1-2 años"],
-                "benefits": ["2 hrs sesión", "Corrige volumen", "Efecto rejuvenecedor"]
-            }
+                "benefits": ["2 hrs sesión", "Corrige volumen", "Efecto rejuvenecedor"],
+            },
         ],
         "contact_config": {
             "whatsapp": "https://wa.me/59164714751",
@@ -82,17 +83,17 @@ class GetContentHandler:
             "facebook": "https://facebook.com/jorgeaguirreflores",
             "tiktok": "https://tiktok.com/@jorgeaguirreflores",
             "cta_text": "Hola Jorge, vi su web y me interesa una valoración para micropigmentación.",
-            "cta_assessment": "Hola Jorge, quiero agendar mi diagnóstico gratuito y ver la geometría de mi rostro."
-        }
+            "cta_assessment": "Hola Jorge, quiero agendar mi diagnóstico gratuito y ver la geometría de mi rostro.",
+        },
     }
-    
+
     def __init__(self, cache: ContentCachePort):
         self.cache = cache
-    
+
     async def handle(self, query: GetContentQuery) -> Result[Any, str]:
         """
         Obtiene contenido con estrategia de fallback.
-        
+
         1. Intentar cache
         2. Si miss y use_fallback: retornar fallback
         3. En background: refrescar cache desde DB
@@ -102,31 +103,32 @@ class GetContentHandler:
             cached = await self.cache.get(query.key)
             if cached is not None:
                 return Result.ok(cached)
-            
+
             # 2. Si tenemos fallback permitido, usarlo inmediatamente
             if query.use_fallback and query.key in self.FALLBACKS:
                 fallback_data = self.FALLBACKS[query.key]
-                
+
                 # En background: refrescar desde DB
                 import asyncio
+
                 asyncio.create_task(self._refresh_cache(query.key))
-                
+
                 return Result.ok(fallback_data)
-            
+
             # 3. No hay fallback, intentar DB directo
             db_data = await self._fetch_from_db(query.key)
             if db_data is not None:
                 await self.cache.set(query.key, db_data, ttl=3600)
                 return Result.ok(db_data)
-            
+
             return Result.err(f"Content not found: {query.key}")
-            
+
         except Exception as e:
             # Fallback último recurso
             if query.use_fallback and query.key in self.FALLBACKS:
                 return Result.ok(self.FALLBACKS[query.key])
             return Result.err(str(e))
-    
+
     async def _refresh_cache(self, key: str) -> None:
         """Refresca cache desde DB (background)."""
         try:
@@ -135,7 +137,7 @@ class GetContentHandler:
                 await self.cache.set(key, data, ttl=3600)
         except Exception:
             pass  # Silencioso en background
-    
+
     async def _fetch_from_db(self, key: str) -> Optional[Any]:
         """Fetch desde base de datos."""
         # TODO: Implementar con repositorio de contenido

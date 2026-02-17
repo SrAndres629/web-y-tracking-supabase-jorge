@@ -7,11 +7,12 @@ Responsabilidad: Manejar errores globalmente de forma segura
 📚 Lección: No mezclar manejo de errores con entry point
 """
 
-from fastapi import Request
-from fastapi.responses import JSONResponse, HTMLResponse
 import logging
-import traceback
 import os
+import traceback
+
+from fastapi import Request
+from fastapi.responses import HTMLResponse, JSONResponse
 
 logger = logging.getLogger(__name__)
 
@@ -19,14 +20,14 @@ logger = logging.getLogger(__name__)
 class ErrorHandlerMiddleware:
     """
     Middleware para manejo consistente y seguro de errores.
-    
+
     En producción, no expone información sensible como stack traces.
     En desarrollo, muestra información detallada para debugging.
     """
-    
+
     def __init__(self, app=None):
         self.app = app
-    
+
     async def __call__(self, request: Request, call_next):
         """Intercepta requests y maneja excepciones."""
         try:
@@ -35,10 +36,12 @@ class ErrorHandlerMiddleware:
         except Exception as exc:
             logger.exception(f"Unhandled exception in request: {request.url}")
             return self._render_error(request, exc)
-    
+
     def _debug_allowed(self, request: Request) -> bool:
         """Check if debug output is allowed for this request."""
-        debug_key = (os.getenv("PREWARM_DEBUG_KEY") or os.getenv("DEBUG_DIAGNOSTIC_KEY") or "").strip()
+        debug_key = (
+            os.getenv("PREWARM_DEBUG_KEY") or os.getenv("DEBUG_DIAGNOSTIC_KEY") or ""
+        ).strip()
         if not debug_key:
             return False
 
@@ -59,13 +62,13 @@ class ErrorHandlerMiddleware:
     def _render_error(self, request: Request, exc: Exception):
         """
         Renderiza error según el entorno.
-        
+
         - Debug: Retorna JSON con stack trace completo
         - Producción: Mensaje genérico amigable
         """
         if self._debug_allowed(request):
             tb = "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))
-            
+
             # 🕵️ DIAGOSTIC: List Vercel Filesystem
             fs_debug = {}
             try:
@@ -74,10 +77,12 @@ class ErrorHandlerMiddleware:
                     if os.path.exists(p):
                         fs_debug[p] = []
                         for root, dirs, files in os.walk(p):
-                            if "venv" in root or "__pycache__" in root: continue
+                            if "venv" in root or "__pycache__" in root:
+                                continue
                             for f in files:
                                 fs_debug[p].append(os.path.join(root, f))
-                                if len(fs_debug[p]) > 50: break # Limit output
+                                if len(fs_debug[p]) > 50:
+                                    break  # Limit output
                     else:
                         fs_debug[p] = "NOT_FOUND"
             except Exception as e:
@@ -92,13 +97,13 @@ class ErrorHandlerMiddleware:
                     "type": type(exc).__name__,
                     "path": request.url.path,
                     "method": request.method,
-                    "filesystem": fs_debug, 
+                    "filesystem": fs_debug,
                     "traceback": tb,
-                }
+                },
             )
-        
+
         error_detail = "<p>El equipo técnico ha sido notificado. Por favor intente más tarde.</p>"
-        
+
         html = f"""
         <!DOCTYPE html>
         <html lang="es">
@@ -171,24 +176,24 @@ class ErrorHandlerMiddleware:
         </body>
         </html>
         """
-        
+
         return HTMLResponse(content=html, status_code=500)
 
 
 def setup_error_handlers(app):
     """
     Configura manejadores de error en la aplicación FastAPI.
-    
+
     Args:
         app: Instancia de FastAPI
     """
-    
+
     @app.exception_handler(500)
     async def internal_error_handler(request: Request, exc: Exception):
         """Manejador para errores 500."""
         handler = ErrorHandlerMiddleware()
         return handler._render_error(request, exc)
-    
+
     @app.exception_handler(404)
     async def not_found_handler(request: Request, exc: Exception):
         """Manejador para errores 404."""
@@ -204,7 +209,7 @@ def setup_error_handlers(app):
             </body>
             </html>
             """,
-            status_code=404
+            status_code=404,
         )
-    
+
     logger.info("✅ Error handlers configurados")

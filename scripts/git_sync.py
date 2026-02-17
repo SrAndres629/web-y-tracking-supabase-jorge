@@ -1,6 +1,6 @@
+import logging
 import subprocess
 import sys
-import logging
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
@@ -10,6 +10,7 @@ LOG_FORMAT = "%(asctime)s [%(levelname)s] %(message)s"
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 logger = logging.getLogger("git_sync")
 
+
 class GitSync:
     """
     Silicon Valley Genius Edition: Git Automation Script.
@@ -18,18 +19,16 @@ class GitSync:
 
     def __init__(self, commit_message: Optional[str] = None):
         self.project_path = Path(__file__).parent.absolute()
-        self.commit_message = commit_message or f"auto-update: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        self.commit_message = (
+            commit_message or f"auto-update: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        )
 
     def run_command(self, command: List[str]) -> bool:
         """Executes a shell command and logs output/errors."""
         try:
             logger.info(f"Executing: {' '.join(command)}")
             result = subprocess.run(
-                command, 
-                cwd=self.project_path, 
-                capture_output=True, 
-                text=True, 
-                check=True
+                command, cwd=self.project_path, capture_output=True, text=True, check=True
             )
             if result.stdout:
                 logger.debug(result.stdout)
@@ -49,10 +48,7 @@ class GitSync:
 
         # 2. Check if there are changes to commit
         status_proc = subprocess.run(
-            ["git", "status", "--porcelain"], 
-            cwd=self.project_path, 
-            capture_output=True, 
-            text=True
+            ["git", "status", "--porcelain"], cwd=self.project_path, capture_output=True, text=True
         )
         if not status_proc.stdout.strip():
             logger.info("✨ No changes to commit. Everything is up to date.")
@@ -68,8 +64,8 @@ class GitSync:
             logger.warning("Pull failed. Attempting to resolve...")
             # If rebase fails, you might need manual intervention, but we'll try a basic pull as fallback
             if not self.run_command(["git", "pull", "origin", "main"]):
-               logger.error("Critical: Could not pull from remote. Resolve conflicts manually.")
-               sys.exit(1)
+                logger.error("Critical: Could not pull from remote. Resolve conflicts manually.")
+                sys.exit(1)
 
         # 5. Push
         logger.info("📤 Pushing changes to GitHub...")
@@ -78,6 +74,7 @@ class GitSync:
             sys.exit(1)
 
         logger.info("✅ Synchronization complete! Project is safe on GitHub.")
+
 
 if __name__ == "__main__":
     msg = sys.argv[1] if len(sys.argv) > 1 else None

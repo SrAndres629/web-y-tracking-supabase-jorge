@@ -1,11 +1,9 @@
-from logging.config import fileConfig
 import os
 import sys
-
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
+from logging.config import fileConfig
 
 from alembic import context
+from sqlalchemy import engine_from_config, pool
 
 # 🚀 Add App to Path to load config
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -31,6 +29,7 @@ target_metadata = None
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
+
 def get_db_url():
     """
     Retrieves DB URL and ensures it's SQLAlchemy-compatible.
@@ -39,17 +38,18 @@ def get_db_url():
     url = settings.DATABASE_URL
     if not url:
         return ""
-    
+
     # 🛡️ Driver Fix: Ensure postgresql+psycopg2
     if url.startswith("postgresql://"):
         url = url.replace("postgresql://", "postgresql+psycopg2://", 1)
-    
+
     # 🧬 Special Character Fix: SQLAlchemy 2.0 is strict about password encoding
     if "!" in url and "%21" not in url:
         # We handle the common case in this project
         url = url.replace("!", "%21")
-        
+
     return url
+
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
@@ -88,9 +88,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()

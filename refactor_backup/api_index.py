@@ -1,5 +1,5 @@
-import sys
 import os
+import sys
 
 # 1. Force absolute paths for imports
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -9,8 +9,9 @@ sys.path.insert(0, parent_dir)
 # 2. Diagnostics: Catch import errors immediately
 try:
     # 🔍 VERCEL FORENSIC AUDIT
-    import os
     import logging
+    import os
+
     logger = logging.getLogger("Forensics")
     logger.info(f"📍 CWD: {os.getcwd()}")
     try:
@@ -19,9 +20,10 @@ try:
             indent = " " * 4 * (level)
             logger.info(f"{indent}📂 {os.path.basename(root)}/")
             subindent = " " * 4 * (level + 1)
-            for f in files[:5]: # Limit output
+            for f in files[:5]:  # Limit output
                 logger.info(f"{subindent}📄 {f}")
-            if level > 2: break # Don't go too deep
+            if level > 2:
+                break  # Don't go too deep
     except Exception as e:
         logger.error(f"Audit failed: {e}")
 
@@ -30,21 +32,23 @@ except Exception as e:
     # 💥 CRITICAL BOOT FAILURE
     # This block renders the red/black diagnostic screen if main.py fails using the existing logic in app/diagnostics.py
     import traceback
+
     error_trace = traceback.format_exc()
-    
+
     # Try to load our custom diagnostic renderer
     try:
         from app.diagnostics import run_full_diagnostics
+
         report = run_full_diagnostics()
     except ImportError:
         report = {"status": "Fatal Diagnostic Failure", "error": str(e)}
 
     # Fallback generic WSGI handler to show the error
     def app(environ, start_response):
-        status = '503 Service Unavailable'
-        headers = [('Content-type', 'text/html; charset=utf-8')]
+        status = "503 Service Unavailable"
+        headers = [("Content-type", "text/html; charset=utf-8")]
         start_response(status, headers)
-        
+
         # HTML Template matching the user's description (Black/Red)
         html = f"""
         <!DOCTYPE html>
@@ -78,4 +82,4 @@ except Exception as e:
         </body>
         </html>
         """
-        return [html.encode('utf-8')]
+        return [html.encode("utf-8")]

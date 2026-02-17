@@ -1,8 +1,9 @@
-import pytest
 from fastapi.testclient import TestClient
+
 from main import app
 
 client = TestClient(app)
+
 
 def test_robots_txt():
     """
@@ -14,14 +15,18 @@ def test_robots_txt():
     assert "text/plain" in response.headers["content-type"]
     assert "User-agent: *" in response.text
 
+
 def test_sitemap_xml():
     """
     SEO Guard: Ensures sitemap.xml is generated.
     """
     response = client.get("/sitemap.xml")
-    # It might be 200 or 404 if not dynamically generated yet, 
+    # It might be 200 or 404 if not dynamically generated yet,
     # but we assert it doesn't crash (500).
     # Ideally should be 200.
-    assert response.status_code in [200, 404] 
+    assert response.status_code in [200, 404]
     if response.status_code == 200:
-        assert "xml" in response.headers["content-type"] or "text/xml" in response.headers["content-type"]
+        assert (
+            "xml" in response.headers["content-type"]
+            or "text/xml" in response.headers["content-type"]
+        )

@@ -1,12 +1,12 @@
-import os
 import logging
-from typing import Optional, List, Dict, Any
+from typing import Any, Dict, List, Optional
 
 from groq import Groq
 
 from app.config import settings
 
 logger = logging.getLogger(__name__)
+
 
 class LLMService:
     """
@@ -38,7 +38,7 @@ class LLMService:
         max_tokens: int = 1024,
         top_p: float = 1.0,
         stream: bool = False,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> Optional[Any]:
         """
         Gets a completion from the Groq API.
@@ -67,12 +67,13 @@ class LLMService:
                 max_tokens=max_tokens,
                 top_p=top_p,
                 stream=stream,
-                **kwargs
+                **kwargs,
             )
             return chat_completion
         except Exception as e:
             logger.error(f"Error calling Groq API: {e}")
             return None
+
 
 # Export an instance for easy access throughout the application
 llm_service = LLMService()

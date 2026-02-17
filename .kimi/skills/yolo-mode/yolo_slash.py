@@ -2,9 +2,10 @@
 """
 Slash command handler para /yolo en Kimi CLI
 """
-import sys
+
 import json
 import logging
+import sys
 from pathlib import Path
 
 # Configurar logger para yolo_slash.py
@@ -14,11 +15,10 @@ logger = logging.getLogger(__name__)
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
 try:
-    from .ai.modes.yolo_mode import create_yolo_mode, ThoughtLevel, ActionCategory
+    from .ai.modes.yolo_mode import ActionCategory, ThoughtLevel, create_yolo_mode
 except ImportError:
     # Fallback si no está en el path
-    import subprocess
-    import os
+    pass
 
 YOLO_CONFIG_PATH = Path(".ai/modes/yolo_config.json")
 YOLO_STATE_PATH = Path(".ai/modes/yolo_state.json")
@@ -27,7 +27,7 @@ YOLO_STATE_PATH = Path(".ai/modes/yolo_state.json")
 def load_state():
     """Carga el estado actual del modo YOLO"""
     if YOLO_STATE_PATH.exists():
-        with open(YOLO_STATE_PATH, 'r') as f:
+        with open(YOLO_STATE_PATH, "r") as f:
             return json.load(f)
     return {"active": False, "thought_level": "deep"}
 
@@ -35,7 +35,7 @@ def load_state():
 def save_state(state):
     """Guarda el estado del modo YOLO"""
     YOLO_STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with open(YOLO_STATE_PATH, 'w') as f:
+    with open(YOLO_STATE_PATH, "w") as f:
         json.dump(state, f, indent=2)
 
 
@@ -44,20 +44,14 @@ def activate_yolo(thought_level="deep"):
     state = {
         "active": True,
         "thought_level": thought_level,
-        "activated_at": __import__('time').time()
+        "activated_at": __import__("time").time(),
     }
     save_state(state)
-    
-    levels = {
-        "surface": "🌊",
-        "standard": "📊", 
-        "deep": "🔍",
-        "profound": "🧠",
-        "meta": "🌌"
-    }
-    
+
+    levels = {"surface": "🌊", "standard": "📊", "deep": "🔍", "profound": "🧠", "meta": "🌌"}
+
     emoji = levels.get(thought_level, "🚀")
-    
+
     return f"""
 {emoji} ════════════════════════════════════════════════════════════ {emoji}
                     MODO YOLO ACTIVADO
@@ -82,9 +76,9 @@ def deactivate_yolo():
     """Desactiva el modo YOLO"""
     state = load_state()
     state["active"] = False
-    state["deactivated_at"] = __import__('time').time()
+    state["deactivated_at"] = __import__("time").time()
     save_state(state)
-    
+
     return """
 ✋ ════════════════════════════════════════════════════════════ ✋
                    MODO YOLO DESACTIVADO
@@ -99,22 +93,22 @@ def show_stats():
     """Muestra estadísticas del modo YOLO"""
     state = load_state()
     logs_dir = Path(".ai/modes/logs")
-    
+
     if logs_dir.exists():
         decisions = list(logs_dir.glob("yolo_*.json"))
         total = len(decisions)
     else:
         total = 0
-    
+
     status = "🟢 ACTIVO" if state.get("active") else "🔴 INACTIVO"
-    
+
     return f"""
 📊 ════════════════════════════════════════════════════════════ 📊
               ESTADÍSTICAS DEL MODO YOLO
 📊 ════════════════════════════════════════════════════════════ 📊
 
 Estado: {status}
-Nivel Actual: {state.get('thought_level', 'N/A')}
+Nivel Actual: {state.get("thought_level", "N/A")}
 Decisiones Totales: {total}
 Logs: .ai/modes/logs/
 
@@ -126,7 +120,7 @@ Para desactivar: /yolo off
 def main():
     """Punto de entrada para el slash command"""
     args = sys.argv[1:] if len(sys.argv) > 1 else []
-    
+
     if not args or args[0] in ["help", "--help", "-h"]:
         logger.info("""
 Uso: /yolo [nivel|off|stats]
@@ -144,11 +138,11 @@ Comandos:
   help       - Mostrar esta ayuda
 """)
         return
-    
+
     command = args[0].lower()
-    
+
     valid_levels = ["surface", "standard", "deep", "profound", "meta"]
-    
+
     if command in valid_levels:
         logger.info(activate_yolo(command))
     elif command == "off":

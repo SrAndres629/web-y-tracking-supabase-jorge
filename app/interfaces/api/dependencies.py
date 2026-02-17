@@ -13,30 +13,32 @@ import hashlib
 import logging
 import time
 from functools import lru_cache
-from typing import List, Optional, Any, Dict, Tuple
+from typing import Any, Dict, List, Optional
 
-from fastapi import Depends, Header, HTTPException, Request
-from app.application.commands.track_event import TrackEventHandler
+from fastapi import Header, HTTPException
+
 from app.application.commands.create_visitor import CreateVisitorHandler
-from app.application.queries.get_content import GetContentHandler
-from app.application.interfaces.cache_port import DeduplicationPort, ContentCachePort
+from app.application.commands.track_event import TrackEventHandler
+from app.application.interfaces.cache_port import ContentCachePort, DeduplicationPort
 from app.application.interfaces.tracker_port import TrackerPort
-from app.domain.repositories.visitor_repo import VisitorRepository
+from app.application.queries.get_content import GetContentHandler
+from app.config import settings
 from app.domain.repositories.event_repo import EventRepository
 from app.domain.repositories.lead_repo import LeadRepository
-from app.config import settings
+from app.domain.repositories.visitor_repo import VisitorRepository
 
 logger = logging.getLogger(__name__)
 
 
 # ===== Cache =====
 
+
 @lru_cache()
 def get_deduplicator() -> DeduplicationPort:
     """Provee deduplicador (Redis o memoria)."""
+    from app.infrastructure.cache import InMemoryDeduplication, RedisDeduplication
     from app.infrastructure.config import get_settings
-    from app.infrastructure.cache import RedisDeduplication, InMemoryDeduplication
-    
+
     settings = get_settings()
     if settings.redis.is_configured:
         return RedisDeduplication()
@@ -46,9 +48,9 @@ def get_deduplicator() -> DeduplicationPort:
 @lru_cache()
 def get_content_cache() -> ContentCachePort:
     """Provee cache de contenido."""
+    from app.infrastructure.cache import InMemoryContentCache, RedisContentCache
     from app.infrastructure.config import get_settings
-    from app.infrastructure.cache import RedisContentCache, InMemoryContentCache
-    
+
     settings = get_settings()
     if settings.redis.is_configured:
         return RedisContentCache()
@@ -57,16 +59,19 @@ def get_content_cache() -> ContentCachePort:
 
 # ===== Repositories =====
 
+
 @lru_cache()
 def get_visitor_repository() -> VisitorRepository:
     """Provee repositorio de visitantes."""
     from app.infrastructure.persistence.visitor_repo import PostgreSQLVisitorRepository
+
     return PostgreSQLVisitorRepository()
 
 
 def get_event_repository() -> EventRepository:
     """Provee repositorio de eventos."""
     from app.infrastructure.persistence.event_repo import PostgreSQLEventRepository
+
     return PostgreSQLEventRepository()
 
 
@@ -74,6 +79,7 @@ def get_event_repository() -> EventRepository:
 def get_lead_repository() -> LeadRepository:
     """Provee repositorio de leads."""
     from app.infrastructure.persistence.sql_lead_repo import SQLLeadRepository
+
     return SQLLeadRepository()
 
 
@@ -81,15 +87,16 @@ def get_lead_repository() -> LeadRepository:
 
 _tracker_cache: Optional[List[TrackerPort]] = None
 
+
 def get_trackers() -> List[TrackerPort]:
     """Provee lista de trackers configurados (singleton instances)."""
     global _tracker_cache
     if _tracker_cache is not None:
         return _tracker_cache
-    
+
     from app.infrastructure.external.meta_capi import MetaTracker
     from app.infrastructure.external.rudderstack import RudderStackTracker
-    
+
     _tracker_cache = [
         MetaTracker(),
         RudderStackTracker(),
@@ -99,7 +106,10 @@ def get_trackers() -> List[TrackerPort]:
 
 # ===== Handlers =====
 
-def get_track_event_handler(tenant_id: Optional[str] = Header(None, alias="x-tenant-id")) -> TrackEventHandler:
+
+def get_track_event_handler(
+    tenant_id: Optional[str] = Header(None, alias="x-tenant-id"),
+) -> TrackEventHandler:
     """Provee handler para tracking de eventos."""
     resolved = settings.resolve_tenant(tenant_id)
     if not settings.is_tenant_allowed(resolved):
@@ -129,6 +139,7 @@ def get_get_content_handler() -> GetContentHandler:
 
 
 # ===== Legacy Compatibility Facade =====
+
 
 class LegacyFacade:
     """
