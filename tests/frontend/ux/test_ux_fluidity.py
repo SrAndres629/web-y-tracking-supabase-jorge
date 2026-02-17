@@ -25,27 +25,27 @@ def test_smooth_scroll_libraries_presence():
 
 def test_lenis_initialization_block():
     """
-    Verify that there is a script block initializing Lenis.
+    Verify that there is a script block initializing Lenis via ES Modules.
     """
     response = client.get("/")
     content = response.text
     
-    # Check for the initialization pattern in base.html logic
-    assert "scroll-init" in content, "❌ Lenis initialization event not found in HTML"
+    # Check for ES module pattern with LenisSetup
+    assert "scroll-init" in content, "❌ Lenis initialization module not found in HTML"
+    assert "LenisSetup" in content, "❌ LenisSetup import not found"
     assert "window.lenis = lenis" in content, "❌ Lenis instance assignment not found"
-    assert "requestAnimationFrame" in content, "❌ Scroll loop (requestAnimationFrame) not found"
 
 def test_scroll_trigger_config():
     """
-    Ensure ScrollTrigger is synced with Lenis if used.
+    Ensure ScrollTrigger is synced with Lenis via LenisSetup.
     """
     response = client.get("/")
     content = response.text
     
-    # Common pattern for GSAP + Lenis sync
-    # lenis.on('scroll', ScrollTrigger.update)
+    # ES Module pattern: LenisSetup.syncWithGSAP() handles the sync
     if "ScrollTrigger" in content and "lenis" in content.lower():
-        assert "ScrollTrigger.update" in content, "⚠️ ScrollTrigger might not be synced with Lenis scroll events"
+        assert "LenisSetup" in content, "⚠️ LenisSetup not found for GSAP sync"
+        assert "syncWithGSAP" in content, "⚠️ syncWithGSAP not found for ScrollTrigger sync"
 
 if __name__ == "__main__":
     import logging

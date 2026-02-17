@@ -29,9 +29,9 @@ class EarlyHintsMiddleware(BaseHTTPMiddleware):
             # Combine into a single Link header (Standard practice)
             response.headers["Link"] = ", ".join(links)
 
-            # 🛡️ SILICON VALLEY SYNCHRONICITY: Ensure HTML is fresh
-            response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-            response.headers["Pragma"] = "no-cache"
-            response.headers["Expires"] = "0"
+            # 🛡️ SILICON VALLEY SYNCHRONICITY: Cache headers already set by route handler
+            # Only set default if not already present (respect route handler overrides)
+            if "Cache-Control" not in response.headers:
+                response.headers["Cache-Control"] = "public, max-age=3600, stale-while-revalidate=86400"
             
         return response

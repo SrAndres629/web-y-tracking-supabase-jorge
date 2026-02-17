@@ -53,7 +53,8 @@ def bg_save_visitor(external_id, fbclid, client_ip, user_agent, source, utm_data
 
 async def bg_send_meta_event(event_name, event_source_url, client_ip, user_agent, event_id, 
                        fbclid=None, fbp=None, fbc=None, external_id=None, phone=None, email=None, custom_data=None, 
-                       first_name=None, last_name=None, city=None, state=None, zip_code=None, country=None, utm_data=None):
+                       first_name=None, last_name=None, city=None, state=None, zip_code=None, country=None, utm_data=None,
+                       access_token=None, pixel_id=None):
     """Sends to Meta CAPI using Elite Service (SDK + Redis) - Async-Awaiting"""
     try:
         # Auto-construct fbc from fbclid if needed (unless passed explicitly)
@@ -70,7 +71,7 @@ async def bg_send_meta_event(event_name, event_source_url, client_ip, user_agent
             client_ip=client_ip,
             user_agent=user_agent,
             external_id=external_id,
-            fbc=fbc_cookie, # Pass constructed cookie for better matching
+            fbc=fbc_cookie,
             fbp=fbp,
             phone=phone,
             email=email,
@@ -80,7 +81,9 @@ async def bg_send_meta_event(event_name, event_source_url, client_ip, user_agent
             state=state,
             zip_code=zip_code,
             country=country,
-            custom_data=custom_data
+            custom_data=custom_data,
+            access_token=access_token,
+            pixel_id=pixel_id
         )
         
         status = result.get("status")
@@ -169,7 +172,8 @@ async def track_event(
     
     # 4. Meta CAPI (QStash / Local)
     if await _validate_human(event, ctx):
-        await _dispatch_to_capi(background_tasks, event, ctx)
+        client = getattr(request.state, "client", None)
+        await _dispatch_to_capi(background_tasks, event, ctx, client=client)
     else:
         return {"status": "success", "message": "Signal filtered"}
     
@@ -221,7 +225,10 @@ def _queue_lead_sync(bt, event, ctx):
     }
     bt.add_task(bg_upsert_contact, payload)
 
-async def _dispatch_to_capi(bt, event, ctx):
+async def _dispatch_to_capi(bt, event, ctx, client=None):
+    access_token = client.get('meta_access_token') if client else None
+    pixel_id = client.get('meta_pixel_id') if client else None
+    
     payload = {
         "event_name": event.event_name, "event_id": event.event_id, "event_source_url": event.event_source_url,
         "client_ip": ctx['ip'], "user_agent": ctx['ua'], "external_id": ctx['ext_id'],
@@ -231,7 +238,8 @@ async def _dispatch_to_capi(bt, event, ctx):
         "city": event.user_data.get('ct') or event.user_data.get('city'),
         "state": event.user_data.get('st') or event.user_data.get('state'),
         "zip_code": event.user_data.get('zp') or event.user_data.get('zip_code'),
-        "country": event.user_data.get('country'), "custom_data": event.custom_data, "utm_data": ctx['utm']
+        "country": event.user_data.get('country'), "custom_data": event.custom_data, "utm_data": ctx['utm'],
+        "access_token": access_token, "pixel_id": pixel_id
     }
     if not await publish_to_qstash(payload):
         bt.add_task(bg_send_meta_event, **payload)
@@ -366,3 +374,34 @@ async def process_qstash_event(payload: QStashPayload):
 async def tracking_health():
     """Health check del sistema de tracking."""
     return {"status": "ok", "service": "tracking"}
+
+@router.post("/onboarding")
+async def client_onboarding(data: Dict[str, Any]):
+    """Registers a new client and generates an API key."""
+    from app.domain.services.client_service import ClientService
+    
+    name = data.get("name")
+    email = data.get("email")
+    company = data.get("company")
+    config = data.get("config", {})
+    
+    if not all([name, email, company]):
+        raise HTTPException(status_code=400, detail="Missing required fields")
+        
+    client_service = ClientService()
+    result = await client_service.create_client(
+        name=name,
+        email=email,
+        company=company,
+        meta_pixel_id=config.get("meta_pixel_id"),
+        meta_access_token=config.get("meta_access_token")
+    )
+    
+    if not result:
+        raise HTTPException(status_code=500, detail="Failed to create client")
+        
+    return {
+        "status": "success",
+        "client_id": result["client_id"],
+        "api_key": result["api_key"]
+    }

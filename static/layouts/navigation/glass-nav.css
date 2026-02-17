@@ -62,3 +62,11 @@
   border: 1px solid rgb(255 255 255 / 20%);
   transition: transform 0.3s var(--transition-spring);
 }
+
+/* Hero image container for animations */
+.hero-image-container {
+  position: relative;
+  overflow: hidden;
+  transform-origin: center center;
+  will-change: transform;
+}

@@ -9,14 +9,16 @@ def client():
         yield client
 
 def test_global_synchronicity_headers(client):
-    """Verify that the root HTML forces revalidation (No-Cache)"""
+    """Verify that the root HTML uses optimized caching (Silicon Valley Edge-First)"""
     response = client.get("/")
     assert response.status_code == 200
     
-    # Silicon Valley Standard Headers
-    assert response.headers.get("Cache-Control") == "no-cache, no-store, must-revalidate"
-    assert response.headers.get("Pragma") == "no-cache"
-    assert response.headers.get("Expires") == "0"
+    # Silicon Valley Standard: Optimized Edge Caching
+    # HTML: 1h browser cache + 24h stale-while-revalidate
+    cache_control = response.headers.get("Cache-Control", "")
+    assert "public" in cache_control, "Cache should be public for CDN"
+    assert "max-age=3600" in cache_control, "Should cache for 1 hour"
+    assert "stale-while-revalidate=86400" in cache_control, "Should allow stale-while-revalidate"
 
 def test_deterministic_asset_versioning(client):
     """Verify that assets include a numeric ?v= parameter"""

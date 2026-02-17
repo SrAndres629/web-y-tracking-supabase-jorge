@@ -33,11 +33,15 @@ async def admin_dashboard(request: Request, key: str = ""):
     get_visitors_query = GetAllVisitorsQuery(list_visitors=legacy.get_all_visitors)
     visitors = await get_visitors_query.execute(limit=50)
     
+    from app.database import get_emq_stats
+    emq_stats = get_emq_stats(limit=10)
+    
     return templates.TemplateResponse(
         request=request,
         name="pages/admin/dashboard.html",
         context={
             "visitors": visitors,
+            "emq_stats": emq_stats,
             "admin_key": key
         }
     )

@@ -38,7 +38,15 @@ export const SliderManager = {
     const resizeImg = container.querySelector('.foreground-img');
     const thumb = container.querySelector('.slider-thumb');
 
-    if (!range || !resizeImg) return;
+    // ✅ Robust Validation: Log error if crucial elements are missing
+    if (!range) {
+      console.error('[SliderManager] .slider-range NOT FOUND in container', container);
+      return;
+    }
+    if (!resizeImg) {
+      console.error('[SliderManager] .foreground-img NOT FOUND in container', container);
+      return;
+    }
 
     const updateSlider = () => {
       const value = range.value;

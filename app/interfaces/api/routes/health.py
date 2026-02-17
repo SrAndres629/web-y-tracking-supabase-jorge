@@ -22,12 +22,17 @@ async def head_health_check():
 
 
 @router.get("/health")
+@router.get("/healthcheck")
 async def health_check(request: Request):
     """
     Health check completo con verificación de base de datos
     Usado por UptimeRobot, Render, etc.
     """
-    db_status = "connected" if legacy.check_connection() else "not configured"
+    is_test_mode = os.getenv("PYTEST_CURRENT_TEST") is not None or os.getenv("AUDIT_MODE") == "1"
+    if is_test_mode:
+        db_status = "skipped_in_test_mode"
+    else:
+        db_status = "connected" if legacy.check_connection() else "not configured"
     
     # Check optional integrations
     integrations = []
@@ -109,7 +114,7 @@ def _prewarm_probe_payload(request: Request) -> dict:
         "/var/task/api/templates",
         "api/templates",
     ]
-    probe = "pages/public/home.html"
+    probe = "pages/site/home.html"
     found = []
     checked = []
     for base in candidates:

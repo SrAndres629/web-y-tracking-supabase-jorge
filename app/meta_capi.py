@@ -150,6 +150,10 @@ class EliteMetaCAPIService:
                 fbclid=None,
                 email=user_data.email,
                 phone=user_data.phone,
+                first_name=user_data.first_name,
+                last_name=user_data.last_name,
+                city=user_data.city,
+                country=user_data.country,
                 custom_data=(custom_data.to_dict() if custom_data else None),
             )
             return {"status": "success" if ok else "error", "method": "http_fallback", "event_id": event_id}

@@ -1,0 +1,121 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+<!-- ========== TRACKING MOTOR HERO ========== -->
+<section class="min-h-screen flex items-center justify-center bg-[#050505] relative overflow-hidden pt-20">
+    <!-- Orbital Glows -->
+    <div
+        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-luxury-gold/5 rounded-full blur-[150px] animate-pulse">
+    </div>
+
+    <div class="container mx-auto px-6 relative z-10 grid md:grid-cols-2 gap-12 items-center">
+        <div class="reveal-text">
+            <span class="text-luxury-gold text-xs font-bold uppercase tracking-[0.5em] mb-6 block">The Engine of
+                Growth</span>
+            <h1 class="font-serif text-5xl md:text-7xl text-white leading-tight mb-8">
+                CAPI Tracking <br />
+                <span class="text-gradient-gold italic">Atomic Motor</span>
+            </h1>
+            <p class="text-luxury-text text-xl mb-10 leading-relaxed max-w-lg">
+                Deja de perder el 40% de tus datos por bloqueadores y cookies. Recupera la atribución real y escala tus
+                campañas con inteligencia de grado militar.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4">
+                <a href="/onboarding"
+                    class="px-8 py-4 bg-luxury-gold text-luxury-black font-bold rounded-lg shadow-lg shadow-luxury-gold/20 hover:scale-[1.02] transition-transform flex items-center justify-center">
+                    Comenzar Ahora <i class="fas fa-rocket ml-2"></i>
+                </a>
+                <a href="#demo"
+                    class="btn-outline-gold px-8 py-5 rounded-full text-white font-bold uppercase tracking-widest text-xs text-center border-white/20 hover:border-luxury-gold">
+                    Ver Demo en Vivo
+                </a>
+            </div>
+
+            <div class="mt-12 flex items-center gap-6">
+                <div class="flex -space-x-3">
+                    <img src="https://i.pravatar.cc/100?u=1" class="w-10 h-10 rounded-full border-2 border-black"
+                        alt="user">
+                    <img src="https://i.pravatar.cc/100?u=2" class="w-10 h-10 rounded-full border-2 border-black"
+                        alt="user">
+                    <img src="https://i.pravatar.cc/100?u=3" class="w-10 h-10 rounded-full border-2 border-black"
+                        alt="user">
+                </div>
+                <p class="text-luxury-text/60 text-xs tracking-wide">
+                    +500,000 eventos procesados mensualmente <br />
+                    con <span class="text-luxury-gold font-bold">EMQ Score 9.2/10</span>
+                </p>
+            </div>
+        </div>
+
+        <div class="relative group">
+            <div
+                class="absolute inset-0 bg-luxury-gold/20 blur-[100px] group-hover:bg-luxury-gold/30 transition-all duration-700">
+            </div>
+            <div class="relative glass-panel rounded-3xl p-4 border border-white/10 overflow-hidden shadow-2xl">
+                <!-- Abstract UI Representation of the Engine -->
+                <div
+                    class="bg-black/80 rounded-2xl p-6 min-h-[400px] font-mono text-[10px] text-luxury-gold/80 overflow-hidden">
+                    <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
+                        <div class="flex gap-2">
+                            <div class="w-2 h-2 rounded-full bg-red-500"></div>
+                            <div class="w-2 h-2 rounded-full bg-yellow-500"></div>
+                            <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                        </div>
+                        <span class="text-[9px] uppercase tracking-tighter opacity-50">capi_engine_monitor.v3</span>
+                    </div>
+                    <div class="space-y-2 opacity-90">
+                        <p class="text-white">> Init Anti-Gravity.Core_v177...</p>
+                        <p>> Handshaking Meta Graph API v21.0... <span class="text-green-400">[OK]</span></p>
+                        <p>> Redis Deduplication Layer: ACTIVE</p>
+                        <p>> Processing Event: <span class="text-blue-400">"Purchase"</span></p>
+                        <p class="pl-4 text-luxury-text/50">{ "event_id": "evt_88535...", "em": "hashed_...", "ph":
+                            "hashed_..." }</p>
+                        <p>> Signal Quality Audit: <span class="text-luxury-gold font-bold">10.0/10 EXCELLENT</span></p>
+                        <div
+                            class="h-24 w-full bg-gradient-to-r from-luxury-gold/10 to-transparent mt-4 rounded border-l border-luxury-gold animate-pulse">
+                        </div>
+                        <p class="mt-4">> Real-time attribution synced.</p>
+                        <p class="text-green-400 animate-pulse">_</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% include "sections/pricing_tracking.html" %}
+
+<!-- ========== FEATURES GRID ========== -->
+<section class="py-24 bg-transparent">
+    <div class="container mx-auto px-6">
+        <div class="grid md:grid-cols-4 gap-8">
+            <div class="p-8 glass-panel border border-white/5 rounded-2xl">
+                <i class="fas fa-shield-alt text-luxury-gold text-2xl mb-6"></i>
+                <h4 class="text-white font-bold mb-4">Zero Data Loss</h4>
+                <p class="text-luxury-text text-sm">Resiliencia garantizada con colas de reintento infinitas y backoff
+                    exponencial.</p>
+            </div>
+            <div class="p-8 glass-panel border border-white/5 rounded-2xl">
+                <i class="fas fa-fingerprint text-luxury-gold text-2xl mb-6"></i>
+                <h4 class="text-white font-bold mb-4">Atomic IDs</h4>
+                <p class="text-luxury-text text-sm">Deduplicación perfecta entre navegador y servidor para evitar conteo
+                    doble.</p>
+            </div>
+            <div class="p-8 glass-panel border border-white/5 rounded-2xl">
+                <i class="fas fa-chart-line text-luxury-gold text-2xl mb-6"></i>
+                <h4 class="text-white font-bold mb-4">EMQ Booster</h4>
+                <p class="text-luxury-text text-sm">Mejora dinámica de parámetros de matching para bajar el CPA hasta un
+                    25%.</p>
+            </div>
+            <div class="p-8 glass-panel border border-white/5 rounded-2xl">
+                <i class="fas fa-bolt text-luxury-gold text-2xl mb-6"></i>
+                <h4 class="text-white font-bold mb-4">Ultra Low Latency</h4>
+                <p class="text-luxury-text text-sm">Procesamiento en <100ms para mantener la performance de pauta al
+                        máximo.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% include "sections/cta_final.html" %}
+{% endblock %}

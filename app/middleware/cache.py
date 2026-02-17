@@ -23,10 +23,12 @@ class CacheControlMiddleware(BaseHTTPMiddleware):
             if any(path.endswith(ext) for ext in [".css", ".js", ".png", ".jpg", ".jpeg", ".webp", ".svg", ".woff", ".woff2"]):
                 response.headers["Cache-Control"] = "public, max-age=2592000, stale-while-revalidate=86400"
         
-        # 2. No Cache for Dynamic Pages (Ensures fresh content)
+        # 2. Cache for Dynamic Pages (Only if not already set by route handler)
         elif not path.startswith("/static") and response.status_code == 200:
             if "text/html" in response.headers.get("content-type", ""):
-                response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
-                response.headers["Pragma"] = "no-cache"
+                # Only set default headers if Cache-Control is not already set
+                if "Cache-Control" not in response.headers:
+                    response.headers["Cache-Control"] = "public, max-age=3600, stale-while-revalidate=86400"
+                    response.headers["CDN-Cache-Control"] = "public, max-age=3600"
 
         return response

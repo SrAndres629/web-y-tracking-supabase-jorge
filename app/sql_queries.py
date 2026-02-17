@@ -4,7 +4,51 @@
 # =================================================================
 
 # --- DDL: Table Initialization ---
+CREATE_TABLE_SITE_CONTENT = """
+    CREATE TABLE IF NOT EXISTS site_content (
+        key TEXT PRIMARY KEY,
+        value JSONB,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+"""
 # Note: Designed to work with both PostgreSQL and SQLite (with some python-side logic for types)
+
+CREATE_TABLE_CLIENTS = """
+    CREATE TABLE IF NOT EXISTS clients (
+        id {id_type_pk},
+        name TEXT NOT NULL,
+        email TEXT UNIQUE,
+        company TEXT,
+        meta_pixel_id TEXT,
+        meta_access_token TEXT,
+        plan TEXT DEFAULT 'starter',
+        status TEXT DEFAULT 'active',
+        created_at TIMESTAMP DEFAULT {timestamp_default}
+    )
+"""
+
+CREATE_TABLE_API_KEYS = """
+    CREATE TABLE IF NOT EXISTS api_keys (
+        id {id_type_serial},
+        client_id {lead_id_type} REFERENCES clients(id),
+        key_hash TEXT UNIQUE NOT NULL,
+        name TEXT,
+        status TEXT DEFAULT 'active',
+        created_at TIMESTAMP DEFAULT {timestamp_default}
+    )
+"""
+
+CREATE_TABLE_EMQ_STATS = """
+    CREATE TABLE IF NOT EXISTS emq_stats (
+        id {id_type_serial},
+        client_id {lead_id_type} REFERENCES clients(id),
+        event_name TEXT NOT NULL,
+        score FLOAT NOT NULL,
+        payload_size INTEGER,
+        has_pii BOOLEAN,
+        created_at TIMESTAMP DEFAULT {timestamp_default}
+    )
+"""
 
 CREATE_TABLE_BUSINESS_KNOWLEDGE = """
     CREATE TABLE IF NOT EXISTS business_knowledge (
@@ -33,7 +77,7 @@ CREATE_TABLE_VISITORS = """
         utm_content TEXT,
         email TEXT,
         phone TEXT,
-        timestamp TIMESTAMP DEFAULT {timestamp_default}
+        created_at TIMESTAMP DEFAULT {timestamp_default}
     );
 """
 
@@ -64,10 +108,9 @@ CREATE_TABLE_CONTACTS = """
         service_interest TEXT,
         service_booked_date TIMESTAMP,
         appointment_count INTEGER DEFAULT 0,
-        
+        last_interaction TIMESTAMP DEFAULT {timestamp_default},
         created_at TIMESTAMP DEFAULT {timestamp_default},
-        updated_at TIMESTAMP,
-        last_interaction TIMESTAMP DEFAULT {timestamp_default}
+        updated_at TIMESTAMP
     );
 """
 

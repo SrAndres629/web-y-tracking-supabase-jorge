@@ -50,8 +50,23 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         # 5. XSS Protection (Legacy but good defense in depth)
         response.headers["X-XSS-Protection"] = "1; mode=block"
 
-        # NOTE: Content-Security-Policy (CSP) is NOT included here yet.
-        # Adding strict CSP breaks GTM/Meta/Clarity scripts immediately.
-        # CSP requires a separate, careful implementation phase.
+        # 6. Isolate the page from other origins (COOP)
+        response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
+
+        # 7. Content Security Policy (Report-Only to avoid breaking things)
+        # This policy is a starting point. It allows inline scripts/styles and scripts 
+        # from any source, which is not secure but allows us to get violation reports.
+        # The 'report-uri' should be replaced with a real endpoint to collect reports.
+        csp_policy = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' https:; "
+            "style-src 'self' 'unsafe-inline' https:; "
+            "img-src 'self' data: https:; "
+            "font-src 'self' https:; "
+            "connect-src 'self' https:; "
+            "frame-src 'self' https:; "
+            "report-uri /api/csp-violations;"
+        )
+        response.headers["Content-Security-Policy-Report-Only"] = csp_policy
         
         return response

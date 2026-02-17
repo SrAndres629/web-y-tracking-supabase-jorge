@@ -13,6 +13,7 @@ from typing import Optional, Dict, Any
 import logging
 
 from app.config import settings
+from app.database import save_emq_score
 
 # 🚀 Redis Cache for Ultra-Fast Deduplication (MVP Phase 1)
 try:
@@ -141,10 +142,11 @@ from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_excep
 from app.domain.services.emq_monitor import emq_monitor
 from app.domain.validation.event_validator import validator as event_validator  # Step 4 MVP
 
-def _log_emq(event_name: str, payload: Dict[str, Any]):
-    """Calculates and logs Event Match Quality Score."""
+def _log_emq(event_name: str, payload: Dict[str, Any], client_id: Optional[str] = None):
+    """Calculates, logs, and persists Event Match Quality Score."""
     try:
-        user_data = payload.get("data", [{}])[0].get("user_data", {})
+        data_block = payload.get("data", [{}])[0]
+        user_data = data_block.get("user_data", {})
         score = emq_monitor.evaluate(user_data)
         level = emq_monitor.get_quality_level(score)
         
@@ -152,6 +154,13 @@ def _log_emq(event_name: str, payload: Dict[str, Any]):
             logger.warning(f"📉 [EMQ WARNING] {event_name}: Score {score}/10 ({level}) - Missing Strong IDs")
         else:
             logger.info(f"📊 [EMQ] {event_name}: {score}/10 ({level})")
+            
+        # 🚀 Persist for Dashboard
+        import json
+        payload_size = len(json.dumps(payload))
+        has_pii = any(k in user_data for k in ['em', 'ph', 'fn', 'ln'])
+        
+        save_emq_score(client_id, event_name, score, payload_size, has_pii)
             
         return score
     except Exception as e:
@@ -173,7 +182,12 @@ def _build_payload(  # noqa: C901
     # 🚀 NEW: Advanced Matching Enhancement
     country: Optional[str] = None,
     city: Optional[str] = None,
-    fb_browser_id: Optional[str] = None
+    state: Optional[str] = None,
+    zip_code: Optional[str] = None,
+    first_name: Optional[str] = None,
+    last_name: Optional[str] = None,
+    fb_browser_id: Optional[str] = None,
+    access_token: Optional[str] = None
 ) -> Dict[str, Any]:
     """Constructs the JSON payload for Meta CAPI with Enhanced Matching"""
     
@@ -213,6 +227,14 @@ def _build_payload(  # noqa: C901
     
     if city:
         user_data["ct"] = hash_data(city.lower().replace(" ", ""))
+    if state:
+        user_data["st"] = hash_data(state.lower().replace(" ", ""))
+    if zip_code:
+        user_data["zp"] = hash_data(zip_code.replace(" ", ""))
+    if first_name:
+        user_data["fn"] = hash_data(first_name.lower())
+    if last_name:
+        user_data["ln"] = hash_data(last_name.lower())
     
     # Event Data
     event_data = {
@@ -230,10 +252,12 @@ def _build_payload(  # noqa: C901
     # Wrapper
     payload = {
         "data": [event_data],
-        "access_token": settings.META_ACCESS_TOKEN
+        "access_token": access_token or settings.META_ACCESS_TOKEN
     }
     
-    if settings.TEST_EVENT_CODE:
+    # Only send test_event_code if NOT directly in production (Safety Guard)
+    is_production = os.getenv("VERCEL_ENV") == "production"
+    if settings.TEST_EVENT_CODE and not is_production:
         payload["test_event_code"] = settings.TEST_EVENT_CODE
         
     return payload
@@ -255,28 +279,49 @@ def send_event(
     external_id: Optional[str] = None,
     phone: Optional[str] = None,
     email: Optional[str] = None,
-    custom_data: Optional[Dict[str, Any]] = None
+    custom_data: Optional[Dict[str, Any]] = None,
+    # 🚀 NEW: Advanced Matching
+    country: Optional[str] = None,
+    city: Optional[str] = None,
+    state: Optional[str] = None,
+    zip_code: Optional[str] = None,
+    first_name: Optional[str] = None,
+    last_name: Optional[str] = None,
+    # Config
+    access_token: Optional[str] = None,
+    pixel_id: Optional[str] = None,
+    client_id: Optional[str] = None
 ) -> bool:
-    """Synchronous Sender (For Celery Tasks) - Uses Persistent Connection Pooling"""
+    """Sends event to Meta CAPI via HTTP (Sync)"""
     
-    # 🚀 Redis Deduplication Check (Ultra-fast, <5ms)
-    # Using 'try_consume_event' instead of 'deduplicate_event'
-    # returns True if NEW, logic reversed from 'is_duplicate'
+    # 1. Deduplication
     if not try_consume_event(event_id, event_name):
-        logger.info(f"🔄 [DEDUP] Skipped duplicate {event_name}: {event_id[:16]}...")
-        return True  # Return True since original was already sent
-    
+        logger.info(f"🔄 [DEDUP] Skipped duplicate {event_name}")
+        return True
+
     # Sandbox Check
     if settings.META_SANDBOX_MODE:
         logger.info(f"🛡️ [SANDBOX] Intercepted {event_name}")
         return True
 
+    # 2. Build Payload
     payload = _build_payload(
         event_name, event_source_url, client_ip, user_agent, event_id,
-        fbclid, fbp, external_id, phone, email, custom_data
+        fbclid, fbp, external_id, phone, email, custom_data,
+        country=country, city=city, state=state, zip_code=zip_code,
+        first_name=first_name, last_name=last_name,
+        access_token=access_token
     )
     
-    # 🔍 VALIDATION: Check strict schema
+    # 3. Destination URL
+    api_url = settings.meta_api_url
+    if pixel_id:
+        api_url = f"https://graph.facebook.com/v21.0/{pixel_id}/events"
+
+    # 4. EMQ Audit
+    _log_emq(event_name, payload, client_id=client_id)
+
+    # 5. VALIDATION
     if not event_validator.validate_payload(payload):
         logger.error(f"❌ [VALIDATION FAILED] Payload rejected for {event_name}")
         # In strict mode, we might return False. For now, log and proceed (Meta might accept partial) or block?
@@ -284,11 +329,8 @@ def send_event(
         # return False 
         pass 
 
-    # 📊 Insight: Log Quality Score
-    _log_emq(event_name, payload)
-
     try:
-        response = sync_client.post(settings.meta_api_url, json=payload)
+        response = sync_client.post(api_url, json=payload)
         
         if response.status_code == 200:
             logger.info(f"[META CAPI] ✅ {event_name} sent via HTTP/2")
@@ -313,14 +355,22 @@ async def send_event_async(
     external_id: Optional[str] = None,
     phone: Optional[str] = None,
     email: Optional[str] = None,
-    custom_data: Optional[Dict[str, Any]] = None
+    custom_data: Optional[Dict[str, Any]] = None,
+    # 🚀 NEW: Advanced Matching
+    country: Optional[str] = None,
+    city: Optional[str] = None,
+    state: Optional[str] = None,
+    zip_code: Optional[str] = None,
+    first_name: Optional[str] = None,
+    last_name: Optional[str] = None,
+    # Config
+    access_token: Optional[str] = None,
+    pixel_id: Optional[str] = None,
+    client_id: Optional[str] = None
 ) -> bool:
     """Asynchronous Sender (For FastAPI Routes) - Non-Blocking"""
 
-    # Deduplication Check FIRST (Async context?)
-    # Ideally dedup logic is sync (Redis calls in threaded client are fast) 
-    # but strictly async redis is better. Using sync wrapper for now as upstash library is sync by default unless async client used.
-    # We'll use the sync wrapper inside async function (non-blocking enough given avg redis latency <50ms)
+    # 1. Deduplication
     if not try_consume_event(event_id, event_name):
          logger.info(f"🔄 [DEDUP ASYNC] Skipped duplicate {event_name}")
          return True
@@ -329,25 +379,33 @@ async def send_event_async(
         logger.info(f"🛡️ [SANDBOX ASYNC] Intercepted {event_name}")
         return True
 
+    # 2. Build Payload
     payload = _build_payload(
         event_name, event_source_url, client_ip, user_agent, event_id,
-        fbclid, fbp, external_id, phone, email, custom_data
+        fbclid, fbp, external_id, phone, email, custom_data,
+        country=country, city=city, state=state, zip_code=zip_code,
+        first_name=first_name, last_name=last_name,
+        access_token=access_token
     )
+    
+    # 3. Destination URL & Audit
+    api_url = settings.meta_api_url
+    if pixel_id:
+        api_url = f"https://graph.facebook.com/v21.0/{pixel_id}/events"
 
-    # 🔍 VALIDATION
+    _log_emq(event_name, payload, client_id=client_id)
+
+    # 4. VALIDATION
     if not event_validator.validate_payload(payload):
          logger.error(f"❌ [VALIDATION FAILED] Payload rejected for {event_name}")
          pass
 
-    # 📊 Insight: Log Quality Score
-    _log_emq(event_name, payload)
-
     try:
         if async_client is None:
             async with httpx.AsyncClient(timeout=timeout, http2=True) as client:
-                response = await client.post(settings.meta_api_url, json=payload)
+                response = await client.post(api_url, json=payload)
         else:
-            response = await async_client.post(settings.meta_api_url, json=payload)
+            response = await async_client.post(api_url, json=payload)
         
         if response.status_code == 200:
             logger.info(f"[META CAPI ASYNC] ✅ {event_name} sent via HTTP/2")

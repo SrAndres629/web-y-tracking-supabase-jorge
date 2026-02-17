@@ -8,9 +8,9 @@
     <link rel="icon" type="image/svg+xml" href="/static/assets/images/branding/luxury_logo.svg?v={{ system_version }}">
 
     <!-- 🛡️ GLOBAL CACHE INVALIDATION (Diamond Standard) -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
+    <!-- 🛡️ OPTIMIZED CACHE POLICY (Smart Revalidation) -->
+    <!-- HTML: Cache for 1h, revalidate after -->
+    <meta http-equiv="Cache-Control" content="public, max-age=3600, stale-while-revalidate=86400">
 
     <!-- Component-specific styles loaded on demand -->
 
@@ -63,10 +63,6 @@
     {% block extra_schema %}{% endblock %}
 
     <!-- Cloudflare Zaraz (Offloaded Tracking) -->
-    <!-- Managed via Cloudflare Dashboard -->
-
-    <!-- Cloudflare Zaraz (Offloaded Tracking) -->
-    <!-- Managed via Cloudflare Dashboard -->
 
     <!-- Tailwind CSS (Local Build - Legacy/Fallback) -->
     <link rel="preload" href="/static/dist/css/app.min.css?v={{ system_version }}" as="style">
@@ -78,7 +74,12 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Async Font Awesome -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style"
+        onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    </noscript>
     <!-- Cloudflare Turnstile (Anti-Bot Protection) -->
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer data-cfasync="false"></script>
 
@@ -142,12 +143,26 @@
     {% block extra_head %}{% endblock %}
 
     <!-- Dynamic Configuration (Server-side rendered data) -->
+    {# Transform services list to dict indexed by id for frontend tracking #}
+    {%- set services_dict = {} -%}
+    {%- for svc in services -%}
+    {%- set _ = services_dict.update({svc.id: {
+    "name": svc.title,
+    "category": svc.subtitle | default('Servicio'),
+    "price": 0,
+    "image": svc.image | default('')
+    }}) -%}
+    {%- endfor -%}
+    {# Add powder_brows as alias for microblading for tracking consistency #}
+    {%- if 'microblading' in services_dict and 'powder_brows' not in services_dict -%}
+    {%- set _ = services_dict.update({"powder_brows": services_dict.microblading}) -%}
+    {%- endif -%}
     <script type="application/json" id="app-config">
         {
             "META_PIXEL_ID": "{{ pixel_id }}",
             "META_EVENT_ID": "{{ pageview_event_id }}",
             "EXTERNAL_ID": "{{ external_id }}",
-            "SERVICES_CONFIG": {{ services | tojson }},
+            "SERVICES_CONFIG": {{ services_dict | tojson }},
             "CONTACT_CONFIG": {{ contact | tojson }}
         }
     </script>
@@ -207,9 +222,51 @@
     <!-- Footer -->
     {% include 'components/footer.html' ignore missing %}
 
-    <!-- Global Scripts (Atomic Architecture v3.0) -->
-    <script type="module" src="/static/engines/legacy-adapter.js?v={{ system_version }}" data-cfasync="false"
-        crossorigin="anonymous"></script>
+    <!-- Global Scripts (Atomic Architecture v4.0 - ES Modules) -->
+    <!-- ✅ ES Modules para siempre tener código actualizado -->
+    <script type="module" id="scroll-init">
+        import { TrackingEngine } from '/static/engines/tracking/index.js?v={{ system_version }}';
+        import { SliderManager } from '/static/engines/ui/slider-manager.js?v={{ system_version }}';
+        import { AOSReplacement } from '/static/engines/motion/aos-replacement.js?v={{ system_version }}';
+        import { LenisSetup } from '/static/engines/motion/lenis-setup.js?v={{ system_version }}';
+
+        // Wait for DOM
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initEngines);
+        } else {
+            initEngines();
+        }
+
+        function initEngines() {
+            const debug = new URLSearchParams(window.location.search).has('debug_pixel');
+            
+            // 1. Lenis Smooth Scroll + GSAP Sync
+            const lenis = LenisSetup.init();
+            if (lenis) {
+                LenisSetup.syncWithGSAP();
+                // Expose globally for debugging
+                window.lenis = lenis;
+            }
+            
+            // 2. Tracking Engine (Zaraz + CAPI)
+            if (typeof TrackingEngine !== 'undefined') {
+                TrackingEngine.init({ debug: debug });
+                window.TrackingEngine = TrackingEngine;
+            }
+            
+            // 3. Sliders (Before/After)
+            if (typeof SliderManager !== 'undefined') {
+                SliderManager.init();
+            }
+            
+            // 4. Animaciones (AOS Replacement)
+            if (typeof AOSReplacement !== 'undefined') {
+                AOSReplacement.init();
+            }
+            
+            if (debug) console.log('[MainEngine] All engines initialized');
+        }
+    </script>
     {% block extra_scripts %}{% endblock %}
     <!-- Vercel Services (Updated) -->
     <script>

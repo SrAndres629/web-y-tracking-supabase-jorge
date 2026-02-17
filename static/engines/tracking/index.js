@@ -15,6 +15,8 @@ import { TrackingObservers } from './observers.js';
 import { ConversionHandler, handleConversion } from './conversion.js';
 import { UUID } from '../core/uuid.js';
 import { Storage } from '../core/storage.js';
+import { ConsentManager, ConsentConfig } from '../privacy/consent-manager.js';
+import { ConsentBanner } from '../privacy/cookie-banner.js';
 
 const TrackingEngine = {
   initialized: false,
@@ -33,6 +35,10 @@ const TrackingEngine = {
 
     this.debugMode = options.debug || new URLSearchParams(window.location.search).has('debug_pixel');
 
+    // 0. Privacy & Consent (Blocking)
+    const consent = ConsentManager.init();
+    ConsentBanner.init(consent);
+
     // 1. Identity (UUIDs, cookies)
     const identity = IdentityManager.init();
     this._log('🆔 Identity:', identity.externalId);
@@ -48,8 +54,16 @@ const TrackingEngine = {
     TrackingObservers.init();
 
     // 5. PageView - Fire Pixel (Frontend) with shared eventId for Deduplication
-    // Note: CAPI is handled by Backend for PageView.
-    PixelBridge.track('PageView', {}, { eventId: identity.eventId });
+    // Note: Zaraz handles Pixel PageView automatically. We send to CAPI manually for robustness.
+
+    // ✅ Send to CAPI (Server-Side)
+    // Always send PageView (legitimate interest for security/analytics) BUT respect flags if strictly required
+    // For MVP: Send CAPI event, let backend filter based on flags
+    CAPI.track('PageView', {
+      event_id: identity.eventId,
+      source: 'landing',
+      consent: consent.preferences // Pass consent state to backend
+    });
 
     this._log('📊 [Tracking Engine] Active (Zaraz + CAPI)');
 

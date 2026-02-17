@@ -51,7 +51,7 @@ def get_content_cache() -> ContentCachePort:
     
     settings = get_settings()
     if settings.redis.is_configured:
-    return RedisContentCache()
+        return RedisContentCache()
     return InMemoryContentCache()
 
 

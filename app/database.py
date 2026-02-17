@@ -182,13 +182,15 @@ def get_cursor() -> Any:
 # =================================================================
 
 def init_tables() -> bool:
-    """Crea tablas si no existen, sincronizado con init_crm_master_clean.sql v2.0"""
+    """Crea tablas si no existen, sincronizado con atomic schema v3.0"""
     try:
+        config = _get_db_config()
+        _create_core_tables(config)
+        _create_crm_tables(config)
+        
         with get_cursor() as cur:
-            config = _get_db_config()
-            _create_core_tables(cur, config)
-            _create_crm_tables(cur, config)
             _run_column_migrations(cur, config['status_type'])
+            
         logger.info(f"✅ Tablas sincronizadas ({BACKEND})")
         return True
     except Exception as e:
@@ -200,7 +202,7 @@ def _get_db_config():
         return {
             "id_type_uuid": "UUID PRIMARY KEY DEFAULT gen_random_uuid()",
             "id_type_serial": "SERIAL PRIMARY KEY",
-            "timestamp_default": "CURRENT_TIMESTAMP",
+            "timestamp_default": "CURRENT_TIMESTAMP", # Queries should use DEFAULT CURRENT_TIMESTAMP
             "status_type": "lead_status DEFAULT 'new'",
             "lead_id_type": "UUID",
             "id_type_pk": "UUID PRIMARY KEY DEFAULT gen_random_uuid()"
@@ -214,49 +216,183 @@ def _get_db_config():
         "id_type_pk": "TEXT PRIMARY KEY"
     }
 
-def _create_core_tables(cur, cf):
-    if BACKEND == "postgres":
-        cur.execute("""
-            DO $$ BEGIN
-                CREATE TYPE lead_status AS ENUM (
-                    'new', 'interested', 'nurturing', 'ghost', 'booked', 
-                    'client_active', 'client_loyal', 'archived'
-                );
-            EXCEPTION WHEN duplicate_object THEN null; END $$;
-        """)
+def _create_core_tables(cf):
+    with get_db_connection() as conn:
+        # Site Content (CMS)
+        try:
+            cur = conn.cursor()
+            cur.execute(queries.CREATE_TABLE_SITE_CONTENT)
+            if BACKEND == "postgres":
+                cur.execute("ALTER TABLE site_content ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+            conn.commit()
+        except Exception as e: 
+            if conn: conn.rollback()
+        
+        # Create PostGIS (Postgres only)
+        if BACKEND == "postgres":
+            try:
+                cur = conn.cursor()
+                cur.execute("CREATE EXTENSION IF NOT EXISTS postgis")
+                conn.commit()
+            except Exception as e: 
+                if conn: conn.rollback()
+            
+            # Type guards
+            try:
+                cur = conn.cursor()
+                cur.execute("""
+                    DO $$ BEGIN
+                        CREATE TYPE lead_status AS ENUM ('new', 'contacted', 'qualified', 'converted', 'lost');
+                    EXCEPTION WHEN duplicate_object THEN null; END $$;
+                """)
+                conn.commit()
+            except Exception as e: 
+                if conn: conn.rollback()
 
-    cur.execute(queries.CREATE_TABLE_BUSINESS_KNOWLEDGE.format(
-        id_type_serial=cf['id_type_serial'], timestamp_default=cf['timestamp_default']
-    ))
-    cur.execute(queries.CREATE_INDEX_KNOWLEDGE_SLUG)
+        # Multi-tenant tables
+        for q_name, q_sql in [("clients", queries.CREATE_TABLE_CLIENTS), ("api_keys", queries.CREATE_TABLE_API_KEYS), ("emq_stats", queries.CREATE_TABLE_EMQ_STATS)]:
+            try:
+                cur = conn.cursor()
+                cur.execute(q_sql.format(
+                    id_type_pk=cf['id_type_pk'], 
+                    id_type_serial=cf['id_type_serial'], 
+                    lead_id_type=cf['lead_id_type'], 
+                    timestamp_default=cf['timestamp_default']
+                ))
+                conn.commit()
+            except Exception as e:
+                if conn: conn.rollback()
+                logger.warning(f"⚠️ Table creation skip/error ({q_name}): {e}")
 
-    cur.execute(queries.CREATE_TABLE_VISITORS.format(
-        id_type_serial=cf['id_type_serial'], timestamp_default=cf['timestamp_default']
-    ))
-    cur.execute(queries.CREATE_INDEX_VISITORS_EXTERNAL_ID)
+        # Migration for new columns in clients
+        try:
+            cur = conn.cursor()
+            cur.execute("ALTER TABLE clients ADD COLUMN IF NOT EXISTS email TEXT UNIQUE")
+            cur.execute("ALTER TABLE clients ADD COLUMN IF NOT EXISTS company TEXT")
+            conn.commit()
+        except Exception as e:
+            if conn: conn.rollback()
+            logger.warning(f"⚠️ Clients migration skip/error: {e}")
 
-def _create_crm_tables(cur, cf):
-    cur.execute(queries.CREATE_TABLE_CONTACTS.format(
-        id_type_primary_key=cf['id_type_pk'], 
-        status_type=cf['status_type'],
-        timestamp_default=cf['timestamp_default']
-    ))
-    cur.execute(queries.CREATE_INDEX_CONTACTS_WHATSAPP)
-    cur.execute(queries.CREATE_INDEX_CONTACTS_STATUS)
-    
-    cur.execute(queries.CREATE_TABLE_MESSAGES.format(
-        id_type_primary_key=cf['id_type_pk'], timestamp_default=cf['timestamp_default']
-    ))
-    cur.execute(queries.CREATE_INDEX_MESSAGES_CONTACT_ID)
+        # Business Knowledge
+        try:
+            cur = conn.cursor()
+            cur.execute(queries.CREATE_TABLE_BUSINESS_KNOWLEDGE.format(
+                id_type_serial=cf['id_type_serial'], timestamp_default=cf['timestamp_default']
+            ))
+            cur.execute(queries.CREATE_INDEX_KNOWLEDGE_SLUG)
+            conn.commit()
+        except Exception as e:
+            if conn: conn.rollback()
+            logger.warning(f"⚠️ Business knowledge skip/error: {e}")
 
-    cur.execute(queries.CREATE_TABLE_APPOINTMENTS.format(
-        id_type_serial=cf['id_type_serial'], timestamp_default=cf['timestamp_default']
-    ))
+        # Visitors
+        try:
+            cur = conn.cursor()
+            cur.execute(queries.CREATE_TABLE_VISITORS.format(
+                id_type_serial=cf['id_type_serial'], timestamp_default=cf['timestamp_default']
+            ))
+            cur.execute(queries.CREATE_INDEX_VISITORS_EXTERNAL_ID)
+            conn.commit()
+        except Exception as e:
+            if conn: conn.rollback()
+            logger.warning(f"⚠️ Visitors table creation skip/error: {e}")
 
-    cur.execute(queries.CREATE_TABLE_INTERACTIONS.format(
-        id_type_serial=cf['id_type_serial'], lead_id_type=cf['lead_id_type'], timestamp_default=cf['timestamp_default']
-    ))
-    cur.execute(queries.CREATE_INDEX_INTERACTIONS_LEAD_ID)
+def save_emq_score(client_id: Optional[str], event_name: str, score: float, payload_size: int, has_pii: bool):
+    """Save EMQ score to database for dashboard metrics."""
+    query = """
+    INSERT INTO emq_stats (client_id, event_name, score, payload_size, has_pii)
+    VALUES (%s, %s, %s, %s, %s)
+    """
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, (client_id, event_name, score, payload_size, has_pii))
+            cursor.close()
+    except Exception as e:
+        logger.error(f"❌ Error saving EMQ score: {e}")
+
+def get_emq_stats(limit: int = 100) -> List[Dict[str, Any]]:
+    """Retrieve EMQ stats for dashboard visualization."""
+    query = """
+    SELECT event_name, AVG(score) as avg_score, COUNT(*) as count,
+           MAX(created_at) as last_seen
+    FROM emq_stats
+    GROUP BY event_name
+    ORDER BY last_seen DESC
+    LIMIT %s
+    """
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, (limit,))
+            columns = [col[0] for col in cursor.description]
+            results = [dict(zip(columns, row)) for row in cursor.fetchall()]
+            cursor.close()
+            return results
+    except Exception as e:
+        logger.error(f"❌ Error getting EMQ stats: {e}")
+        return []
+
+def _create_crm_tables(cf):
+    with get_db_connection() as conn:
+        try:
+            cur = conn.cursor()
+            cur.execute(queries.CREATE_TABLE_CONTACTS.format(
+                id_type_primary_key=cf['id_type_pk'], 
+                status_type=cf['status_type'],
+                timestamp_default=cf['timestamp_default']
+            ))
+            conn.commit()
+        except Exception as e:
+            if conn: conn.rollback()
+            logger.warning(f"⚠️ Contacts table creation skip/error: {e}")
+
+        try:
+            cur = conn.cursor()
+            cur.execute(queries.CREATE_INDEX_CONTACTS_WHATSAPP)
+            conn.commit()
+        except: 
+            if conn: conn.rollback()
+        
+        try:
+            cur = conn.cursor()
+            cur.execute(queries.CREATE_INDEX_CONTACTS_STATUS)
+            conn.commit()
+        except: 
+            if conn: conn.rollback()
+        
+        try:
+            cur = conn.cursor()
+            cur.execute(queries.CREATE_TABLE_MESSAGES.format(
+                id_type_primary_key=cf['id_type_pk'], timestamp_default=cf['timestamp_default']
+            ))
+            cur.execute(queries.CREATE_INDEX_MESSAGES_CONTACT_ID)
+            conn.commit()
+        except Exception as e:
+            if conn: conn.rollback()
+            logger.warning(f"⚠️ Messages table creation skip/error: {e}")
+
+        try:
+            cur = conn.cursor()
+            cur.execute(queries.CREATE_TABLE_APPOINTMENTS.format(
+                id_type_serial=cf['id_type_serial'], timestamp_default=cf['timestamp_default']
+            ))
+            conn.commit()
+        except Exception as e:
+            if conn: conn.rollback()
+            logger.warning(f"⚠️ Appointments table creation skip/error: {e}")
+
+        try:
+            cur = conn.cursor()
+            cur.execute(queries.CREATE_TABLE_INTERACTIONS.format(
+                id_type_serial=cf['id_type_serial'], lead_id_type=cf['lead_id_type'], timestamp_default=cf['timestamp_default']
+            ))
+            cur.execute(queries.CREATE_INDEX_INTERACTIONS_LEAD_ID)
+            conn.commit()
+        except Exception as e:
+            if conn: conn.rollback()
+            logger.warning(f"⚠️ Interactions table creation skip/error: {e}")
 
 def _run_column_migrations(cur, status_type):
     new_columns = [

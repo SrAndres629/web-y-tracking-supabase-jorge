@@ -47,7 +47,7 @@ export const CAPI = {
    */
   _buildPayload(eventName, eventData) {
     const utms = UTMManager.getAll();
-    
+
     return {
       event_name: eventName,
       event_time: Math.floor(Date.now() / 1000),
@@ -57,19 +57,24 @@ export const CAPI = {
       user_data: {
         external_id: IdentityManager.externalId,
         fbc: IdentityManager.fbc,
-        fbp: IdentityManager.fbp
+        fbp: IdentityManager.fbp,
+        // ✅ BUG-005: Enrich if available in eventData or Identity
+        em: eventData.em,
+        ph: eventData.ph,
+        fn: eventData.fn,
+        ln: eventData.ln,
+        ct: eventData.ct,
+        st: eventData.st,
+        zp: eventData.zp,
+        country: eventData.country,
+        client_user_agent: navigator.userAgent
       },
       custom_data: {
-        ...eventData,
-        fbclid: utms.fbclid,
-        fbp: IdentityManager.fbp,
-        utm_source: utms.utm_source,
-        utm_medium: utms.utm_medium,
-        utm_campaign: utms.utm_campaign,
-        utm_term: utms.utm_term,
-        utm_content: utms.utm_content,
+        ...utms,
+        ...(eventData.custom_data || {}),
         browser_context: UTMManager.detectBrowserContext(),
-        turnstile_token: window.turnstileToken || null
+        // ✅ BUG-008: Turnstile Token consistency
+        turnstile_token: eventData.turnstile_token || window.turnstileToken || null
       }
     };
   },

@@ -11,13 +11,25 @@ def test_frontend_full_render():
     2. Zero console errors (JS integrity)
     3. CSS/Layout availability (Agendar button visibility)
     4. Meta Pixel Injection (Ad-Tech contract)
+    
+    Note: This test requires a running server. Set TARGET_URL env var to test against
+    a specific URL, or start the local server before running this test.
+    
+    Example: TARGET_URL=http://localhost:8000 pytest tests/frontend/rendering/test_browser_render.py
     """
-    target_url = os.getenv("TARGET_URL", "http://localhost:8000") # Default to local
-    if "localhost" in target_url or "127.0.0.1" in target_url:
-        try:
-            requests.get(target_url, timeout=2)
-        except requests.RequestException:
-            pytest.skip(f"Local target is not running: {target_url}")
+    target_url = os.getenv("TARGET_URL", "")
+    
+    # Skip if no TARGET_URL is set (this is an integration test that needs a real server)
+    if not target_url:
+        pytest.skip("Browser render test requires TARGET_URL environment variable to be set")
+    
+    # Verify server is actually responding
+    try:
+        resp = requests.get(target_url, timeout=5)
+        if resp.status_code != 200:
+            pytest.skip(f"Target returned status {resp.status_code}: {target_url}")
+    except requests.RequestException as e:
+        pytest.skip(f"Target is not accessible: {target_url} ({e})")
     
     try:
         with sync_playwright() as p:

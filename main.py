@@ -22,6 +22,8 @@ import gc
 import os
 import time
 import mimetypes
+import asyncio
+import sys
 
 # Configuración de Logging prioritaria
 logging.basicConfig(
@@ -60,15 +62,43 @@ async def lifespan(app: FastAPI):
     from app.version import VERSION
     logger.info(f"🚀 Iniciando Jorge Aguirre Flores Web v{VERSION} (Atomic Architecture Mode)")
     
+    is_test_mode = (
+        os.getenv("PYTEST_CURRENT_TEST") is not None
+        or os.getenv("AUDIT_MODE") == "1"
+        or "PYTEST_VERSION" in os.environ
+        or "pytest" in sys.modules
+    )
+
     # 1. Initialize Sentry (Parallelizable/Non-blocking)
     init_sentry()
-    
-    # 2. Warm CMS Cache (Zero-Latency Content)
-    from app.services import ContentManager
-    await ContentManager.warm_cache()
-    
-    # NOTE: Database connection is now LAZY (initialized on first request)
-    logger.info("⚡ Cold Start Optimization: Database will connect on first request")
+
+    # 2. Startup warmups only outside test/audit mode
+    if not is_test_mode:
+        from app.services import ContentManager
+        try:
+            await asyncio.wait_for(ContentManager.warm_cache(), timeout=5)
+        except asyncio.TimeoutError:
+            logger.warning("⚠️ warm_cache timeout; continuing without warm cache")
+        except Exception as e:
+            logger.warning(f"⚠️ warm_cache failed: {e}")
+
+        # NOTE: Database connection is now LAZY (initialized on first request)
+        # but we trigger initial check in background
+        from app.database import init_tables
+        try:
+            init_ok = await asyncio.wait_for(asyncio.to_thread(init_tables), timeout=5)
+            if init_ok:
+                logger.info("✅ Database initialized successfully")
+            else:
+                logger.error("❌ Database initialization reported failure")
+        except asyncio.TimeoutError:
+            logger.warning("⚠️ init_tables timeout; continuing with lazy DB init")
+        except Exception as e:
+            logger.error(f"❌ Database initialization failed: {e}")
+
+        logger.info("⚡ Cold Start Optimization: Database ready")
+    else:
+        logger.info("🧪 Test mode detected: skipping warm_cache and init_tables")
     
     from app.config import settings
     logger.info(f"📊 Meta Pixel ID: {settings.META_PIXEL_ID}")
@@ -126,6 +156,10 @@ app.add_middleware(SecurityHeadersMiddleware)
 # Middleware: Cache Control (CPM Optimization)
 from app.middleware.cache import CacheControlMiddleware
 app.add_middleware(CacheControlMiddleware)
+
+# Middleware: Multi-tenant Auth (MVP Phase 2)
+from app.middleware.auth import APIKeyMiddleware
+app.add_middleware(APIKeyMiddleware)
 
 # =================================================================
 # SECURITY: RATE LIMITING (Redis-Backed)

@@ -163,7 +163,7 @@ class TestTrackingJsZaraz:
     def test_capi_pageview_exists(self):
         """tracking.js should still send PageView to CAPI for server-side dedup."""
         content = self._get_tracking_engine()
-        assert "CAPI.trackAsync('PageView'" in content or 'CAPI.trackAsync("PageView"' in content, \
+        assert "CAPI.track('PageView'" in content or 'CAPI.track("PageView"' in content, \
             "tracking.js missing CAPI PageView event — needed for server-side deduplication"
 
     def test_zaraz_first_priority(self):

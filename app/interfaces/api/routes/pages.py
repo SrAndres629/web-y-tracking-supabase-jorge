@@ -88,7 +88,7 @@ async def head_root():
 
 @router.get("/", response_class=HTMLResponse)
 async def read_root(
-    request: Request, response: Response, background_tasks: BackgroundTasks,
+    request: Request, background_tasks: BackgroundTasks,
     fbp_cookie: Optional[str] = Cookie(default=None, alias="_fbp"),
     fbc_cookie: Optional[str] = Cookie(default=None, alias="_fbc")
 ):
@@ -123,7 +123,7 @@ async def read_root(
     # 5. Background Tasks & Cookies
     _schedule_tracking(background_tasks, request, ident, external_id, fbclid, fbp_cookie, event_id)
     
-    # 6. Build Response
+    # 6. Build Response with optimized caching headers
     response = templates.TemplateResponse(
         request=request, name="pages/site/home.html",
         context={
@@ -141,10 +141,91 @@ async def read_root(
                 "json_ld": SEOEngine.generate_all_json_ld(schemas)
             }
         },
-        headers={"Cache-Control": "no-cache, no-store, must-revalidate"}
+        headers={
+            "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+            "CDN-Cache-Control": "public, max-age=3600",
+            "Vercel-CDN-Cache-Control": "public, max-age=3600"
+        }
     )
     _set_identity_cookies(response, ab_variant, ident, fbclid, fbp_cookie)
     return response
+
+
+@router.get("/tracking-motor", response_class=HTMLResponse)
+async def read_tracking_motor(
+    request: Request, background_tasks: BackgroundTasks,
+    fbp_cookie: Optional[str] = Cookie(default=None, alias="_fbp"),
+    fbc_cookie: Optional[str] = Cookie(default=None, alias="_fbc")
+):
+    """LANDING PAGE VENTA TRACKING ENGINE - Optimized for B2B Conversion."""
+    # 1. Identity & Config
+    ident = _extract_identity_info(request)
+    services_config = await get_services_config()
+    contact_config = await get_contact_config()
+    
+    # 2. Tracking Identity
+    event_id = str(int(time.time() * 1000))
+    external_id = legacy.generate_external_id(ident['ip'], ident['ua'])
+    fbclid = await _resolve_fbclid_full(request, fbc_cookie, external_id)
+    
+    # 4. SEO Engine
+    from app.services.seo_engine import SEOEngine
+    
+    seo_meta = SEOEngine.get_page_metadata("/tracking-motor", {
+        "title": "Anti-Gravity Tracking Core | Meta CAPI Atomic Motor",
+        "description": "Recupera el 40% de tu data perdida. El motor de tracking más avanzado con deduplicación atómica y EMQ Optimization."
+    })
+    
+    schemas = [
+        SEOEngine.get_global_schema(),
+        SEOEngine.get_breadcrumb_schema([
+            {"name": "Inicio", "path": "/"},
+            {"name": "Tracking Motor", "path": "/tracking-motor"}
+        ])
+    ]
+    
+    # 5. Background Tasks
+    _schedule_tracking(background_tasks, request, ident, external_id, fbclid, fbp_cookie, event_id)
+    
+    # 6. Build Response with optimized caching
+    response = templates.TemplateResponse(
+        request=request, name="pages/site/tracking_motor.html",
+        context={
+            "pixel_id": settings.META_PIXEL_ID, "pageview_event_id": event_id,
+            "external_id": external_id, "fbclid": fbclid or "",
+            "services": services_config, "contact": contact_config,
+            "seo": {
+                **seo_meta,
+                "json_ld": SEOEngine.generate_all_json_ld(schemas)
+            }
+        },
+        headers={
+            "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+            "CDN-Cache-Control": "public, max-age=3600",
+            "Vercel-CDN-Cache-Control": "public, max-age=3600"
+        }
+    )
+    _set_identity_cookies(response, "variant_a", ident, fbclid, fbp_cookie)
+    return response
+
+@router.get("/onboarding", response_class=HTMLResponse)
+async def read_onboarding(request: Request):
+    """CLIENT ONBOARDING PAGE - Self-service credential generation."""
+    from app.services.seo_engine import SEOEngine
+    
+    seo_meta = SEOEngine.get_page_metadata("/onboarding", {
+        "title": "Onboarding | Atomic Tracking Motor",
+        "description": "Configura tu motor de tracking y genera tu API Key en 5 minutos."
+    })
+    
+    return templates.TemplateResponse(
+        request=request, name="pages/site/onboarding.html",
+        context={
+            "seo": seo_meta,
+            "services": await get_services_config(),
+            "contact": await get_contact_config()
+        }
+    )
 
 def _extract_identity_info(request: Request) -> dict:
     forwarded = request.headers.get("x-forwarded-for")
