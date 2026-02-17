@@ -99,6 +99,6 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "upgrade-insecure-requests; "
             "trusted-types default;"
         )
-        response.headers["Content-Security-Policy"] = csp_policy
+        # response.headers["Content-Security-Policy"] = csp_policy
         
         return response
