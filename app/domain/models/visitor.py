@@ -13,7 +13,13 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional
+import sys
 from enum import Enum, auto
+
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 
 from app.domain.models.values import ExternalId, UTMParams, GeoLocation, Email, Phone
 
@@ -84,7 +90,7 @@ class Visitor:
         geo: Optional[GeoLocation] = None,
         email: Optional[Email] = None,
         phone: Optional[Phone] = None,
-    ):
+    ) -> Self:
         """
         Factory method para crear nuevo visitante.
         
@@ -120,7 +126,7 @@ class Visitor:
         visit_count: int = 1,
         email: Optional[Email] = None,
         phone: Optional[Phone] = None,
-    ):
+    ) -> Self:
         """
         Reconstruye visitante desde datos persistidos.
         
