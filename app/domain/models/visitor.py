@@ -12,14 +12,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional
-import sys
-from enum import Enum, auto
-
-if sys.version_info >= (3, 11):
-    from typing import Self
-else:
+try:
+    from typing import Optional, Self
+except ImportError:
+    from typing import Optional
     from typing_extensions import Self
+
+from enum import Enum, auto
 
 from app.domain.models.values import ExternalId, UTMParams, GeoLocation, Email, Phone
 

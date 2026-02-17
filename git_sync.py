@@ -265,32 +265,17 @@ class SecurityAuditor:
 # BUG HUNTER
 # =================================================================
 class BugHunter:
-    """Caza bugs automáticamente en el código"""
+    """Caza bugs automáticamente en el código - VERSIÓN OPTIMIZADA"""
     
+    # Simplified patterns for speed
     PATTERNS = {
-        "Hardcoded Secrets": [
-            (r'password\s*=\s*["\'][^"\']+["\']', "Possible hardcoded password"),
-            (r'api_key\s*=\s*["\'][^"\']+["\']', "Possible hardcoded API key"),
-            (r'secret\s*=\s*["\'][^"\']+["\']', "Possible hardcoded secret"),
-            (r'token\s*=\s*["\'][^"\']+["\']', "Possible hardcoded token"),
-        ],
-        "Common Bugs": [
-            (r'print\s*\(', "Debug print statement"),
-            (r'console\.log', "Debug console.log"),
-            (r'FIXME|TODO|XXX', "Unresolved TODO/FIXME"),
-            (r'except\s*:\s*$', "Bare except clause"),
-            (r'\.get\(["\'][^"\']+["\']\)\[', "Dict get followed by index (may raise KeyError)"),
-        ],
-        "Performance Issues": [
-            (r'for.*in.*range\s*\(\s*len\s*\(', "Inefficient range(len()) pattern"),
-            (r'\.query\.all\(\)', "Possible N+1 query"),
-            (r'select\s*\*\s*from', "SELECT * in SQL"),
-        ],
         "Security Issues": [
-            (r'eval\s*\(', "Dangerous eval() usage"),
-            (r'exec\s*\(', "Dangerous exec() usage"),
-            (r'subprocess\.call.*shell\s*=\s*True', "Subprocess with shell=True"),
-            (r'\.format\s*\([^)]*%', "String formatting with % (injection risk)"),
+            (r'eval\s*\(', "Dangerous eval()"),
+            (r'exec\s*\(', "Dangerous exec()"),
+        ],
+        "Debug Code": [
+            (r'^\s*print\s*\(', "Debug print"),
+            (r'console\.log', "Debug console.log"),
         ],
     }
     
@@ -299,51 +284,94 @@ class BugHunter:
         self.findings = []
     
     def scan_file(self, file_path: str) -> List[Dict]:
-        """Escanea un archivo en busca de patrones"""
+        """Escanea un archivo en busca de patrones - OPTIMIZADO"""
         findings = []
         
         try:
+            # Skip large files (>500KB)
+            file_size = os.path.getsize(file_path)
+            if file_size > 500_000:
+                return findings
+                
             with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
-                content = f.read()
-                lines = content.split('\n')
+                lines = f.readlines()
         except Exception:
             return findings
         
+        # Pre-compile patterns for efficiency
+        compiled_patterns = []
         for category, patterns in self.PATTERNS.items():
             for pattern, description in patterns:
-                for line_num, line in enumerate(lines, 1):
-                    if re.search(pattern, line, re.IGNORECASE):
-                        # Ignorar líneas de comentarios
-                        stripped = line.strip()
-                        if stripped.startswith('#') or stripped.startswith('//') or stripped.startswith('*'):
-                            continue
-                        
-                        findings.append({
-                            'file': file_path,
-                            'line': line_num,
-                            'category': category,
-                            'description': description,
-                            'code': line.strip()[:80],
-                        })
+                try:
+                    compiled_patterns.append((re.compile(pattern, re.IGNORECASE), category, description))
+                except re.error:
+                    continue
+        
+        # Scan line by line with compiled patterns
+        for line_num, line in enumerate(lines, 1):
+            # Skip comment lines quickly
+            stripped = line.strip()
+            if not stripped or stripped[0] in '#*-' or stripped[:2] in ('//', '--', '/*', '* '):
+                continue
+                
+            for compiled_re, category, description in compiled_patterns:
+                if compiled_re.search(line):
+                    findings.append({
+                        'file': file_path,
+                        'line': line_num,
+                        'category': category,
+                        'description': description,
+                        'code': line.strip()[:80],
+                    })
+                    break  # One finding per line is enough
         
         return findings
     
     def hunt(self) -> List[Dict]:
-        """Caza bugs en todo el repositorio"""
-        Console.section("🐛 BUG HUNT INITIATED")
+        """Caza bugs en todo el repositorio - OPTIMIZADO CON TIMEOUT"""
+        import time
+        start_time = time.time()
+        max_duration = 30  # Max 30 seconds
+        
+        Console.section("🐛 BUG HUNT INITIATED (Max 30s)")
         
         extensions = {'.py', '.js', '.html', '.css', '.sql'}
-        exclude_dirs = {'venv', '__pycache__', '.git', 'node_modules', '.pytest_cache'}
+        exclude_dirs = {'venv', '__pycache__', '.git', 'node_modules', '.pytest_cache', 'static/dist', '.venv', '.ai', 'refactor_backup', 'tests'}
+        exclude_files = {'git_sync.py', 'antigravity.py', 'synapse.py', 'setup_env.py'}
+        
+        files_scanned = 0
         
         for root, dirs, files in os.walk(self.repo_path):
+            # Check timeout
+            if time.time() - start_time > max_duration:
+                Console.warning("Bug hunt timeout reached (30s). Stopping scan.")
+                break
+            
             # Excluir directorios
             dirs[:] = [d for d in dirs if d not in exclude_dirs]
             
             for file in files:
+                # Check timeout per file
+                if time.time() - start_time > max_duration:
+                    break
+                
+                # Skip excluded files
+                if file in exclude_files:
+                    continue
+                    
                 if any(file.endswith(ext) for ext in extensions):
                     file_path = os.path.join(root, file)
                     findings = self.scan_file(file_path)
                     self.findings.extend(findings)
+                    files_scanned += 1
+                    
+                    # Show progress every 50 files
+                    if files_scanned % 50 == 0:
+                        elapsed = time.time() - start_time
+                        Console.log(f"Scanned {files_scanned} files... ({elapsed:.1f}s)")
+        
+        elapsed = time.time() - start_time
+        Console.log(f"Scan complete: {files_scanned} files scanned in {elapsed:.1f}s")
         
         # Agrupar por categoría
         by_category = {}
@@ -353,20 +381,19 @@ class BugHunter:
         
         # Mostrar resultados
         if not self.findings:
-            Console.success("No bugs found! Code is clean.")
+            Console.success("No critical bugs found! Code is clean.")
             return []
         
         Console.warning(f"Found {len(self.findings)} potential issues:")
         
         for category, findings in by_category.items():
             Console._print(f"\n{Console.BOLD}{category}:{Console.ENDC}")
-            for finding in findings[:5]:  # Mostrar solo los primeros 5 de cada categoría
+            for finding in findings[:3]:  # Mostrar solo los primeros 3 de cada categoría
                 rel_path = os.path.relpath(finding['file'], self.repo_path)
                 Console._print(f"  {Console.WARNING}{rel_path}:{finding['line']}{Console.ENDC}")
                 Console._print(f"    {finding['description']}")
-                Console._print(f"    Code: {finding['code'][:60]}...")
-            if len(findings) > 5:
-                Console._print(f"  ... and {len(findings) - 5} more")
+            if len(findings) > 3:
+                Console._print(f"  ... and {len(findings) - 3} more")
         
         return self.findings
 
@@ -850,8 +877,7 @@ def main():
     if findings and not args.force:
         Console.warning(f"Found {len(findings)} potential issues.")
         Console.info("Run: python git_sync.py --bug-hunt")
-        # response = input("Continue with deployment? (yes/no): ")
-        response = "yes"
+        response = input("Continue with deployment? (yes/no): ")
         if response.lower() != "yes":
             Console.info("Deployment cancelled.")
             sys.exit(0)

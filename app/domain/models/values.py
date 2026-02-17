@@ -16,13 +16,12 @@ import random
 import string
 import time
 from dataclasses import dataclass
-from typing import Optional
-import sys
-
-if sys.version_info >= (3, 11):
-    from typing import Self
-else:
+try:
+    from typing import Optional, Self
+except ImportError:
+    from typing import Optional
     from typing_extensions import Self
+
 
 
 from app.core.result import Result

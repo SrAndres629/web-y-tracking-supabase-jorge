@@ -96,8 +96,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "base-uri 'self'; "
             "form-action 'self'; "
             "frame-ancestors 'none'; "
-            "upgrade-insecure-requests; "
-            "trusted-types default;"
+            "upgrade-insecure-requests;"
         )
         response.headers["Content-Security-Policy"] = csp_policy
         

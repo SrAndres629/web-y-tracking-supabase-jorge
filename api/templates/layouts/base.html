@@ -23,9 +23,11 @@
     </style>
 
     <!-- SEO Core Tags (Dynamic Silicon Valley Hub) -->
-    <title>{% block title %}{{ seo.title if seo and seo.title else "Jorge Aguirre Flores | Maquillaje Permanente en Santa Cruz" }}{% endblock %}</title>
+    <title>{% block title %}{{ seo.title if seo and seo.title else "Jorge Aguirre Flores | Maquillaje Permanente en
+        Santa Cruz" }}{% endblock %}</title>
     {% block meta_tags %}
-    <meta name="description" content="{{ seo.description if seo and seo.description else 'Especialista en Microblading, Delineado Permanente y Labios. 30 años de experiencia en Santa Cruz de la Sierra.' }}">
+    <meta name="description"
+        content="{{ seo.description if seo and seo.description else 'Especialista en Microblading, Delineado Permanente y Labios. 30 años de experiencia en Santa Cruz de la Sierra.' }}">
     <meta name="author" content="Jorge Aguirre Flores">
     <meta name="robots" content="{{ seo.robots if seo and seo.robots else 'index, follow' }}">
     <link rel="canonical" href="{{ seo.canonical if seo and seo.canonical else 'https://jorgeaguirreflores.com/' }}">
@@ -103,14 +105,15 @@
                 google.accounts.id.initialize({
                     client_id: '{{ google_client_id }}',
                     callback: function (response) {
-                        console.log('🔍 Google Identity Response received');
+                        const debug = new URLSearchParams(window.location.search).has('debug');
+                        if (debug) console.log('🔍 Google Identity Response received');
                         fetch('/api/identity/google', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ credential: response.credential })
                         }).then(function (r) { return r.json(); })
                             .then(function (data) {
-                                console.log('✅ Identity captured:', data.user?.email);
+                                if (debug) console.log('✅ Identity captured', data.user?.email);
                             })
                             .catch(function (e) {
                                 console.error('❌ Identity capture error:', e);
@@ -237,7 +240,7 @@
 
         function initEngines() {
             const debug = new URLSearchParams(window.location.search).has('debug_pixel');
-            
+
             // 1. Lenis Smooth Scroll + GSAP Sync
             const lenis = LenisSetup.init();
             if (lenis) {
@@ -245,23 +248,23 @@
                 // Expose globally for debugging
                 window.lenis = lenis;
             }
-            
+
             // 2. Tracking Engine (Zaraz + CAPI)
             if (typeof TrackingEngine !== 'undefined') {
                 TrackingEngine.init({ debug: debug });
                 window.TrackingEngine = TrackingEngine;
             }
-            
+
             // 3. Sliders (Before/After)
             if (typeof SliderManager !== 'undefined') {
                 SliderManager.init();
             }
-            
+
             // 4. Animaciones (AOS Replacement)
             if (typeof AOSReplacement !== 'undefined') {
                 AOSReplacement.init();
             }
-            
+
             if (debug) console.log('[MainEngine] All engines initialized');
         }
     </script>
