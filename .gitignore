@@ -44,3 +44,6 @@ yarn.lock
 # --- Other ---
 .DS_Store
 Thumbs.db
+
+
+.png

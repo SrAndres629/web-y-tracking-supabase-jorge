@@ -1,5 +1,26 @@
 {
     "version": 2,
+    "cleanUrls": true,
+    "trailingSlash": false,
+    "images": {
+        "sizes": [
+            640,
+            750,
+            828,
+            1080,
+            1200,
+            1920,
+            2048
+        ],
+        "domains": [
+            "jorgeaguirreflores.com"
+        ],
+        "formats": [
+            "image/avif",
+            "image/webp"
+        ],
+        "minimumCacheTTL": 60
+    },
     "builds": [
         {
             "src": "api/index.py",
@@ -14,19 +35,16 @@
     ],
     "rewrites": [
         {
+            "source": "/favicon.ico",
+            "destination": "/static/assets/images/branding/luxury_logo.svg"
+        },
+        {
             "source": "/static/(.*)",
             "destination": "/static/$1"
         },
         {
             "source": "/(.*)",
-            "destination": "api/index.py"
-        }
-    ],
-    "redirects": [
-        {
-            "source": "/favicon.ico",
-            "destination": "/static/assets/images/branding/luxury_logo.svg",
-            "permanent": true
+            "destination": "/api/index.py"
         }
     ],
     "headers": [
@@ -36,6 +54,10 @@
                 {
                     "key": "Cache-Control",
                     "value": "public, max-age=31536000, immutable, stale-while-revalidate=604800"
+                },
+                {
+                    "key": "Access-Control-Allow-Origin",
+                    "value": "*"
                 }
             ]
         }
