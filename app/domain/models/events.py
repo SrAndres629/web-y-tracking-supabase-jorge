@@ -16,14 +16,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Optional, Any
-import sys
 from enum import Enum, auto
-
-if sys.version_info >= (3, 11):
-    from typing import Self
-else:
-    from typing_extensions import Self
-
 
 from app.domain.models.values import EventId, ExternalId, UTMParams
 
@@ -78,7 +71,7 @@ class TrackingEvent:
         source_url: str,
         custom_data: Optional[dict[str, Any]] = None,
         utm: Optional[UTMParams] = None,
-    ) -> Self:
+    ):
         """Factory para crear evento nuevo."""
         return cls(
             event_id=EventId.generate(),
@@ -100,7 +93,7 @@ class TrackingEvent:
         source_url: str,
         custom_data: Optional[dict[str, Any]] = None,
         utm: Optional[UTMParams] = None,
-    ) -> Self:
+    ):
         """Reconstruye evento desde datos persistidos."""
         return cls(
             event_id=event_id,
