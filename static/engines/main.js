@@ -15,19 +15,19 @@ const DEBUG = new URLSearchParams(window.location.search).has('debug');
  * Inicializa todos los engines cuando el DOM está listo
  */
 function init() {
-  if (DEBUG) console.log('[MainEngine] Initializing...');
+  if (DEBUG) Logger.debug('[MainEngine] Initializing...');
 
   try {
     // 1. Tracking (Zaraz + CAPI)
     if (typeof TrackingEngine !== 'undefined') {
       TrackingEngine.init({ debug: DEBUG });
-      if (DEBUG) console.log('[MainEngine] ✅ TrackingEngine initialized');
+      if (DEBUG) Logger.debug('[MainEngine] ✅ TrackingEngine initialized');
     }
 
     // 2. Sliders (Before/After)
     if (typeof SliderManager !== 'undefined') {
       SliderManager.init();
-      if (DEBUG) console.log('[MainEngine] ✅ SliderManager initialized');
+      if (DEBUG) Logger.debug('[MainEngine] ✅ SliderManager initialized');
     }
 
     // 3. Animaciones (AOS replacement con GSAP)
@@ -35,11 +35,11 @@ function init() {
     setTimeout(() => {
       if (typeof AOSReplacement !== 'undefined') {
         AOSReplacement.refresh();
-        if (DEBUG) console.log('[MainEngine] ✅ AOSReplacement refreshed');
+        if (DEBUG) Logger.debug('[MainEngine] ✅ AOSReplacement refreshed');
       }
     }, 100);
 
-    if (DEBUG) console.log('[MainEngine] 🚀 All engines initialized');
+    if (DEBUG) Logger.debug('[MainEngine] 🚀 All engines initialized');
 
   } catch (error) {
     console.error('[MainEngine] ❌ Initialization error:', error);

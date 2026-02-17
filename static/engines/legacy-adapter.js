@@ -31,7 +31,7 @@ function initLegacy() {
     MotionEngine.init();
   }
 
-  console.log('✅ [Legacy Adapter] All engines initialized');
+  Logger.debug('✅ [Legacy Adapter] All engines initialized');
 }
 
 // Auto-init when DOM is ready
@@ -53,7 +53,7 @@ window.onTurnstileSuccess = function (token) {
     TrackingEngine.turnstileToken = token;
     TrackingEngine.isHuman = true;
   }
-  console.log('🤖 Turnstile Verified: User is Human');
+  Logger.debug('🤖 Turnstile Verified: User is Human');
 };
 
 // TrackingEngine properties para compatibilidad

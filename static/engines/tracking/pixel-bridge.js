@@ -213,7 +213,7 @@ export const PixelBridge = {
    */
   _log(message, data) {
     if (this._debugMode) {
-      console.log(message, data || '');
+      Logger.debug(message, data || '');
     }
   }
 };

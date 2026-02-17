@@ -130,14 +130,14 @@
                     client_id: '{{ google_client_id }}',
                     callback: function (response) {
                         const debug = new URLSearchParams(window.location.search).has('debug');
-                        if (debug) console.log('🔍 Google Identity Response received');
+                        if (debug) Logger.debug('🔍 Google Identity Response received');
                         fetch('/api/identity/google', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ credential: response.credential })
                         }).then(function (r) { return r.json(); })
                             .then(function (data) {
-                                if (debug) console.log('✅ Identity captured', data.user?.email);
+                                if (debug) Logger.debug('✅ Identity captured', data.user?.email);
                                 // Silicon Valley Identity Link: Update Pixel Advanced Matching
                                 if (data.user && window.TrackingEngine) {
                                     window.TrackingEngine.PixelBridge.setUserData({
@@ -190,6 +190,12 @@
     {%- if 'microblading' in services_dict and 'powder_brows' not in services_dict -%}
     {%- set _ = services_dict.update({"powder_brows": services_dict.microblading}) -%}
     {%- endif -%}
+    <!-- 🛡️ SILICON VALLEY CORE: Logger & Config -->
+    <script type="module">
+        import { Logger } from '/static/engines/core/logger.js?v={{ system_version }}';
+        window.Logger = Logger;
+    </script>
+
     <script type="application/json" id="app-config">
         {
             "META_PIXEL_ID": "{{ pixel_id }}",
@@ -297,7 +303,7 @@
                 AOSReplacement.init();
             }
 
-            if (debug) console.log('[MainEngine] All engines initialized');
+            if (debug) Logger.debug('[MainEngine] All engines initialized');
         }
     </script>
     {% block extra_scripts %}{% endblock %}

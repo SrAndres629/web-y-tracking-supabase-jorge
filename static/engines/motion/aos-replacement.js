@@ -22,7 +22,7 @@ export const AOSReplacement = {
     // Verificar prefers-reduced-motion
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) {
-      console.log('[AOSReplacement] Reduced motion enabled - skipping animations');
+      Logger.debug('[AOSReplacement] Reduced motion enabled - skipping animations');
       // Hacer elementos visibles inmediatamente
       document.querySelectorAll('[data-aos]').forEach(el => {
         el.style.opacity = '1';
@@ -64,7 +64,7 @@ export const AOSReplacement = {
       });
     });
 
-    console.log(`[AOSReplacement] ${elements.length} elementos animados`);
+    Logger.debug(`[AOSReplacement] ${elements.length} elementos animados`);
   },
 
   /**

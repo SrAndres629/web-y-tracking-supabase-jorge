@@ -117,7 +117,7 @@ const TrackingEngine = {
    */
   _log(message, ...args) {
     if (this.debugMode) {
-      console.log(message, ...args);
+      Logger.debug(message, ...args);
     }
   },
 

@@ -47,7 +47,7 @@ const MotionEngine = {
     // Navigation scroll behavior
     this.setupNavigation();
 
-    console.log('🚀 [Motion Engine] Initialized at 60fps');
+    Logger.debug('🚀 [Motion Engine] Initialized at 60fps');
   },
 
   setupNavigation() {

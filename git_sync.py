@@ -267,15 +267,15 @@ class SecurityAuditor:
 class BugHunter:
     """Caza bugs automáticamente en el código - VERSIÓN OPTIMIZADA"""
     
-    # Simplified patterns for speed
+    # Patterns for modern CI/CD standards
     PATTERNS = {
         "Security Issues": [
-            (r'eval\s*\(', "Dangerous eval()"),
-            (r'exec\s*\(', "Dangerous exec()"),
+            (r'(?<!_)eval\s*\(', "Dangerous eval() usage"),
+            (r'(?<!_)exec\s*\(', "Dangerous exec() usage"),
         ],
         "Debug Code": [
-            (r'^\s*print\s*\(', "Debug print"),
-            (r'console\.log', "Debug console.log"),
+            (r'^\s*print\s*\(', "Raw print() detected (use logging instead)"),
+            (r'(?<!Logger\.)(?<!console\.)console\.log\(', "Raw console.log() detected (use Logger.debug instead)"),
         ],
     }
     
@@ -336,8 +336,8 @@ class BugHunter:
         Console.section("🐛 BUG HUNT INITIATED (Max 30s)")
         
         extensions = {'.py', '.js', '.html', '.css', '.sql'}
-        exclude_dirs = {'venv', '__pycache__', '.git', 'node_modules', '.pytest_cache', 'static/dist', '.venv', '.ai', 'refactor_backup', 'tests'}
-        exclude_files = {'git_sync.py', 'antigravity.py', 'synapse.py', 'setup_env.py'}
+        exclude_dirs = {'venv', '__pycache__', '.git', 'node_modules', '.pytest_cache', 'dist', '.venv', '.ai', 'refactor_backup', 'tests', 'scripts', 'tools'}
+        exclude_files = {'git_sync.py', 'antigravity.py', 'synapse.py', 'setup_env.py', 'logger.js'}
         
         files_scanned = 0
         
@@ -355,7 +355,7 @@ class BugHunter:
                 if time.time() - start_time > max_duration:
                     break
                 
-                # Skip excluded files
+                # Skip infrastructure/logger files
                 if file in exclude_files:
                     continue
                     

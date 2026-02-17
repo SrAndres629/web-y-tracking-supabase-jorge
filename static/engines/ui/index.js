@@ -30,7 +30,7 @@ const UIEngine = {
       setTimeout(() => this._deferredInit(), 50);
     }
 
-    console.log('✨ [UI Engine] Active');
+    Logger.debug('✨ [UI Engine] Active');
   },
 
   _deferredInit() {
