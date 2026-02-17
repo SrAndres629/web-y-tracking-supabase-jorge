@@ -9,12 +9,65 @@ export const PixelBridge = {
   _retryQueue: [],
   _retryTimer: null,
   _debugMode: false,
+  _userData: {},
 
   /**
    * Inicializa el bridge
    */
   init(options = {}) {
     this._debugMode = options.debug || new URLSearchParams(window.location.search).has('debug_pixel');
+
+    // Capturar external_id inicial si existe
+    if (window.EXTERNAL_ID) {
+      this._userData.external_id = window.EXTERNAL_ID;
+    }
+  },
+
+  /**
+   * Actualiza los datos de usuario para Advanced Matching (Manual)
+   * @param {Object} data - Datos sin hashear (email, phone, etc.)
+   */
+  async setUserData(data) {
+    const hashedData = { ...this._userData };
+
+    // Meta requiere SHA-256 para email y phone
+    if (data.email) hashedData.em = await this._hashData(data.email);
+    if (data.phone) hashedData.ph = await this._hashData(data.phone);
+    if (data.external_id) hashedData.external_id = data.external_id;
+    if (data.firstName) hashedData.fn = await this._hashData(data.firstName);
+    if (data.lastName) hashedData.ln = await this._hashData(data.lastName);
+
+    this._userData = hashedData;
+    this._log('👤 Updated Advanced Matching Data:', this._userData);
+
+    // Re-inicializar Pixel con nuevos datos si está disponible
+    if (this._isFbqReady() && window.META_PIXEL_ID) {
+      window.fbq('init', window.META_PIXEL_ID, this._userData);
+    }
+
+    // Actualizar Zaraz si está disponible
+    if (this._isZarazReady()) {
+      // Zaraz usa user_email, user_phone, etc. 
+      // Nota: Zaraz suele preferir datos limpios y él hace el hashing, pero por seguridad podemos pasar ambos.
+      if (data.email) window.zaraz.set('user_email', data.email);
+    }
+  },
+
+  /**
+   * Helper para hashear datos (SHA-256)
+   */
+  async _hashData(text) {
+    if (!text) return null;
+    try {
+      const cleanText = text.trim().toLowerCase();
+      const msgBuffer = new TextEncoder().encode(cleanText);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    } catch (e) {
+      console.warn('Hashing failed, using fallback', e);
+      return text; // Fallback al original si falla el crypto (browsers antiguos)
+    }
   },
 
   /**
@@ -46,7 +99,7 @@ export const PixelBridge = {
    */
   trackCustom(eventName, data = {}, options = {}) {
     const eventId = options.eventId || this._generateEventId();
-    
+
     if (this._isZarazReady()) {
       window.zaraz.track(eventName, { ...data, eventID: eventId });
       return { success: true, channel: 'zaraz', eventId };
@@ -114,7 +167,7 @@ export const PixelBridge = {
    */
   _startRetryLoop() {
     const { retry } = TrackingConfig;
-    
+
     this._retryTimer = setInterval(() => {
       // Verificar si hay trackers disponibles
       const hasZaraz = this._isZarazReady();
@@ -138,8 +191,8 @@ export const PixelBridge = {
       }
 
       // Timeout: abandonar eventos antiguos
-      if (this._retryQueue.length > 0 && 
-          (Date.now() - this._retryQueue[0].time > retry.timeout)) {
+      if (this._retryQueue.length > 0 &&
+        (Date.now() - this._retryQueue[0].time > retry.timeout)) {
         console.warn('❌ Zaraz/Pixel failed to load. Aborting retries.');
         this._retryQueue = [];
         clearInterval(this._retryTimer);

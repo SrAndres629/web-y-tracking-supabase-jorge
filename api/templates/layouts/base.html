@@ -62,9 +62,33 @@
     {% endif %}
     {% block extra_schema %}{% endblock %}
 
-    <!-- Cloudflare Zaraz (Offloaded Tracking) -->
+    <!-- 📊 META PIXEL (Manual Advanced Matching Configuration) -->
+    <script>
+        !function (f, b, e, v, n, t, s) {
+            if (f.fbq) return; n = f.fbq = function () {
+                n.callMethod ?
+                    n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+            };
+            if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
+            n.queue = []; t = b.createElement(e); t.async = !0;
+            t.src = v; s = b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t, s)
+        }(window, document, 'script',
+            'https://connect.facebook.net/en_US/fbevents.js');
 
-    <!-- Tailwind CSS (Local Build - Legacy/Fallback) -->
+        // Initializing with Manual Advanced Matching (Silicon Valley Standard)
+        fbq('init', '{{ pixel_id }}', {
+            external_id: '{{ external_id }}'
+        });
+
+        // PageView with shared eventID for perfect CAPI deduplication
+        fbq('track', 'PageView', {}, {
+            eventID: '{{ pageview_event_id }}'
+        });
+    </script>
+    <!-- End Meta Pixel -->
+
+    <!-- Cloudflare Zaraz (Offloaded Tracking - Fallback/Others) -->
     <link rel="preload" href="/static/dist/css/app.min.css?v={{ system_version }}" as="style">
     <link rel="stylesheet" href="/static/dist/css/app.min.css?v={{ system_version }}">
 
@@ -114,6 +138,14 @@
                         }).then(function (r) { return r.json(); })
                             .then(function (data) {
                                 if (debug) console.log('✅ Identity captured', data.user?.email);
+                                // Silicon Valley Identity Link: Update Pixel Advanced Matching
+                                if (data.user && window.TrackingEngine) {
+                                    window.TrackingEngine.PixelBridge.setUserData({
+                                        email: data.user.email,
+                                        firstName: data.user.given_name,
+                                        lastName: data.user.family_name
+                                    });
+                                }
                             })
                             .catch(function (e) {
                                 console.error('❌ Identity capture error:', e);
