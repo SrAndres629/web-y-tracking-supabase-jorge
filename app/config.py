@@ -87,6 +87,9 @@ class Settings(BaseSettings):
     # AI Brain (Gemini)
     GOOGLE_API_KEY: Optional[str] = None
 
+    # LLM Configuration
+    GROQ_API_KEY: Optional[str] = None
+
     # Observability
     SENTRY_DSN: Optional[str] = None
     
@@ -227,6 +230,12 @@ class Settings(BaseSettings):
     def whatsapp_url(self) -> str:
         """URL de WhatsApp con número"""
         return f"https://wa.me/{self.WHATSAPP_NUMBER}"
+
+    # =================================================================
+    # EXTERNAL INTEGRATIONS
+    # =================================================================
+    EXTERNAL_API_KEYS: Dict[str, Optional[str]] = Field(default_factory=dict)
+
 
     @field_validator("ALLOWED_TENANTS", mode="before")
     def _normalize_tenants(cls, v):
