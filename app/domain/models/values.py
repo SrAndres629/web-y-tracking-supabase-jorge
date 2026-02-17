@@ -17,13 +17,6 @@ import string
 import time
 from dataclasses import dataclass
 from typing import Optional
-import sys
-
-if sys.version_info >= (3, 11):
-    from typing import Self
-else:
-    from typing_extensions import Self
-
 
 from app.core.result import Result
 from app.core.validators import (
@@ -51,14 +44,14 @@ class EventId:
             raise ValueError(f"Invalid EventId: {error}")
     
     @classmethod
-    def generate(cls) -> Self:
+    def generate(cls) -> "EventId":
         """Genera nuevo EventId único."""
         timestamp = time.time_ns()
         entropy = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
         return cls(f"evt_{timestamp}_{entropy}")
     
     @classmethod
-    def from_string(cls, value: str) -> Result[Self, str]:
+    def from_string(cls, value: str) -> Result["EventId", str]:
         """Intenta crear desde string, retorna Result."""
         try:
             return Result.ok(cls(value))
@@ -86,12 +79,12 @@ class ExternalId:
             raise ValueError(f"Invalid ExternalId format: {self.value}")
     
     @classmethod
-    def from_request(cls, ip: str, user_agent: str) -> Self:
+    def from_request(cls, ip: str, user_agent: str) -> "ExternalId":
         """Genera ExternalId desde IP y User-Agent."""
         return cls(generate_external_id(ip, user_agent))
     
     @classmethod
-    def from_string(cls, value: str) -> Result[Self, str]:
+    def from_string(cls, value: str) -> Result["ExternalId", str]:
         try:
             return Result.ok(cls(value))
         except ValueError as e:
@@ -119,7 +112,7 @@ class Phone:
             raise ValueError(f"Phone must start with +: {self.number}")
     
     @classmethod
-    def parse(cls, raw: Optional[str], country: str = "BO") -> Result[Self, str]:
+    def parse(cls, raw: Optional[str], country: str = "BO") -> Result["Phone", str]:
         """
         Parsea teléfono desde string crudo.
         
@@ -177,7 +170,7 @@ class Email:
         object.__setattr__(self, 'address', normalized or self.address.lower().strip())
     
     @classmethod
-    def parse(cls, raw: Optional[str]) -> Result[Self, str]:
+    def parse(cls, raw: Optional[str]) -> Result["Email", str]:
         if raw is None:
             return Result.err("Email is required (None provided)")
         if not str(raw).strip():
@@ -242,7 +235,7 @@ class UTMParams:
     content: Optional[str] = None
     
     @classmethod
-    def from_dict(cls, data: dict) -> Self:
+    def from_dict(cls, data: dict) -> "UTMParams":
         from app.core.validators import sanitize_utm
         return cls(
             source=sanitize_utm(data.get("utm_source")),
