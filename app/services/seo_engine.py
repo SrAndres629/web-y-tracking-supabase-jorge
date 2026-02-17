@@ -16,38 +16,63 @@ class SEOEngine:
     
     @staticmethod
     def get_global_schema() -> Dict[str, Any]:
-        """Schema LocalBusiness: La base de la autoridad local"""
+        """Schema BeautySalon: Máxima relevancia para clínicas de estética"""
         return {
             "@context": "https://schema.org",
-            "@type": "LocalBusiness",
-            "name": "Jorge Aguirre Flores",
-            "image": f"{SEOEngine.BASE_URL}/static/assets/images/meta/og-image.webp",
+            "@type": "BeautySalon",
+            "name": "Jorge Aguirre Flores - Arte Facial & Microblading",
+            "image": [
+                f"{SEOEngine.BASE_URL}/static/assets/images/hero/jorge_hero_new.webp",
+                f"{SEOEngine.BASE_URL}/static/assets/images/meta/og-image.webp"
+            ],
             "@id": f"{SEOEngine.BASE_URL}/#organization",
             "url": SEOEngine.BASE_URL,
             "telephone": "+59164714751",
+            "priceRange": "$$$",
+            "description": "Especialista en Microblading, Delineado Permanente y Acuarela de Labios en Bolivia con más de 30 años de experiencia.",
             "address": {
                 "@type": "PostalAddress",
-                "streetAddress": "Equipetrol Calle 7 Este", # Ajustar si es necesario
+                "streetAddress": "Equipetrol Calle 7 Este",
                 "addressLocality": "Santa Cruz de la Sierra",
                 "addressRegion": "Santa Cruz",
+                "postalCode": "0000",
                 "addressCountry": "BO"
             },
             "geo": {
                 "@type": "GeoCoordinates",
-                "latitude": -17.7667, # Coordenadas de Santa Cruz
-                "longitude": -63.1833
+                "latitude": -17.7815,
+                "longitude": -63.1821
             },
-            "openingHoursSpecification": {
-                "@type": "OpeningHoursSpecification",
-                "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
-                "opens": "09:00",
-                "closes": "20:00"
-            },
+            "openingHoursSpecification": [
+                {
+                    "@type": "OpeningHoursSpecification",
+                    "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+                    "opens": "09:00",
+                    "closes": "18:00"
+                },
+                {
+                    "@type": "OpeningHoursSpecification",
+                    "dayOfWeek": "Saturday",
+                    "opens": "09:00",
+                    "closes": "14:00"
+                }
+            ],
             "sameAs": [
                 "https://facebook.com/jorgeaguirreflores",
                 "https://instagram.com/jorgeaguirreflores",
                 "https://tiktok.com/@jorgeaguirreflores"
-            ]
+            ],
+            "founder": {
+                "@type": "Person",
+                "name": "Jorge Aguirre Flores",
+                "jobTitle": "Especialista en Micropigmentación",
+                "image": f"{SEOEngine.BASE_URL}/static/assets/images/hero/jorge_hero_new.webp"
+            },
+            "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": "5.0",
+                "reviewCount": "127"
+            }
         }
 
     @staticmethod

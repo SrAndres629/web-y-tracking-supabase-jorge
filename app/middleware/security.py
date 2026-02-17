@@ -65,8 +65,8 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["Cross-Origin-Resource-Policy"] = "same-origin"
         
         # 8. Cross-Origin Embedder Policy (COEP)
-        # Requires explicit opt-in for cross-origin resources
-        response.headers["Cross-Origin-Embedder-Policy"] = "require-corp"
+        # Relaxed to credentialless to allow cross-origin resources (scripts/images) without CORP headers
+        response.headers["Cross-Origin-Embedder-Policy"] = "credentialless"
         
         # 9. Permissions Policy - Restrict browser features
         # Only allow necessary features
@@ -81,16 +81,15 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "accelerometer=()"
         )
 
-        # 10. Content Security Policy (CSP) - STRICT MODE
-        # Prevents XSS and injection attacks by controlling resource loading
-        # Note: This is a strict policy. If it breaks things, use 'unsafe-inline' carefully
+        # 10. Content Security Policy (CSP) - OPTIMIZED FOR GOOGLE & CLOUDFLARE
+        # Prevents XSS while allowing necessary third-party services
         csp_policy = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://*.googleapis.com https://*.gstatic.com https://cdnjs.cloudflare.com https://unpkg.com https://accounts.google.com https://connect.facebook.net; "
-            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://*.googleapis.com https://*.gstatic.com https://cdnjs.cloudflare.com https://unpkg.com https://accounts.google.com https://connect.facebook.net https://static.cloudflareinsights.com; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://accounts.google.com; "
             "img-src 'self' data: blob: https:; "
             "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; "
-            "connect-src 'self' https://*.upstash.io https://*.facebook.com https://*.googleapis.com; "
+            "connect-src 'self' https://*.upstash.io https://*.facebook.com https://*.googleapis.com https://accounts.google.com https://*.cloudflareinsights.com; "
             "frame-src 'self' https://challenges.cloudflare.com https://accounts.google.com https://*.facebook.com; "
             "object-src 'none'; "
             "base-uri 'self'; "
