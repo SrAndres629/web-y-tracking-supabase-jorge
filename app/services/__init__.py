@@ -249,7 +249,7 @@ async def publish_to_qstash(event_data: dict) -> bool:
     if not QSTASH_TOKEN:
         logger.warning("⚠️ QStash Token missing!")
         return False
-    url = f"{VERCEL_URL}/api/hooks/process-event"
+    url = f"{VERCEL_URL}/hooks/process-event"
     headers = {"Authorization": f"Bearer {QSTASH_TOKEN}", "Content-Type": "application/json", "Upstash-Retries": "3"}
     async with httpx.AsyncClient() as client:
         try:

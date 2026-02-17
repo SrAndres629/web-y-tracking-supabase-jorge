@@ -34,7 +34,7 @@ export const Spotlight = {
     this.currentY += (this.mouseY - this.currentY) * 0.1;
 
     if (this.spotlight) {
-      this.spotlight.style.background = `radial-gradient(circle at ${this.currentX}px ${this.currentY}px, rgba(197, 160, 89, 0.08) 0%, transparent 50%)`;
+      this.spotlight.style.background = `radial-gradient(circle at ${this.currentX}px ${this.currentY}px, rgba(197, 160, 89, 0.04) 0%, transparent 50%)`;
     }
 
     this.rafId = requestAnimationFrame(() => this.animate());

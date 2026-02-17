@@ -1,0 +1,13 @@
+# Exclude huge assets from serverless function to prevent size limit errors
+static/assets/images/**
+static/assets/videos/**
+static/images/**
+public/assets/**
+node_modules/**
+.env*
+.git/**
+.github/**
+tests/**
+.pytest_cache/**
+__pycache__/**
+*.pyc

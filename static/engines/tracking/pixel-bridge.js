@@ -40,15 +40,15 @@ export const PixelBridge = {
     this._userData = hashedData;
     this._log('👤 Updated Advanced Matching Data:', this._userData);
 
-    // Re-inicializar Pixel con nuevos datos si está disponible
-    if (this._isFbqReady() && window.META_PIXEL_ID) {
-      window.fbq('init', window.META_PIXEL_ID, this._userData);
+    // Zaraz handles initialization by default. If we have PII, we set it in Zaraz.
+    if (this._isZarazReady()) {
+      if (data.email) window.zaraz.set('user_email', data.email);
+      if (data.phone) window.zaraz.set('user_phone', data.phone);
+      if (data.external_id) window.zaraz.set('external_id', data.external_id);
     }
 
     // Actualizar Zaraz si está disponible
     if (this._isZarazReady()) {
-      // Zaraz usa user_email, user_phone, etc. 
-      // Nota: Zaraz suele preferir datos limpios y él hace el hashing, pero por seguridad podemos pasar ambos.
       if (data.email) window.zaraz.set('user_email', data.email);
     }
   },

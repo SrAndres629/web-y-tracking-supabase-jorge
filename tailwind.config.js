@@ -24,6 +24,12 @@ module.exports = {
             fontFamily: {
                 sans: ['Inter', 'sans-serif'],
                 serif: ['Playfair Display', 'serif'],
+            },
+            blur: {
+                'luxury-sm': '8px',
+                'luxury-md': '12px',
+                'luxury-lg': '20px',
+                'luxury-xl': '120px', /* Much higher for giant glows */
             }
         },
     },

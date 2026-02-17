@@ -130,6 +130,7 @@ class EliteMetaCAPIService:
         user_agent: Optional[str] = None,
         fbp: Optional[str] = None,
         fbc: Optional[str] = None,
+        **kwargs: Any,
     ) -> Dict[str, Any]:
         """Send event using SDK if available, else HTTP fallback."""
         if not self._deduplicate(event_id, event_name):
@@ -147,7 +148,7 @@ class EliteMetaCAPIService:
                 event_id=event_id,
                 external_id=user_data.external_id,
                 fbp=fbp,
-                fbclid=None,
+                fbc=fbc,
                 email=user_data.email,
                 phone=user_data.phone,
                 first_name=user_data.first_name,
@@ -155,6 +156,8 @@ class EliteMetaCAPIService:
                 city=user_data.city,
                 country=user_data.country,
                 custom_data=(custom_data.to_dict() if custom_data else None),
+                access_token=kwargs.get("access_token"),
+                pixel_id=kwargs.get("pixel_id")
             )
             return {"status": "success" if ok else "error", "method": "http_fallback", "event_id": event_id}
 
@@ -184,6 +187,8 @@ async def send_elite_event(
     zip_code: Optional[str] = None,
     country: Optional[str] = None,
     custom_data: Optional[Dict[str, Any]] = None,
+    access_token: Optional[str] = None,
+    pixel_id: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Convenience wrapper for EliteMetaCAPIService."""
     user_data = EnhancedUserData(
@@ -206,4 +211,6 @@ async def send_elite_event(
         user_agent=user_agent,
         fbp=fbp,
         fbc=fbc,
+        access_token=access_token,
+        pixel_id=pixel_id
     )
