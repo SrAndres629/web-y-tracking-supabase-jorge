@@ -284,7 +284,13 @@ async def read_privacy(request: Request) -> Response:
             "updated_date": "Febrero 2026",
             "contact": await get_contact_config(),
         },
-    )
+
+
+
+@router.get("/privacy", response_class=HTMLResponse)
+async def read_privacy_en(request: Request) -> Response:
+    """Privacy Policy Page (English Alias)."""
+    return await read_privacy(request)
 
 
 @router.get("/terminos", response_class=HTMLResponse)
@@ -296,6 +302,27 @@ async def read_terms(request: Request) -> Response:
         context={
             "title": "Términos y Condiciones",
             "page_type": "terms",
+            "updated_date": "Febrero 2026",
+            "contact": await get_contact_config(),
+        },
+    )
+
+
+@router.get("/terms", response_class=HTMLResponse)
+async def read_terms_en(request: Request) -> Response:
+    """Terms & Conditions Page (English Alias)."""
+    return await read_terms(request)
+
+
+@router.get("/cookies", response_class=HTMLResponse)
+async def read_cookies(request: Request) -> Response:
+    """Cookies Policy Page."""
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/site/legal.html",
+        context={
+            "title": "Política de Cookies",
+            "page_type": "cookies",
             "updated_date": "Febrero 2026",
             "contact": await get_contact_config(),
         },
