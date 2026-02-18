@@ -7,7 +7,7 @@
 @import url('../atoms/buttons/button-service-cta.css');
 @import url('../atoms/buttons/whatsapp-premium.css');
 @import url('../atoms/text/text-liquid-gold.css');
-@import url('../atoms/cards/card-glass.css');
+/* card-glass: consolidated into @layer components below (was duplicated in atoms/) */
 @import url('../atoms/cards/card-service-premium.css');
 
 /* 🧬 MOLECULAR COMPONENTS */
@@ -20,7 +20,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom Layer Overrides */
 /* Custom Layer Overrides */
 @layer components {
   /* 💎 BUTTONS */
@@ -62,9 +61,28 @@
   .card-glass {
     @apply relative p-8 rounded-2xl border border-white/5 bg-white/5 backdrop-blur-md transition-all duration-500 overflow-hidden;
   }
+  .card-glass::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgb(197 160 89 / 10%), transparent);
+    transition: left 0.7s ease;
+    z-index: 1;
+    pointer-events: none;
+  }
   .card-glass:hover {
     @apply border-luxury-gold/30 -translate-y-2;
     box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5);
+  }
+  .card-glass:hover::before {
+    left: 100%;
+  }
+  .card-glass > * {
+    position: relative;
+    z-index: 2;
   }
 
   /* 💎 UTILITIES */

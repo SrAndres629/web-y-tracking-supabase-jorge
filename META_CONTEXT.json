@@ -1,0 +1,302 @@
+{
+  "_meta": {
+    "version": "2.6",
+    "generated_at": "2026-02-18T11:01:45.547613+00:00",
+    "generator": "scripts/generate_meta_context.py",
+    "purpose": "Persistent memory for Antigravity AI agent"
+  },
+  "business": {
+    "name": "Jorge Aguirre Flores",
+    "domain": "jorgeaguirreflores.com",
+    "industry": "Maquillaje Permanente / Microblading",
+    "location": "Santa Cruz, Bolivia",
+    "target_audience": "Mujeres 25-55, mobile-first (90% tráfico desde Meta Ads)",
+    "brand_values": [
+      "Lujo",
+      "Profesionalismo",
+      "Confianza",
+      "30+ años experiencia"
+    ]
+  },
+  "architecture": {
+    "stack": "Python/Flask + Jinja2 + Tailwind CSS + Supabase + Meta CAPI",
+    "hosting": "Vercel (Serverless Python)",
+    "cdn": "Cloudflare",
+    "pattern": "Clean Architecture (app/domain, app/application, app/infrastructure, app/interfaces)",
+    "entry_point": "api/index.py → main.py"
+  },
+  "templates": {
+    "sections": [
+      {
+        "file": "api/templates/sections/cta_final.html",
+        "section_id": null
+      },
+      {
+        "file": "api/templates/sections/faq.html",
+        "section_id": "faq"
+      },
+      {
+        "file": "api/templates/sections/gallery.html",
+        "section_id": "galeria"
+      },
+      {
+        "file": "api/templates/sections/hero.html",
+        "section_id": null
+      },
+      {
+        "file": "api/templates/sections/pricing_tracking.html",
+        "section_id": "pricing-tracking"
+      },
+      {
+        "file": "api/templates/sections/process.html",
+        "section_id": "proceso"
+      },
+      {
+        "file": "api/templates/sections/services.html",
+        "section_id": "servicios"
+      },
+      {
+        "file": "api/templates/sections/testimonials.html",
+        "section_id": "testimonios"
+      }
+    ],
+    "components": [
+      "api/templates/components/footer.html",
+      "api/templates/components/navbar.html",
+      "api/templates/components/whatsapp-button.html"
+    ],
+    "cta_points": [
+      {
+        "label": "Nav CTA",
+        "file": "api/templates/components/navbar.html",
+        "line": 37
+      },
+      {
+        "label": "Mobile Menu CTA",
+        "file": "api/templates/components/navbar.html",
+        "line": 65
+      },
+      {
+        "label": "WhatsApp {{ variant }}",
+        "file": "api/templates/components/whatsapp-button.html",
+        "line": 23
+      },
+      {
+        "label": "WhatsApp Sticky Mobile",
+        "file": "api/templates/components/whatsapp-button.html",
+        "line": 49
+      },
+      {
+        "label": "CTA Final",
+        "file": "api/templates/sections/cta_final.html",
+        "line": 19
+      },
+      {
+        "label": "Galería Main CTA",
+        "file": "api/templates/sections/gallery.html",
+        "line": 18
+      },
+      {
+        "label": "Hero CTA",
+        "file": "api/templates/sections/hero.html",
+        "line": 123
+      },
+      {
+        "label": "Proceso CTA",
+        "file": "api/templates/sections/process.html",
+        "line": 93
+      },
+      {
+        "label": "Servicio {{ service.title }}",
+        "file": "api/templates/sections/services.html",
+        "line": 93
+      },
+      {
+        "label": "Asesoría Servicios",
+        "file": "api/templates/sections/services.html",
+        "line": 111
+      }
+    ],
+    "total_ctas": 10
+  },
+  "css_architecture": {
+    "entry_point": "static/src/input.css",
+    "output": "static/dist/css/app.min.css",
+    "atom_files": [
+      "static/atoms/buttons/btn-outline-gold.css",
+      "static/atoms/buttons/button-gold-liquid.css",
+      "static/atoms/buttons/button-service-cta.css",
+      "static/atoms/buttons/whatsapp-premium.css",
+      "static/atoms/cards/card-glass.css",
+      "static/atoms/cards/card-service-premium.css",
+      "static/atoms/text/text-liquid-gold.css"
+    ],
+    "token_files": [
+      "static/design-system/tokens/animations.css",
+      "static/design-system/tokens/colors.css",
+      "static/design-system/tokens/index.css",
+      "static/design-system/tokens/shadows.css",
+      "static/design-system/tokens/spacing.css",
+      "static/design-system/tokens/theme-bridge.css",
+      "static/design-system/tokens/typography.css"
+    ],
+    "layer_component_classes": [
+      "btn-primary",
+      "btn-secondary",
+      "font-heading-hero",
+      "font-heading-section",
+      "font-body-lead",
+      "card-glass",
+      "text-gradient-gold",
+      "input-floating",
+      "label-floating"
+    ],
+    "potential_duplicates_note": "Classes defined in both atoms/ and input.css @layer need dedup audit"
+  },
+  "design_tokens": {
+    "colors": {
+      "luxury-gold": "#D4AF37",
+      "luxury-gold-light": "#F1D06E",
+      "luxury-gold-dark": "#aa8c2c",
+      "luxury-black": "#0a0a0a",
+      "luxury-gray": "#1a1a1a",
+      "luxury-text": "#e8e8e8",
+      "luxury-text-dim": "#9ca3af"
+    },
+    "fonts": {
+      "sans": "Inter",
+      "serif": "Playfair Display"
+    },
+    "file": "tailwind.config.js"
+  },
+  "env_vars_keys": [
+    "CELERY_BROKER_URL",
+    "CELERY_RESULT_BACKEND",
+    "CLARITY_PROJECT_ID",
+    "CLOUDFLARE_ACCOUNT_ID",
+    "CLOUDFLARE_API_TOKEN",
+    "CLOUDFLARE_EMAIL",
+    "CLOUDFLARE_ZONE_ID",
+    "CLOUDFLARE_ZONE_NAME",
+    "DATABASE_CONNECTION_URI",
+    "DATABASE_URL",
+    "GOOGLE_API_KEY",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
+    "META_ACCESS_TOKEN",
+    "META_PIXEL_ID",
+    "PREWARM_DEBUG_KEY",
+    "PYTHONPATH",
+    "QSTASH_CURRENT_SIGNING_KEY",
+    "QSTASH_NEXT_SIGNING_KEY",
+    "QSTASH_TOKEN",
+    "QSTASH_URL",
+    "REDIS_URL",
+    "RUDDERSTACK_DATA_PLANE_URL",
+    "RUDDERSTACK_WRITE_KEY",
+    "SENTRY_DSN",
+    "SITE_URL",
+    "SUPABASE_PROJECT_ID",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL",
+    "TEST_EVENT_CODE",
+    "TURNSTILE_SECRET_KEY",
+    "TURNSTILE_SITE_KEY",
+    "UPSTASH_REDIS_REST_TOKEN",
+    "UPSTASH_REDIS_REST_URL",
+    "VERCEL_OIDC_TOKEN",
+    "VERCEL_PROJECT_ID",
+    "VERCEL_TEAM_ID",
+    "VERCEL_TOKEN",
+    "ZARAZ_DEBUG_KEY"
+  ],
+  "technical_debt": [
+    {
+      "type": "overflow_x",
+      "severity": "high",
+      "file": "api/templates/components/footer.html",
+      "description": "Fixed width w-[500px] may overflow mobile viewport"
+    },
+    {
+      "type": "overflow_x",
+      "severity": "high",
+      "file": "api/templates/pages/site/tracking_motor.html",
+      "description": "Fixed width w-[800px] may overflow mobile viewport"
+    },
+    {
+      "type": "overflow_x",
+      "severity": "high",
+      "file": "api/templates/pages/site/legal.html",
+      "description": "Fixed width w-[500px] may overflow mobile viewport"
+    },
+    {
+      "type": "overflow_x",
+      "severity": "high",
+      "file": "api/templates/sections/services.html",
+      "description": "Fixed width w-[900px] may overflow mobile viewport"
+    },
+    {
+      "type": "overflow_x",
+      "severity": "high",
+      "file": "api/templates/sections/cta_final.html",
+      "description": "Fixed width w-[500px] may overflow mobile viewport"
+    },
+    {
+      "type": "overflow_x",
+      "severity": "high",
+      "file": "api/templates/sections/hero.html",
+      "description": "Fixed width w-[500px] may overflow mobile viewport"
+    },
+    {
+      "type": "overflow_x",
+      "severity": "high",
+      "file": "api/templates/sections/gallery.html",
+      "description": "Fixed width w-[800px] may overflow mobile viewport"
+    },
+    {
+      "type": "overflow_x",
+      "severity": "high",
+      "file": "api/templates/sections/process.html",
+      "description": "Fixed width w-[800px] may overflow mobile viewport"
+    },
+    {
+      "type": "overflow_x",
+      "severity": "high",
+      "file": "api/templates/sections/pricing_tracking.html",
+      "description": "Fixed width w-[500px] may overflow mobile viewport"
+    },
+    {
+      "type": "overflow_x",
+      "severity": "high",
+      "file": "api/templates/sections/pricing_tracking.html",
+      "description": "Fixed width w-[500px] may overflow mobile viewport"
+    }
+  ],
+  "decisions": [
+    {
+      "date": "2026-02-18",
+      "decision": "app.min.css loaded render-blocking (not async) to eliminate FOUC",
+      "rationale": "47KB is acceptable tradeoff vs FOUC on mobile"
+    },
+    {
+      "date": "2026-02-18",
+      "decision": "Replaced text-luxury-gray with text-gray-300 for body text",
+      "rationale": "luxury-gray (#1a1a1a) is a surface color, not readable as text on #0a0a0a bg"
+    },
+    {
+      "date": "2026-02-18",
+      "decision": "Mobile H1 reduced from text-5xl (48px) to text-4xl (36px)",
+      "rationale": "Golden ratio typography scale for 390px viewport"
+    },
+    {
+      "date": "2026-02-18",
+      "decision": "Fixed-width glow elements changed to vw-relative with max-w caps",
+      "rationale": "Prevent overflow-X on mobile viewports < 400px"
+    },
+    {
+      "date": "2026-02-18",
+      "decision": "CTA touch targets increased to py-4 (≥44px height)",
+      "rationale": "Fitts' law compliance for mobile thumb interaction"
+    }
+  ]
+}
