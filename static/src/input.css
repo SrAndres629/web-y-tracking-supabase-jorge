@@ -46,7 +46,7 @@
 
   /* 💎 TYPOGRAPHY */
   .font-heading-hero {
-    @apply font-serif text-5xl md:text-7xl font-bold leading-[1.1] tracking-tight;
+    @apply font-serif text-4xl md:text-7xl font-bold leading-[1.1] tracking-tight;
     background: linear-gradient(to right, #fff 20%, #999 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;

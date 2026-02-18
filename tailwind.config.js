@@ -15,7 +15,9 @@ module.exports = {
                 'luxury-gold-light': '#F1D06E', // Gold 2
                 'luxury-gold-dark': '#aa8c2c', // Gold 3 (generated dim)
                 'luxury-black': '#0a0a0a', // Deep Black
-                'luxury-gray': '#1a1a1a', // Surface
+                'luxury-gray': '#1a1a1a', // Surface (NOT for text)
+                'luxury-text': '#e8e8e8', // Body text (WCAG AA: 17.4:1)
+                'luxury-text-dim': '#9ca3af', // Muted text (WCAG AA: 7.2:1)
             },
             fontFamily: {
                 sans: ['Inter', 'sans-serif'],
