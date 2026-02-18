@@ -15,7 +15,7 @@ from app.domain.repositories.lead_repo import LeadRepository
 from app.domain.repositories.visitor_repo import VisitorRepository
 
 __all__ = [
-    "VisitorRepository",
-    "LeadRepository",
     "EventRepository",
+    "LeadRepository",
+    "VisitorRepository",
 ]

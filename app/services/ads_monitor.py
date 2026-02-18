@@ -21,7 +21,7 @@ import os
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, TypedDict
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +47,18 @@ class Alert:
     resolved_at: Optional[datetime] = None
 
 
+class MonitorState(TypedDict):
+    """Estado del monitoreo con tipos fuertes para Mypy"""
+
+    last_pixel_event: Optional[datetime]
+    emq_scores: Dict[str, Dict[str, Any]]
+    error_count: int
+    total_events: int
+    bot_count: int
+    cpm_current: float
+    cpm_average: float
+
+
 class AdsMonitor:
     """
     Sistema de monitoreo continuo para Meta Ads.
@@ -70,14 +82,14 @@ class AdsMonitor:
         self.metrics_history: List[Dict] = []
 
         # Estado actual
-        self.current_state = {
+        self.current_state: MonitorState = {
             "last_pixel_event": None,
             "emq_scores": {},
             "error_count": 0,
             "total_events": 0,
             "bot_count": 0,
-            "cpm_current": 0,
-            "cpm_average": 0,
+            "cpm_current": 0.0,
+            "cpm_average": 0.0,
         }
 
     def register_alert_handler(self, handler: Callable):
@@ -85,7 +97,11 @@ class AdsMonitor:
         self.alert_handlers.append(handler)
 
     def create_alert(
-        self, severity: AlertSeverity, category: str, message: str, details: Dict = None
+        self,
+        severity: AlertSeverity,
+        category: str,
+        message: str,
+        details: Dict | None = None,
     ) -> Alert:
         """Crea y dispara una alerta"""
         alert = Alert(
@@ -112,7 +128,7 @@ class AdsMonitor:
             try:
                 handler(alert)
             except Exception as e:
-                logger.error(f"Error en alert handler: {e}")
+                logger.exception(f"Error en alert handler: {e}")
 
         return alert
 
@@ -233,7 +249,10 @@ class AdsMonitor:
         avg_cpm = sum(history) / len(history)
         self.current_state["cpm_average"] = avg_cpm
 
-        if avg_cpm > 0 and current_cpm > avg_cpm * self.THRESHOLDS["cpm_spike_multiplier"]:
+        if (
+            avg_cpm > 0
+            and current_cpm > avg_cpm * self.THRESHOLDS["cpm_spike_multiplier"]
+        ):
             self.create_alert(
                 severity=AlertSeverity.WARNING,
                 category="COST",
@@ -286,7 +305,7 @@ class AdsMonitor:
                 await asyncio.sleep(self.check_interval)
 
             except Exception as e:
-                logger.error(f"Error en monitoring loop: {e}")
+                logger.exception(f"Error en monitoring loop: {e}")
                 await asyncio.sleep(60)  # Esperar 1 min en caso de error
 
     def stop(self):
@@ -331,7 +350,9 @@ class AdsMonitor:
             "generated_at": datetime.utcnow().isoformat(),
             "monitor_status": self.get_status(),
             "alerts": [asdict(a) for a in self.alerts[-100:]],  # Últimas 100
-            "metrics": self.metrics_history[-168:],  # Última semana (asumiendo 5min interval)
+            "metrics": self.metrics_history[
+                -168:
+            ],  # Última semana (asumiendo 5min interval)
         }
 
         with open(filepath, "w") as f:
@@ -377,7 +398,7 @@ def webhook_alert_handler(alert: Alert):
 
         requests.post(webhook_url, json=payload, timeout=5)
     except Exception as e:
-        logger.error(f"Error enviando webhook: {e}")
+        logger.exception(f"Error enviando webhook: {e}")
 
 
 def email_alert_handler(alert: Alert):

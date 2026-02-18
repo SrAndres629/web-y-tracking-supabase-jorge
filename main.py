@@ -18,12 +18,42 @@ import logging
 import mimetypes
 import os
 import sys
+from contextlib import asynccontextmanager
 
+import sentry_sdk
 import uvicorn
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import ORJSONResponse
 from fastapi.staticfiles import StaticFiles
+from sentry_sdk.integrations.fastapi import FastApiIntegration
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
+
+# Internal Imports
+from app.config import settings
+from app.database import init_tables
+from app.interfaces.api.middleware.error_handler import setup_error_handlers
+from app.interfaces.api.routes import (
+    admin,
+    consent,
+    health,
+    identity,
+    pages,
+    seo,
+    tracking,
+    vision,
+)
+from app.limiter import limiter
+from app.middleware.auth import APIKeyMiddleware
+from app.middleware.cache import CacheControlMiddleware
+from app.middleware.early_hints import EarlyHintsMiddleware
+from app.middleware.identity import ServerSideIdentityMiddleware
+from app.middleware.security import SecurityHeadersMiddleware
+from app.services import ContentManager
+from app.version import VERSION
 
 # Configuración de Logging prioritaria
 logging.basicConfig(
@@ -34,13 +64,8 @@ logger = logging.getLogger(__name__)
 
 def init_sentry():
     """Lazy init for Sentry to avoid blocking the main thread during startup"""
-    from app.config import settings
-
     if settings.SENTRY_DSN:
         try:
-            import sentry_sdk
-            from sentry_sdk.integrations.fastapi import FastApiIntegration
-
             sentry_sdk.init(
                 dsn=settings.SENTRY_DSN,
                 integrations=[FastApiIntegration()],
@@ -56,16 +81,15 @@ def init_sentry():
 # EVENTOS DE CICLO DE VIDA
 # =================================================================
 
-from contextlib import asynccontextmanager
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Ciclo de vida de la aplicación con manejo de contexto"""
     # Startup - OPTIMIZED: No blocking DB init
-    from app.version import VERSION
 
-    logger.info(f"🚀 Iniciando Jorge Aguirre Flores Web v{VERSION} (Atomic Architecture Mode)")
+    logger.info(
+        f"🚀 Iniciando Jorge Aguirre Flores Web v{VERSION} (Atomic Architecture Mode)"
+    )
 
     is_test_mode = (
         os.getenv("PYTEST_CURRENT_TEST") is not None
@@ -79,8 +103,6 @@ async def lifespan(app: FastAPI):
 
     # 2. Startup warmups only outside test/audit mode
     if not is_test_mode:
-        from app.services import ContentManager
-
         try:
             await asyncio.wait_for(ContentManager.warm_cache(), timeout=5)
         except asyncio.TimeoutError:
@@ -90,7 +112,6 @@ async def lifespan(app: FastAPI):
 
         # NOTE: Database connection is now LAZY (initialized on first request)
         # but we trigger initial check in background
-        from app.database import init_tables
 
         try:
             init_ok = await asyncio.wait_for(asyncio.to_thread(init_tables), timeout=5)
@@ -101,13 +122,11 @@ async def lifespan(app: FastAPI):
         except asyncio.TimeoutError:
             logger.warning("⚠️ init_tables timeout; continuing with lazy DB init")
         except Exception as e:
-            logger.error(f"❌ Database initialization failed: {e}")
+            logger.exception(f"❌ Database initialization failed: {e}")
 
         logger.info("⚡ Cold Start Optimization: Database ready")
     else:
         logger.info("🧪 Test mode detected: skipping warm_cache and init_tables")
-
-    from app.config import settings
 
     logger.info(f"📊 Meta Pixel ID: {settings.META_PIXEL_ID}")
     logger.info(f"🌐 Servidor listo en http://{settings.HOST}:{settings.PORT}")
@@ -125,7 +144,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Jorge Aguirre Flores Web",
-    description="Sitio web profesional con tracking Meta CAPI",
+    description="Professional website with Meta CAPI tracking",
     version="2.0.0",
     default_response_class=ORJSONResponse,
     lifespan=lifespan,
@@ -135,14 +154,10 @@ app = FastAPI(
 app.add_middleware(GZipMiddleware, minimum_size=500)
 
 # Middleware para Proxy/CDN (Cloudflare/Render)
-from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=["*"])
 
 # Middleware CORS (Seguridad: permitir solo dominios propios)
-from fastapi.middleware.cors import CORSMiddleware
-
-from app.config import settings
 
 app.add_middleware(
     CORSMiddleware,
@@ -153,37 +168,28 @@ app.add_middleware(
 )
 
 # Middleware: Server-Side Identity (AdBlocker Bypass)
-from app.middleware.identity import ServerSideIdentityMiddleware
 
 app.add_middleware(ServerSideIdentityMiddleware)
 
 # Middleware: Early Hints Bridge (Cloudflare 103 Optimization)
-from app.middleware.early_hints import EarlyHintsMiddleware
 
 app.add_middleware(EarlyHintsMiddleware)
 
 # Middleware: Security Shield (Phase 13.5)
-from app.middleware.security import SecurityHeadersMiddleware
 
 app.add_middleware(SecurityHeadersMiddleware)
 
 # Middleware: Cache Control (CPM Optimization)
-from app.middleware.cache import CacheControlMiddleware
 
 app.add_middleware(CacheControlMiddleware)
 
 # Middleware: Multi-tenant Auth (MVP Phase 2)
-from app.middleware.auth import APIKeyMiddleware
 
 app.add_middleware(APIKeyMiddleware)
 
 # =================================================================
 # SECURITY: RATE LIMITING (Redis-Backed)
 # =================================================================
-from slowapi import _rate_limit_exceeded_handler
-from slowapi.errors import RateLimitExceeded
-
-from app.limiter import limiter
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
@@ -200,6 +206,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 mimetypes.init()
 mimetypes.add_type("text/css", ".css")
 mimetypes.add_type("application/javascript", ".js")
+mimetypes.add_type("image/webp", ".webp")
 
 # Get absolute path to static folder (fixes Docker/Render path issues)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -214,43 +221,35 @@ app.mount("/static", StaticFiles(directory=static_dir), name="static")
 # =================================================================
 
 # Páginas HTML
-from app.interfaces.api.routes import pages
 
 app.include_router(pages.router)
 
 # Tracking endpoints (/track/*)
-from app.interfaces.api.routes import tracking
 
 app.include_router(tracking.router)
 
 # Panel de administración (/admin/*)
-from app.interfaces.api.routes import admin
 
 app.include_router(admin.router)
 
 # Health checks (/health, /ping)
-from app.interfaces.api.routes import health
 
 app.include_router(health.router)
 
 # Identity Resolution (/api/identity/*)
-from app.interfaces.api.routes import identity
 
 app.include_router(identity.router)
 
 # SEO Routes (sitemap.xml, robots.txt)
-from app.interfaces.api.routes import seo
 
 app.include_router(seo.router)
 
 # Neuro-Vision Routes (Visual Cortex - NEXUS-7)
-from app.interfaces.api.routes import vision
 
 app.include_router(vision.router)
 logger.info("🔮 Neuro-Vision routes mounted at /vision")
 
 # Consent Management (GDPR/CCPA/LGPD)
-from app.interfaces.api.routes import consent
 
 app.include_router(consent.router)
 logger.info("🛡️ Consent routes mounted at /consent")
@@ -259,7 +258,6 @@ logger.info("🛡️ Consent routes mounted at /consent")
 # =================================================================
 # ERROR HANDLERS (Clean Architecture)
 # =================================================================
-from app.interfaces.api.middleware.error_handler import setup_error_handlers
 
 setup_error_handlers(app)
 logger.info("✅ Error handlers configurados")

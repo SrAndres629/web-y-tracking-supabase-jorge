@@ -82,7 +82,7 @@ class ProcessGoogleOneTapHandler:
         except ValueError as e:
             return {"status": "error", "message": str(e)}
         except Exception as e:
-            logger.error(f"❌ [ONE TAP] Error: {e}")
+            logger.exception(f"❌ [ONE TAP] Error: {e}")
             return {
                 "status": "error",
                 "message": "Internal error processing Google One Tap credential",

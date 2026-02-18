@@ -40,14 +40,14 @@ class RudderStackTracker(TrackerPort):
         """Lazy init del cliente RudderStack."""
         if self._client is None and self._enabled:
             try:
-                from rudder_sdk_python import RudderAnalytics
+                from rudder_sdk_python import RudderAnalytics  # type: ignore
 
                 self._client = RudderAnalytics(
                     write_key=self._settings.external.rudderstack_write_key,
                     data_plane_url=self._settings.external.rudderstack_data_plane_url,
                 )
             except Exception as e:
-                logger.error(f"Failed to init RudderStack: {e}")
+                logger.exception(f"Failed to init RudderStack: {e}")
                 self._enabled = False
         return self._client
 
@@ -88,7 +88,7 @@ class RudderStackTracker(TrackerPort):
             return True
 
         except Exception as e:
-            logger.error(f"❌ RudderStack error: {e}")
+            logger.exception(f"❌ RudderStack error: {e}")
             return False
 
     async def health_check(self) -> bool:

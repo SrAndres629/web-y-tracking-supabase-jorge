@@ -1,8 +1,8 @@
 # 🧠 NEXUS-7: Neural Hive Architecture
 
-**Versión:** 2.0.0  
-**Codename:** SYNAPTIC_HIVE  
-**Fecha:** 2026-02-10  
+**Versión:** 2.0.0
+**Codename:** SYNAPTIC_HIVE
+**Fecha:** 2026-02-10
 **Status:** ✅ PRODUCTION READY
 
 ---
@@ -336,10 +336,10 @@ decision = hive.collective_decide(
 
 2. ANÁLISIS COLECTIVO
    ├── Gemini analiza desde seguridad
-   ├── Kimi analiza desde arquitectura  
+   ├── Kimi analiza desde arquitectura
    ├── Codex analiza desde implementación
    └── Antigravity analiza desde operaciones
-       
+
        Todos almacenan en memoria compartida
        SynapticBus sincroniza insights
 
@@ -371,7 +371,7 @@ decision = hive.collective_decide(
 ### 🧠 Antigravity (Orquestador)
 - **Especialidad**: Coordinación, despliegue, monitoreo
 - **Rol**: Mantiene la colmena funcionando
-- **Auto-aceptación**: 
+- **Auto-aceptación**:
   - FULL: Monitoreo, logs
   - CONDITIONAL: Configuración
   - SUPERVISED: Deploy a producción

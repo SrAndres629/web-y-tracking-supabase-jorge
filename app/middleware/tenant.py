@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from starlette.datastructures import State
-from starlette.requests import Request
+from starlette.responses import JSONResponse
 from starlette.types import ASGIApp, Receive, Scope, Send
 
 from app.config import settings
@@ -26,11 +26,11 @@ class TenantMiddleware:
         resolved = settings.resolve_tenant(tenant_candidate)
 
         if not settings.is_tenant_allowed(resolved):
-            response = Request(scope, receive).response_class
-            await response(
+            response = JSONResponse(
                 status_code=403,
                 content={"detail": "Tenant no permitido"},
             )
+            await response(scope, receive, send)
             return
 
         state: State = scope.setdefault("state", State())

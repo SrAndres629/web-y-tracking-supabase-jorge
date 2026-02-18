@@ -11,14 +11,14 @@ Un visitante es una Entidad porque:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 
 try:
-    from typing import Optional, Self
-except ImportError:
     from typing import Optional
 
     from typing_extensions import Self
+except ImportError:
+    from typing import Optional
 
 from enum import Enum
 
@@ -77,8 +77,8 @@ class Visitor:
     geo: GeoLocation = field(default_factory=GeoLocation)
 
     # Metadata
-    created_at: datetime = field(default_factory=datetime.utcnow)
-    last_seen: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    last_seen: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     visit_count: int = 1
 
     @classmethod
@@ -144,8 +144,8 @@ class Visitor:
             source=source,
             utm=utm or UTMParams(),
             geo=geo or GeoLocation(),
-            created_at=created_at or datetime.utcnow(),
-            last_seen=last_seen or datetime.utcnow(),
+            created_at=created_at or datetime.now(timezone.utc),
+            last_seen=last_seen or datetime.now(timezone.utc),
             visit_count=visit_count,
             email=email,
             phone=phone,
@@ -153,7 +153,7 @@ class Visitor:
 
     def record_visit(self) -> None:
         """Actualiza last_seen e incrementa contador."""
-        self.last_seen = datetime.utcnow()
+        self.last_seen = datetime.now(timezone.utc)
         self.visit_count += 1
 
     def update_fbclid(self, fbclid: Optional[str]) -> None:
@@ -218,7 +218,7 @@ class Visitor:
     @property
     def days_since_last_visit(self) -> int:
         """Días desde última visita."""
-        return (datetime.utcnow() - self.last_seen).days
+        return (datetime.now(timezone.utc) - self.last_seen).days
 
     def __repr__(self) -> str:
         return f"Visitor({self.external_id}, visits={self.visit_count})"

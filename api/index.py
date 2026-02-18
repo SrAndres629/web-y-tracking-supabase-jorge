@@ -20,7 +20,7 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.insert(0, parent_dir)
 
 # Importar aplicación principal
-from main import app
+from main import app  # noqa: E402
 
 # app es expuesto para Vercel/Serverless
 __all__ = ["app"]

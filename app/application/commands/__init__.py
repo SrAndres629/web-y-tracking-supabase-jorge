@@ -10,10 +10,10 @@ from app.application.commands.create_visitor import CreateVisitorCommand, Create
 from app.application.commands.track_event import TrackEventCommand, TrackEventHandler
 
 __all__ = [
-    "TrackEventCommand",
-    "TrackEventHandler",
-    "CreateVisitorCommand",
-    "CreateVisitorHandler",
     "CreateLeadCommand",
     "CreateLeadHandler",
+    "CreateVisitorCommand",
+    "CreateVisitorHandler",
+    "TrackEventCommand",
+    "TrackEventHandler",
 ]

@@ -1,6 +1,6 @@
 # DEP-103 Local Smoke Evidence
 
-Date: 2026-02-11  
+Date: 2026-02-11
 Scope: Packaging and architecture smoke for serverless deploy readiness.
 
 ## Executed checks

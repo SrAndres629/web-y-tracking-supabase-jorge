@@ -26,7 +26,6 @@ import shlex
 import subprocess
 import sys
 import time
-import urllib.error
 import urllib.request
 from typing import Any, Dict, List, Tuple
 
@@ -133,7 +132,9 @@ class SecurityAuditor:
         """Verifica que el middleware de seguridad tenga todos los headers"""
         Console.section("🔒 SECURITY MIDDLEWARE AUDIT")
 
-        middleware_path = os.path.join(self.repo_path, "app", "middleware", "security.py")
+        middleware_path = os.path.join(
+            self.repo_path, "app", "middleware", "security.py"
+        )
         if not os.path.exists(middleware_path):
             self.issues.append("Security middleware not found!")
             return False
@@ -156,7 +157,9 @@ class SecurityAuditor:
 
         # Verificar CSP en modo estricto (no report-only)
         if "Content-Security-Policy-Report-Only" in content:
-            self.warnings.append("CSP is in Report-Only mode. Consider using strict mode.")
+            self.warnings.append(
+                "CSP is in Report-Only mode. Consider using strict mode."
+            )
             Console.warning("CSP in Report-Only mode")
 
         if "Content-Security-Policy" in content:
@@ -176,7 +179,9 @@ class SecurityAuditor:
         """Verifica que existan robots.txt y sitemap.xml"""
         Console.section("🔍 SEO FILES AUDIT")
 
-        routes_path = os.path.join(self.repo_path, "app", "interfaces", "api", "routes", "seo.py")
+        routes_path = os.path.join(
+            self.repo_path, "app", "interfaces", "api", "routes", "seo.py"
+        )
         if not os.path.exists(routes_path):
             self.issues.append("SEO routes not found!")
             return False
@@ -206,7 +211,9 @@ class SecurityAuditor:
         """Verifica meta tags en templates"""
         Console.section("🏷️  META TAGS AUDIT")
 
-        base_template = os.path.join(self.repo_path, "api", "templates", "layouts", "base.html")
+        base_template = os.path.join(
+            self.repo_path, "api", "templates", "layouts", "base.html"
+        )
         if not os.path.exists(base_template):
             self.issues.append("Base template not found!")
             return False
@@ -316,7 +323,11 @@ class BugHunter:
         for line_num, line in enumerate(lines, 1):
             # Skip comment lines quickly
             stripped = line.strip()
-            if not stripped or stripped[0] in "#*-" or stripped[:2] in ("//", "--", "/*", "* "):
+            if (
+                not stripped
+                or stripped[0] in "#*-"
+                or stripped[:2] in ("//", "--", "/*", "* ")
+            ):
                 continue
 
             for compiled_re, category, description in compiled_patterns:
@@ -358,7 +369,13 @@ class BugHunter:
             "scripts",
             "tools",
         }
-        exclude_files = {"git_sync.py", "antigravity.py", "synapse.py", "setup_env.py", "logger.js"}
+        exclude_files = {
+            "git_sync.py",
+            "antigravity.py",
+            "synapse.py",
+            "setup_env.py",
+            "logger.js",
+        }
 
         files_scanned: int = 0
 
@@ -389,7 +406,9 @@ class BugHunter:
                     # Show progress every 50 files
                     if files_scanned % 50 == 0:
                         elapsed = time.time() - start_time
-                        Console.log(f"Scanned {files_scanned} files... ({elapsed:.1f}s)")
+                        Console.log(
+                            f"Scanned {files_scanned} files... ({elapsed:.1f}s)"
+                        )
 
         elapsed = time.time() - start_time
         Console.log(f"Scan complete: {files_scanned} files scanned in {elapsed:.1f}s")
@@ -413,7 +432,9 @@ class BugHunter:
             display_findings: List[Dict[str, Any]] = cat_findings
             for finding in display_findings[:3]:
                 rel_path = os.path.relpath(finding["file"], self.repo_path)
-                Console.write(f"  {Console.WARNING}{rel_path}:{finding['line']}{Console.ENDC}")
+                Console.write(
+                    f"  {Console.WARNING}{rel_path}:{finding['line']}{Console.ENDC}"
+                )
                 Console.write(f"    {finding['description']}")
             if len(cat_findings) > 3:
                 Console.write(f"  ... and {len(cat_findings) - 3} more")
@@ -448,14 +469,18 @@ class RelatedFilesFinder:
         for file in os.listdir(target_dir) if os.path.isdir(target_dir) else []:
             file_base = os.path.splitext(file)[0]
             if file_base == base_name and os.path.join(target_dir, file) != target_file:
-                related.append((os.path.join(target_dir, file), "Same name, different extension"))
+                related.append(
+                    (os.path.join(target_dir, file), "Same name, different extension")
+                )
 
         # Buscar imports/referencias
         with open(target_file, "r", encoding="utf-8") as f:
             content = f.read()
 
         # Buscar imports en Python
-        python_imports = re.findall(r"from\s+([\w.]+)\s+import|import\s+([\w.]+)", content)
+        python_imports = re.findall(
+            r"from\s+([\w.]+)\s+import|import\s+([\w.]+)", content
+        )
         for match in python_imports:
             module = match[0] or match[1]
             module_path = module.replace(".", "/") + ".py"
@@ -484,7 +509,9 @@ class RelatedFilesFinder:
         if "routes" in target_file or "views" in target_file:
             template_patterns = re.findall(r"['\"]([\w/]+\.html)['\"]", content)
             for template in template_patterns:
-                template_path = os.path.join(self.repo_path, "api", "templates", template)
+                template_path = os.path.join(
+                    self.repo_path, "api", "templates", template
+                )
                 if os.path.exists(template_path):
                     related.append((template_path, f"Template: {template}"))
 
@@ -607,14 +634,25 @@ class SystemAuditor:
             env["AUDIT_MODE"] = "1"
 
         test_paths = shlex.split(path) if isinstance(path, str) else list(path)
-        pytest_cmd = (
-            [sys.executable, "-m", "pytest"] + test_paths + ["-v", "--tb=short", "--maxfail=0"]
-        )
+        pytest_cmd = [
+            sys.executable,
+            "-m",
+            "pytest",
+            *test_paths,
+            "-v",
+            "--tb=short",
+            "--maxfail=0",
+        ]
 
         last_combined = ""
         for attempt in range(1, retries + 2):
             result = subprocess.run(
-                pytest_cmd, capture_output=True, text=True, cwd=self.repo_path, env=env, check=False
+                pytest_cmd,
+                capture_output=True,
+                text=True,
+                cwd=self.repo_path,
+                env=env,
+                check=False,
             )
             stdout = result.stdout or ""
             stderr = result.stderr or ""
@@ -677,7 +715,9 @@ class SystemAuditor:
 
         Console.error(f"Score de Salud: < 100% ({len(self.issues)} errores)")
         for issue in self.issues:
-            Console.write(f"- {issue['file']}:{issue['line']} [{issue['type']}] {issue['message']}")
+            Console.write(
+                f"- {issue['file']}:{issue['line']} [{issue['type']}] {issue['message']}"
+            )
 
         return False
 
@@ -754,7 +794,19 @@ def purge_cloudflare_cache():
 
 
 def run_cmd(command, cwd=None, exit_on_fail=False):
-    result = subprocess.run(command, shell=True, capture_output=True, text=True, cwd=cwd)
+    if isinstance(command, str):
+        cmd_args = shlex.split(command)
+    else:
+        cmd_args = command
+
+    try:
+        result = subprocess.run(
+            cmd_args, shell=False, capture_output=True, text=True, cwd=cwd, check=False
+        )
+    except FileNotFoundError:
+        # Command not found
+        return False, "", f"Command not found: {command}"
+
     if result.returncode != 0:
         if exit_on_fail:
             Console.error(f"Command failed: {command}\n{result.stderr.strip()}")
@@ -818,7 +870,7 @@ def _stage_and_commit(message: str | None, force: bool) -> bool:
     Console.log("[2/6] Staging & Committing...", "+")
     run_cmd("git add .", cwd=REPO_PATH)
 
-    success, output, _ = run_cmd("git status --porcelain", cwd=REPO_PATH)
+    _success, output, _ = run_cmd("git status --porcelain", cwd=REPO_PATH)
     has_changes = bool(output.strip())
 
     if has_changes or force:
@@ -879,32 +931,60 @@ def _post_deploy_verify():
         if resp.status_code == 200:
             version_match = re.search(r"\?v=(\d+)", resp.text)
             new_version = version_match.group(1) if version_match else "Unknown"
-            Console.success(f"PRODUCCIÓN ACTUALIZADA: Versión Atómica {new_version} activa.")
+            Console.success(
+                f"PRODUCCIÓN ACTUALIZADA: Versión Atómica {new_version} activa."
+            )
         else:
             Console.warning(f"Pre-Warm status: {resp.status_code}")
     except Exception as e:
         Console.warning(f"Pre-Warm failed: {e}")
 
-    print(f"\n{Console.GREEN}System is Live: https://jorgeaguirreflores.com{Console.ENDC}")
+    print(
+        f"\n{Console.GREEN}System is Live: https://jorgeaguirreflores.com{Console.ENDC}"
+    )
 
 
 # =================================================================
 # MAIN ENTRY POINT
 # =================================================================
 def main():
-    parser = argparse.ArgumentParser(description="Silicon Valley Deployment & Audit Tool")
-    parser.add_argument("--force", action="store_true", help="⚠️ DANGER: Bypass all checks")
-    parser.add_argument("--security", action="store_true", help="🔒 Run security audit only")
+    parser = argparse.ArgumentParser(
+        description="Silicon Valley Deployment & Audit Tool"
+    )
+    parser.add_argument(
+        "--force", action="store_true", help="⚠️ DANGER: Bypass all checks"
+    )
+    parser.add_argument(
+        "--security", action="store_true", help="🔒 Run security audit only"
+    )
     parser.add_argument("--bug-hunt", action="store_true", help="🐛 Run bug hunt only")
-    parser.add_argument("--find-related", metavar="FILE", help="🔍 Find files related to FILE")
-    parser.add_argument("--pattern", metavar="PATTERN", help="🔍 Find files matching pattern")
+    parser.add_argument(
+        "--find-related", metavar="FILE", help="🔍 Find files related to FILE"
+    )
+    parser.add_argument(
+        "--pattern", metavar="PATTERN", help="🔍 Find files matching pattern"
+    )
     parser.add_argument("message", nargs="?", default=None, help="Commit message")
     parser.add_argument(
         "--yes-to-deploy",
         action="store_true",
         help="Bypass confirmation for deployment after bug hunt",
     )
+    parser.add_argument(
+        "--self-heal",
+        action="store_true",
+        help="💊 Run Auto-Fixer protocol before audit",
+    )
     args = parser.parse_args()
+
+    # Modo: Self-Healing
+    if args.self_heal:
+        print(f"\n{Console.BOLD}💊 INITIATING SELF-HEALING PROTOCOL...{Console.ENDC}")
+        auto_fix_path = os.path.join(REPO_PATH, "tools", "auto_fix.py")
+        if os.path.exists(auto_fix_path):
+            subprocess.run([sys.executable, auto_fix_path], check=False)
+        else:
+            Console.error("Auto-fix tool not found!")
 
     # Modo: Find Related Files
     if args.find_related:
@@ -931,7 +1011,9 @@ def main():
         sys.exit(0 if passed else 1)
 
     # Modo: Full Deployment Pipeline
-    print(f"\n{Console.BOLD}[NEURAL-SYNC] Initializing Silicon Valley Protocol...{Console.ENDC}\n")
+    print(
+        f"\n{Console.BOLD}[NEURAL-SYNC] Initializing Silicon Valley Protocol...{Console.ENDC}\n"
+    )
 
     # Ejecutar auditoría de seguridad primero
     security = SecurityAuditor(REPO_PATH)

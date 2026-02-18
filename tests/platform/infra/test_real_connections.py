@@ -40,12 +40,12 @@ async def test_real_redis_connection():
 
     client = aioredis.from_url(redis_conn_url, encoding="utf-8", decode_responses=True)
     try:
-        pong = await client.ping()
+        pong = await client.ping()  # type: ignore
         assert pong is True, "❌ Redis PING failed"
     except Exception as e:
         if _is_network_blocked(e):
             pytest.skip(f"Redis egress blocked in current runtime: {e}")
-        pytest.fail(f"❌ Failed to connect to REAL Redis: {str(e)}")
+        pytest.fail(f"❌ Failed to connect to REAL Redis: {e!s}")
     finally:
         await client.aclose()
 
@@ -54,7 +54,8 @@ def test_real_database_connection():
     """
     Verifies actual connection to Supabase Postgres using credentials from .env
     """
-    assert "supabase.com" in settings.DATABASE_URL, (
+    db_url = settings.DATABASE_URL
+    assert db_url is not None and "supabase.com" in db_url, (
         "❌ DATABASE_URL does not look like a Supabase URL"
     )
 
@@ -67,7 +68,7 @@ def test_real_database_connection():
     except Exception as e:
         if _is_network_blocked(e):
             pytest.skip(f"Database egress blocked in current runtime: {e}")
-        pytest.fail(f"❌ Failed to connect to REAL Database: {str(e)}")
+        pytest.fail(f"❌ Failed to connect to REAL Database: {e!s}")
 
 
 def test_meta_configuration_loaded():
@@ -80,8 +81,8 @@ def test_meta_configuration_loaded():
     assert pixel_id != "SET_IN_PRODUCTION", "❌ META_PIXEL_ID is still a placeholder!"
     assert token != "SET_IN_PRODUCTION", "❌ META_ACCESS_TOKEN is still a placeholder!"
 
-    assert pixel_id.isdigit(), f"❌ META_PIXEL_ID should be numeric, got: {pixel_id}"
-    assert len(token) > 20, "❌ META_ACCESS_TOKEN looks too short to be valid"
+    assert pixel_id and pixel_id.isdigit(), f"❌ META_PIXEL_ID should be numeric, got: {pixel_id}"
+    assert token and len(token) > 20, "❌ META_ACCESS_TOKEN looks too short to be valid"
 
 
 def test_qstash_configuration_loaded():

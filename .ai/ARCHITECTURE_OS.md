@@ -19,7 +19,7 @@ We engineered the architecture to boost the numerator and crush the denominator:
 ```mermaid
 graph TD
     User((User 📱)) -->|Request| CF{Cloudflare Edge 🛡️}
-    
+
     subgraph "The Shield (Edge Layer)"
         CF -->|Valid User| Cache[Edge Cache ⚡]
         CF -->|Bot| Turnstile[Block 🚫]

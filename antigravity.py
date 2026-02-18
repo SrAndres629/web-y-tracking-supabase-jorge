@@ -43,7 +43,7 @@ def create_task(prompt, autonomous_mode=False, thinkers=1, workers=2, agent="use
 {prompt}
 
 **Action Required:**
-This is a high-level directive from the user. 
+This is a high-level directive from the user.
 1.  **Analyze** the objective.
 2.  **Break it down** into a sequence of smaller, actionable tasks for other agents (codex, gemini, kimi).
 3.  **Generate** the corresponding `task_AGENT_ACTION.md` files in the motor cortex.

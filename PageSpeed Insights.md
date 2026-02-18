@@ -85,7 +85,7 @@ Una duración en caché más larga puede aumentar el número de visitas repetida
 Solicitud
 Tiempo de vida en caché
 Tamaño de la transferencia
-Facebook social 
+Facebook social
 104 KiB
 /en_US/fbevents.js(connect.facebook.net)
 20min
@@ -108,7 +108,7 @@ Visualización de fuentes Ahorro estimado de 40 ms
 Te recomendamos asignar el valor swap o optional a font-display para asegurarte de que el texto se vea de forma coherente. swap se puede optimizar aún más para mitigar los cambios de diseño con anulaciones de métricas de fuente.FCPSin puntuar
 URL
 Ahorro estimado
-Cloudflare CDN cdn 
+Cloudflare CDN cdn
 …webfonts/fa-regular-400.woff2(cdnjs.cloudflare.com)
 40 ms
 …webfonts/fa-solid-900.woff2(cdnjs.cloudflare.com)
@@ -133,7 +133,7 @@ JavaScript antiguo Ahorro estimado de 12 KiB
 Los polyfills y los transforms permiten que los navegadores antiguos utilicen las nuevas funciones de JavaScript. Sin embargo, muchos de estos polyfills y transforms no son necesarios para los navegadores modernos. Te recomendamos que modifiques tu proceso de compilación de JavaScript para que no transpile las funciones de Baseline, a menos que sepas que debes admitir navegadores antiguos. Descubre por qué la mayoría de los sitios pueden implementar código ES6+ sin transpilación.LCPFCPSin puntuar
 URL
 Bytes desperdiciados
-Facebook social 
+Facebook social
 12,5 KiB
 /en_US/fbevents.js(connect.facebook.net)
 12,5 KiB
@@ -238,7 +238,7 @@ El código de terceros puede afectar mucho a la velocidad de carga. Reduce y apl
 Tercero
 Tamaño de la transferencia
 Tiempo del hilo principal
-Facebook social 
+Facebook social
 104 KiB	70 ms
 /en_US/fbevents.js(connect.facebook.net)
 97 KiB
@@ -246,7 +246,7 @@ Facebook social
 …config/141…?v=…(connect.facebook.net)
 6 KiB
 9 ms
-Cloudflare CDN cdn 
+Cloudflare CDN cdn
 341 KiB	48 ms
 …3.12.5/ScrollTrigger.min.js(cdnjs.cloudflare.com)
 17 KiB
@@ -266,7 +266,7 @@ Cloudflare CDN cdn
 …css/all.min.css(cdnjs.cloudflare.com)
 19 KiB
 0 ms
-Other Google APIs/SDKs utility 
+Other Google APIs/SDKs utility
 92 KiB	26 ms
 /gsi/client(accounts.google.com)
 92 KiB
@@ -282,12 +282,12 @@ cloudflare.com
 …60138c04e6b2/api.js(challenges.cloudflare.com)
 17 KiB
 0 ms
-Unpkg cdn 
+Unpkg cdn
 4 KiB	2 ms
 …dist/lenis.min.js(unpkg.com)
 4 KiB
 2 ms
-Google Fonts cdn 
+Google Fonts cdn
 213 KiB	0 ms
 …v20/UcCm3FwrK….woff2(fonts.gstatic.com)
 79 KiB
@@ -311,12 +311,12 @@ Reduce el contenido JavaScript que no se use y retrasa la carga de secuencias de
 URL
 Tamaño de la transferencia
 Ahorro estimado
-Other Google APIs/SDKs utility 
+Other Google APIs/SDKs utility
 90,4 KiB	64,3 KiB
 /gsi/client(accounts.google.com)
 90,4 KiB
 64,3 KiB
-Facebook social 
+Facebook social
 93,6 KiB	37,3 KiB
 /en_US/fbevents.js(connect.facebook.net)
 93,6 KiB
@@ -326,7 +326,7 @@ Reduce las reglas que no se usen de las hojas de estilo y retrasa las reglas CSS
 URL
 Tamaño de la transferencia
 Ahorro estimado
-Cloudflare CDN cdn 
+Cloudflare CDN cdn
 18,2 KiB	17,9 KiB
 …css/all.min.css(cdnjs.cloudflare.com)
 18,2 KiB
@@ -343,7 +343,7 @@ Enumera las tareas más largas del hilo principal, lo que es útil para identifi
 URL
 Hora de inicio
 Duración
-Facebook social 
+Facebook social
 76 ms
 /en_US/fbevents.js(connect.facebook.net)
 5552 ms
@@ -507,7 +507,7 @@ Se han registrado errores del navegador en la consola
 Los errores registrados en la consola indican que hay problemas sin resolver. Pueden proceder de solicitudes fallidas de la red y otros errores del navegador. Más información sobre estos errores en la auditoría de diagnóstico de la consola
 Fuente
 Descripción
-Other Google APIs/SDKs utility 
+Other Google APIs/SDKs utility
 /gsi/client:82:88(accounts.google.com)
 [GSI_LOGGER]: FedCM get() rejects with NetworkError: Failed to execute 'get' on 'CredentialsContainer': Refused to connect to 'https://accounts.google.com/gsi/fedcm.json' because it violates the document's Content Security Policy.
 /gsi/client:285:622(accounts.google.com)

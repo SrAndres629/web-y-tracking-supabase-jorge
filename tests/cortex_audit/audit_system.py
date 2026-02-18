@@ -189,7 +189,7 @@ def audit_config():
                 logger.error(f"❌ CONFIG ISSUE: {i}")
             return False
     except Exception as e:
-        logger.error(f"❌ CRITICAL: Could not import app.config: {e}")
+        logger.exception(f"❌ CRITICAL: Could not import app.config: {e}")
         return False
     return True
 

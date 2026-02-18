@@ -1,0 +1,46 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}{{ title }} | Jorge Aguirre Flores{% endblock %}
+
+{% block content %}
+<section class="py-32 bg-luxury-black min-h-screen relative overflow-hidden">
+    <!-- Background Elements -->
+    <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-luxury-gold/5 blur-[120px] rounded-full pointer-events-none"></div>
+
+    <div class="container mx-auto px-6 relative z-10 max-w-4xl">
+        <div class="mb-12">
+            <a href="/" class="text-luxury-gold hover:text-white transition-colors text-sm mb-6 inline-block">
+                <i class="fas fa-arrow-left mr-2"></i> Volver al Inicio
+            </a>
+            <h1 class="font-serif text-4xl md:text-5xl text-luxury-text mb-4">{{ title }}</h1>
+            <p class="text-gray-500 text-sm">Última actualización: {{ updated_date }}</p>
+        </div>
+
+        <div class="prose prose-invert prose-gold max-w-none">
+            <div class="bg-white/5 p-8 rounded-2xl border border-white/10 backdrop-blur-sm">
+                {% if page_type == 'privacy' %}
+                    <h2 class="text-xl font-serif text-white mb-4">1. Recopilación de Datos</h2>
+                    <p class="text-gray-400 mb-6">Recopilamos información limitada para mejorar su experiencia y gestionar citas. Esto incluye datos de contacto proporcionados voluntariamente y datos de navegación anónimos.</p>
+
+                    <h2 class="text-xl font-serif text-white mb-4">2. Uso de la Información</h2>
+                    <p class="text-gray-400 mb-6">Utilizamos sus datos exclusivamente para: procesar reservas, enviar recordatorios de citas, y mejorar nuestro servicio web. No vendemos sus datos a terceros.</p>
+
+                    <h2 class="text-xl font-serif text-white mb-4">3. Cookies y Rastreo</h2>
+                    <p class="text-gray-400 mb-6">Este sitio utiliza cookies técnicas para funcionamiento básico y herramientas de análisis anónimas para mejorar el rendimiento.</p>
+                {% elif page_type == 'terms' %}
+                    <h2 class="text-xl font-serif text-white mb-4">1. Reservas y Cancelaciones</h2>
+                    <p class="text-gray-400 mb-6">Para confirmar su cita se requiere un depósito no reembolsable. Las cancelaciones deben realizarse con al menos 48 horas de anticipación.</p>
+
+                    <h2 class="text-xl font-serif text-white mb-4">2. Resultados</h2>
+                    <p class="text-gray-400 mb-6">Los resultados del maquillaje permanente varían según el tipo de piel y cuidados posteriores. No podemos garantizar un resultado exacto, pero nos comprometemos a la excelencia técnica.</p>
+
+                    <h2 class="text-xl font-serif text-white mb-4">3. Propiedad Intelectual</h2>
+                    <p class="text-gray-400 mb-6">Todo el contenido de este sitio web, incluidas imágenes y textos, es propiedad de Jorge Aguirre Flores y está protegido por derechos de autor.</p>
+                {% else %}
+                    <p class="text-gray-400">Contenido en construcción.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

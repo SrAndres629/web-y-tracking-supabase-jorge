@@ -30,7 +30,7 @@ class SQLLeadRepository(LeadRepository):
                 if row:
                     return self._map_row_to_lead(row)
         except Exception as e:
-            logger.error(f"Error getting lead by id: {e}")
+            logger.exception(f"Error getting lead by id: {e}")
         return None
 
     async def get_by_phone(self, phone: Phone) -> Optional[Lead]:
@@ -42,7 +42,7 @@ class SQLLeadRepository(LeadRepository):
                     # TODO: Mejorar mapeo para obtener el objeto completo
                     return await self.get_by_id(str(row[0]))
         except Exception as e:
-            logger.error(f"Error getting lead by phone: {e}")
+            logger.exception(f"Error getting lead by phone: {e}")
         return None
 
     async def get_by_external_id(self, external_id: ExternalId) -> Optional[Lead]:
@@ -53,7 +53,7 @@ class SQLLeadRepository(LeadRepository):
                 if row:
                     return self._map_row_to_lead(row)
         except Exception as e:
-            logger.error(f"Error getting lead by external_id: {e}")
+            logger.exception(f"Error getting lead by external_id: {e}")
         return None
 
     async def save(self, lead: Lead) -> None:
@@ -78,7 +78,7 @@ class SQLLeadRepository(LeadRepository):
                 }
             )
         except Exception as e:
-            logger.error(f"Error creating lead: {e}")
+            logger.exception(f"Error creating lead: {e}")
 
     async def update(self, lead: Lead) -> None:
         # Simplificamos usando upsert_contact_advanced
@@ -110,10 +110,14 @@ class SQLLeadRepository(LeadRepository):
             id=str(row[0]),
             phone=Phone.parse(row[1]).unwrap(),
             name=row[2],
-            email=Email.parse(row[3]).unwrap_or(None) if row[3] else None,
+            email=(Email.parse(row[3]).unwrap() if row[3] and Email.parse(row[3]).is_ok else None),
             meta_lead_id=row[4],
             fbclid=row[6],
-            external_id=ExternalId.from_string(row[7]).unwrap_or(None) if row[7] else None,
+            external_id=(
+                ExternalId.from_string(row[7]).unwrap()
+                if row[7] and ExternalId.from_string(row[7]).is_ok
+                else None
+            ),
             status=LeadStatus(row[13] if len(row) > 13 else "new"),
             score=row[14] if len(row) > 14 else 50,
             service_interest=row[16] if len(row) > 16 else None,

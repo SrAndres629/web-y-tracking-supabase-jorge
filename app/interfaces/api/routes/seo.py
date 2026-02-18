@@ -18,7 +18,18 @@ async def sitemap_xml():
         <changefreq>weekly</changefreq>
         <priority>1.0</priority>
     </url>
-    <!-- Add other URLs here -->
+    <url>
+        <loc>https://jorgeaguirreflores.com/privacidad</loc>
+        <lastmod>2026-02-18</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    <url>
+        <loc>https://jorgeaguirreflores.com/terminos</loc>
+        <lastmod>2026-02-18</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.5</priority>
+    </url>
 </urlset>
 """
     return Response(content=content, media_type="application/xml")

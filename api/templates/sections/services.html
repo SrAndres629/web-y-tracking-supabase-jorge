@@ -75,7 +75,7 @@
                         {% if service.badges and service.badges|length > 1 %}
                         {% for badge in service.badges[1:] %}
                         <span
-                            class="service-badge {% if loop.index == 1 %}natural{% else %}duration{% endif %} font-bold text-[10px]">
+                            class="service-badge {% if loop.index == 1 %}natural{% else %}duration{% endif %} font-bold text-xs">
                             {{ badge }}
                         </span>
                         {% endfor %}

@@ -17,7 +17,7 @@ task_id: user-20260214093824
 Objective: Synchronize test templates. Action: Sync 'tests/frontend/templates' with 'api/templates' to match production.
 
 **Action Required:**
-This is a high-level directive from the user. 
+This is a high-level directive from the user.
 1.  **Analyze** the objective.
 2.  **Break it down** into a sequence of smaller, actionable tasks for other agents (codex, gemini, kimi).
 3.  **Generate** the corresponding `task_AGENT_ACTION.md` files in the motor cortex.

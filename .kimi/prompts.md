@@ -51,7 +51,7 @@ Genera un plan de refactorización priorizado.
 ```
 
 ```
-Revisa todos los repositorios en app/infrastructure/persistence/. 
+Revisa todos los repositorios en app/infrastructure/persistence/.
 Asegúrate que implementen correctamente los ABCs de domain/repositories/.
 Identifica inconsistencias y propón mejoras.
 ```

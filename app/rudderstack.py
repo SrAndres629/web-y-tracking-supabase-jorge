@@ -30,7 +30,7 @@ class RudderStackService:
                 self.enabled = True
                 logger.info("✅ RudderStack initialized")
             except Exception as e:
-                logger.error(f"❌ RudderStack init failed: {e}")
+                logger.exception(f"❌ RudderStack init failed: {e}")
                 self.enabled = False
         else:
             logger.debug("ℹ️ RudderStack disabled (config missing)")
@@ -44,7 +44,7 @@ class RudderStackService:
             analytics.identify(user_id, traits or {})
             logger.debug(f"👤 [RudderStack] Identified: {user_id}")
         except Exception as e:
-            logger.error(f"❌ [RudderStack] Identify error: {e}")
+            logger.exception(f"❌ [RudderStack] Identify error: {e}")
 
     def track(
         self,
@@ -66,7 +66,7 @@ class RudderStackService:
             )
             logger.info(f"✅ [RudderStack] Event sent: {event_name}")
         except Exception as e:
-            logger.error(f"❌ [RudderStack] Track error: {e}")
+            logger.exception(f"❌ [RudderStack] Track error: {e}")
 
 
 # Singleton Instance

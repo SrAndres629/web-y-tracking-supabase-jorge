@@ -17,6 +17,7 @@ redis>=5.0.1
 upstash-redis>=1.0.0
 SQLAlchemy>=2.0.46
 psycopg2-binary>=2.9.11
+types-psycopg2>=2.9.21
 alembic>=1.18.3
 facebook-business>=18.0.0
 rudder-sdk-python>=2.0.2

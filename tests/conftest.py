@@ -44,7 +44,7 @@ def pytest_runtest_protocol(item, nextitem):
             # We allow it to run if it sets up its own config (like test_real_connection.py does)
             pass
 
-    outcome = yield
+    _outcome = yield
 
     # 3. Enforce Rules AFTER test runs
     # (e.g., check execution time for L1)

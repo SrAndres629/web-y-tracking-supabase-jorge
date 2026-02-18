@@ -1,5 +1,5 @@
 """
-🎯 Lead Entity - Potencial cliente.
+🎯 Lead Entity - Potential client.
 
 Un Lead representa una persona que ha mostrado interés
 en los servicios (click WhatsApp, formulario, etc).
@@ -13,18 +13,12 @@ Relación con Visitor:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 
 try:
-    from typing import TYPE_CHECKING, Any, Optional
+    from typing import Any, Optional
 
-    if TYPE_CHECKING:
-        from typing import Self
-    else:
-        try:
-            from typing import Self
-        except ImportError:
-            from typing_extensions import Self
+    from typing_extensions import Self
 except ImportError:
     from typing import Any, Optional
 
@@ -32,15 +26,7 @@ except ImportError:
 
 from enum import Enum
 
-try:
-    from app.domain.models.values import Email, ExternalId, Phone
-except ImportError:
-    # Reliable fallback for module-level types
-    from typing import TypeAlias
-
-    ExternalId: TypeAlias = str
-    Phone: TypeAlias = str
-    Email: TypeAlias = str
+from app.domain.models.values import Email, ExternalId, Phone
 
 
 class LeadStatus(Enum):
@@ -55,7 +41,7 @@ class LeadStatus(Enum):
     NEW = "new"  # Recién capturado
     INTERESTED = "interested"  # Mostró interés inicial
     NURTURING = "nurturing"  # En seguimiento activo
-    GHOST = "ghost"  # No responde
+    GHOST = "ghost"  # No respond
     BOOKED = "booked"  # Agendó cita
     CLIENT_ACTIVE = "client_active"  # Cliente actual (tratamiento)
     CLIENT_LOYAL = "client_loyal"  # Cliente recurrente
@@ -65,7 +51,7 @@ class LeadStatus(Enum):
 @dataclass
 class Lead:
     """
-    Entidad: Potencial cliente.
+    Entidad: Potential client.
 
     Identity: internal ID (UUID) o phone (único)
 
@@ -114,8 +100,8 @@ class Lead:
     utm_campaign: Optional[str] = None
 
     # Metadata
-    created_at: datetime = field(default_factory=datetime.utcnow)
-    updated_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
     # Tracking flags
     sent_to_meta: bool = False  # Evento Lead enviado a Meta CAPI
@@ -158,7 +144,7 @@ class Lead:
         Registra timestamp de actualización.
         """
         self.status = new_status
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(timezone.utc)
 
         # Score adjustments based on status
         if new_status == LeadStatus.BOOKED:
@@ -178,7 +164,7 @@ class Lead:
             self.name = str(name).strip()[:100] or self.name
         if email:
             self.email = email
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(timezone.utc)
 
     def qualify(
         self,
@@ -190,12 +176,12 @@ class Lead:
             self.pain_point = str(pain_point)[:200]
         if service_interest:
             self.service_interest = str(service_interest)[:100]
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(timezone.utc)
 
     def mark_as_sent_to_meta(self) -> None:
         """Marca que el evento Lead fue enviado a Meta CAPI."""
         self.sent_to_meta = True
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(timezone.utc)
 
     @property
     def is_qualified(self) -> bool:

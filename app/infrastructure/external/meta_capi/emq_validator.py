@@ -16,7 +16,7 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +53,7 @@ class EMQEvent:
     timestamp: datetime
     emq_score: float
     match_keys: Dict[str, bool]  # Qué campos tenían match
-    user_data: Dict[str, any]
+    user_data: Dict[str, Any]
 
 
 class EMQValidator:
@@ -102,7 +102,7 @@ class EMQValidator:
         self.daily_scores: Dict[str, Dict[str, float]] = {}
         self._load_history()
 
-    def calculate_emq(self, user_data: Dict[str, any]) -> Dict:
+    def calculate_emq(self, user_data: Dict[str, Any]) -> Dict:
         """
         Calcula EMQ score estimado basado en campos presentes.
 

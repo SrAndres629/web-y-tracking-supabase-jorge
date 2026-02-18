@@ -20,14 +20,16 @@ def run_mutation_audit():
         cmd = ["mutmut", "run", "--paths-to-mutate", target, "--tests-dir", test_path]
 
         # We run it synchronously for the audit report
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.run(cmd, capture_output=True, text=True, check=False)
 
         # 3. Generate HTML report if possible
-        subprocess.run(["mutmut", "html"])
+        subprocess.run(["mutmut", "html"], check=False)
 
         print(result.stdout)
         if result.returncode != 0:
-            print("⚠️ Mutation audit completed with findings or errors. Check mutmut_projects/html")
+            print(
+                "⚠️ Mutation audit completed with findings or errors. Check mutmut_projects/html"
+            )
 
     except FileNotFoundError:
         print("❌ mutmut not found. Please install it with 'pip install mutmut'")

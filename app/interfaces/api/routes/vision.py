@@ -73,8 +73,8 @@ async def neuro_vision_root(request: Request):
             },
         )
     except Exception as e:
-        logger.error(f"❌ Error serving Neuro-Vision: {e}")
-        return HTMLResponse(content=f"<h1>Error</h1><p>{str(e)}</p>", status_code=500)
+        logger.exception(f"❌ Error serving Neuro-Vision: {e}")
+        return HTMLResponse(content=f"<h1>Error</h1><p>{e!s}</p>", status_code=500)
 
 
 @router.get("/v1", response_class=HTMLResponse)

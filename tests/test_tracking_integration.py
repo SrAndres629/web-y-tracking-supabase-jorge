@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-from app.domain.validation.event_validator import validator
+from app.domain.validation.event_validator import event_validator
 from app.tracking import _build_payload, send_event
 
 
@@ -71,7 +71,7 @@ def test_validator_schema_rejection():
         "event_name": "Test",
         # Missing event_time, event_id, user_data...
     }
-    assert validator.validate_payload(payload) is False
+    assert event_validator.validate_payload(payload) is False
 
     # Valid payload
     valid_payload = {
@@ -87,4 +87,4 @@ def test_validator_schema_rejection():
         ],
         "access_token": "token",
     }
-    assert validator.validate_payload(valid_payload) is True
+    assert event_validator.validate_payload(valid_payload) is True

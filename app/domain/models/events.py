@@ -1,14 +1,14 @@
 """
-📊 TrackingEvent Entity - Evento de tracking.
+📊 TrackingEvent Entity - Tracking Event.
 
-Representa una acción del usuario que queremos trackear:
-- PageView: Ver página
-- ViewContent: Ver servicio específico
-- Lead: Click WhatsApp, formulario
-- Contact: Contacto iniciado
+Represents a user action we want to track:
+- PageView: View page
+- ViewContent: View specific service
+- Lead: Click WhatsApp, form
+- Contact: Contact initiated
 - etc.
 
-Inmutable (frozen) porque los eventos históricos no cambian.
+Immutable (frozen) because historical events do not change.
 """
 
 from __future__ import annotations
@@ -17,7 +17,9 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 
 try:
-    from typing import Any, Optional, Self
+    from typing import Any, Optional
+
+    from typing_extensions import Self
 except ImportError:
     from typing import Any, Optional
 
@@ -29,7 +31,7 @@ from app.domain.models.values import EventId, ExternalId, UTMParams
 
 
 class EventName(Enum):
-    """Eventos estándar soportados."""
+    """Supported standard events."""
 
     PAGE_VIEW = "PageView"
     VIEW_CONTENT = "ViewContent"
@@ -49,19 +51,19 @@ class EventName(Enum):
 @dataclass(frozen=True, slots=True)
 class TrackingEvent:
     """
-    Value Object: Evento de tracking inmutable.
+    Value Object: Immutable tracking event.
 
-    Los eventos son inmutables porque representan algo
-    que ocurrió en un momento específico del tiempo.
+    Events are immutable because they represent something
+    that occurred at a specific moment in time.
 
     Attributes:
-        event_id: ID único del evento
-        event_name: Tipo de evento
-        external_id: ID del visitante
-        timestamp: Cuándo ocurrió
-        source_url: URL donde ocurrió
-        custom_data: Datos específicos del evento
-        utm: Parámetros UTM (snapshot al momento del evento)
+        event_id: Unique event ID
+        event_name: Type of event
+        external_id: Visitor ID
+        timestamp: When it occurred
+        source_url: URL where it occurred
+        custom_data: Event specific data
+        utm: UTM parameters (snapshot at event time)
     """
 
     event_id: EventId
@@ -81,7 +83,7 @@ class TrackingEvent:
         custom_data: Optional[dict[str, Any]] = None,
         utm: Optional[UTMParams] = None,
     ) -> Self:
-        """Factory para crear evento nuevo."""
+        """Factory for creating a new event."""
         return cls(
             event_id=EventId.generate(),
             event_name=event_name,
@@ -103,7 +105,7 @@ class TrackingEvent:
         custom_data: Optional[dict[str, Any]] = None,
         utm: Optional[UTMParams] = None,
     ) -> Self:
-        """Reconstruye evento desde datos persistidos."""
+        """Reconstructs event from persisted data."""
         return cls(
             event_id=event_id,
             event_name=event_name,
@@ -115,7 +117,7 @@ class TrackingEvent:
         )
 
     def with_custom_data(self, **kwargs: Any) -> TrackingEvent:
-        """Retorna nuevo evento con datos adicionales (inmutable)."""
+        """Returns new event with additional data (immutable)."""
         new_data = {**self.custom_data, **kwargs}
         return TrackingEvent(
             event_id=self.event_id,
@@ -129,10 +131,10 @@ class TrackingEvent:
 
     def to_meta_payload(self, visitor) -> dict[str, Any]:
         """
-        Convierte a payload para Meta CAPI.
+        Converts to payload for Meta CAPI.
 
         Args:
-            visitor: Objeto Visitor con datos adicionales
+            visitor: Visitor object with additional data
         """
         from app.core.validators import hash_sha256
 
@@ -142,11 +144,13 @@ class TrackingEvent:
             "event_id": self.event_id.value,
             "event_source_url": self.source_url,
             "action_source": "website",
-            "user_data": visitor.to_meta_user_data()
-            if visitor
-            else {
-                "external_id": hash_sha256(self.external_id.value),
-            },
+            "user_data": (
+                visitor.to_meta_user_data()
+                if visitor
+                else {
+                    "external_id": hash_sha256(self.external_id.value),
+                }
+            ),
         }
 
         if self.custom_data:
@@ -155,12 +159,12 @@ class TrackingEvent:
         return payload
 
     def is_duplicate_of(self, other: TrackingEvent) -> bool:
-        """True si es duplicado (mismo ID)."""
+        """True if duplicate (same ID)."""
         return self.event_id.value == other.event_id.value
 
     @property
     def is_conversion_event(self) -> bool:
-        """True si es evento de conversión (Lead, Purchase, etc)."""
+        """True if conversion event (Lead, Purchase, etc)."""
         return self.event_name in [
             EventName.LEAD,
             EventName.CONTACT,

@@ -4,6 +4,7 @@
 import json
 import logging
 from datetime import datetime
+from pathlib import Path
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Request
@@ -37,7 +38,11 @@ async def log_consent(request: Request):
 
         # Agregar IP (anonimizada si es posible)
         forwarded = request.headers.get("x-forwarded-for")
-        ip = forwarded.split(",")[0].strip() if forwarded else request.client.host
+        ip = (
+            forwarded.split(",")[0].strip()
+            if forwarded
+            else (request.client.host if request.client else "unknown")
+        )
 
         # Anonimizar IP (GDPR compliance)
         ip_parts = ip.split(".")
@@ -59,13 +64,13 @@ async def log_consent(request: Request):
         # Guardar en archivo (producción: usar DB)
         from app.config import settings
 
-        log_file = settings.BASE_DIR / ".logs" / "consent_audit.log"
+        log_file = Path(settings.BASE_DIR) / ".logs" / "consent_audit.log"
         log_file.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(log_file, "a") as f:
+        with open(log_file, "a", encoding="utf-8") as f:
             f.write(json.dumps(log_entry) + "\n")
 
-        logger.info(f"✅ Consent logged for user {log_entry['user_id'][:16]}...")
+        logger.info("✅ Consent logged for user %s...", log_entry["user_id"][:16])
 
         return JSONResponse(
             content={"status": "logged", "timestamp": log_entry["timestamp"]},
@@ -73,9 +78,11 @@ async def log_consent(request: Request):
         )
 
     except Exception as e:
-        logger.error(f"❌ Error logging consent: {e}")
+        logger.exception("❌ Error logging consent: %s", e)
         # No fallar el request del usuario
-        return JSONResponse(content={"status": "error", "message": str(e)}, status_code=500)
+        return JSONResponse(
+            content={"status": "error", "message": str(e)}, status_code=500
+        )
 
 
 @router.get("/status")
@@ -125,11 +132,12 @@ async def withdraw_consent(request: Request):
 
         # Log del retiro
         logger.info(
-            f"🚫 Consent withdrawn for user {request.cookies.get('external_id', 'unknown')}"
+            "🚫 Consent withdrawn for user %s",
+            request.cookies.get("external_id", "unknown"),
         )
 
         return response
 
-    except Exception as e:
-        logger.error(f"❌ Error withdrawing consent: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as err:
+        logger.exception("❌ Error withdrawing consent: %s", err)
+        raise HTTPException(status_code=500, detail=str(err)) from err

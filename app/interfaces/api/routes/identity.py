@@ -54,8 +54,8 @@ def _decode_google_jwt(token: str) -> Dict[str, Any]:
         decoded = base64.urlsafe_b64decode(payload)
         return json.loads(decoded)
     except Exception as e:
-        logger.error(f"❌ JWT decode error: {e}")
-        raise ValueError("Invalid credential")
+        logger.exception("❌ JWT decode error: %s", e)
+        raise ValueError("Invalid credential") from e
 
 
 # =================================================================
@@ -70,14 +70,15 @@ async def receive_google_credential(
     try:
         user_info = _decode_google_jwt(body.credential)
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception:
-        raise HTTPException(status_code=500, detail="Internal error decoding credential")
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    except Exception as e:
+        logger.exception("❌ Unexpected error decoding Google session: %s", e)
+        raise HTTPException(status_code=500, detail="Internal error decoding credential") from e
 
     client_ip = (
         request.headers.get("cf-connecting-ip")
         or (request.headers.get("x-forwarded-for") or "").split(",")[0].strip()
-        or request.client.host
+        or (request.client.host if request.client else "unknown")
     )
     user_agent = request.headers.get("user-agent", "")
     referer = request.headers.get("referer")
@@ -128,7 +129,7 @@ async def whatsapp_redirect(
     client_ip = (
         request.headers.get("cf-connecting-ip")
         or (request.headers.get("x-forwarded-for") or "").split(",")[0].strip()
-        or request.client.host
+        or (request.client.host if request.client else "unknown")
     )
     user_agent = request.headers.get("user-agent", "")
     referer = request.headers.get("referer")
@@ -150,12 +151,9 @@ async def whatsapp_redirect(
         event_sender=legacy.send_elite_event,
     )
 
-    # Execute the command to get the WhatsApp URL, and send the tracking event in background
-    # The handler's handle method now returns the URL. The event sending is part of that handle.
-    wa_url = await handler.handle(
-        command
-    )  # This executes the tracking event in background internally.
+    wa_url = await handler.handle(command)
+    # This executes the tracking event in background internally.
 
-    logger.info(f"📱 [WA TRACK] Redirecting IP {client_ip} to WhatsApp")
+    logger.info("📱 [WA TRACK] Redirecting IP %s to WhatsApp", client_ip)
 
     return RedirectResponse(url=wa_url, status_code=302)

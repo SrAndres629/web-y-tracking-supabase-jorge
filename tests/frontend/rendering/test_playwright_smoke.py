@@ -22,6 +22,7 @@ def test_production_smoke_200():
         response = page.goto(target_url, timeout=30000)
 
         # 1. Check HTTP Status
+        assert response is not None, f"🔥 Smoke Test Failed: No response from {target_url}"
         assert response.status == 200, (
             f"🔥 Smoke Test Failed: {target_url} returned {response.status}"
         )
@@ -55,5 +56,6 @@ def test_local_smoke_200():
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
         response = page.goto(local_url)
+        assert response is not None, f"🔥 Smoke Test Failed: No response from {local_url}"
         assert response.status == 200
         browser.close()

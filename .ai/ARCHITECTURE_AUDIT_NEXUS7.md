@@ -1,8 +1,8 @@
 # 🔬 AUDITORÍA DE ARQUITECTURA DE PENSAMIENTO - NEXUS-7
 
-**Fecha:** 2026-02-10  
-**Auditor:** Agent de IA  
-**Sistema:** .ai (Arquitectura de Pensamiento Avanzada)  
+**Fecha:** 2026-02-10
+**Auditor:** Agent de IA
+**Sistema:** .ai (Arquitectura de Pensamiento Avanzada)
 **Proyecto:** Jorge Aguirre Flores Web v3.0
 
 ---
@@ -42,8 +42,8 @@ Escalabilidad:         ████░░░░░░ 40% (Base buena, necesita 
 ```python
 # .ai/synapse.py líneas 23-27
 AGENTS = {
-    "codex":  {"cmd": "codex",  "prefix_args": ["exec"]}, 
-    "kimi":   {"cmd": "kimi",   "prefix_args": []},   
+    "codex":  {"cmd": "codex",  "prefix_args": ["exec"]},
+    "kimi":   {"cmd": "kimi",   "prefix_args": []},
     "gemini": {"cmd": "gemini", "prefix_args": ["-p"]}
 }
 
@@ -54,7 +54,7 @@ AGENTS = {
 
 # Y .ai/SYSTEM.md dice:
 # - GEMINI: Data Flow & Logic Specialist
-# - KIMI: Architecture & Integrity Specialist  
+# - KIMI: Architecture & Integrity Specialist
 # - CODEX: Implementation & Fix Specialist
 ```
 
@@ -195,7 +195,7 @@ agents:
     permissions:
       read: ["app/", "tests/", ".ai/skills/"]
       write: ["app/", "tests/"]
-    
+
   kimi:
     name: "Kimi"
     role: "architecture_integrity"
@@ -205,7 +205,7 @@ agents:
     permissions:
       read: ["**/*"]
       write: [".ai/", "docs/"]
-    
+
   gemini:
     name: "Gemini"
     role: "security_audit"
@@ -220,7 +220,7 @@ protocols:
   hive_mind:
     version: "1.0.0"
     template_file: ".ai/core/hive_mind_protocol_v1.md"
-    
+
   task_schema:
     version: "1.0.0"
     schema_file: ".ai/core/schemas/task_v1.json"
@@ -257,8 +257,8 @@ class TaskState:
     completed_at: Optional[datetime]
     permissions: dict
     content_hash: str
-    
-@dataclass  
+
+@dataclass
 class SystemState:
     version: str
     last_audit: datetime
@@ -273,19 +273,19 @@ class StateEngine:
     """
     STATE_FILE = ".ai/core/state.json"
     SCHEMA_VERSION = "1.0.0"
-    
+
     def get_state(self) -> SystemState:
         """Lee el estado actual del sistema"""
         pass
-    
+
     def create_task(self, agent: str, content: str, permissions: dict) -> TaskState:
         """Crea una nueva tarea con validación de esquema"""
         pass
-    
+
     def transition_task(self, task_id: str, new_status: str, metadata: dict):
         """Transición de estado atómica con logging"""
         pass
-    
+
     def get_task_history(self, agent: Optional[str] = None) -> List[TaskState]:
         """Historial completo de tareas"""
         pass
@@ -385,7 +385,7 @@ skill:
   id: "meta_ads_cpa"
   version: "1.2.0"
   name: "Meta Signal Maximizer"
-  
+
 triggers:
   - type: "file_change"
     pattern: "app/meta_capi.py"
@@ -400,11 +400,11 @@ permissions:
     - "app/tracking.py"
   write:
     - "app/meta_capi.py"
-    
+
 agent_binding:
   preferred: "gemini"
   allowed: ["gemini", "kimi"]
-  
+
 knowledge:
   - "knowledge/capi_best_practices.md"
   - "knowledge/pixel_deduplication.md"
@@ -438,26 +438,26 @@ class Orchestrator:
     2. Validar permisos contra AgentRegistry
     3. Ejecutar agentes via AgentRunner
     4. Actualizar estado via StateEngine
-    
+
     NO conoce:
     - Estructura de directorios del proyecto
     - Comandos específicos de agentes
     - Lógica de negocio de los skills
     """
-    
+
     def __init__(self):
         self.config = Config.load(".ai/core/registry.yaml")
         self.state = StateEngine()
         self.registry = AgentRegistry(self.config)
         self.message_bus = MessageBus()
-        
+
     def run(self):
         """Loop principal del orquestador"""
         while True:
             message = self.message_bus.receive()
             if message:
                 self._process_message(message)
-    
+
     def _process_message(self, message: dict):
         """Procesa un mensaje según su tipo"""
         match message["type"]:
@@ -467,26 +467,26 @@ class Orchestrator:
                 self._handle_signal(message)
             case "audit":
                 self._handle_audit(message)
-                
+
     def _handle_task(self, message: dict):
         """Ejecuta una tarea validando permisos"""
         agent_id = message["to"]
         agent = self.registry.get_agent(agent_id)
-        
+
         # Validar permisos
         if not agent.can_execute(message["payload"]):
             raise PermissionError(f"Agent {agent_id} no tiene permisos")
-        
+
         # Crear estado de tarea
         task = self.state.create_task(
             agent=agent_id,
             content=message["payload"],
             permissions=message["permissions"]
         )
-        
+
         # Ejecutar
         result = agent.execute(task)
-        
+
         # Actualizar estado
         self.state.transition_task(
             task.id,
@@ -530,7 +530,7 @@ class Auditor:
     3. Generar reportes estructurados
     4. (Opcional) Generar tareas de corrección
     """
-    
+
     RULES = [
         AuditRule(
             id: "ARCH001",
@@ -540,7 +540,7 @@ class Auditor:
             autofix: False
         ),
         AuditRule(
-            id: "ARCH002", 
+            id: "ARCH002",
             name: "Clean Architecture compliance",
             check: check_clean_architecture,
             severity: "error",
@@ -554,11 +554,11 @@ class Auditor:
             autofix: True
         ),
     ]
-    
+
     async def run_audit(self, changed_files: List[str]) -> AuditReport:
         """Ejecuta auditoría diferencial"""
         findings = []
-        
+
         for rule in self.RULES:
             result = await rule.check(changed_files)
             if result.violations:
@@ -566,11 +566,11 @@ class Auditor:
                     rule=rule,
                     violations=result.violations
                 ))
-                
+
                 if rule.autofix:
                     task = self.generate_fix_task(rule, result)
                     self.message_bus.send(task)
-        
+
         return AuditReport(findings=findings)
 ```
 
@@ -622,7 +622,7 @@ class Auditor:
 La arquitectura `.ai` actual es **innovadora pero inmadura**. Tiene los fundamentos de un sistema operativo de IA verdaderamente avanzado, pero sufre de:
 
 1. **Duplicación de responsabilidades**
-2. **Acoplamiento entre capas**  
+2. **Acoplamiento entre capas**
 3. **Falta de estandarización**
 4. **Ausencia de esquemas de validación**
 
@@ -638,6 +638,6 @@ Las propuestas presentadas transformarían el sistema en una **arquitectura ató
 
 ---
 
-*Auditoría realizada por: Agent de IA*  
-*Fecha: 2026-02-10*  
+*Auditoría realizada por: Agent de IA*
+*Fecha: 2026-02-10*
 *Versión del análisis: 1.0*

@@ -7,7 +7,7 @@ Envía eventos a Meta Conversions API.
 from __future__ import annotations
 
 import logging
-from typing import Optional
+from typing import Any, Dict, Optional
 
 import httpx
 
@@ -71,7 +71,7 @@ class MetaTracker(TrackerPort):
                 return False
 
         except Exception as e:
-            logger.error(f"❌ Meta CAPI error: {e}")
+            logger.exception(f"❌ Meta CAPI error: {e}")
             return False
 
     def _build_payload(self, event: TrackingEvent, visitor: Visitor) -> dict:
@@ -95,7 +95,7 @@ class MetaTracker(TrackerPort):
             event_data["custom_data"] = event.custom_data
 
         # Test Event Code (development)
-        payload = {"data": [event_data]}
+        payload: Dict[str, Any] = {"data": [event_data]}
         if self._settings.meta.test_event_code:
             payload["test_event_code"] = self._settings.meta.test_event_code
 

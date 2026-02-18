@@ -18,7 +18,7 @@ Logic: When a user submits a form, the browser may block the JS Pixel. The Serve
 def handle_form_submit(data: LeadForm):
     # 1. Save to DB (Primary)
     db.save(data)
-    
+
     # 2. Fire CAPI Event (Async)
     capi.send_event(
         event_name="Lead",

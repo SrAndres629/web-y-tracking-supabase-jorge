@@ -10,12 +10,17 @@ import time
 from typing import Any, Dict, Optional
 
 import httpx
-from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
 
 from app.config import settings
 from app.database import save_emq_score
 from app.domain.services.emq_monitor import emq_monitor
-from app.domain.validation.event_validator import validator
+from app.domain.validation.event_validator import event_validator
 
 # Configure Logging
 logger = logging.getLogger("uvicorn.error")
@@ -28,7 +33,9 @@ try:
         """Attempt to consume event ID using Redis."""
         return dedup_service.try_consume_event(event_id, event_name)
 
-    def cache_visitor_data(_external_id: str, _data: Dict[str, Any], _ttl_hours: int = 24) -> None:
+    def cache_visitor_data(
+        _external_id: str, _data: Dict[str, Any], _ttl_hours: int = 24
+    ) -> None:
         """Cache visitor data in Redis."""
         try:
             dedup_service.cache_visitor(_external_id, _data, ttl=_ttl_hours * 3600)
@@ -56,7 +63,9 @@ except ImportError as e:
         _memory_dedup[event_id] = time.time()
         return True
 
-    def cache_visitor_data(_external_id: str, _data: Dict[str, Any], _ttl_hours: int = 24) -> None:
+    def cache_visitor_data(
+        _external_id: str, _data: Dict[str, Any], _ttl_hours: int = 24
+    ) -> None:
         pass
 
     def get_cached_visitor(_external_id: str) -> Optional[Dict[str, Any]]:
@@ -94,7 +103,7 @@ def generate_fbc(fbclid: str) -> str:
 def generate_event_id(event_name: str, external_id: str) -> str:
     """Generates a unique, deterministic event ID for deduplication."""
     raw = f"{event_name}_{external_id}_{int(time.time() / 60)}"
-    return hashlib.md5(raw.encode()).hexdigest()  # nosec B303
+    return hashlib.md5(raw.encode(), usedforsecurity=False).hexdigest()  # nosec B303
 
 
 def generate_fbp() -> str:
@@ -115,7 +124,9 @@ def extract_fbclid_from_fbc(fbc_cookie: str) -> Optional[str]:
     return None
 
 
-def get_prioritized_fbclid(url_fbclid: Optional[str], cookie_fbc: Optional[str]) -> Optional[str]:
+def get_prioritized_fbclid(
+    url_fbclid: Optional[str], cookie_fbc: Optional[str]
+) -> Optional[str]:
     """
     Decides which fbclid to use.
     Priority: 1. URL Parameter (Fresh click) -> 2. Cookie (Persistent session)
@@ -158,12 +169,12 @@ def _log_emq(event_name: str, payload: Dict[str, Any], client_id: Optional[str] 
 
         save_emq_score(client_id, event_name, score, payload_size, has_pii)
         return score
-    except Exception as e:
+    except (TypeError, ValueError, json.JSONDecodeError, AttributeError) as e:
         logger.warning("⚠️ EMQ Calc Error: %s", str(e))
         return 0.0
 
 
-def _build_payload(  # noqa: C901
+def _build_payload(
     event_name: str,
     event_source_url: str,
     client_ip: str,
@@ -188,7 +199,7 @@ def _build_payload(  # noqa: C901
     """Constructs the JSON payload for Meta CAPI with Enhanced Matching"""
 
     # 🔍 PRE-VALIDATION: Check raw inputs
-    warnings = validator.check_pre_hashing(email=email or "", phone=phone or "")
+    warnings = event_validator.check_pre_hashing(email=email or "", phone=phone or "")
     for warning in warnings:
         logger.warning(f"⚠️ [VALIDATION] {warning}")
 
@@ -245,7 +256,10 @@ def _build_payload(  # noqa: C901
     if custom_data:
         event_data["custom_data"] = custom_data
 
-    payload = {"data": [event_data], "access_token": access_token or settings.META_ACCESS_TOKEN}
+    payload = {
+        "data": [event_data],
+        "access_token": access_token or settings.META_ACCESS_TOKEN,
+    }
 
     is_production = os.getenv("VERCEL_ENV") == "production"
     if settings.TEST_EVENT_CODE and not is_production:
@@ -320,7 +334,7 @@ def send_event(
 
     _log_emq(event_name, payload, client_id=client_id)
 
-    if not validator.validate_payload(payload):
+    if not event_validator.validate_payload(payload):
         logger.error("❌ [VALIDATION FAILED] Payload rejected for %s", event_name)
 
     try:
@@ -330,11 +344,14 @@ def send_event(
             return True
         else:
             logger.warning(
-                "[META CAPI] ⚠️ %s Failed (%d): %s", event_name, response.status_code, response.text
+                "[META CAPI] ⚠️ %s Failed (%d): %s",
+                event_name,
+                response.status_code,
+                response.text,
             )
             return False
     except Exception as e:
-        logger.error("[META CAPI] ❌ Error: %s", str(e))
+        logger.exception("[META CAPI] ❌ Error: %s", str(e))
         raise
 
 
@@ -404,7 +421,7 @@ async def send_event_async(
 
     _log_emq(event_name, payload, client_id=client_id)
 
-    if not validator.validate_payload(payload):
+    if not event_validator.validate_payload(payload):
         logger.error("❌ [VALIDATION FAILED] Payload rejected for %s", event_name)
 
     try:
@@ -426,7 +443,7 @@ async def send_event_async(
             )
             return False
     except Exception as e:
-        logger.error("[META CAPI ASYNC] ❌ Error: %s", str(e))
+        logger.exception("[META CAPI ASYNC] ❌ Error: %s", str(e))
         raise
 
 
@@ -464,7 +481,9 @@ def track_lead(
         custom_data.update(
             {
                 "content_name": str(service_data.get("name", source)),
-                "content_ids": [str(service_data.get("id"))] if service_data.get("id") else [],
+                "content_ids": (
+                    [str(service_data.get("id"))] if service_data.get("id") else []
+                ),
                 "content_category": str(service_data.get("intent", "lead")),
                 "trigger_location": source,
             }
@@ -527,7 +546,10 @@ def track_initiate_contact(
     external_id: Optional[str] = None,
 ) -> bool:
     """Track InitiateContact"""
-    custom_data = {"contact_method": contact_method, "content_category": "consultation_request"}
+    custom_data = {
+        "contact_method": contact_method,
+        "content_category": "consultation_request",
+    }
     if service_interest:
         custom_data["content_name"] = service_interest
     return send_event(
@@ -557,11 +579,11 @@ def track_scroll_depth(
     custom_data = {
         "scroll_depth": depth_percent,
         "time_on_page": time_on_page_seconds,
-        "engagement_level": "high"
-        if depth_percent >= 75
-        else "medium"
-        if depth_percent >= 50
-        else "low",
+        "engagement_level": (
+            "high"
+            if depth_percent >= 75
+            else "medium" if depth_percent >= 50 else "low"
+        ),
     }
     return send_event(
         event_name="CustomizeProduct",

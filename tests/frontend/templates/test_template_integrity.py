@@ -14,7 +14,7 @@ def test_jinja2_template_syntax():
     compile them with Jinja2. This catches missing endblocks,
     incorrect tags, and structural errors.
     """
-    env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)))
+    env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)), autoescape=True)
 
     html_files = []
     for root, _, files in os.walk(str(TEMPLATES_DIR)):
@@ -32,10 +32,10 @@ def test_jinja2_template_syntax():
         except TemplateSyntaxError as e:
             errors.append(f"❌ {template_path}:{e.lineno} - {e.message}")
         except Exception as e:
-            errors.append(f"⚠️ {template_path}: Unexpected error - {str(e)}")
+            errors.append(f"⚠️ {template_path}: Unexpected error - {e!s}")
 
     if errors:
-        pytest.fail("\n".join(["🔥 JINJA2 SYNTAX ERRORS DETECTED:"] + errors))
+        pytest.fail("\n".join(["🔥 JINJA2 SYNTAX ERRORS DETECTED:", *errors]))
     else:
         # print(f"\n✅ Template Integrity: {len(html_files)} files verified.")
         pass

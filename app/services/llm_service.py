@@ -71,7 +71,7 @@ class LLMService:
             )
             return chat_completion
         except Exception as e:
-            logger.error(f"Error calling Groq API: {e}")
+            logger.exception(f"Error calling Groq API: {e}")
             return None
 
 

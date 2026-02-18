@@ -7,7 +7,7 @@ import os
 import sqlite3
 import uuid
 from contextlib import contextmanager
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Generator, List, Optional, Tuple
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 import app.sql_queries as queries
@@ -17,41 +17,115 @@ from app.config import settings
 try:
     import psycopg2
 
-    # NOTE: We do NOT use 'pool' anymore for Serverless safety
     HAS_POSTGRES = True
 except ImportError:
     HAS_POSTGRES = False
 
+    class _MockPsycopg2:
+        class Error(Exception):
+            pass
+
+        def connect(self, *args, **kwargs):
+            raise ImportError("psycopg2 is not installed")
+
+    psycopg2 = _MockPsycopg2()  # type: ignore
+
+
+class SQLiteCursorWrapper:
+    """Adapta sintaxis Postgres (%s) a SQLite (?)"""
+
+    def __init__(self, cursor: sqlite3.Cursor):
+        self.cursor = cursor
+
+    def execute(self, sql: str, params: Optional[tuple] = None) -> Any:
+        """Executes SQL query with parameter substitution."""
+        if params:
+            sql = sql.replace("%s", "?")
+            return self.cursor.execute(sql, params)
+        return self.cursor.execute(sql)
+
+    def fetchone(self) -> Optional[tuple]:
+        """Fetches a single row."""
+        return self.cursor.fetchone()
+
+    def fetchall(self) -> List[tuple]:
+        """Fetches all rows."""
+        return self.cursor.fetchall()
+
+    def close(self) -> None:
+        """Closes the cursor."""
+        self.cursor.close()
+
+    @property
+    def rowcount(self) -> int:
+        """Returns number of rows affected."""
+        return self.cursor.rowcount
+
+    @property
+    def lastrowid(self) -> Optional[int]:
+        """Returns ID of last inserted row."""
+        return self.cursor.lastrowid
+
+
+# Type definitions
+try:
+    from psycopg2.extensions import connection as PgConnection
+    from psycopg2.extensions import cursor as PgCursor
+except ImportError:
+    PgConnection = Any  # type: ignore
+    PgCursor = Any  # type: ignore
+
+try:
+    from typing import TypeAlias
+except ImportError:
+    from typing_extensions import TypeAlias
+
+DBConnection: TypeAlias = sqlite3.Connection | PgConnection
+DBCursor: TypeAlias = sqlite3.Cursor | PgCursor | SQLiteCursorWrapper
+
+# DB_ERRORS: Tuple of exceptions for safe catching across backends
+# We use try/except ImportError logic, so we need a common base for typing if needed
+if HAS_POSTGRES:
+    _db_errors = (sqlite3.Error, psycopg2.Error)
+else:
+    _db_errors = (sqlite3.Error, psycopg2.Error)  # type: ignore
+
+DB_ERRORS = _db_errors
+
 logger = logging.getLogger(__name__)
 
-# BACKEND: 'postgres' vs 'sqlite'
+# _backend: 'postgres' vs 'sqlite'
 # NOTE: In Serverless (Vercel), we DO NOT use a global pool object.
 # Global pools are created per-lambda instance, leading to connection exhaustion.
-BACKEND = "sqlite"
+_backend = "sqlite"
+BACKEND = _backend
 if settings.DATABASE_URL and HAS_POSTGRES:
     # 🛡️ SILICON VALLEY PROTOCOL: Deterministic Guard against STUB DSNs
     # If the ENV var is a stub, we FORCE SQLite to prevent DSN Parse Errors.
-    db_url_clean = settings.DATABASE_URL.strip().lower()
+    db_url_str = str(settings.DATABASE_URL)
+    db_url_clean = db_url_str.strip().lower()
     is_invalid = any(
-        x in db_url_clean for x in ["required", "dsn_here", "none", "production", "placeholder"]
+        x in db_url_clean
+        for x in ["required", "dsn_here", "none", "production", "placeholder"]
     )
 
     if not is_invalid:
-        BACKEND = "postgres"
+        _backend = "postgres"
         # Ensure URL forces Supabase Transaction Mode if available
-        if ":6543" in settings.DATABASE_URL and "pgbouncer=true" not in settings.DATABASE_URL:
+        if ":6543" in db_url_str and "pgbouncer=true" not in db_url_str:
             logger.warning(
                 "⚠️ Using Supabase Pooler Port 6543 but missing '?pgbouncer=true'. Adding it automatically."
             )
     else:
         logger.warning(
-            f"🛡️ Deterministic Guard: detected invalid DSN ({settings.DATABASE_URL[:10]}...). Falling back to SQLite."
+            "🛡️ Deterministic Guard: detected invalid DSN (%s...). Falling back to SQLite.",
+            str(settings.DATABASE_URL)[:10] if settings.DATABASE_URL else "",
         )
         # Logic to append query param could go here, but usually users fix ENV.
 
 
 @contextmanager
-def get_db_connection() -> Any:
+def get_db_connection() -> Generator[Any, None, None]:
     """
     Creates a SINGLE connection per request.
     Silicon Valley Protocol: 0-Latency failover & strict pool hygiene.
@@ -64,13 +138,13 @@ def get_db_connection() -> Any:
             conn.commit()
     except Exception as e:
         _handle_db_error(conn, e)
-        raise e
+        raise
     finally:
         _close_connection(conn)
 
 
-def _establish_connection():
-    if BACKEND == "postgres":
+def _establish_connection() -> DBConnection:
+    if _backend == "postgres":
         # 🛡️ Normalize malformed DSNs and strip problematic params before psycopg2 connect.
         clean_url = _sanitize_postgres_dsn(settings.DATABASE_URL)
 
@@ -110,85 +184,52 @@ def _sanitize_postgres_dsn(raw_url: Optional[str]) -> str:
     unsupported = {"pgbouncer", "connection_limit"}
     filtered = [(k, v) for k, v in query_items if k.lower() not in unsupported]
     clean_query = urlencode(filtered, doseq=True)
-    return urlunsplit((parsed.scheme, parsed.netloc, parsed.path, clean_query, parsed.fragment))
+    return urlunsplit(
+        (parsed.scheme, parsed.netloc, parsed.path, clean_query, parsed.fragment)
+    )
 
 
 def _handle_db_error(conn, e):
     if conn:
         try:
             conn.rollback()
-        except Exception:
+        except DB_ERRORS:
             pass
 
     err_msg = str(e).lower()
     if "timeout" in err_msg:
-        logger.error("🔥 DB ERROR: Connection Timeout. Possible cold start or pooler exhaustion.")
+        logger.error(
+            "🔥 DB ERROR: Connection Timeout. Possible cold start or pooler exhaustion."
+        )
     elif "too many connections" in err_msg:
         logger.error("🔥 DB ERROR: Connection Exhaustion. Check pooler settings.")
     elif "password authentication failed" in err_msg:
         logger.error("🔥 DB ERROR: Auth Failure. Check DATABASE_URL.")
     else:
-        logger.error(f"🔥 Database Transaction Error: {e}")
+        logger.error("🔥 Database Transaction Error: %s", e)
 
 
 def _close_connection(conn):
     if conn:
         try:
             conn.close()
-        except Exception as close_err:
-            logger.debug(f"ℹ️ Connection close cleanup: {close_err}")
-
-
-class SQLiteCursorWrapper:
-    """Adapta sintaxis Postgres (%s) a SQLite (?)"""
-
-    def __init__(self, cursor):
-        self.cursor = cursor
-
-    def execute(self, sql: str, params: Optional[tuple] = None) -> Any:
-        """Executes SQL query with parameter substitution."""
-        if params:
-            sql = sql.replace("%s", "?")
-            return self.cursor.execute(sql, params)
-        return self.cursor.execute(sql)
-
-    def fetchone(self) -> Optional[tuple]:
-        """Fetches a single row."""
-        return self.cursor.fetchone()
-
-    def fetchall(self) -> List[tuple]:
-        """Fetches all rows."""
-        return self.cursor.fetchall()
-
-    def close(self) -> None:
-        """Closes the cursor."""
-        self.cursor.close()
-
-    @property
-    def rowcount(self) -> int:
-        """Returns number of rows affected."""
-        return self.cursor.rowcount
-
-    @property
-    def lastrowid(self) -> Optional[int]:
-        """Returns ID of last inserted row."""
-        return self.cursor.lastrowid
+        except (
+            (sqlite3.Error, psycopg2.Error) if HAS_POSTGRES else sqlite3.Error
+        ) as close_err:
+            logger.debug("ℹ️ Connection close cleanup: %s", close_err)
 
 
 @contextmanager
-def get_cursor() -> Any:
+def get_cursor() -> Generator[DBCursor, None, None]:
     """
     Utility to get a cursor directly.
     Usage: with get_cursor() as cur: cur.execute(...)
     """
     with get_db_connection() as conn:
-        try:
-            if BACKEND == "postgres":
-                yield conn.cursor()
-            else:
-                yield SQLiteCursorWrapper(conn.cursor())
-        except Exception as e:
-            raise e
+        if _backend == "postgres":
+            yield conn.cursor()
+        else:
+            yield SQLiteCursorWrapper(conn.cursor())
 
 
 # =================================================================
@@ -206,15 +247,16 @@ def init_tables() -> bool:
         with get_cursor() as cur:
             _run_column_migrations(cur, config["status_type"])
 
-        logger.info(f"✅ Tablas sincronizadas ({BACKEND})")
-        return True
-    except Exception as e:
-        logger.error(f"❌ Error sincronizando tablas: {e}")
+        logger.info("✅ Tablas sincronizadas (%s)", _backend)
+    except DB_ERRORS:
+        logger.exception("❌ Error sincronizando tablas")
         return False
+    else:
+        return True
 
 
-def _get_db_config():
-    if BACKEND == "postgres":
+def _get_db_config() -> Dict[str, str]:
+    if _backend == "postgres":
         return {
             "id_type_uuid": "UUID PRIMARY KEY DEFAULT gen_random_uuid()",
             "id_type_serial": "SERIAL PRIMARY KEY",
@@ -233,28 +275,28 @@ def _get_db_config():
     }
 
 
-def _create_core_tables(cf):
+def _create_core_tables(cf: Dict[str, str]) -> None:
     with get_db_connection() as conn:
         # Site Content (CMS)
         try:
             cur = conn.cursor()
             cur.execute(queries.CREATE_TABLE_SITE_CONTENT)
-            if BACKEND == "postgres":
+            if _backend == "postgres":
                 cur.execute(
                     "ALTER TABLE site_content ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
                 )
             conn.commit()
-        except Exception:
+        except DB_ERRORS:
             if conn:
                 conn.rollback()
 
         # Create PostGIS (Postgres only)
-        if BACKEND == "postgres":
+        if _backend == "postgres":
             try:
                 cur = conn.cursor()
                 cur.execute("CREATE EXTENSION IF NOT EXISTS postgis")
                 conn.commit()
-            except Exception:
+            except psycopg2.Error:
                 if conn:
                     conn.rollback()
 
@@ -263,11 +305,15 @@ def _create_core_tables(cf):
                 cur = conn.cursor()
                 cur.execute("""
                     DO $$ BEGIN
-                        CREATE TYPE lead_status AS ENUM ('new', 'contacted', 'qualified', 'converted', 'lost');
-                    EXCEPTION WHEN duplicate_object THEN null; END $$;
+                        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'lead_status') THEN
+                            CREATE TYPE lead_status AS ENUM (
+                                'new', 'contacted', 'qualified', 'converted', 'lost'
+                            );
+                        END IF;
+                    END $$;
                 """)
                 conn.commit()
-            except Exception:
+            except psycopg2.Error:
                 if conn:
                     conn.rollback()
 
@@ -288,56 +334,66 @@ def _create_core_tables(cf):
                     )
                 )
                 conn.commit()
-            except Exception as e:
+            except (
+                (sqlite3.Error, psycopg2.Error) if HAS_POSTGRES else sqlite3.Error
+            ) as e:
                 if conn:
                     conn.rollback()
-                logger.warning(f"⚠️ Table creation skip/error ({q_name}): {e}")
+                logger.warning("⚠️ Table creation skip/error (%s): %s", q_name, e)
 
         # Migration for new columns in clients
         try:
             cur = conn.cursor()
-            cur.execute("ALTER TABLE clients ADD COLUMN IF NOT EXISTS email TEXT UNIQUE")
+            cur.execute(
+                "ALTER TABLE clients ADD COLUMN IF NOT EXISTS email TEXT UNIQUE"
+            )
             cur.execute("ALTER TABLE clients ADD COLUMN IF NOT EXISTS company TEXT")
             conn.commit()
-        except Exception as e:
+        except DB_ERRORS as e:
             if conn:
                 conn.rollback()
-            logger.warning(f"⚠️ Clients migration skip/error: {e}")
+            logger.warning("⚠️ Clients migration skip/error: %s", e)
 
         # Business Knowledge
         try:
             cur = conn.cursor()
             cur.execute(
                 queries.CREATE_TABLE_BUSINESS_KNOWLEDGE.format(
-                    id_type_serial=cf["id_type_serial"], timestamp_default=cf["timestamp_default"]
+                    id_type_serial=cf["id_type_serial"],
+                    timestamp_default=cf["timestamp_default"],
                 )
             )
             cur.execute(queries.CREATE_INDEX_KNOWLEDGE_SLUG)
             conn.commit()
-        except Exception as e:
+        except DB_ERRORS as e:
             if conn:
                 conn.rollback()
-            logger.warning(f"⚠️ Business knowledge skip/error: {e}")
+            logger.warning("⚠️ Business knowledge skip/error: %s", e)
 
         # Visitors
         try:
             cur = conn.cursor()
             cur.execute(
                 queries.CREATE_TABLE_VISITORS.format(
-                    id_type_serial=cf["id_type_serial"], timestamp_default=cf["timestamp_default"]
+                    id_type_serial=cf["id_type_serial"],
+                    timestamp_default=cf["timestamp_default"],
                 )
             )
             cur.execute(queries.CREATE_INDEX_VISITORS_EXTERNAL_ID)
             conn.commit()
-        except Exception as e:
+        except DB_ERRORS as e:
             if conn:
                 conn.rollback()
-            logger.warning(f"⚠️ Visitors table creation skip/error: {e}")
+            logger.warning("⚠️ Visitors table creation skip/error: %s", e)
 
 
 def save_emq_score(
-    client_id: Optional[str], event_name: str, score: float, payload_size: int, has_pii: bool
-):
+    client_id: Optional[str],
+    event_name: str,
+    score: float,
+    payload_size: int,
+    has_pii: bool,
+) -> None:
     """Save EMQ score to database for dashboard metrics."""
     query = """
     INSERT INTO emq_stats (client_id, event_name, score, payload_size, has_pii)
@@ -348,8 +404,8 @@ def save_emq_score(
             cursor = conn.cursor()
             cursor.execute(query, (client_id, event_name, score, payload_size, has_pii))
             cursor.close()
-    except Exception as e:
-        logger.error(f"❌ Error saving EMQ score: {e}")
+    except DB_ERRORS:
+        logger.exception("❌ Error saving EMQ score")
 
 
 def get_emq_stats(limit: int = 100) -> List[Dict[str, Any]]:
@@ -366,16 +422,22 @@ def get_emq_stats(limit: int = 100) -> List[Dict[str, Any]]:
         with get_db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(query, (limit,))
-            columns = [col[0] for col in cursor.description]
-            results = [dict(zip(columns, row, strict=False)) for row in cursor.fetchall()]
+            # Handle cursor.description potentially being None
+            if cursor.description:
+                columns = [col[0] for col in cursor.description]
+                results = [
+                    dict(zip(columns, row, strict=False)) for row in cursor.fetchall()
+                ]
+            else:
+                results = []
             cursor.close()
             return results
-    except Exception as e:
-        logger.error(f"❌ Error getting EMQ stats: {e}")
+    except DB_ERRORS:
+        logger.exception("❌ Error getting EMQ stats")
         return []
 
 
-def _create_crm_tables(cf):
+def _create_crm_tables(cf: Dict[str, str]) -> None:
     with get_db_connection() as conn:
         try:
             cur = conn.cursor()
@@ -387,16 +449,16 @@ def _create_crm_tables(cf):
                 )
             )
             conn.commit()
-        except Exception as e:
+        except DB_ERRORS as e:
             if conn:
                 conn.rollback()
-            logger.warning(f"⚠️ Contacts table creation skip/error: {e}")
+            logger.warning("⚠️ Contacts table creation skip/error: %s", e)
 
         try:
             cur = conn.cursor()
             cur.execute(queries.CREATE_INDEX_CONTACTS_WHATSAPP)
             conn.commit()
-        except Exception:
+        except DB_ERRORS:
             if conn:
                 conn.rollback()
 
@@ -404,7 +466,7 @@ def _create_crm_tables(cf):
             cur = conn.cursor()
             cur.execute(queries.CREATE_INDEX_CONTACTS_STATUS)
             conn.commit()
-        except Exception:
+        except DB_ERRORS:
             if conn:
                 conn.rollback()
 
@@ -412,28 +474,30 @@ def _create_crm_tables(cf):
             cur = conn.cursor()
             cur.execute(
                 queries.CREATE_TABLE_MESSAGES.format(
-                    id_type_primary_key=cf["id_type_pk"], timestamp_default=cf["timestamp_default"]
+                    id_type_primary_key=cf["id_type_pk"],
+                    timestamp_default=cf["timestamp_default"],
                 )
             )
             cur.execute(queries.CREATE_INDEX_MESSAGES_CONTACT_ID)
             conn.commit()
-        except Exception as e:
+        except DB_ERRORS as e:
             if conn:
                 conn.rollback()
-            logger.warning(f"⚠️ Messages table creation skip/error: {e}")
+            logger.warning("⚠️ Messages table creation skip/error: %s", e)
 
         try:
             cur = conn.cursor()
             cur.execute(
                 queries.CREATE_TABLE_APPOINTMENTS.format(
-                    id_type_serial=cf["id_type_serial"], timestamp_default=cf["timestamp_default"]
+                    id_type_serial=cf["id_type_serial"],
+                    timestamp_default=cf["timestamp_default"],
                 )
             )
             conn.commit()
-        except Exception as e:
+        except DB_ERRORS as e:
             if conn:
                 conn.rollback()
-            logger.warning(f"⚠️ Appointments table creation skip/error: {e}")
+            logger.warning("⚠️ Appointments table creation skip/error: %s", e)
 
         try:
             cur = conn.cursor()
@@ -446,13 +510,13 @@ def _create_crm_tables(cf):
             )
             cur.execute(queries.CREATE_INDEX_INTERACTIONS_LEAD_ID)
             conn.commit()
-        except Exception as e:
+        except DB_ERRORS as e:
             if conn:
                 conn.rollback()
-            logger.warning(f"⚠️ Interactions table creation skip/error: {e}")
+            logger.warning("⚠️ Interactions table creation skip/error: %s", e)
 
 
-def _run_column_migrations(cur, status_type):
+def _run_column_migrations(cur: DBCursor, status_type: str) -> None:
     new_columns = [
         ("profile_pic_url", "TEXT"),
         ("fb_browser_id", "TEXT"),
@@ -473,7 +537,7 @@ def _run_column_migrations(cur, status_type):
 
     for col_name, col_type in new_columns:
         try:
-            if BACKEND == "postgres":
+            if _backend == "postgres":
                 cur.execute(
                     f"ALTER TABLE crm_leads ADD COLUMN IF NOT EXISTS {col_name} {col_type};"
                 )
@@ -484,16 +548,20 @@ def _run_column_migrations(cur, status_type):
                     )
             else:
                 try:
-                    cur.execute(f"ALTER TABLE crm_leads ADD COLUMN {col_name} {col_type};")
-                except Exception:
+                    cur.execute(
+                        f"ALTER TABLE crm_leads ADD COLUMN {col_name} {col_type};"
+                    )
+                except sqlite3.Error:
                     pass
                 # Also migrate visitors table for SQLite
                 if col_name in ["email", "phone"]:
                     try:
-                        cur.execute(f"ALTER TABLE visitors ADD COLUMN {col_name} {col_type};")
-                    except Exception:
+                        cur.execute(
+                            f"ALTER TABLE visitors ADD COLUMN {col_name} {col_type};"
+                        )
+                    except sqlite3.Error:
                         pass
-        except Exception:
+        except DB_ERRORS:
             pass
 
 
@@ -503,14 +571,14 @@ def _run_column_migrations(cur, status_type):
 
 
 def save_visitor(
-    external_id,
-    fbclid,
-    ip_address,
-    user_agent,
-    source="pageview",
-    utm_data=None,
-    email=None,
-    phone=None,
+    external_id: str,
+    fbclid: Optional[str],
+    ip_address: Optional[str],
+    user_agent: Optional[str],
+    source: str = "pageview",
+    utm_data: Optional[Dict[str, Any]] = None,
+    email: Optional[str] = None,
+    phone: Optional[str] = None,
 ) -> None:
     """Saves visitor data for attribution tracking."""
     if utm_data is None:
@@ -533,7 +601,7 @@ def save_visitor(
                 phone,
             )
 
-            if BACKEND == "postgres":
+            if _backend == "postgres":
                 stmt = """
                     INSERT INTO visitors
                     (external_id, fbclid, ip_address, user_agent, source, utm_source, utm_medium, utm_campaign, utm_term, utm_content, email, phone)
@@ -548,8 +616,8 @@ def save_visitor(
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
                 """
                 cur.execute(stmt, params)
-    except Exception as e:
-        logger.error(f"Failed to save visitor: {e}")
+    except DB_ERRORS:
+        logger.exception("Failed to save visitor")
 
 
 def get_visitor_fbclid(external_id: str) -> Optional[str]:
@@ -561,14 +629,14 @@ def get_visitor_fbclid(external_id: str) -> Optional[str]:
             res = cur.fetchone()
             if res:
                 return res[0]
-    except Exception:
+    except DB_ERRORS:
         pass
     return None
 
 
 def upsert_contact_advanced(contact_data: Dict[str, Any]) -> None:
     """Upsert avanzado estilo CRM Natalia."""
-    if BACKEND != "postgres":
+    if _backend != "postgres":
         # SQLite Partial
         try:
             with get_cursor() as cur:
@@ -581,8 +649,8 @@ def upsert_contact_advanced(contact_data: Dict[str, Any]) -> None:
                         contact_data.get("status", "new"),
                     ),
                 )
-        except Exception as e:
-            logger.error(f"SQLite Upsert Error: {e}")
+        except sqlite3.Error:
+            logger.exception("SQLite Upsert Error")
         return
 
     params = (
@@ -606,8 +674,8 @@ def upsert_contact_advanced(contact_data: Dict[str, Any]) -> None:
         with get_cursor() as cur:
             cur.execute(queries.UPSERT_CONTACT_POSTGRES, params)
             logger.info(f"🚀 Natalia Sync Success: {contact_data.get('phone')}")
-    except Exception as e:
-        logger.error(f"❌ Natalia Sync Error: {e}")
+    except psycopg2.Error:
+        logger.exception("❌ Natalia Sync Error")
 
 
 # Backward compatibility alias
@@ -629,8 +697,8 @@ def save_message(whatsapp_phone: str, role: str, content: str) -> None:
             if row:
                 contact_id = row[0]
                 cur.execute(queries.INSERT_MESSAGE, (contact_id, role, content))
-    except Exception as e:
-        logger.error(f"❌ Error guardando mensaje: {e}")
+    except DB_ERRORS:
+        logger.exception("❌ Error guardando mensaje")
 
 
 def get_chat_history(whatsapp_phone: str, limit: int = 10) -> List[Dict[str, str]]:
@@ -642,7 +710,7 @@ def get_chat_history(whatsapp_phone: str, limit: int = 10) -> List[Dict[str, str
             rows = cur.fetchall()
             for row in reversed(rows):
                 history.append({"role": row[0], "content": row[1]})
-    except Exception:
+    except DB_ERRORS:
         pass
     return history
 
@@ -653,7 +721,7 @@ def check_connection() -> bool:
         with get_cursor() as cur:
             cur.execute("SELECT 1")
             return True
-    except Exception:
+    except DB_ERRORS:
         return False
 
 
@@ -668,7 +736,7 @@ def mark_lead_sent(whatsapp_phone: str) -> bool:
         with get_cursor() as cur:
             cur.execute(queries.UPDATE_LEAD_SENT_FLAG, (whatsapp_phone,))
             return True
-    except Exception:
+    except DB_ERRORS:
         return False
 
 
@@ -679,7 +747,7 @@ def get_user_message_count(whatsapp_phone: str) -> int:
             cur.execute(queries.COUNT_USER_MESSAGES, (whatsapp_phone,))
             row = cur.fetchone()
             return row[0] if row else 0
-    except Exception:
+    except DB_ERRORS:
         return 0
 
 
@@ -690,7 +758,8 @@ def check_if_lead_sent(whatsapp_phone: str) -> bool:
             cur.execute(queries.CHECK_LEAD_SENT_FLAG, (whatsapp_phone,))
             row = cur.fetchone()
             return row[0] if row else False
-    except Exception:
+    except DB_ERRORS as e:
+        logger.debug("❌ Error checking lead sent: %s", e)
         return False
 
 
@@ -710,7 +779,7 @@ def get_or_create_lead(
                 return (str(row[0]), False)
 
             # 2. Create New
-            if BACKEND == "postgres":
+            if _backend == "postgres":
                 cur.execute(
                     queries.INSERT_LEAD_RETURNING_ID,
                     (
@@ -737,9 +806,10 @@ def get_or_create_lead(
                     ),
                 )
                 return (new_id, True)
-    except Exception as e:
-        logger.error(f"Error creating lead: {e}")
+    except DB_ERRORS as e:
+        logger.error("❌ Error creating lead: %s", e)
         return (None, False)
+    return (None, False)
 
 
 def log_interaction(lead_id: str, role: str, content: str) -> bool:
@@ -748,7 +818,8 @@ def log_interaction(lead_id: str, role: str, content: str) -> bool:
         with get_cursor() as cur:
             cur.execute(queries.INSERT_INTERACTION, (lead_id, role, content))
             return True
-    except Exception:
+    except Exception as e:
+        logger.debug("❌ Error logging interaction: %s", e)
         return False
 
 
@@ -763,7 +834,7 @@ def get_all_visitors(limit: int = 50) -> List[Dict[str, Any]]:
     try:
         with get_cursor() as cur:
             # SQL Raw para asegurar compatibilidad
-            if BACKEND == "postgres":
+            if _backend == "postgres":
                 sql = "SELECT id, external_id, source, created_at, ip_address FROM visitors ORDER BY created_at DESC LIMIT %s"
             else:
                 sql = "SELECT id, external_id, source, created_at, ip_address FROM visitors ORDER BY created_at DESC LIMIT ?"
@@ -780,8 +851,8 @@ def get_all_visitors(limit: int = 50) -> List[Dict[str, Any]]:
                         "ip_address": row[4],
                     }
                 )
-    except Exception as e:
-        logger.error(f"❌ Error obteniendo visitors: {e}")
+    except DB_ERRORS:
+        logger.exception("❌ Error obteniendo visitors")
     return visitors
 
 
@@ -789,7 +860,7 @@ def get_visitor_by_id(visitor_id: int) -> Optional[Dict[str, Any]]:
     """Obtiene un visitante por ID para confirmar venta"""
     try:
         with get_cursor() as cur:
-            if BACKEND == "postgres":
+            if _backend == "postgres":
                 sql = "SELECT id, external_id, fbclid, source, created_at, email, phone FROM visitors WHERE id = %s"
             else:
                 sql = "SELECT id, external_id, fbclid, source, created_at, email, phone FROM visitors WHERE id = ?"
@@ -806,6 +877,7 @@ def get_visitor_by_id(visitor_id: int) -> Optional[Dict[str, Any]]:
                     "email": row[5],
                     "phone": row[6],
                 }
-    except Exception as e:
-        logger.error(f"❌ Error buscando visitor {visitor_id}: {e}")
+    except DB_ERRORS as e:
+        logger.error("❌ Error buscando visitor %s: %s", visitor_id, e)
+    return None
     return None

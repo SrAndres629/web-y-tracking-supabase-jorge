@@ -1,9 +1,9 @@
 ──────────────────────────────────────────────────────────────────────────────────
   📊 ANÁLISIS MVP: SISTEMA DE TRACKING AVANZADO + META ADS
-  
+
   Uso: Captación de Clientes de Alta Conversión para Micropigmentación
   Sin n8n | Integración: Cloudflare Zaraz + CAPI Propio
-  
+
   Meta: EMQ 10/10 | CPA Mínimo | CPM Optimizado | ROI Máximo
 ──────────────────────────────────────────────────────────────────────────────────
 
@@ -79,7 +79,7 @@ def add_to_retry_queue(event_name: str, payload: Dict[str, Any]):
 ### BUG-006: No hay validación de TEST_EVENT_CODE en producción
 **Archivo:** `app/tracking.py` Líneas 245-246
 **Impacto:** MEDIO - Eventos de test pueden contaminar datos reales
-**Solución:** 
+**Solución:**
 ```python
 if settings.TEST_EVENT_CODE and not settings.IS_PRODUCTION:
     payload["test_event_code"] = settings.TEST_EVENT_CODE
@@ -122,7 +122,7 @@ Campos_Optimos = 12:
 
 Meta EMQ Formula (aproximada):
 - em: +3.0 puntos
-- ph: +3.0 puntos  
+- ph: +3.0 puntos
 - fbp/fbc/external_id: +1.5 c/u
 - fn/ln/ct/st/zp/country: +0.5 c/u
 - ip/ua: Base (+2.0)
@@ -134,11 +134,11 @@ Estrategia de captura sin fricción:
 Sesión 1 (Anónimo):
   → Captura: ip, ua, fbp, fbc, geolocalización
   → EMQ: 3-4/10
-  
+
 Sesión 2 (Return + Consent):
   → Captura: em, fn, ln (via email lookup)
   → EMQ: 6-7/10
-  
+
 Conversión (WhatsApp):
   → Captura: ph, confirma fn/ln
   → EMQ: 9-10/10
@@ -149,13 +149,13 @@ Prioridad de fuentes de datos:
 ```
 1. Server-Side CAPI (Autoritativo)
    └── Válido para: em, ph, fn, ln, external_id, ip, ua
-   
+
 2. First-Party Cookies (Persistente)
    └── Válido para: fbp, fbc, external_id, consent_preferences
-   
+
 3. Browser Context (Volátil)
    └── Válido para: ua, viewport, referrer
-   
+
 4. Third-Party Enrichment (Verificado)
    └── Válido para: geolocalización precisa, demográficos
 ```
@@ -207,48 +207,48 @@ CONSENTIMIENTO INFORMADO - TRATAMIENTO DE DATOS
 
 1. IDENTIFICACIÓN DEL RESPONSABLE
    Jorge Aguirre Flores - Servicios de Micropigmentación
-   
+
 2. DATOS RECOLECTADOS Y FINALIDAD
-   
+
    2.1 Datos Técnicos (Automático)
    - Dirección IP: Análisis de ubicación general, prevención de fraude
    - User Agent: Optimización de experiencia según dispositivo
    - Cookies de sesión: Funcionalidad básica del sitio
-   
+
    2.2 Datos de Navegación (Automático)
    - Páginas visitadas: Personalización de contenido
    - Tiempo en sitio: Mejora de experiencia de usuario
    - Servicios vistos: Recomendaciones personalizadas
    - Interacciones: Optimización de interfaz
-   
+
    2.3 Datos de Contacto (Voluntario progresivo)
    - Correo electrónico: Comunicación de promociones, newsletter
    - Teléfono: Contacto para agendamiento de citas
    - Nombre: Personalización de comunicaciones
-   
+
    2.4 Datos Demográficos Inferidos
    - Rango de edad estimado: Segmentación de contenido apropiado
    - Ubicación geográfica: Ofertas relevantes a tu zona
    - Intereses: Basados en comportamiento de navegación
-   
+
 3. BASE LEGAL
    - Consentimiento explícito (Art. 6 GDPR)
    - Interés legítimo en prevención de fraude
    - Ejecución de contrato (cuando agendes servicio)
-   
+
 4. COMPARTICIÓN DE DATOS
    - Meta Platforms, Inc.: Optimización de publicidad
    - Cloudflare, Inc.: Seguridad y performance
    - Google LLC: Análisis de comportamiento (anónimo)
-   
+
 5. DURACIÓN
    - Datos técnicos: 30 días
    - Datos de contacto: Hasta solicitud de eliminación
    - Datos de navegación: 90 días
-   
+
 6. DERECHOS DEL USUARIO
    Acceso, rectificación, supresión, portabilidad, limitación, oposición
-   
+
 7. TÉCNICAS DE ENRIQUECIMIENTO
    Se utilizan servicios de terceros verificados para completar
    perfiles de manera segura y anónima cuando sea posible.
@@ -305,7 +305,7 @@ CONSENTIMIENTO INFORMADO - TRATAMIENTO DE DATOS
 const enrichLocation = async () => {
   // 1. IP Geolocation (siempre disponible, aproximada)
   const ipLocation = await fetch('/api/geolocate');
-  
+
   // 2. Browser Geolocation (si usuario permite)
   if (navigator.geolocation && hasConsent('location')) {
     navigator.geolocation.getCurrentPosition(pos => {
@@ -347,31 +347,31 @@ const deviceFingerprint = () => {
 # En backend, con email verificado y consentimiento:
 async def enrich_profile(email: str, consent: dict):
     profile = {}
-    
+
     # Opción A: Clearbit (si contratado)
     # if consent.get('third_party_enrichment'):
     #     clearbit_data = await clearbit.enrich(email)
     #     profile['company'] = clearbit_data.get('employment', {}).get('name')
     #     profile['role'] = clearbit_data.get('employment', {}).get('role')
-    
+
     # Opción B: Inferencia de datos públicos
     # - Nombre del email (juan.perez@gmail.com → Juan Perez)
     email_name = extract_name_from_email(email)
     if email_name:
         profile['fn'] = email_name['first']
         profile['ln'] = email_name['last']
-    
+
     # Opción C: Geolocalización por IP avanzada
     ip_data = await maxmind_lookup(client_ip)
     profile['city'] = ip_data.city.name
     profile['country'] = ip_data.country.iso_code
     profile['zip'] = ip_data.postal.code
-    
+
     # Opción D: Inferencia demográfica (básica)
     # Basado en hora de navegación, dispositivo, servicios vistos
     profile['estimated_age_range'] = estimate_age(services_viewed, behavior)
     profile['likely_gender'] = 'female' if services_viewed else 'unknown'
-    
+
     return profile
 ```
 
@@ -537,16 +537,16 @@ async def optimize_event_for_delivery(event_data, user_profile):
     Optimiza eventos basado en calidad de señal para mejorar ad delivery
     """
     emq_score = calculate_emq(event_data['user_data'])
-    
+
     # Si EMQ bajo, no enviar eventos de bajo valor
     if emq_score < 5.0 and event_data['event_name'] in ['PageView']:
         return None  # Skip, no aporta a optimización
-    
+
     # Si EMQ alto, enriquecer con datos de conversión
     if emq_score >= 8.0:
         event_data['custom_data']['signal_quality'] = 'high'
         event_data['custom_data']['predicted_ltv'] = calculate_ltv(user_profile)
-    
+
     return event_data
 ```
 
@@ -711,6 +711,6 @@ Resultado: Campaña live con EMQ 9-10/10, CPA mínimo
 ──────────────────────────────────────────────────────────────────────────────────
 Última actualización: 2026-02-16
 Versión: 2.0 - Metodología EMQ 10/10 + Consentimiento Inteligente
-Análisis basado en: Meta CAPI Best Practices 2025, GDPR Guidelines, 
+Análisis basado en: Meta CAPI Best Practices 2025, GDPR Guidelines,
                     Cloudflare Zaraz Docs, Privacy-First Architecture
 ──────────────────────────────────────────────────────────────────────────────────

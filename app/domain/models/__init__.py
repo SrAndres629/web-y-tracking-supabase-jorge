@@ -13,16 +13,16 @@ from app.domain.models.values import Email, EventId, ExternalId, Phone
 from app.domain.models.visitor import Visitor, VisitorSource
 
 __all__ = [
+    "Email",
     # Value Objects
     "EventId",
+    "EventName",
     "ExternalId",
+    "Lead",
+    "LeadStatus",
     "Phone",
-    "Email",
+    "TrackingEvent",
     # Entities
     "Visitor",
     "VisitorSource",
-    "Lead",
-    "LeadStatus",
-    "TrackingEvent",
-    "EventName",
 ]

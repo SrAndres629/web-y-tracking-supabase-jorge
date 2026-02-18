@@ -9,7 +9,7 @@
     - Lee el reporte correspondiente en `.ai/sensory/` (o busca reportes recientes).
     - **Analiza:** ¿El agente cumplió el objetivo?
     - **Decide:** ¿Necesita corrección (nueva tarea) o el siguiente paso del `MASTER_PLAN`?
-    
+
     > [!CRITICAL]
     > **HUMAN-IN-THE-LOOP PROTOCOL:**
     > Al finalizar una ronda de análisis (Phase Complete), **DETENTE**.

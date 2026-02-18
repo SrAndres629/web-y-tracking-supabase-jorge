@@ -368,7 +368,7 @@ class TestDeadlockPrevention:
         try:
             # Debe timeout antes de 10 segundos
             await asyncio.wait_for(slow_operation(), timeout=0.1)
-            assert False, "Should have timed out"
+            raise AssertionError("Should have timed out")
         except asyncio.TimeoutError:
             pass  # Expected
 

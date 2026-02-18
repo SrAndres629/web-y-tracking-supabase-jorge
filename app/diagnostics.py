@@ -96,4 +96,4 @@ def log_startup_report():
         report = run_full_diagnostics()
         logger.info(f"🔍 [DIAGNOSTICS] REPORT: {report}")
     except Exception as e:
-        logger.error(f"⚠️ [DIAGNOSTICS] FAILED TO RUN: {e}")
+        logger.exception(f"⚠️ [DIAGNOSTICS] FAILED TO RUN: {e}")

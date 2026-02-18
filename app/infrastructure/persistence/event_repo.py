@@ -175,7 +175,8 @@ class PostgreSQLEventRepository(EventRepository):
         async with self._db.connection() as conn:
             cursor = conn.cursor()
             cursor.execute(
-                "SELECT COUNT(*) FROM events WHERE external_id = %s", (external_id.value,)
+                "SELECT COUNT(*) FROM events WHERE external_id = %s",
+                (external_id.value,),
             )
             row = cursor.fetchone()
             return row[0] if row else 0
@@ -190,8 +191,8 @@ class PostgreSQLEventRepository(EventRepository):
             cursor = conn.cursor()
             cursor.execute(
                 """
-                SELECT COUNT(*) FROM events 
-                WHERE event_name = %s 
+                SELECT COUNT(*) FROM events
+                WHERE event_name = %s
                 AND DATE(event_time) = DATE(%s)
                 """,
                 (event_name.value, date),

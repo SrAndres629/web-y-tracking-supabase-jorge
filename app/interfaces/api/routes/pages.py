@@ -59,7 +59,7 @@ def bg_save_visitor(
         preview: str = external_id[slice(0, 16)]
         logger.info("✅ [BG] Visitor saved: %s...", preview)
     except (AttributeError, KeyError, ValueError, RuntimeError) as e:
-        logger.error("❌ [BG] Error saving visitor: %s", e)
+        logger.exception("❌ [BG] Error saving visitor: %s", e)
 
 
 async def bg_send_pageview(
@@ -103,7 +103,7 @@ async def bg_send_pageview(
         else:
             logger.warning("⚠️ [BG] PageView issue: %s", result)
     except (AttributeError, KeyError, ValueError, RuntimeError) as e:
-        logger.error("❌ [BG] PageView error: %s", e)
+        logger.exception("❌ [BG] PageView error: %s", e)
 
 
 # =================================================================
@@ -271,6 +271,34 @@ async def read_onboarding(request: Request) -> Response:
         request=request,
         name="pages/site/onboarding.html",
         context={"seo": seo_meta, "services": services_config, "contact": contact_config},
+    )
+@router.get("/privacidad", response_class=HTMLResponse)
+async def read_privacy(request: Request) -> Response:
+    """Privacy Policy Page."""
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/site/legal.html",
+        context={
+            "title": "Política de Privacidad",
+            "page_type": "privacy",
+            "updated_date": "Febrero 2026",
+            "contact": await get_contact_config(),
+        },
+    )
+
+
+@router.get("/terminos", response_class=HTMLResponse)
+async def read_terms(request: Request) -> Response:
+    """Terms & Conditions Page."""
+    return templates.TemplateResponse(
+        request=request,
+        name="pages/site/legal.html",
+        context={
+            "title": "Términos y Condiciones",
+            "page_type": "terms",
+            "updated_date": "Febrero 2026",
+            "contact": await get_contact_config(),
+        },
     )
 
 

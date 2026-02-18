@@ -1,26 +1,45 @@
 line-length = 100
 target-version = "py312"
 exclude = [
-    "refactor_backup",
-    "venv",
-    ".venv",
-    "node_modules",
-    "migrations",
-    "tools",
-    ".vercel",
+  "refactor_backup",
+  "venv",
+  ".venv",
+  "node_modules",
+  "migrations",
+  "tools",
+  ".vercel",
 ]
 
 [lint]
-select = ["E", "F", "W", "I", "B"]
-ignore = ["E501"]
-exclude = [
-    "refactor_backup",
-    "venv",
-    ".venv",
-    "node_modules",
-    "migrations",
-    "tools",
+# Selected Rules:
+# E/W: Error/Warning (Pycodestyle/Flake8)
+# F: Pyflakes
+# I: Isort
+# B: Flake8-bugbear
+# PLE/PLW: Pylint (Errors/Warnings)
+# BLE: Blind-except
+# TRY: Tryceratops (Exceptions)
+# RUFF: Ruff-specific rules
+select = ["E", "F", "W", "I", "B", "PLE", "PLW", "BLE", "TRY", "RUF"]
+ignore = [
+  "E501",    # Line too long (already covered by Ruff format or handled manually if critical)
+  "TRY003",  # Avoid specifying long messages in exceptions
+  "PLW0603", # Global statement is discouraged
 ]
+
+exclude = [
+  "refactor_backup",
+  "venv",
+  ".venv",
+  "node_modules",
+  "migrations",
+  "tools",
+]
+
+[lint.per-file-ignores]
+"tests/**" = ["E402", "PLR2004"]
+"scripts/**" = ["E402"]
+"main.py" = ["E402"]
 
 [format]
 quote-style = "double"

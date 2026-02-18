@@ -95,7 +95,7 @@ CREATE_TABLE_CONTACTS = """
         email TEXT, -- Agregado para paridad
         meta_lead_id TEXT, -- Agregado para paridad
         profile_pic_url TEXT,
-        
+
         fb_click_id TEXT,
         fb_browser_id TEXT,
         utm_source TEXT,
@@ -105,7 +105,7 @@ CREATE_TABLE_CONTACTS = """
         utm_content TEXT,
         web_visit_count INTEGER DEFAULT 1,
         conversion_sent_to_meta BOOLEAN DEFAULT FALSE,
-        
+
         status {status_type},
         lead_score INTEGER DEFAULT 50,
         pain_point TEXT,
@@ -195,8 +195,8 @@ UPSERT_CONTACT_POSTGRES = """
         status, lead_score, pain_point, service_interest,
         last_interaction
     ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
-    ON CONFLICT (whatsapp_phone) 
-    DO UPDATE SET 
+    ON CONFLICT (whatsapp_phone)
+    DO UPDATE SET
         full_name = COALESCE(EXCLUDED.full_name, crm_leads.full_name),
         profile_pic_url = COALESCE(EXCLUDED.profile_pic_url, crm_leads.profile_pic_url),
         fb_click_id = COALESCE(EXCLUDED.fb_click_id, crm_leads.fb_click_id),
@@ -215,7 +215,7 @@ SELECT_CONTACT_ID_BY_PHONE = "SELECT id FROM crm_leads WHERE whatsapp_phone = %s
 INSERT_MESSAGE = "INSERT INTO messages (contact_id, role, content) VALUES (%s, %s, %s)"
 
 SELECT_CHAT_HISTORY = """
-    SELECT m.role, m.content 
+    SELECT m.role, m.content
     FROM messages m
     JOIN crm_leads c ON m.contact_id = c.id
     WHERE c.whatsapp_phone = %s
@@ -247,15 +247,15 @@ CHECK_LEAD_SENT_FLAG = "SELECT conversion_sent_to_meta FROM crm_leads WHERE what
 
 SELECT_META_DATA_BY_REF = """
     SELECT fbclid, user_agent, ip_address, utm_source, utm_medium, utm_campaign
-    FROM visitors 
-    WHERE external_id LIKE %s 
+    FROM visitors
+    WHERE external_id LIKE %s
     ORDER BY timestamp DESC LIMIT 1
 """
 
 SELECT_LEAD_ID_BY_PHONE = "SELECT id FROM crm_leads WHERE whatsapp_phone = %s"
 
 UPDATE_LEAD_METADATA = """
-    UPDATE crm_leads SET 
+    UPDATE crm_leads SET
         meta_lead_id = COALESCE(%s, meta_lead_id),
         fb_click_id = COALESCE(%s, fb_click_id),
         email = COALESCE(%s, email),

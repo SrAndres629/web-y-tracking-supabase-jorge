@@ -1,6 +1,6 @@
 # Audit Report - Legacy Imports and Template Paths
 
-Date: 2026-02-11  
+Date: 2026-02-11
 Scope: `app/**`, `api/**`, `tests/**`, `main.py`, `vercel.json`
 
 ## Executive Summary

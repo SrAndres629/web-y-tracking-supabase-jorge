@@ -39,7 +39,7 @@ async def clean_garbage_data(_authorized: bool = Depends(verify_cron_secret)):
             # We assume 'timestamp' based on previous analysis
 
             query = """
-                DELETE FROM visitors 
+                DELETE FROM visitors
                 WHERE timestamp < NOW() - INTERVAL '90 days'
                 AND external_id NOT IN (SELECT fb_browser_id FROM crm_leads WHERE fb_browser_id IS NOT NULL)
             """
@@ -59,5 +59,5 @@ async def clean_garbage_data(_authorized: bool = Depends(verify_cron_secret)):
         }
 
     except Exception as e:
-        logger.error(f"❌ Garbage Collector Failed: {e}")
+        logger.exception(f"❌ Garbage Collector Failed: {e}")
         return {"status": "error", "message": str(e)}

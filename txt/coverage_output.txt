@@ -28,26 +28,26 @@ module_path = 'app/tracking.py'
         full_path = BASE_DIR / module_path
         if not full_path.exists():
             pytest.skip(f"Module {module_path} not found")
-    
+
         functions = get_public_functions(full_path)
         violations = []
-    
+
         for func in functions:
             func_name = func.name
-    
+
             # 1. Check Docstring
             if not ast.get_docstring(func):
                 violations.append(f"Function '{func_name}' is missing a docstring.")
-    
+
             # 2. Check Type Hints (Args & Return)
             # Note: This is a basic check. Complex types need mypy.
             has_return_annotation = func.returns is not None
             if not has_return_annotation:
                  violations.append(f"Function '{func_name}' is missing return type hint.")
-    
+
         if violations:
 >           pytest.fail(f"\\n\U0001f6a8 INTEGRITY VIOLATION in {module_path}:\\n" + "\\n".join(violations))
-E           Failed: 
+E           Failed:
 E           \U0001f6a8 INTEGRITY VIOLATION in app/tracking.py:
 E           Function 'deduplicate_event' is missing a docstring.
 E           Function 'deduplicate_event' is missing return type hint.
@@ -70,26 +70,26 @@ module_path = 'app/database.py'
         full_path = BASE_DIR / module_path
         if not full_path.exists():
             pytest.skip(f"Module {module_path} not found")
-    
+
         functions = get_public_functions(full_path)
         violations = []
-    
+
         for func in functions:
             func_name = func.name
-    
+
             # 1. Check Docstring
             if not ast.get_docstring(func):
                 violations.append(f"Function '{func_name}' is missing a docstring.")
-    
+
             # 2. Check Type Hints (Args & Return)
             # Note: This is a basic check. Complex types need mypy.
             has_return_annotation = func.returns is not None
             if not has_return_annotation:
                  violations.append(f"Function '{func_name}' is missing return type hint.")
-    
+
         if violations:
 >           pytest.fail(f"\\n\U0001f6a8 INTEGRITY VIOLATION in {module_path}:\\n" + "\\n".join(violations))
-E           Failed: 
+E           Failed:
 E           \U0001f6a8 INTEGRITY VIOLATION in app/database.py:
 E           Function 'get_db_connection' is missing return type hint.
 E           Function 'get_cursor' is missing return type hint.
@@ -133,26 +133,26 @@ module_path = 'app/services.py'
         full_path = BASE_DIR / module_path
         if not full_path.exists():
             pytest.skip(f"Module {module_path} not found")
-    
+
         functions = get_public_functions(full_path)
         violations = []
-    
+
         for func in functions:
             func_name = func.name
-    
+
             # 1. Check Docstring
             if not ast.get_docstring(func):
                 violations.append(f"Function '{func_name}' is missing a docstring.")
-    
+
             # 2. Check Type Hints (Args & Return)
             # Note: This is a basic check. Complex types need mypy.
             has_return_annotation = func.returns is not None
             if not has_return_annotation:
                  violations.append(f"Function '{func_name}' is missing return type hint.")
-    
+
         if violations:
 >           pytest.fail(f"\\n\U0001f6a8 INTEGRITY VIOLATION in {module_path}:\\n" + "\\n".join(violations))
-E           Failed: 
+E           Failed:
 E           \U0001f6a8 INTEGRITY VIOLATION in app/services.py:
 E           Function 'get_services_config' is missing a docstring.
 E           Function 'get_contact_config' is missing a docstring.

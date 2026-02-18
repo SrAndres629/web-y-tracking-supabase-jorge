@@ -5,20 +5,13 @@ def smart_patch(file_path, search_pattern, replacement, dry_run=True):
     with open(file_path, "r") as f:
         content = f.read()
 
-    # Normalize whitespace for matching (simple version)
-    search_norm = " ".join(search_pattern.split())
+    # Simple direct search first
 
     # Simple direct search first
     if search_pattern in content:
         print(f"Exact match found in {file_path}.")
         new_content = content.replace(search_pattern, replacement)
     else:
-        # Fuzzy line-based search? Or just normalized?
-        # Let's try to find the block by stripping lines
-        lines = content.splitlines()
-        search_lines = search_pattern.splitlines()
-
-        # This is complex to implement robustly in one go without libraries.
         # Fallback to simple replace for now, but report failure clearly.
         print(f"Pattern not found exactly in {file_path}.")
         return False
@@ -49,8 +42,6 @@ if __name__ == "__main__":
 
     smart_patch(target, search, replace, not apply)
 
-import sys
-
 
 def main():
     if len(sys.argv) < 3:
@@ -69,7 +60,7 @@ def main():
 
         # Filter
         if pattern:
-            subset = [l for l in subset if pattern in l]
+            subset = [line for line in subset if pattern in line]
 
         print("".join(subset))
     except FileNotFoundError:

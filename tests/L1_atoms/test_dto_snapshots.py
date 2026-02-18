@@ -174,7 +174,6 @@ class TestTrackingDtoSnapshots:
             "utm_campaign": request.utm_campaign,
             "utm_term": request.utm_term,
             "utm_content": request.utm_content,
-            "custom_data": request.custom_data,
         }
 
         expected = {

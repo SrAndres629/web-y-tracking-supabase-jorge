@@ -1,18 +1,24 @@
+"""
+Infrastructure Integration Tests.
+
+Verifies connectivity and configuration of external services (DB, Redis, etc.).
+"""
+
 import logging
 import os
 import sys
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
-import psycopg2
-import pytest
-from upstash_redis import Redis
+import psycopg2  # type: ignore
+import pytest  # type: ignore
+from upstash_redis import Redis  # type: ignore
+
+# Ensure project root is in path for imports
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.config import settings
 
 logger = logging.getLogger(__name__)
-
-# Ensure project root is in path for imports
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 def test_environment_variables():
@@ -45,13 +51,18 @@ def test_environment_variables():
     if missing_vars or placeholder_vars:
         if is_prod:
             pytest.fail(
-                f"🚨 PRODUCTION ERROR: Environment issues detected. Missing: {missing_vars}, Placeholders: {placeholder_vars}"
+                f"🚨 PRODUCTION ERROR: Environment issues detected. "
+                f"Missing: {missing_vars}, Placeholders: {placeholder_vars}"
             )
         elif is_ci and not is_strict_audit:
-            pytest.skip(f"💡 CI Mode: Missing secrets {missing_vars}. Skipping integration audit.")
+            pytest.skip(
+                f"💡 CI Mode: Missing secrets {missing_vars}. Skipping integration audit."
+            )
         else:
             pytest.skip(
-                f"⚠️ Skipping infrastructure integration: Detected missing/placeholder variables in {missing_vars + placeholder_vars}. Configure them for real tests."
+                f"⚠️ Skipping infrastructure integration: "
+                f"Detected missing/placeholder variables in {missing_vars + placeholder_vars}. "
+                "Configure them for real tests."
             )
 
     assert True
@@ -59,16 +70,24 @@ def test_environment_variables():
 
 def test_database_connection():
     """Prueba de conexión a Supabase (Postgres)"""
-    db_url = (settings.DATABASE_URL or "").lower()
+    db_url = str(settings.DATABASE_URL or "").lower()
     is_prod = os.getenv("VERCEL") or os.getenv("RENDER")
 
     # Detect placeholders in DSN
-    placeholder_patterns = ["set_in_production", "stub", "placeholder", "sqlite", "required"]
+    placeholder_patterns = [
+        "set_in_production",
+        "stub",
+        "placeholder",
+        "sqlite",
+        "required",
+    ]
     if not db_url or any(p in db_url for p in placeholder_patterns):
         if is_prod:
             pytest.fail("🚨 PRODUCTION ERROR: DATABASE_URL contains a placeholder.")
         else:
-            logger.info("⚠️ Stub/Placeholder DSN detected. Verifying SQLite fallback path.")
+            logger.info(
+                "⚠️ Stub/Placeholder DSN detected. Verifying SQLite fallback path."
+            )
             from app.database import get_db_connection
 
             try:
@@ -76,29 +95,31 @@ def test_database_connection():
                     cur = conn.cursor()
                     cur.execute("SELECT 1")
                     assert cur.fetchone() is not None
-                pytest.skip("✅ SQLite connection verified. Skipping real Postgres check (Local).")
-            except Exception as e:
-                pytest.fail(f"🔥 Fallo conexión SQLite Fallback: {str(e)}")
+                pytest.skip(
+                    "✅ SQLite connection verified. Skipping real Postgres check (Local)."
+                )
+            except Exception as e:  # noqa: BLE001
+                pytest.fail(f"🔥 Fallo conexión SQLite Fallback: {e!s}")
 
     # Real Postgres Check (only if URL looks valid)
     try:
         parsed = urlparse(settings.DATABASE_URL)
         query = [
             (k, v)
-            for k, v in parse_qsl(parsed.query)
+            for k, v in parse_qsl(str(parsed.query))
             if k.lower() not in {"pgbouncer", "connection_limit"}
         ]
         sanitized = urlunparse(parsed._replace(query=urlencode(query)))
-        conn = psycopg2.connect(sanitized)
+        conn = psycopg2.connect(str(sanitized))
         cur = conn.cursor()
         cur.execute("SELECT 1")
         assert cur.fetchone() is not None
         conn.close()
-    except Exception as e:
+    except (psycopg2.Error, Exception) as e:
         if is_prod:
-            pytest.fail(f"🔥 CRITICAL: Production DB Connection failed: {str(e)}")
+            pytest.fail(f"🔥 CRITICAL: Production DB Connection failed: {e!s}")
         else:
-            pytest.skip(f"💡 Postgres connection skipped (Local): {str(e)}")
+            pytest.skip(f"💡 Postgres connection skipped (Local): {e!s}")
 
 
 def test_redis_connection():
@@ -106,18 +127,25 @@ def test_redis_connection():
     redis_url = str(settings.UPSTASH_REDIS_REST_URL or "")
     is_prod = os.getenv("VERCEL") or os.getenv("RENDER")
 
-    if not redis_url or "stub" in redis_url.lower() or "set_in_production" in redis_url.lower():
+    if (
+        not redis_url
+        or "stub" in redis_url.lower()
+        or "set_in_production" in redis_url.lower()
+    ):
         if is_prod:
             pytest.fail("🚨 PRODUCTION ERROR: Redis URL is a placeholder.")
         else:
             pytest.skip("⚠️ Redis not configured or stub. Skipping integration check.")
 
     try:
-        redis = Redis(url=settings.UPSTASH_REDIS_REST_URL, token=settings.UPSTASH_REDIS_REST_TOKEN)
+        redis = Redis(
+            url=str(settings.UPSTASH_REDIS_REST_URL),
+            token=str(settings.UPSTASH_REDIS_REST_TOKEN),
+        )
         ping_result = redis.ping()
         assert ping_result is True or ping_result == "PONG"
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         if is_prod:
-            pytest.fail(f"🔥 CRITICAL: Production Redis Connection failed: {str(e)}")
+            pytest.fail(f"🔥 CRITICAL: Production Redis Connection failed: {e!s}")
         else:
-            pytest.skip(f"💡 Redis connection skipped (Local): {str(e)}")
+            pytest.skip(f"💡 Redis connection skipped (Local): {e!s}")

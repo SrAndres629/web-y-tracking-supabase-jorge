@@ -9,8 +9,10 @@ from main import app
 # Disable rate limiting for tests
 limiter.enabled = False
 
+import os
+
 # FORCE STRICT SECURITY: Ensure Secret Key is "present" so logic doesn't bypass
-settings.TURNSTILE_SECRET_KEY = "dummy_secret_for_test"
+settings.TURNSTILE_SECRET_KEY = os.getenv("TURNSTILE_SECRET_KEY") or "dummy_secret_for_test"
 
 import pytest
 

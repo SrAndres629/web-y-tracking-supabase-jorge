@@ -23,7 +23,7 @@ class ServerSideIdentityMiddleware(BaseHTTPMiddleware):
     def __init__(self, app: ASGIApp):
         super().__init__(app)
 
-    async def dispatch(self, request: Request, call_next: Callable) -> Response:  # noqa: C901
+    async def dispatch(self, request: Request, call_next: Callable) -> Response:
         response = await call_next(request)
 
         # Skip for static files and API calls that are not page loads
@@ -72,6 +72,6 @@ class ServerSideIdentityMiddleware(BaseHTTPMiddleware):
                 logger.info(f"🍪 [Identity] Captured fbclid -> _fbc: {fbc}")
 
         except Exception as e:
-            logger.error(f"❌ [Identity] Middleware Error: {e}")
+            logger.exception(f"❌ [Identity] Middleware Error: {e}")
 
         return response

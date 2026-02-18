@@ -32,10 +32,10 @@ class ClientService:
                 if row:
                     # Map row to dict
                     cols = [col[0] for col in cur.description]
-                    return dict(zip(cols, row))
+                    return dict(zip(cols, row, strict=True))
             return None
         except Exception as e:
-            logger.error(f"Error looking up client by API key: {e}")
+            logger.exception(f"Error looking up client by API key: {e}")
             return None
 
     @staticmethod
@@ -57,8 +57,8 @@ class ClientService:
             with get_cursor() as cur:
                 # 1. Insert Client
                 query_client = """
-                    INSERT INTO clients (name, email, company, meta_pixel_id, meta_access_token, plan) 
-                    VALUES (%s, %s, %s, %s, %s, %s) 
+                    INSERT INTO clients (name, email, company, meta_pixel_id, meta_access_token, plan)
+                    VALUES (%s, %s, %s, %s, %s, %s)
                     RETURNING id
                 """
                 if BACKEND != "postgres":
@@ -85,5 +85,5 @@ class ClientService:
 
             return {"client_id": client_id, "api_key": api_key}
         except Exception as e:
-            logger.error(f"Error creating client: {e}")
+            logger.exception(f"Error creating client: {e}")
             return None

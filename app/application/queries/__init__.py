@@ -10,10 +10,10 @@ from app.application.queries.get_visitor import GetVisitorHandler, GetVisitorQue
 from app.application.queries.list_visitors import ListVisitorsHandler, ListVisitorsQuery
 
 __all__ = [
-    "GetVisitorQuery",
-    "GetVisitorHandler",
-    "ListVisitorsQuery",
-    "ListVisitorsHandler",
-    "GetContentQuery",
     "GetContentHandler",
+    "GetContentQuery",
+    "GetVisitorHandler",
+    "GetVisitorQuery",
+    "ListVisitorsHandler",
+    "ListVisitorsQuery",
 ]

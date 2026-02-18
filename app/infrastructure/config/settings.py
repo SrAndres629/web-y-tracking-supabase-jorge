@@ -16,8 +16,8 @@ import os
 from functools import lru_cache
 from typing import List, Literal, Optional
 
-from pydantic import Field, field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field, validator
+from pydantic_settings import BaseSettings
 
 logger = logging.getLogger(__name__)
 
@@ -25,10 +25,14 @@ logger = logging.getLogger(__name__)
 class DatabaseSettings(BaseSettings):
     """Configuración de base de datos."""
 
-    model_config = SettingsConfigDict(env_prefix="DB_", extra="ignore")
+    class Config:
+        env_prefix = "DB_"
+        extra = "ignore"
 
     url: Optional[str] = Field(
-        default=None, description="PostgreSQL connection URL (Supabase)", alias="DATABASE_URL"
+        default=None,
+        description="PostgreSQL connection URL (Supabase)",
+        alias="DATABASE_URL",
     )
     pool_size: int = Field(default=5, ge=1, le=20)
     max_overflow: int = Field(default=10, ge=0)
@@ -43,7 +47,7 @@ class DatabaseSettings(BaseSettings):
         """Detecta si estamos en entorno serverless (Vercel)."""
         return bool(os.getenv("VERCEL") or os.getenv("AWS_LAMBDA_FUNCTION_NAME"))
 
-    @field_validator("url")
+    @validator("url")
     @classmethod
     def validate_serverless_port(cls, v: Optional[str]) -> Optional[str]:
         """Warn si se usa puerto 5432 en serverless (debe ser 6543)."""
@@ -58,7 +62,9 @@ class DatabaseSettings(BaseSettings):
 class RedisSettings(BaseSettings):
     """Configuración de Redis (Upstash)."""
 
-    model_config = SettingsConfigDict(env_prefix="UPSTASH_REDIS_", extra="ignore")
+    class Config:
+        env_prefix = "UPSTASH_REDIS_"
+        extra = "ignore"
 
     rest_url: Optional[str] = Field(default=None, alias="UPSTASH_REDIS_REST_URL")
     rest_token: Optional[str] = Field(default=None, alias="UPSTASH_REDIS_REST_TOKEN")
@@ -71,7 +77,9 @@ class RedisSettings(BaseSettings):
 class MetaSettings(BaseSettings):
     """Configuración de Meta (Facebook) Ads."""
 
-    model_config = SettingsConfigDict(env_prefix="META_", extra="ignore")
+    class Config:
+        env_prefix = "META_"
+        extra = "ignore"
 
     pixel_id: str = Field(default="")
     access_token: Optional[str] = Field(default=None)
@@ -92,7 +100,9 @@ class MetaSettings(BaseSettings):
 class SecuritySettings(BaseSettings):
     """Configuración de seguridad."""
 
-    model_config = SettingsConfigDict(env_prefix="", extra="ignore")
+    class Config:
+        env_prefix = ""
+        extra = "ignore"
 
     secret_key: str = Field(default="change-me-in-production", alias="SECRET_KEY")
     admin_key: str = Field(default="admin-change-me", alias="ADMIN_KEY")
@@ -109,7 +119,7 @@ class SecuritySettings(BaseSettings):
         alias="CORS_ALLOWED_ORIGINS",
     )
 
-    @field_validator("cors_origins", mode="before")
+    @validator("cors_origins", pre=True)
     @classmethod
     def parse_cors_origins(cls, v):
         """Parsea string de env var a lista."""
@@ -125,7 +135,9 @@ class FeatureFlags(BaseSettings):
     Se pueden modificar via Vercel env vars sin código nuevo.
     """
 
-    model_config = SettingsConfigDict(env_prefix="FLAG_", extra="ignore")
+    class Config:
+        env_prefix = "FLAG_"
+        extra = "ignore"
 
     show_testimonials: bool = Field(default=True)
     show_gallery: bool = Field(default=True)
@@ -143,7 +155,9 @@ class FeatureFlags(BaseSettings):
 class ObservabilitySettings(BaseSettings):
     """Configuración de observabilidad."""
 
-    model_config = SettingsConfigDict(env_prefix="", extra="ignore")
+    class Config:
+        env_prefix = ""
+        extra = "ignore"
 
     sentry_dsn: Optional[str] = Field(default=None, alias="SENTRY_DSN")
     clarity_project_id: Optional[str] = Field(default=None)
@@ -157,7 +171,8 @@ class ObservabilitySettings(BaseSettings):
 class ExternalServicesSettings(BaseSettings):
     """Configuración de servicios externos."""
 
-    model_config = SettingsConfigDict(extra="ignore")
+    class Config:
+        extra = "ignore"
 
     # RudderStack
     rudderstack_write_key: Optional[str] = Field(default=None)
@@ -178,7 +193,9 @@ class ExternalServicesSettings(BaseSettings):
 class ServerSettings(BaseSettings):
     """Configuración del servidor."""
 
-    model_config = SettingsConfigDict(env_prefix="", extra="ignore")
+    class Config:
+        env_prefix = ""
+        extra = "ignore"
 
     host: str = Field(default="0.0.0.0", alias="HOST")  # nosec B104
     port: int = Field(default=8000, alias="PORT")
@@ -187,7 +204,9 @@ class ServerSettings(BaseSettings):
 
     @property
     def is_production(self) -> bool:
-        return os.getenv("VERCEL") is not None or os.getenv("ENVIRONMENT") == "production"
+        return (
+            os.getenv("VERCEL") is not None or os.getenv("ENVIRONMENT") == "production"
+        )
 
 
 class Settings(BaseSettings):
@@ -206,12 +225,11 @@ class Settings(BaseSettings):
         ...     print(f"Pixel ID: {settings.meta.pixel_id}")
     """
 
-    model_config = SettingsConfigDict(
-        env_file=".env" if not os.getenv("VERCEL") else None,
-        env_file_encoding="utf-8",
-        extra="ignore",
-        case_sensitive=False,
-    )
+    class Config:
+        env_file = ".env" if not os.getenv("VERCEL") else None
+        env_file_encoding = "utf-8"
+        extra = "ignore"
+        case_sensitive = False
 
     # Sub-configuraciones organizadas por dominio
     db: DatabaseSettings = Field(default_factory=DatabaseSettings)

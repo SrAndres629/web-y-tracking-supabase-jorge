@@ -5,6 +5,8 @@ Estos tests verifican exhaustivamente TODAS las transiciones de estado
 posibles del lead, incluyendo las inválidas que NO deberían permitirse.
 """
 
+from typing import Any
+
 import pytest
 from hypothesis.stateful import RuleBasedStateMachine, invariant, precondition, rule
 
@@ -22,8 +24,8 @@ class LeadStateMachine(RuleBasedStateMachine):
 
     def __init__(self):
         super().__init__()
-        self.lead = None
-        self.history = []
+        self.lead: Lead | None = None
+        self.history: list[tuple[str, Any] | tuple[str, Any, Any]] = []
 
     @rule()
     def create_new_lead(self):
@@ -36,6 +38,7 @@ class LeadStateMachine(RuleBasedStateMachine):
     @precondition(lambda self: self.lead is not None)
     def qualify_lead(self):
         """Calificar lead"""
+        assert self.lead is not None
         old_status = self.lead.status
         self.lead.qualify(service_interest="Test Service")
         self.history.append(("qualify", old_status, self.lead.status))
@@ -44,6 +47,7 @@ class LeadStateMachine(RuleBasedStateMachine):
     @precondition(lambda self: self.lead is not None)
     def mark_interested(self):
         """Marcar como interesado"""
+        assert self.lead is not None
         old_status = self.lead.status
         self.lead.update_status(LeadStatus.INTERESTED)
         self.history.append(("interested", old_status, self.lead.status))
@@ -52,6 +56,7 @@ class LeadStateMachine(RuleBasedStateMachine):
     @precondition(lambda self: self.lead is not None)
     def start_nurturing(self):
         """Iniciar nurturing"""
+        assert self.lead is not None
         old_status = self.lead.status
         self.lead.update_status(LeadStatus.NURTURING)
         self.history.append(("nurturing", old_status, self.lead.status))
@@ -60,6 +65,7 @@ class LeadStateMachine(RuleBasedStateMachine):
     @precondition(lambda self: self.lead is not None)
     def mark_booked(self):
         """Marcar como booked"""
+        assert self.lead is not None
         old_status = self.lead.status
         self.lead.update_status(LeadStatus.BOOKED)
         self.history.append(("booked", old_status, self.lead.status))
@@ -68,6 +74,7 @@ class LeadStateMachine(RuleBasedStateMachine):
     @precondition(lambda self: self.lead is not None)
     def mark_ghost(self):
         """Marcar como ghost (no responde)"""
+        assert self.lead is not None
         old_status = self.lead.status
         self.lead.update_status(LeadStatus.GHOST)
         self.history.append(("ghost", old_status, self.lead.status))
@@ -76,6 +83,7 @@ class LeadStateMachine(RuleBasedStateMachine):
     @precondition(lambda self: self.lead is not None)
     def mark_client_active(self):
         """Marcar como cliente activo"""
+        assert self.lead is not None
         old_status = self.lead.status
         self.lead.update_status(LeadStatus.CLIENT_ACTIVE)
         self.history.append(("client_active", old_status, self.lead.status))
@@ -84,6 +92,7 @@ class LeadStateMachine(RuleBasedStateMachine):
     @precondition(lambda self: self.lead is not None)
     def archive_lead(self):
         """Archivar lead"""
+        assert self.lead is not None
         old_status = self.lead.status
         self.lead.update_status(LeadStatus.ARCHIVED)
         self.history.append(("archive", old_status, self.lead.status))
@@ -105,7 +114,7 @@ class LeadStateMachine(RuleBasedStateMachine):
     def archived_leads_cannot_change(self):
         """Invariante: Leads archivados no pueden cambiar de estado"""
         if self.lead and len(self.history) > 1:
-            last_action = self.history[-1]
+            # last_action = self.history[-1]
             prev_action = self.history[-2] if len(self.history) > 1 else None
 
             if prev_action and prev_action[1] == LeadStatus.ARCHIVED:
@@ -247,8 +256,8 @@ class TestStateWithData:
         phone = Phone.parse("77712345", country="BO").unwrap()
 
         # Lead básico
-        basic_lead = Lead.create(phone=phone)
-        basic_score = basic_lead.score
+        Lead.create(phone=phone)
+        # basic_score = basic_lead.score
 
         # Lead calificado
         qualified_lead = Lead.create(

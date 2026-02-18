@@ -24,7 +24,7 @@ Esta carpeta `tests/` ahora es la **única fuente de la verdad** para todo el co
 ### Capa 1: Unit Tests (`tests/unit/`)
 Tests clásicos con mocks. Cada componente aislado.
 
-**Cobertura**: 
+**Cobertura**:
 - Handlers (TrackEvent, CreateLead, CreateVisitor)
 - Domain entities (Lead, Visitor)
 - Queries (GetVisitor, ListVisitors)
@@ -185,19 +185,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Quick Tests
         run: python scripts/test_runner.py quick
-      
+
       - name: Unit Tests
         run: pytest tests/unit -v --cov=app
-      
+
       - name: Property-Based Tests
         run: pytest tests/property_based -v
-      
+
       - name: Architecture Tests
         run: pytest tests/00_architecture -v
-      
+
       - name: Coverage Report
         run: |
           pytest tests/ --cov=app --cov-report=xml

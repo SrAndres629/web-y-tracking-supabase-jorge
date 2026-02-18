@@ -35,7 +35,7 @@ class RedisDLQ:
             else:
                 logger.warning("⚠️ RedisDLQ: Credentials missing. DLQ disabled.")
         except Exception as e:
-            logger.error(f"❌ RedisDLQ: Connection failed: {e}")
+            logger.exception(f"❌ RedisDLQ: Connection failed: {e}")
 
     def push(self, event_name: str, payload: Dict[str, Any], attempt: int = 1):
         """Push a failed event to the Redis DLQ"""
@@ -58,7 +58,7 @@ class RedisDLQ:
                 f"📥 [DLQ] Saved '{event_name}' for retry #{attempt} (Next: +{item['next_retry'] - int(time.time())}s)"
             )
         except Exception as e:
-            logger.error(f"❌ [DLQ] Failed to save event: {e}")
+            logger.exception(f"❌ [DLQ] Failed to save event: {e}")
 
     def pop_batch(self, batch_size: int = 10) -> list:
         """Atomic fetch of pending items (simulated with LPOP)"""
@@ -76,7 +76,7 @@ class RedisDLQ:
                     break
                 items.append(json.loads(raw))
         except Exception as e:
-            logger.error(f"❌ [DLQ] Fetch error: {e}")
+            logger.exception(f"❌ [DLQ] Fetch error: {e}")
 
         return items
 
@@ -174,7 +174,7 @@ async def process_retry_queue(batch_size: int = 20):
                 dlq.push(event_name, payload, attempt + 1)
                 requeued_count += 1
             else:
-                logger.error(f"🗑️ [DLQ] Dropping '{event_name}' after {MAX_RETRIES} attempts.")
+                logger.exception(f"🗑️ [DLQ] Dropping '{event_name}' after {MAX_RETRIES} attempts.")
                 drop_count += 1
 
     if success_count > 0:

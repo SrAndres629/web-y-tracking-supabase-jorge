@@ -35,7 +35,7 @@ class DeduplicationService:
                     "⚠️ DeduplicationService: Redis credentials missing. Falling back to memory (NOT PROD READY)."
                 )
         except Exception as e:
-            logger.error(f"❌ DeduplicationService: Redis init failed: {e}")
+            logger.exception(f"❌ DeduplicationService: Redis init failed: {e}")
 
     def try_consume_event(self, event_id: str, event_name: str = "event", ttl: int = 86400) -> bool:
         """
@@ -74,7 +74,7 @@ class DeduplicationService:
                     return False  # Duplicate
 
             except Exception as e:
-                logger.error(f"⚠️ Redis Error in is_duplicate: {e}")
+                logger.exception(f"⚠️ Redis Error in is_duplicate: {e}")
                 return True  # Fallback: process it to avoid data loss
         else:
             # Fallback to in-memory (handled in cache.py but duplication here for safety?)
@@ -90,7 +90,7 @@ class DeduplicationService:
         try:
             self._redis.set(key, json.dumps(data), ex=ttl)
         except Exception as e:
-            logger.error(f"⚠️ Redis Error in cache_visitor: {e}")
+            logger.exception(f"⚠️ Redis Error in cache_visitor: {e}")
 
     def get_visitor(self, external_id: str) -> Optional[dict]:
         """Get cached visitor data."""
@@ -103,7 +103,7 @@ class DeduplicationService:
             if data:
                 return json.loads(data)
         except Exception as e:
-            logger.error(f"⚠️ Redis Error in get_visitor: {e}")
+            logger.exception(f"⚠️ Redis Error in get_visitor: {e}")
             return None
         return None
 

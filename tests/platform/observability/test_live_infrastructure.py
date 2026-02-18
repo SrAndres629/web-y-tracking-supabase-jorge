@@ -95,15 +95,15 @@ async def test_supabase_security_audit():
                 pytest.fail(msg)
             logger.warning(msg)
             return
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         if is_strict:
-            pytest.fail(f"🔥 Supabase Audit failed: {str(e)}")
-        logger.warning(f"⚠️ Supabase Audit error: {str(e)}")
+            pytest.fail(f"🔥 Supabase Audit failed: {e!s}")
+        logger.warning(f"⚠️ Supabase Audit error: {e!s}")
         return
     finally:
         try:
             conn.close()
-        except Exception:
+        except Exception:  # noqa: BLE001
             pass
 
 

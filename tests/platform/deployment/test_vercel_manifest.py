@@ -19,7 +19,9 @@ def test_vercel_include_files_physical_contract():
         config = json.load(f)
 
     # Check both ways it might be defined (old vs new schema we fixed)
-    include_files = config.get("functions", {}).get("api/index.py", {}).get("includeFiles")
+    include_files = (
+        config.get("functions", {}).get("api/index.py", {}).get("includeFiles")
+    )
     if not include_files:
         # Fallback check for alternate structures
         include_files = config.get("includeFiles")
@@ -31,7 +33,7 @@ def test_vercel_include_files_physical_contract():
     elif isinstance(include_files, str):
         raw_patterns = [include_files]
     else:
-        raise AssertionError(
+        raise TypeError(
             f"🔥 includeFiles has unsupported type: {type(include_files).__name__}"
         )
 
@@ -46,9 +48,9 @@ def test_vercel_include_files_physical_contract():
     for pattern in patterns:
         search_pattern = str(PROJECT_ROOT / pattern)
         matches = glob.glob(search_pattern, recursive=True)
-        assert len(matches) > 0, (
-            f"🔥 Glob '{pattern}' (expanded as '{search_pattern}') matched ZERO files. Vercel deployment will miss these!"
-        )
+        assert (
+            len(matches) > 0
+        ), f"🔥 Glob '{pattern}' (expanded as '{search_pattern}') matched ZERO files. Vercel deployment will miss these!"
 
 
 def test_critical_templates_not_ignored_by_git():

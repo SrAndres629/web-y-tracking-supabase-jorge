@@ -137,7 +137,7 @@ See [MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md) for detailed instructions.
    <!-- Before -->
    <link rel="stylesheet" href="/static/css/output.css">
    <script defer src="/static/js/tracking.js"></script>
-   
+
    <!-- After -->
    <link rel="stylesheet" href="/static_new/dist/css/app.min.css">
    <script type="module" src="/static_new/engines/legacy-adapter.js"></script>

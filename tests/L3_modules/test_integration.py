@@ -7,6 +7,9 @@ from fastapi.testclient import TestClient
 # Ensure root path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+import asyncio
+
+from app.services import ContentManager
 from main import app
 
 
@@ -33,7 +36,7 @@ def test_health_endpoint(client):
 
 def test_tracking_flow_simulated(client):
     """Simula un evento de PageView completo"""
-    payload = {
+    _payload = {
         "event_name": "PageView",
         "event_source_url": "https://test.com",
         "user_data": {
@@ -54,10 +57,6 @@ def test_tracking_flow_simulated(client):
 
 def test_services_config_loading():
     """Verifica que ContentManager cargue la config de servicios (desde RAM/Fallback)"""
-    import asyncio
-
-    from app.services import ContentManager
-
     # We need to run async function in sync test
     loop = asyncio.new_event_loop()
     services = loop.run_until_complete(ContentManager.get_content("services_config"))

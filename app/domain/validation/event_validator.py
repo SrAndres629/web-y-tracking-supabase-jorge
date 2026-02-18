@@ -8,7 +8,7 @@ Ensures data integrity before sending to CAPI.
 import logging
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, validator
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ class UserDataSchema(BaseModel):
     fn: Optional[str] = None  # First Name
     ln: Optional[str] = None  # Last Name
 
-    @field_validator("em", "ph", "country", "ct", "st", "zp", "fn", "ln", mode="before")
+    @validator("em", "ph", "country", "ct", "st", "zp", "fn", "ln", pre=True)
     @classmethod
     def check_hashed(cls, v):
         # Allow None
@@ -96,4 +96,4 @@ class EventValidator:
 
 
 # Singleton
-validator = EventValidator()
+event_validator = EventValidator()

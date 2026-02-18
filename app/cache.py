@@ -29,46 +29,57 @@ class LegacyRedisCache:
             try:
                 from upstash_redis import Redis
 
-                if settings.UPSTASH_REDIS_REST_URL and settings.UPSTASH_REDIS_REST_TOKEN:
+                if (
+                    settings.UPSTASH_REDIS_REST_URL
+                    and settings.UPSTASH_REDIS_REST_TOKEN
+                ):
                     self._client = Redis(
                         url=settings.UPSTASH_REDIS_REST_URL,
                         token=settings.UPSTASH_REDIS_REST_TOKEN,
                     )
-            except Exception as e:
-                logger.debug(f"Redis not available: {e}")
+            except ImportError as e:
+                logger.debug("Redis not available: %s", e)
+        return self._client
+
+    @property
+    def client(self) -> Any:
         return self._client
 
     async def get_json(self, key: str) -> Optional[Any]:
         if not self._redis:
+            return None
+        if self._redis is None:
             return None
         try:
             data = self._redis.get(key)
             if data:
                 return json.loads(data)
         except Exception as e:
-            logger.debug(f"Redis get error: {e}")
+            logger.debug("Redis get error: %s", e)
         return None
 
     async def set_json(self, key: str, value: Any, expire: int = 3600) -> None:
-        if not self._redis:
+        if self._redis is None:
             return
         try:
             self._redis.set(key, json.dumps(value), ex=expire)
         except Exception as e:
-            logger.debug(f"Redis set error: {e}")
+            logger.debug("Redis set error: %s", e)
 
     async def delete(self, key: str) -> None:
-        if not self._redis:
+        if self._redis is None:
             return
         try:
             self._redis.delete(key)
         except Exception as e:
-            logger.debug(f"Redis delete error: {e}")
+            logger.debug("Redis delete error: %s", e)
 
 
 redis_cache = LegacyRedisCache()
 
-REDIS_ENABLED = bool(settings.UPSTASH_REDIS_REST_URL and settings.UPSTASH_REDIS_REST_TOKEN)
+REDIS_ENABLED = bool(
+    settings.UPSTASH_REDIS_REST_URL and settings.UPSTASH_REDIS_REST_TOKEN
+)
 
 
 # In-memory fallback for dedup & visitor cache
@@ -76,7 +87,9 @@ _memory_cache: Dict[str, float] = {}
 _visitor_cache: Dict[str, Dict[str, Any]] = {}
 
 
-def deduplicate_event(event_id: str, event_name: str = "event", ttl_hours: int = 24) -> bool:
+def deduplicate_event(
+    event_id: str, event_name: str = "event", ttl_hours: int = 24
+) -> bool:
     """
     Returns True if event is unique (not seen), False if duplicate.
     """
@@ -89,9 +102,14 @@ def deduplicate_event(event_id: str, event_name: str = "event", ttl_hours: int =
     return True
 
 
-def cache_visitor_data(external_id: str, data: Dict[str, Any], ttl_hours: int = 24) -> None:
+def cache_visitor_data(
+    external_id: str, data: Dict[str, Any], ttl_hours: int = 24
+) -> None:
     """Cache visitor data for quick identity resolution."""
-    _visitor_cache[external_id] = {"data": data, "expires": time.time() + ttl_hours * 3600}
+    _visitor_cache[external_id] = {
+        "data": data,
+        "expires": time.time() + ttl_hours * 3600,
+    }
 
 
 def get_cached_visitor(external_id: str) -> Optional[Dict[str, Any]]:
@@ -111,9 +129,10 @@ def redis_health_check() -> Dict[str, Any]:
         return {"status": "disabled"}
     try:
         # best-effort ping
-        if redis_cache._redis:
-            redis_cache._redis.ping()
+        if redis_cache.client:
+            redis_cache.client.ping()
             return {"status": "ok"}
     except Exception as e:
+        logger.error("Redis health check failed: %s", e)
         return {"status": "error", "message": str(e)}
     return {"status": "unknown"}

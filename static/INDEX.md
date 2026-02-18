@@ -303,6 +303,6 @@ Agregar a `rollup.config.js` si necesita bundle separado.
 
 ---
 
-**Versión**: 3.0.0  
-**Última actualización**: 2026-02-10  
+**Versión**: 3.0.0
+**Última actualización**: 2026-02-10
 **Estado**: ✅ Producción lista

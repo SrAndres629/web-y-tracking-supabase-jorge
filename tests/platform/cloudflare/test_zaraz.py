@@ -210,10 +210,10 @@ class TestZarazActions:
         for _tool_id, tool in tools.items():
             if tool.get("component") == "facebook-pixel":
                 actions = tool.get("actions", {})
-                for action_id, action in actions.items():
+                for _action_id, action in actions.items():
                     if action.get("actionType") == "pageview":
                         assert action.get("enabled") is True, (
-                            f"PageView action '{action_id}' is disabled"
+                            f"PageView action '{_action_id}' is disabled"
                         )
 
     def test_custom_event_action_exists(self):
@@ -233,7 +233,7 @@ class TestZarazActions:
         for _tool_id, tool in tools.items():
             if tool.get("component") == "facebook-pixel":
                 actions = tool.get("actions", {})
-                for action_id, action in actions.items():
+                for _action_id, action in actions.items():
                     if action.get("actionType") == "pageview":
                         triggers = action.get("firingTriggers", [])
                         assert "Pageview" in triggers, (

@@ -70,13 +70,18 @@ class ErrorHandlerMiddleware:
             tb = "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))
 
             # 🕵️ DIAGOSTIC: List Vercel Filesystem
-            fs_debug = {}
+            fs_debug: Dict[str, Any] = {}
             try:
-                search_paths = ["/var/task", "/var/task/api", "/var/task/templates", os.getcwd()]
+                search_paths = [
+                    "/var/task",
+                    "/var/task/api",
+                    "/var/task/templates",
+                    os.getcwd(),
+                ]
                 for p in search_paths:
                     if os.path.exists(p):
                         fs_debug[p] = []
-                        for root, dirs, files in os.walk(p):
+                        for root, _, files in os.walk(p):
                             if "venv" in root or "__pycache__" in root:
                                 continue
                             for f in files:
@@ -84,7 +89,7 @@ class ErrorHandlerMiddleware:
                                 if len(fs_debug[p]) > 50:
                                     break  # Limit output
                     else:
-                        fs_debug[p] = "NOT_FOUND"
+                        fs_debug[p] = ["NOT_FOUND"]
             except Exception as e:
                 fs_debug["error"] = str(e)
 
@@ -102,7 +107,9 @@ class ErrorHandlerMiddleware:
                 },
             )
 
-        error_detail = "<p>El equipo técnico ha sido notificado. Por favor intente más tarde.</p>"
+        error_detail = (
+            "<p>El equipo técnico ha sido notificado. Por favor intente más tarde.</p>"
+        )
 
         html = f"""
         <!DOCTYPE html>
@@ -163,11 +170,11 @@ class ErrorHandlerMiddleware:
             <div class="container">
                 <h1>⚠️ Ha ocurrido un error</h1>
                 <p>Lo sentimos, algo salió mal al procesar su solicitud.</p>
-                
+
                 <div class="error-box">
                     {error_detail}
                 </div>
-                
+
                 <div class="contact">
                     <p>Si el problema persiste, por favor contacte a soporte técnico.</p>
                     <p><strong>Jorge Aguirre Flores Web</strong> v3.0.0</p>

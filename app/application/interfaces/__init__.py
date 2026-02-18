@@ -13,7 +13,7 @@ from app.application.interfaces.cache_port import ContentCachePort, Deduplicatio
 from app.application.interfaces.tracker_port import TrackerPort
 
 __all__ = [
-    "DeduplicationPort",
     "ContentCachePort",
+    "DeduplicationPort",
     "TrackerPort",
 ]

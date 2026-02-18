@@ -70,7 +70,11 @@ def _resolve_static_dir() -> str:
 class Settings(BaseSettings):
     """Main application settings."""
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
     # 📂 PHYSICAL PATHS (Serverless Hardening)
     BASE_DIR: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -141,7 +145,9 @@ class Settings(BaseSettings):
     DATABASE_URL: Optional[str] = None
 
     # Celery & Redis
-    CELERY_BROKER_URL: str = os.getenv("CELERY_BROKER_URL", "redis://redis_evolution:6379/1")
+    CELERY_BROKER_URL: str = os.getenv(
+        "CELERY_BROKER_URL", "redis://redis_evolution:6379/1"
+    )
     CELERY_RESULT_BACKEND: str = os.getenv(
         "CELERY_RESULT_BACKEND", "redis://redis_evolution:6379/1"
     )
@@ -233,6 +239,7 @@ class Settings(BaseSettings):
     EXTERNAL_API_KEYS: Dict[str, Optional[str]] = Field(default_factory=dict)
 
     @field_validator("ALLOWED_TENANTS", mode="before")
+    @classmethod
     def _normalize_tenants(cls, v):
         if isinstance(v, str):
             cleaned = [item.strip() for item in v.split(",") if item.strip()]
@@ -261,7 +268,11 @@ class Settings(BaseSettings):
         if candidate in self.tenant_list:
             return candidate
 
-        logger.warning("⚠️ Tenant '%s' no permitido. Forzando '%s'.", candidate, self.DEFAULT_TENANT)
+        logger.warning(
+            "⚠️ Tenant '%s' no permitido. Forzando '%s'.",
+            candidate,
+            self.DEFAULT_TENANT,
+        )
         return self.DEFAULT_TENANT
 
     def is_tenant_allowed(self, tenant_id: Optional[str]) -> bool:
@@ -275,6 +286,8 @@ settings = Settings()
 # 🛡️ MANUAL CONFIG PATCH: CORS Origins
 _env_origins = os.getenv("BACKEND_CORS_ORIGINS")
 if _env_origins:
-    settings.CORS_ALLOWED_ORIGINS = [i.strip() for i in _env_origins.split(",") if i.strip()]
+    settings.CORS_ALLOWED_ORIGINS = [
+        i.strip() for i in _env_origins.split(",") if i.strip()
+    ]
 
 settings.validate_critical()

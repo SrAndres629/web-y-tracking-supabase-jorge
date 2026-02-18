@@ -240,7 +240,7 @@ class CircuitBreaker:
                 if stats.failures >= self.failure_threshold:
                     if stats.state != CircuitState.OPEN:
                         stats.state = CircuitState.OPEN
-                        logger.error(
+                        logger.exception(
                             "🔌 Circuit %s: CLOSED -> OPEN (%d failures)", self.name, stats.failures
                         )
 
@@ -271,7 +271,7 @@ class CircuitBreaker:
                 if stats.failures >= self.failure_threshold:
                     if stats.state != CircuitState.OPEN:
                         stats.state = CircuitState.OPEN
-                        logger.error(
+                        logger.exception(
                             "🔌 Circuit %s: CLOSED -> OPEN (%d failures)", self.name, stats.failures
                         )
 
@@ -332,7 +332,7 @@ def memoize(maxsize: int = 128) -> Callable:
             return cache[key]
 
         wrapper.cache = cache  # type: ignore
-        wrapper.cache_clear = lambda: cache.clear()  # type: ignore
+        wrapper.cache_clear = cache.clear  # type: ignore
         return wrapper
 
     return decorator

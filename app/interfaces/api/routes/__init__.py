@@ -4,11 +4,13 @@
 Endpoints REST de la aplicación.
 """
 
+from . import admin, health, identity, pages, seo, tracking
+
 __all__ = [
-    "pages",
-    "tracking",
     "admin",
     "health",
     "identity",
+    "pages",
     "seo",
+    "tracking",
 ]

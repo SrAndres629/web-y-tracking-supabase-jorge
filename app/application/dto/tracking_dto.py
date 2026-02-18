@@ -9,7 +9,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Dict, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, Field, validator
 
 
 class TrackingContext(BaseModel):
@@ -25,14 +25,14 @@ class TrackingContext(BaseModel):
     city: Optional[str] = Field(default=None, description="Ciudad (Cloudflare)")
     region: Optional[str] = Field(default=None, description="Región (Cloudflare)")
 
-    @field_validator("ip_address")
+    @validator("ip_address")
     @classmethod
     def validate_ip(cls, v: str) -> str:
         """Sanitiza IP."""
         # Limitar longitud
         return v[:45] if v else "unknown"  # IPv6 max length
 
-    @field_validator("user_agent")
+    @validator("user_agent")
     @classmethod
     def validate_ua(cls, v: str) -> str:
         """Limita tamaño de User-Agent."""
@@ -47,7 +47,9 @@ class TrackEventRequest(BaseModel):
     """
 
     event_name: str = Field(..., description="Nombre del evento")
-    external_id: str = Field(..., description="ID del visitante", min_length=8, max_length=64)
+    external_id: str = Field(
+        ..., description="ID del visitante", min_length=8, max_length=64
+    )
     source_url: str = Field(..., description="URL donde ocurrió el evento")
 
     # Facebook tracking
@@ -55,7 +57,9 @@ class TrackEventRequest(BaseModel):
     fbp: Optional[str] = Field(default=None, description="Facebook Browser ID")
 
     # Datos personalizados
-    custom_data: Dict[str, Any] = Field(default_factory=dict, description="Datos adicionales")
+    custom_data: Dict[str, Any] = Field(
+        default_factory=dict, description="Datos adicionales"
+    )
 
     # UTM params
     utm_source: Optional[str] = Field(default=None)
@@ -65,15 +69,17 @@ class TrackEventRequest(BaseModel):
     utm_content: Optional[str] = Field(default=None)
 
     # Seguridad
-    turnstile_token: Optional[str] = Field(default=None, description="Cloudflare Turnstile token")
+    turnstile_token: Optional[str] = Field(
+        default=None, description="Cloudflare Turnstile token"
+    )
 
-    @field_validator("event_name")
+    @validator("event_name")
     @classmethod
     def validate_event_name(cls, v: str) -> str:
         """Normaliza nombre de evento."""
         return v.strip()
 
-    @field_validator("source_url")
+    @validator("source_url")
     @classmethod
     def validate_url(cls, v: str) -> str:
         """Valida URL."""
@@ -81,7 +87,7 @@ class TrackEventRequest(BaseModel):
             raise ValueError("URL must start with http:// or https://")
         return v[:2048]  # Limitar longitud
 
-    @field_validator("fbclid")
+    @validator("fbclid")
     @classmethod
     def validate_fbclid(cls, v: Optional[str]) -> Optional[str]:
         """Sanitiza fbclid."""
@@ -108,7 +114,10 @@ class TrackEventResponse(BaseModel):
     @classmethod
     def duplicate(cls, event_id: str) -> TrackEventResponse:
         return cls(
-            success=True, event_id=event_id, status="duplicate", message="Event already processed"
+            success=True,
+            event_id=event_id,
+            status="duplicate",
+            message="Event already processed",
         )
 
     @classmethod
@@ -124,4 +133,6 @@ class EventSummaryResponse(BaseModel):
     external_id: str
     timestamp: datetime
     source_url: str
-    model_config = ConfigDict(from_attributes=True)
+
+    class Config:
+        orm_mode = True

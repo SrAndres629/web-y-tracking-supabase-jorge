@@ -173,7 +173,7 @@ class ContentManager:
                         logger.debug("Cache write error: %s", e)
                     return content
         except Exception as e:
-            logger.error("❌ [SWR] Background refresh error for '%s': %s", key, e)
+            logger.exception("❌ [SWR] Background refresh error for '%s': %s", key, e)
         return None
 
     @classmethod
@@ -228,7 +228,7 @@ class ContentManager:
                     val = row[0]
                     return json.loads(val) if isinstance(val, str) else val
         except Exception as e:
-            logger.error("❌ CMS DB Fetch Error (%s): %s", key, e)
+            logger.exception("❌ CMS DB Fetch Error (%s): %s", key, e)
         return None
 
     @classmethod
@@ -247,7 +247,7 @@ class ContentManager:
             try:
                 await redis_cache.delete(f"content:{key}")
             except Exception as e:
-                logger.error("Error deleting Redis cache for %s: %s", key, e)
+                logger.exception("Error deleting Redis cache for %s: %s", key, e)
         await cls.warm_cache()
 
 
@@ -302,13 +302,13 @@ async def publish_to_qstash(event_data: Dict[str, Any]) -> bool:
             response.raise_for_status()
             return True
     except httpx.HTTPStatusError as e:
-        logger.error("❌ QStash HTTP Error: %s - %s", e.response.status_code, e.response.text)
+        logger.exception("❌ QStash HTTP Error: %s - %s", e.response.status_code, e.response.text)
         return False
     except httpx.RequestError as e:
-        logger.error("❌ QStash Request Error: %s", e)
+        logger.exception("❌ QStash Request Error: %s", e)
         return False
     except Exception as e:
-        logger.error("❌ QStash Unexpected Error: %s", e)
+        logger.exception("❌ QStash Unexpected Error: %s", e)
         return False
     return False
 
@@ -331,10 +331,10 @@ async def validate_turnstile(token: str) -> bool:
             )
             return bool(response.json().get("success", False))
     except httpx.RequestError as e:
-        logger.error("Turnstile validation request error: %s", e)
+        logger.exception("Turnstile validation request error: %s", e)
         return True  # Fail safe
     except Exception as e:
-        logger.error("Turnstile validation unexpected error: %s", e)
+        logger.exception("Turnstile validation unexpected error: %s", e)
         return True  # Fail safe
     return True  # Final fallback
 

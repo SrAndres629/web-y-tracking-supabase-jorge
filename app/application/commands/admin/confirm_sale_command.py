@@ -61,4 +61,4 @@ class ConfirmSaleCommand:
             }
         except Exception as e:
             # In a real scenario, proper logging would be implemented here.
-            return {"status": "error", "error": f"Failed to send Meta CAPI event: {str(e)}"}
+            return {"status": "error", "error": f"Failed to send Meta CAPI event: {e!s}"}

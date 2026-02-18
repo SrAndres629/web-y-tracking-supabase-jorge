@@ -6,8 +6,8 @@ from app.infrastructure.cache.memory_cache import InMemoryContentCache, InMemory
 from app.infrastructure.cache.redis_cache import RedisContentCache, RedisDeduplication
 
 __all__ = [
-    "RedisDeduplication",
-    "RedisContentCache",
-    "InMemoryDeduplication",
     "InMemoryContentCache",
+    "InMemoryDeduplication",
+    "RedisContentCache",
+    "RedisDeduplication",
 ]

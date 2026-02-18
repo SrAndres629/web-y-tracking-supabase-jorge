@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from app.application.dto.lead_dto import LeadResponse
 from app.core.result import Result
 from app.domain.models.lead import Lead
-from app.domain.models.values import ExternalId, Phone
+from app.domain.models.values import Email, ExternalId, Phone
 from app.domain.repositories.lead_repo import LeadRepository
 from app.domain.repositories.visitor_repo import VisitorRepository
 
@@ -68,8 +68,6 @@ class CreateLeadHandler:
                 logger.info("🔄 Lead already exists: %s", phone)
                 # Actualizar info si se proporciona
                 if cmd.name or cmd.email:
-                    from app.domain.models.values import Email
-
                     email_result = Email.parse(cmd.email)
                     email = email_result.unwrap() if email_result.is_ok else None
                     existing.update_contact_info(name=cmd.name, email=email)
@@ -81,15 +79,15 @@ class CreateLeadHandler:
             if cmd.external_id and self.visitor_repo:
                 ext_result = ExternalId.from_string(cmd.external_id)
                 if ext_result.is_ok:
-                    visitor = await self.visitor_repo.get_by_external_id(ext_result.unwrap())
+                    visitor = await self.visitor_repo.get_by_external_id(
+                        ext_result.unwrap()
+                    )
                     if visitor:
                         external_id = visitor.external_id
 
             # 4. Parsear email si se proporciona
             email = None
             if cmd.email:
-                from app.domain.models.values import Email
-
                 email_result = Email.parse(cmd.email)
                 if email_result.is_ok:
                     email = email_result.unwrap()
@@ -114,7 +112,7 @@ class CreateLeadHandler:
             return Result.ok(self._to_response(lead))
 
         except Exception as e:
-            logger.exception("❌ Error creating lead: %s", str(e))
+            logger.exception("❌ Error creating lead")
             return Result.err(str(e))
 
     def _to_response(self, lead: Lead) -> LeadResponse:

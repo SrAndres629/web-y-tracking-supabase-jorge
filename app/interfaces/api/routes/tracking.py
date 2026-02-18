@@ -50,11 +50,18 @@ def bg_save_visitor(
     """Saves visitor to DB without blocking user"""
     try:
         legacy.save_visitor(
-            external_id, fbclid, client_ip, user_agent, source, utm_data, email=email, phone=phone
+            external_id,
+            fbclid,
+            client_ip,
+            user_agent,
+            source,
+            utm_data,
+            email=email,
+            phone=phone,
         )
         logger.info(f"✅ [BG] Visitor saved: {external_id[:16]}...")
     except Exception as e:
-        logger.error(f"❌ [BG] Error saving visitor: {e}")
+        logger.exception(f"❌ [BG] Error saving visitor: {e}")
 
 
 async def bg_send_meta_event(
@@ -122,7 +129,7 @@ async def bg_send_meta_event(
             logger.warning(f"⚠️ [BG] Meta Event issue: {result}")
 
     except Exception as e:
-        logger.error(f"❌ [BG] Meta send error: {e}")
+        logger.exception(f"❌ [BG] Meta send error: {e}")
 
 
 def bg_upsert_contact(payload):
@@ -131,7 +138,7 @@ def bg_upsert_contact(payload):
         legacy.upsert_contact_advanced(payload)
         logger.info(f"✅ [BG] Contact synced: {payload.get('phone', 'unknown')}")
     except Exception as e:
-        logger.error(f"❌ [BG] Contact sync failed: {e}")
+        logger.exception(f"❌ [BG] Contact sync failed: {e}")
 
 
 def bg_send_webhook(payload):
@@ -141,17 +148,20 @@ def bg_send_webhook(payload):
         if success:
             logger.info("✅ [BG] n8n Webhook sent")
     except Exception as e:
-        logger.error(f"⚠️ [BG] Webhook failed: {e}")
+        logger.exception(f"⚠️ [BG] Webhook failed: {e}")
 
 
 def bg_send_rudderstack_event(user_id, event_name, properties, context):
     """Sends to RudderStack without blocking"""
     try:
         rudder_service.track(
-            user_id=user_id, event_name=event_name, properties=properties, context=context
+            user_id=user_id,
+            event_name=event_name,
+            properties=properties,
+            context=context,
         )
     except Exception as e:
-        logger.error(f"❌ [BG] RudderStack failed: {e}")
+        logger.exception(f"❌ [BG] RudderStack failed: {e}")
 
 
 # =================================================================
@@ -218,7 +228,11 @@ async def track_event(
 def _get_tracking_context(request, event, fbp, fbc):
     forwarded = request.headers.get("x-forwarded-for")
     cf_ip = request.headers.get("cf-connecting-ip")
-    ip = cf_ip or (forwarded.split(",")[0].strip() if forwarded else request.client.host)
+    ip = cf_ip or (
+        forwarded.split(",")[0].strip()
+        if forwarded
+        else (request.client.host if request.client else "127.0.0.1")
+    )
 
     custom = event.custom_data or {}
     fb_id = custom.get("fbclid")
@@ -248,7 +262,7 @@ def _get_tracking_context(request, event, fbp, fbc):
 
 async def _validate_human(event, ctx):
     token = (event.custom_data or {}).get("turnstile_token")
-    if not await validate_turnstile(token):
+    if not await validate_turnstile(str(token or "")):
         logger.warning(f"🛡️ Filtered: {event.event_name}")
         return False
     return True
@@ -300,7 +314,13 @@ async def _dispatch_to_capi(bt, event, ctx, client=None):
 
 def _queue_external_hubs(bt, event, ctx):
     # Webhook
-    if event.event_name in ["Lead", "ViewContent", "Contact", "Purchase", "SliderInteraction"]:
+    if event.event_name in [
+        "Lead",
+        "ViewContent",
+        "Contact",
+        "Purchase",
+        "SliderInteraction",
+    ]:
         payload = event.model_dump()
         payload["utm_data"] = ctx["utm"]
         bt.add_task(bg_send_webhook, payload)
@@ -353,9 +373,9 @@ async def track_lead_context(request: LeadCreate):
         else:
             raise HTTPException(status_code=500, detail="Database Error creating Lead")
 
-    except Exception as e:
-        logger.error(f"❌ Error in /track/lead: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as err:
+        logger.exception("❌ Error in /track/lead: %s", err)
+        raise HTTPException(status_code=500, detail="Database Error creating Lead") from err
 
 
 @router.post("/track/interaction", response_model=InteractionResponse)
@@ -364,19 +384,12 @@ async def track_interaction(request: InteractionCreate):
     Endpoint for logging messages (User/AI).
     """
     try:
-        payload = {
-            "session_id": request.session_id,
-            "role": request.role,
-            "content": request.content,
-            "metadata": request.metadata,
-        }
-        # Fire and forget
-        # background_tasks.add_task(bg_log_interaction, payload)
+        # Fire and forget (or direct log)
         # For now, just print or rely on Supabase direct logic if implemented
         return {"status": "logged", "id": "local_log"}
-    except Exception as e:
-        logger.error(f"Interaction error: {str(e)}")
-        raise HTTPException(status_code=500, detail="Logging failed")
+    except Exception as err:
+        logger.exception("Interaction error: %s", str(err))
+        raise HTTPException(status_code=500, detail="Logging failed") from err
 
 
 # =================================================================
@@ -421,9 +434,11 @@ async def process_qstash_event(payload: QStashPayload):
             client_ip=payload.client_ip,
             user_agent=payload.user_agent,
             external_id=payload.external_id,
-            fbclid=payload.fbc.split(".")[3]
-            if payload.fbc and "fb.1." in payload.fbc and len(payload.fbc.split(".")) >= 4
-            else None,
+            fbclid=(
+                payload.fbc.split(".")[3]
+                if (payload.fbc and "fb.1." in payload.fbc and len(payload.fbc.split(".")) >= 4)
+                else None
+            ),
             fbp=payload.fbp,
             fbc=payload.fbc,  # Pass full fbc too just in case
             phone=payload.phone,
@@ -437,9 +452,9 @@ async def process_qstash_event(payload: QStashPayload):
             custom_data=payload.custom_data,
         )
         return {"status": "processed", "source": "qstash"}
-    except Exception as e:
-        logger.error(f"❌ Error processing QStash event: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as err:
+        logger.exception("❌ Error processing QStash event: %s", err)
+        raise HTTPException(status_code=500, detail="Internal processing error") from err
 
 
 @router.get("/track/health")
@@ -465,9 +480,9 @@ async def client_onboarding(
 
     client_service = ClientService()
     result = await client_service.create_client(
-        name=name,
-        email=email,
-        company=company,
+        name=str(name),
+        email=str(email),
+        company=str(company),
         meta_pixel_id=config.get("meta_pixel_id"),
         meta_access_token=config.get("meta_access_token"),
     )
@@ -502,4 +517,8 @@ async def client_onboarding(
         custom_data={"company": company, "meta_pixel_id": config.get("meta_pixel_id")},
     )
 
-    return {"status": "success", "client_id": result["client_id"], "api_key": result["api_key"]}
+    return {
+        "status": "success",
+        "client_id": result["client_id"],
+        "api_key": result["api_key"],
+    }
