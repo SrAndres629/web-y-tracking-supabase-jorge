@@ -29,25 +29,25 @@ Stitch MCP es una herramienta de **diseño de UI** (text-to-UI, generación de p
 ## Plan de Tareas
 
 ### Bloque A: Memoria Persistente (META_CONTEXT.json)
-- [ ] A1. Crear `scripts/generate_meta_context.py` — Script que escanea el proyecto y genera `META_CONTEXT.json`
-- [ ] A2. Generar `META_CONTEXT.json` inicial con: arquitectura, deuda técnica, estado de tracking, decisiones de diseño
+- [x] A1. Crear `scripts/generate_meta_context.py` — Script que escanea el proyecto y genera `META_CONTEXT.json`
+- [x] A2. Generar `META_CONTEXT.json` inicial con: arquitectura, deuda técnica, estado de tracking, decisiones de diseño
 
 ### Bloque B: CSS Architecture Cleanup (Fix 5 pendiente)
-- [ ] B1. Auditar `atoms/*.css` vs `input.css @layer components` — identificar duplicados
-- [ ] B2. Eliminar CSS zombie y consolidar en `input.css`
-- [ ] B3. Rebuild CSS y verificar que no hay regresiones
+- [x] B1. Auditar `atoms/*.css` vs `input.css @layer components` — identificar duplicados
+- [x] B2. Eliminar CSS zombie y consolidar en `input.css`
+- [x] B3. Rebuild CSS y verificar que no hay regresiones
 
 ### Bloque C: Stitch — Referencia Visual Mobile-First
-- [ ] C1. Crear proyecto Stitch "Jorge Aguirre — Mobile Landing"
-- [ ] C2. Generar pantalla hero mobile (390px) como referencia de diseño
-- [ ] C3. Generar pantalla de servicios/pricing mobile
-- [ ] C4. Comparar diseño Stitch vs implementación actual e identificar gaps
+- [x] C1. Crear proyecto Stitch "Jorge Aguirre — Mobile Landing"
+- [x] C2. Generar pantalla hero mobile (390px) como referencia de diseño
+- [x] C3. Generar pantalla de servicios/pricing mobile
+- [x] C4. Comparar diseño Stitch vs implementación actual e identificar gaps
 
 ### Bloque D: Validación de Tracking (Rigor Matemático)
-- [ ] D1. Crear `tools/tracking_validator.py` — Script que valida integridad de eventos Meta CAPI
-- [ ] D2. Verificar que todos los CTAs del sitio llaman `handleConversion()` correctamente
+- [x] D1. Crear `tools/tracking_validator.py` — Script que valida integridad de eventos Meta CAPI
+- [x] D2. Verificar que todos los CTAs del sitio llaman `handleConversion()` correctamente
 
 ### Bloque E: Despliegue Final
-- [ ] E1. Commit y deploy de todos los cambios
-- [ ] E2. Verificar Vercel deployment READY
-- [ ] E3. Purgar caché de Cloudflare
+- [x] E1. Commit y deploy de todos los cambios
+- [x] E2. Verificar Vercel deployment READY
+- [x] E3. Purgar caché de Cloudflare
