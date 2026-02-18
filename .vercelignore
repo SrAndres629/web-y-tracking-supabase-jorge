@@ -1,5 +1,8 @@
 # Exclude huge assets from serverless function to prevent size limit errors
-static/assets/images/**
+# NOTE: Do NOT exclude hero images — they must be served in production
+static/assets/images/gallery/**
+static/assets/images/services/**
+static/assets/images/testimonials/**
 static/assets/videos/**
 static/images/**
 public/assets/**
