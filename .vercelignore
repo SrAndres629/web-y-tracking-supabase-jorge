@@ -1,8 +1,6 @@
-# Exclude huge assets from serverless function to prevent size limit errors
-# NOTE: Do NOT exclude hero images — they must be served in production
-static/assets/images/gallery/**
-static/assets/images/services/**
-static/assets/images/testimonials/**
+# Vercel deploy exclusions
+# NOTE: ALL images are included (total 3.7MB << 50MB limit)
+# Only exclude videos, dev files, and build artifacts
 static/assets/videos/**
 static/images/**
 public/assets/**

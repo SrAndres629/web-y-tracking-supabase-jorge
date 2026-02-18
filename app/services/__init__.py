@@ -57,7 +57,7 @@ class ContentManager:
                     "Rellena huecos y recupera la forma joven de tu ceja."
                 ),
                 "icon": "fa-eye-dropper",
-                "image": "/static/images/service_brows.webp",
+                "image": "/static/assets/images/service_brows.webp",
                 "rating": "4.9",
                 "clients": "+620",
                 "badges": ["Más Pedido", "100% Natural", "2-3 años"],
@@ -72,7 +72,7 @@ class ContentManager:
                     "Olvídate de que se corra el maquillaje."
                 ),
                 "icon": "fa-eye",
-                "image": "/static/images/service_eyes.webp",
+                "image": "/static/assets/images/service_eyes.webp",
                 "rating": "4.9",
                 "clients": "+480",
                 "badges": ["Sin Dolor", "Efecto Pestañas", "2-3 años"],
@@ -87,7 +87,7 @@ class ContentManager:
                     "Tu color perfecto sin retocarte."
                 ),
                 "icon": "fa-kiss-wink-heart",
-                "image": "/static/images/service_lips.webp",
+                "image": "/static/assets/images/service_lips.webp",
                 "rating": "5.0",
                 "clients": "+400",
                 "badges": ["Premium", "Color Natural", "1-2 años"],
