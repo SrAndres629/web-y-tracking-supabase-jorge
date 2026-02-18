@@ -20,11 +20,19 @@
 
     <!-- Component-specific styles loaded on demand -->
 
-    <!-- Theme Bridge: Unificación Luxury ↔ Neuro-Vision -->
+    <!-- Theme Bridge: Unificación Luxury ↔ Neuro-Vision (Async) -->
     <link
-      rel="stylesheet"
+      rel="preload"
       href="/static/design-system/tokens/theme-bridge.css?v={{ system_version }}"
+      as="style"
+      onload="this.onload=null;this.rel='stylesheet'"
     />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="/static/design-system/tokens/theme-bridge.css?v={{ system_version }}"
+      />
+    </noscript>
 
     <!-- Global selection style -->
     <style>
@@ -224,13 +232,22 @@
       />
     </noscript>
 
-    <!-- Google Fonts + Icons (Apple Standard: Inter Variable) -->
+    <!-- Google Fonts + Icons (Async - Anti-FOUC) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
     <link
+      rel="preload"
       href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap"
-      rel="stylesheet"
+      as="style"
+      onload="this.onload=null;this.rel='stylesheet'"
     />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap"
+        rel="stylesheet"
+      />
+    </noscript>
     <!-- Async Font Awesome -->
     <link
       rel="preload"
