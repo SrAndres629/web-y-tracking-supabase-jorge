@@ -132,105 +132,51 @@
         min-height: 100vh;
         overflow-x: hidden;
       }
-      .hero {
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        position: relative;
-        padding: 2rem;
-      }
-      .hero h1 {
-        font-size: clamp(2rem, 5vw, 4rem);
-        font-weight: 700;
-        text-align: center;
-        line-height: 1.1;
-        margin-bottom: 1rem;
-      }
-      .hero h1 .text-gradient-gold {
+      /* NAV — prevents unstyled nav links */
+      nav { position:fixed; top:0; left:0; right:0; z-index:50; padding:1rem 2rem; background:rgba(5,5,5,0.8); backdrop-filter:blur(10px); }
+      nav .container { display:flex; justify-content:space-between; align-items:center; }
+      nav ul { display:none; }
+      @media(min-width:768px){ nav ul { display:flex; gap:2rem; } }
+      #mobileMenu { display:none; }
+      /* HERO — prevents unstyled hero */
+      header { min-height:100vh; display:flex; align-items:center; justify-content:center; position:relative; }
+      header .container { display:grid; gap:3rem; align-items:center; }
+      @media(min-width:768px){ header .container { grid-template-columns:1fr 1fr; } }
+      .text-gradient-gold {
         background: linear-gradient(135deg, var(--gold) 0%, #e5c585 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
       }
-      .hero h2 {
-        font-size: clamp(1rem, 3vw, 1.5rem);
-        color: hsla(0, 0%, 100%, 0.6);
-        text-align: center;
-        font-weight: 400;
-        margin-bottom: 2rem;
-      }
-      .btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        padding: 1rem 2rem;
-        font-size: 1rem;
-        font-weight: 600;
-        text-decoration: none;
-        border-radius: 0.5rem;
-        transition: all 0.3s ease;
-        cursor: pointer;
-        border: none;
-        min-height: 48px;
-        min-width: 48px;
-      }
       .btn-primary {
-        background: linear-gradient(135deg, var(--gold) 0%, #e5c585 100%);
-        color: var(--bg);
+        display:inline-flex; align-items:center; justify-content:center; gap:0.5rem;
+        padding:0.75rem 2rem; font-weight:700; text-decoration:none; border-radius:9999px;
+        background:linear-gradient(135deg,var(--gold) 0%,#e5c585 100%); color:var(--bg);
+        text-transform:uppercase; letter-spacing:0.05em; font-size:0.875rem;
       }
-      nav {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        z-index: 50;
-        padding: 1rem 2rem;
-        background: rgba(5, 5, 5, 0.8);
-        backdrop-filter: blur(10px);
-      }
-      .skip-link {
-        position: absolute;
-        top: -40px;
-        left: 0;
-        background: var(--gold);
-        color: var(--bg);
-        padding: 8px;
-        text-decoration: none;
-        z-index: 100;
-      }
-      .skip-link:focus {
-        top: 0;
-      }
+      /* SECTION GRID — prevents stacked cards on desktop */
+      .grid { display:grid; gap:2rem; }
+      @media(min-width:768px){ .md\:grid-cols-2 { grid-template-columns:repeat(2,minmax(0,1fr)); } .md\:grid-cols-3 { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+      /* CARD-GLASS — prevents transparent unstyled cards */
+      .card-glass { position:relative; padding:2rem; border-radius:1rem; border:1px solid rgba(255,255,255,0.05); background:rgba(255,255,255,0.05); overflow:hidden; }
+      /* HIDDEN utility — prevents elements that should be hidden on mobile from showing */
+      .hidden { display:none !important; }
+      @media(min-width:768px){ .md\:hidden { display:none !important; } .md\:flex { display:flex; } .md\:block { display:block; } }
+      /* TEXT BASE — prevent blue links */
+      a { color: inherit; text-decoration: none; }
+      img { max-width:100%; height:auto; }
+      .skip-link { position:absolute; top:-40px; left:0; background:var(--gold); color:var(--bg); padding:8px; z-index:100; }
+      .skip-link:focus { top:0; }
       @media (max-width: 768px) {
-        a,
-        button {
-          min-height: 44px;
-          min-width: 44px;
-        }
+        a, button { min-height: 44px; min-width: 44px; }
       }
     </style>
 
-    <!-- Async load non-critical CSS -->
-    <link
-      rel="preload"
-      href="/static/dist/css/app.min.css?v={{ system_version }}"
-      as="style"
-    />
+    <!-- Main CSS: render-blocking (47KB minified — acceptable for anti-FOUC) -->
     <link
       rel="stylesheet"
       href="/static/dist/css/app.min.css?v={{ system_version }}"
-      media="print"
-      onload="this.media = 'all'"
     />
-    <noscript>
-      <link
-        rel="stylesheet"
-        href="/static/dist/css/app.min.css?v={{ system_version }}"
-      />
-    </noscript>
 
     <!-- Google Fonts + Icons (Async - Anti-FOUC) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
