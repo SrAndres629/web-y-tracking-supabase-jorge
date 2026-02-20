@@ -25,10 +25,10 @@ except ImportError:
         class Error(Exception):
             pass
 
-        def connect(self, *args, **kwargs):
+        def connect(self, *args: Any, **kwargs: Any) -> Any:
             raise ImportError("psycopg2 is not installed")
 
-    psycopg2 = _MockPsycopg2()  # type: ignore
+    psycopg2 = _MockPsycopg2()  # type: ignore[assignment]
 
 
 class SQLiteCursorWrapper:
@@ -77,8 +77,8 @@ try:
     from psycopg2.extensions import connection as PgConnection
     from psycopg2.extensions import cursor as PgCursor
 except ImportError:
-    from typing import Any as PgConnection  # type: ignore
-    from typing import Any as PgCursor  # type: ignore
+    from typing import Any as PgConnection  # type: ignore[assignment]
+    from typing import Any as PgCursor  # type: ignore[assignment]
 
 try:
     from typing import TypeAlias
@@ -89,8 +89,10 @@ DBConnection: TypeAlias = sqlite3.Connection | PgConnection
 DBCursor: TypeAlias = sqlite3.Cursor | PgCursor | SQLiteCursorWrapper
 
 # DB_ERRORS: Tuple of exceptions for safe catching across backends
-DB_ERRORS: Tuple[Type[Exception], ...] = (
-    (sqlite3.Error, psycopg2.Error) if HAS_POSTGRES else (sqlite3.Error,)
+DB_ERRORS: Tuple[Type[Exception], ...] = (  # type: ignore[assignment]
+    (sqlite3.Error, psycopg2.Error)
+    if HAS_POSTGRES
+    else (sqlite3.Error,)
 )
 
 logger = logging.getLogger(__name__)
