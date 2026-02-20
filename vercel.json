@@ -23,13 +23,7 @@
     },
     "functions": {
         "api/index.py": {
-            "includeFiles": [
-                "app/**",
-                "api/templates/**",
-                "static/**",
-                "main.py",
-                ".env*"
-            ]
+            "includeFiles": "{app,api/templates,static}/**,main.py,.env*"
         }
     },
     "rewrites": [
