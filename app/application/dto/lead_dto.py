@@ -13,14 +13,10 @@ from pydantic import BaseModel, Field, validator
 class CreateLeadRequest(BaseModel):
     """Request para crear lead."""
 
-    phone: str = Field(
-        ..., min_length=7, max_length=20, description="Teléfono (WhatsApp)"
-    )
+    phone: str = Field(..., min_length=7, max_length=20, description="Teléfono (WhatsApp)")
     name: Optional[str] = Field(default=None, max_length=100)
     email: Optional[str] = Field(default=None, max_length=254)
-    external_id: Optional[str] = Field(
-        default=None, description="ID del visitante asociado"
-    )
+    external_id: Optional[str] = Field(default=None, description="ID del visitante asociado")
     fbclid: Optional[str] = Field(default=None)
     service_interest: Optional[str] = Field(default=None, max_length=100)
 

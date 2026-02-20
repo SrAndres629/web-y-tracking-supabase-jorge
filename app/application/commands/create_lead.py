@@ -79,9 +79,7 @@ class CreateLeadHandler:
             if cmd.external_id and self.visitor_repo:
                 ext_result = ExternalId.from_string(cmd.external_id)
                 if ext_result.is_ok:
-                    visitor = await self.visitor_repo.get_by_external_id(
-                        ext_result.unwrap()
-                    )
+                    visitor = await self.visitor_repo.get_by_external_id(ext_result.unwrap())
                     if visitor:
                         external_id = visitor.external_id
 

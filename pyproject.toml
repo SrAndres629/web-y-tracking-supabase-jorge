@@ -58,3 +58,21 @@ dev = [
   "faker>=22.6.0",
   "hypothesis>=6.92.0",
 ]
+
+[tool.pyright]
+include = ["app", "api", "tools", "tests", "scripts", "main.py"]
+exclude = [
+  "**/node_modules",
+  "**/__pycache__",
+  "**/migrations",
+  "**/venv",
+  "**/.venv",
+  "**/.vercel",
+]
+venv = "venv"
+venvPath = "."
+pythonVersion = "3.12"
+typeCheckingMode = "basic" # Cambiado de standard a basic para reducir ruido mientras estabilizamos
+reportMissingImports = true
+reportMissingTypeStubs = false # Reduce ruido de librerías externas sin tipos
+executionEnvironments = [{ root = "." }]

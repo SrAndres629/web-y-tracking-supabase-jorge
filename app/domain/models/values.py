@@ -15,14 +15,9 @@ import re
 import string
 import time
 from dataclasses import dataclass
+from typing import Optional
 
-try:
-    from typing import Optional, Self
-except ImportError:
-    from typing import Optional
-
-    from typing_extensions import Self
-
+from typing_extensions import Self
 
 from app.core.result import Result
 from app.core.validators import (

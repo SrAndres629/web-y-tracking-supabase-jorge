@@ -222,9 +222,15 @@ class LegacyFacade:
         try:
             from upstash_redis import Redis
 
+            url = self._settings.redis.rest_url
+            token = self._settings.redis.rest_token
+
+            if not url or not token:
+                return {"status": "error", "message": "Redis credentials missing"}
+
             client = Redis(
-                url=self._settings.redis.rest_url,
-                token=self._settings.redis.rest_token,
+                url=url,
+                token=token,
             )
             client.ping()
             return {"status": "ok"}

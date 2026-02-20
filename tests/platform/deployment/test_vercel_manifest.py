@@ -67,6 +67,7 @@ def test_critical_templates_not_ignored_by_git():
     result = subprocess.run(
         ["git", "check-ignore", critical_file],
         cwd=str(PROJECT_ROOT),
+        check=False,
         capture_output=True,
         text=True,
     )

@@ -14,18 +14,14 @@ runtimes:
   enabled:
     - go@1.21.0
     - node@22.16.0
-    - python@3.10.8
+    - python@3.10.0
 # This is the section where you manage your linters. (https://docs.trunk.io/check/configuration)
 lint:
   enabled:
     - actionlint@1.7.11
-    - bandit@1.9.3
-    - black@26.1.0
     - checkov@3.2.502
     - eslint@8.57.0
-    - flake8@7.3.0
     - git-diff-check
-    - isort@7.0.0
     - osv-scanner@2.3.3
     - oxipng@10.1.0
     - prettier@3.8.1
@@ -37,10 +33,9 @@ lint:
     - taplo@0.10.0
     - trufflehog@3.93.3
     - yamllint@1.38.0
+  
 actions:
-  disabled:
-    - trunk-announce
-    - trunk-check-pre-push
-    - trunk-fmt-pre-commit
+  disabled: []
+
   enabled:
     - trunk-upgrade-available

@@ -14,8 +14,8 @@ router = APIRouter(prefix="/vision", tags=["neuro-vision"])
 
 # Resolve paths for Neuro-Vision assets
 BASE_DIR = Path(__file__).parent.parent.parent.parent.parent  # Project root
-VISION_DIR = BASE_DIR / ".ai" / "core" / "vision"
-VISION_TEMPLATES = VISION_DIR / "templates"
+VISION_DIR = BASE_DIR / ".ai" / "visuals"
+VISION_TEMPLATES = VISION_DIR
 VISION_STATIC = VISION_DIR / "static"
 
 
@@ -38,7 +38,7 @@ async def neuro_vision_root(request: Request):
     template_path = get_vision_template("neuro_map_v2.html")
 
     if not template_path.exists():
-        logger.error(f"❌ Neuro-Vision template not found: {template_path}")
+        logger.error("❌ Neuro-Vision template not found at: %s", template_path)
         return HTMLResponse(
             content="""
             <!DOCTYPE html>
@@ -72,9 +72,9 @@ async def neuro_vision_root(request: Request):
                 "X-Content-Type-Options": "nosniff",
             },
         )
-    except Exception as e:
-        logger.exception(f"❌ Error serving Neuro-Vision: {e}")
-        return HTMLResponse(content=f"<h1>Error</h1><p>{e!s}</p>", status_code=500)
+    except Exception:
+        logger.exception("❌ Error serving Neuro-Vision")
+        return HTMLResponse(content="<h1>Error serving Neuro-Vision</h1>", status_code=500)
 
 
 @router.get("/v1", response_class=HTMLResponse)

@@ -31,8 +31,10 @@ class ClientService:
                 row = cur.fetchone()
                 if row:
                     # Map row to dict
-                    cols = [col[0] for col in cur.description]
-                    return dict(zip(cols, row, strict=True))
+                    if cur.description:
+                        cols = [col[0] for col in cur.description]
+                        return dict(zip(cols, row, strict=True))
+                    return {"id": row[0]}  # Fallback
             return None
         except Exception as e:
             logger.exception(f"Error looking up client by API key: {e}")
@@ -71,7 +73,8 @@ class ClientService:
                     cur.execute(
                         query_client, (name, email, company, meta_pixel_id, meta_access_token, plan)
                     )
-                    client_id = cur.fetchone()[0]
+                    row = cur.fetchone()
+                    client_id = row[0] if row else None
 
                 if not client_id:
                     return None

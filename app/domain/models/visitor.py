@@ -10,18 +10,15 @@ Un visitante es una Entidad porque:
 
 from __future__ import annotations
 
+import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-
-try:
-    from typing import Optional
-
-    from typing_extensions import Self
-except ImportError:
-    from typing import Optional
-
 from enum import Enum
+from typing import Any, Dict, Optional
 
+from typing_extensions import Self
+
+from app.core.validators import hash_sha256
 from app.domain.models.values import Email, ExternalId, GeoLocation, Phone, UTMParams
 
 
@@ -105,7 +102,7 @@ class Visitor:
             fbclid=fbclid,
             fbp=fbp,
             ip_address=ip,  # Considerar hashear para GDPR
-            user_agent=user_agent[:500] if user_agent else None,  # Limitar tamaño
+            user_agent=str(user_agent)[:500],  # Limitar tamaño y asegurar tipado
             source=source,
             utm=utm or UTMParams(),
             geo=geo or GeoLocation(),
@@ -177,32 +174,30 @@ class Visitor:
 
         Todos los PII deben estar hasheado (SHA256).
         """
-        from app.core.validators import hash_sha256
-
-        data: dict[str, str] = {
+        data: Dict[str, Any] = {
             "external_id": hash_sha256(self.external_id.value),
         }
 
         if self.fbclid:
             # fbc format: fb.1.<timestamp>.<fbclid>
-            import time
-
             data["fbc"] = f"fb.1.{int(time.time())}.{self.fbclid}"
 
-        if self.fbp:
-            data["fbp"] = self.fbp
+        if fbp := self.fbp:
+            data["fbp"] = fbp
 
         if self.email:
+            # em: Hashed email
             data["em"] = self.email.hash
 
         if self.phone:
+            # ph: Hashed phone
             data["ph"] = self.phone.hash
 
         if self.ip_address:
             data["client_ip_address"] = self.ip_address
 
-        if self.user_agent:
-            data["client_user_agent"] = self.user_agent
+        if ua := self.user_agent:
+            data["client_user_agent"] = ua
 
         # Geo data (hashed)
         geo_data = self.geo.to_meta_format()

@@ -249,10 +249,7 @@ class AdsMonitor:
         avg_cpm = sum(history) / len(history)
         self.current_state["cpm_average"] = avg_cpm
 
-        if (
-            avg_cpm > 0
-            and current_cpm > avg_cpm * self.THRESHOLDS["cpm_spike_multiplier"]
-        ):
+        if avg_cpm > 0 and current_cpm > avg_cpm * self.THRESHOLDS["cpm_spike_multiplier"]:
             self.create_alert(
                 severity=AlertSeverity.WARNING,
                 category="COST",
@@ -350,9 +347,7 @@ class AdsMonitor:
             "generated_at": datetime.utcnow().isoformat(),
             "monitor_status": self.get_status(),
             "alerts": [asdict(a) for a in self.alerts[-100:]],  # Últimas 100
-            "metrics": self.metrics_history[
-                -168:
-            ],  # Última semana (asumiendo 5min interval)
+            "metrics": self.metrics_history[-168:],  # Última semana (asumiendo 5min interval)
         }
 
         with open(filepath, "w") as f:

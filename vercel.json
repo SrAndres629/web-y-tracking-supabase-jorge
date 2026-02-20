@@ -21,18 +21,17 @@
         ],
         "minimumCacheTTL": 60
     },
-    "builds": [
-        {
-            "src": "api/index.py",
-            "use": "@vercel/python",
-            "config": {
-                "includeFiles": [
-                    "api/templates/**",
-                    "static/**"
-                ]
-            }
+    "functions": {
+        "api/index.py": {
+            "includeFiles": [
+                "app/**",
+                "api/templates/**",
+                "static/**",
+                "main.py",
+                ".env*"
+            ]
         }
-    ],
+    },
     "rewrites": [
         {
             "source": "/favicon.ico",

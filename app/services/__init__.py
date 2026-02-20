@@ -20,11 +20,10 @@ logger = logging.getLogger("uvicorn.error")
 
 # from app.services.seo_engine import SEOEngine  # Imported but unused
 
+turnstile_warned = False
 
-QSTASH_TOKEN = os.getenv("QSTASH_TOKEN")
 
-_raw_url = os.getenv("VERCEL_URL", "jorgeaguirreflores.com")
-VERCEL_URL = f"https://{_raw_url}" if "http" not in _raw_url else _raw_url
+# Environment variables centrally managed via app.config.settings
 
 
 # =================================================================
@@ -141,7 +140,7 @@ class ContentManager:
                     coro = cast(Coroutine[Any, Any, Any], cls._refresh_in_background(key))
                     asyncio.create_task(coro)
                 return cached
-        except Exception as e:
+        except (ConnectionError, RuntimeError) as e:
             logger.debug("Redis skip: %s", e)
 
         # 3. 🧬 DATABASE / FALLBACK (Zero-Latency Guarantee)
@@ -169,11 +168,11 @@ class ContentManager:
                             key,
                             int((time.time() - t0) * 1000),
                         )
-                    except Exception as e:
-                        logger.debug("Cache write error: %s", e)
+                    except (ConnectionError, RuntimeError):
+                        logger.debug("Cache write error (Redis skip)")
                     return content
-        except Exception as e:
-            logger.exception("❌ [SWR] Background refresh error for '%s': %s", key, e)
+        except (ConnectionError, RuntimeError):
+            logger.exception("❌ [SWR] Background refresh error")
         return None
 
     @classmethod
@@ -227,8 +226,8 @@ class ContentManager:
                 if row and row[0]:
                     val = row[0]
                     return json.loads(val) if isinstance(val, str) else val
-        except Exception as e:
-            logger.exception("❌ CMS DB Fetch Error (%s): %s", key, e)
+        except (ConnectionError, RuntimeError, ValueError):
+            logger.exception("❌ CMS DB Fetch Error (%s)", key)
         return None
 
     @classmethod
@@ -246,8 +245,8 @@ class ContentManager:
         for key in cls._FALLBACKS.keys():
             try:
                 await redis_cache.delete(f"content:{key}")
-            except Exception as e:
-                logger.exception("Error deleting Redis cache for %s: %s", key, e)
+            except (ConnectionError, RuntimeError):
+                logger.debug("Error deleting Redis cache for %s (Transient)", key)
         await cls.warm_cache()
 
 
@@ -282,12 +281,12 @@ async def get_contact_config() -> Dict[str, Any]:
 )
 async def publish_to_qstash(event_data: Dict[str, Any]) -> bool:
     """Publishes an event to QStash to be processed asynchronously."""
-    if not QSTASH_TOKEN:
+    if not settings.QSTASH_TOKEN:
         logger.warning("⚠️ QStash Token missing!")
         return False
-    url = f"{VERCEL_URL}/hooks/process-event"
+    url = f"{settings.vercel_url}/hooks/process-event"
     headers = {
-        "Authorization": f"Bearer {QSTASH_TOKEN}",
+        "Authorization": f"Bearer {settings.QSTASH_TOKEN}",
         "Content-Type": "application/json",
         "Upstash-Retries": "3",
     }
@@ -301,24 +300,22 @@ async def publish_to_qstash(event_data: Dict[str, Any]) -> bool:
             )
             response.raise_for_status()
             return True
-    except httpx.HTTPStatusError as e:
-        logger.exception("❌ QStash HTTP Error: %s - %s", e.response.status_code, e.response.text)
+    except (httpx.HTTPStatusError, httpx.RequestError):
+        logger.exception("❌ QStash specific error")
         return False
-    except httpx.RequestError as e:
-        logger.exception("❌ QStash Request Error: %s", e)
-        return False
-    except Exception as e:
-        logger.exception("❌ QStash Unexpected Error: %s", e)
+    except Exception:
+        logger.exception("❌ QStash Unexpected Error")
         return False
     return False
 
 
 async def validate_turnstile(token: str) -> bool:
     """Validates a Cloudflare Turnstile token."""
+    global turnstile_warned
     if not settings.TURNSTILE_SECRET_KEY:
-        if not getattr(validate_turnstile, "_warned", False):
+        if not turnstile_warned:
             logger.warning("⚠️ TURNSTILE_SECRET_KEY not set — bot protection DISABLED.")
-            validate_turnstile._warned = True
+            turnstile_warned = True
         return True
     if not token:
         return False
@@ -330,11 +327,11 @@ async def validate_turnstile(token: str) -> bool:
                 timeout=5.0,
             )
             return bool(response.json().get("success", False))
-    except httpx.RequestError as e:
-        logger.exception("Turnstile validation request error: %s", e)
+    except httpx.RequestError:
+        logger.exception("Turnstile validation request error")
         return True  # Fail safe
-    except Exception as e:
-        logger.exception("Turnstile validation unexpected error: %s", e)
+    except Exception:
+        logger.exception("Turnstile validation unexpected error")
         return True  # Fail safe
     return True  # Final fallback
 

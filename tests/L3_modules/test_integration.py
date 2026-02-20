@@ -51,13 +51,13 @@ def test_tracking_flow_simulated(client):
              "turnstile_token": "dummy_token_for_test" # Mocked in test env
         }
     }
-    
+
     # Send to actual endpoint
     response = client.post("/track/event", json=payload)
-    
+
     if response.status_code == 404:
         pytest.skip("Endpoint /track/event not mounted in main app for this test environment")
-        
+
     assert response.status_code in [200, 202]
     data = response.json()
     assert data["status"] in ["queued", "success", "filtered"]

@@ -19,9 +19,10 @@ from app.config import settings
 def _cloudflare_egress_reachable() -> bool:
     try:
         requests.get("https://api.cloudflare.com/client/v4/user/tokens/verify", timeout=5)
-        return True
     except requests.RequestException:
         return False
+    else:
+        return True
 
 
 @pytest.fixture
@@ -95,7 +96,7 @@ async def test_supabase_security_audit():
                 pytest.fail(msg)
             logger.warning(msg)
             return
-    except Exception as e:  # noqa: BLE001
+    except Exception as e:
         if is_strict:
             pytest.fail(f"🔥 Supabase Audit failed: {e!s}")
         logger.warning(f"⚠️ Supabase Audit error: {e!s}")
@@ -103,7 +104,7 @@ async def test_supabase_security_audit():
     finally:
         try:
             conn.close()
-        except Exception:  # noqa: BLE001
+        except Exception:
             pass
 
 

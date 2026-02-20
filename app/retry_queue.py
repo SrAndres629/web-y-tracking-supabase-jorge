@@ -74,7 +74,9 @@ class RedisDLQ:
                 raw = self._redis.lpop(DLQ_KEY)
                 if not raw:
                     break
-                items.append(json.loads(raw))
+                # Handle both string and list responses (some Redis clients might return a list)
+                content = raw[0] if isinstance(raw, list) else raw
+                items.append(json.loads(content))
         except Exception as e:
             logger.exception(f"❌ [DLQ] Fetch error: {e}")
 
@@ -108,11 +110,11 @@ async def process_retry_queue(batch_size: int = 20):
     # We need to import here to avoid circular dependencies
     from app.meta_capi import EnhancedCustomData, EnhancedUserData, elite_capi
 
-    requeued_count = 0
-    success_count = 0
-    drop_count = 0
+    requeued_count: int = 0
+    success_count: int = 0
+    drop_count: int = 0
 
-    now = int(time.time())
+    now: int = int(time.time())
 
     for item in items:
         # 1. check timing

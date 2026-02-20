@@ -34,8 +34,7 @@ from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 # Internal Imports
 from app.config import settings
-from app.database import init_tables
-from app.interfaces.api.middleware.error_handler import setup_error_handlers
+from app.middleware.error_handler import setup_error_handlers
 from app.interfaces.api.routes import (
     admin,
     consent,
@@ -52,7 +51,6 @@ from app.middleware.cache import CacheControlMiddleware
 from app.middleware.early_hints import EarlyHintsMiddleware
 from app.middleware.identity import ServerSideIdentityMiddleware
 from app.middleware.security import SecurityHeadersMiddleware
-from app.services import ContentManager
 from app.version import VERSION
 
 # Configuración de Logging prioritaria
@@ -84,58 +82,57 @@ def init_sentry():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Ciclo de vida de la aplicación con manejo de contexto"""
-    # Startup - OPTIMIZED: No blocking DB init
-
+    """Ciclo de vida de la aplicación con manejo de contexto robusto"""
     logger.info(
         f"🚀 Iniciando Jorge Aguirre Flores Web v{VERSION} (Atomic Architecture Mode)"
     )
 
-    is_test_mode = (
-        os.getenv("PYTEST_CURRENT_TEST") is not None
-        or os.getenv("AUDIT_MODE") == "1"
-        or "PYTEST_VERSION" in os.environ
-        or "pytest" in sys.modules
-    )
-
-    # 1. Initialize Sentry (Parallelizable/Non-blocking)
-    init_sentry()
-
-    # 2. Startup warmups only outside test/audit mode
-    if not is_test_mode:
+    try:
+        # 1. Initialize Sentry (Essential but shouldn't crash boot)
         try:
-            await asyncio.wait_for(ContentManager.warm_cache(), timeout=5)
-        except asyncio.TimeoutError:
-            logger.warning("⚠️ warm_cache timeout; continuing without warm cache")
+            # init_sentry is already defined in this file
+            init_sentry()
         except Exception as e:
-            logger.warning(f"⚠️ warm_cache failed: {e}")
+            logger.exception(f"⚠️ Sentry init failed: {e}")
 
-        # NOTE: Database connection is now LAZY (initialized on first request)
-        # but we trigger initial check in background
+        is_test_mode = (
+            os.getenv("PYTEST_CURRENT_TEST") is not None
+            or os.getenv("AUDIT_MODE") == "1"
+            or "PYTEST_VERSION" in os.environ
+            or "pytest" in sys.modules
+        )
 
-        try:
-            init_ok = await asyncio.wait_for(asyncio.to_thread(init_tables), timeout=5)
-            if init_ok:
-                logger.info("✅ Database initialized successfully")
-            else:
-                logger.error("❌ Database initialization reported failure")
-        except asyncio.TimeoutError:
-            logger.warning("⚠️ init_tables timeout; continuing with lazy DB init")
-        except Exception as e:
-            logger.exception(f"❌ Database initialization failed: {e}")
+        # 2. Startup warmups
+        if not is_test_mode:
+            # Warm cache (Non-critical)
+            try:
+                from app.services import ContentManager
+                await asyncio.wait_for(ContentManager.warm_cache(), timeout=3)
+            except Exception as e:
+                logger.warning(f"⚠️ warm_cache skipped: {e}")
 
-        logger.info("⚡ Cold Start Optimization: Database ready")
-    else:
-        logger.info("🧪 Test mode detected: skipping warm_cache and init_tables")
+            # Database initialization (Trigger in background to prevent boot block)
+            try:
+                from app.database import init_tables
+                # No esperamos a que termine si tarda mucho, permitimos lazy init
+                asyncio.create_task(asyncio.to_thread(init_tables))
+                logger.info("⚡ Background DB init triggered")
+            except Exception as e:
+                logger.exception(f"❌ DB init trigger failed: {e}")
+        else:
+            logger.info("🧪 Test mode: skipping warmups")
 
-    logger.info(f"📊 Meta Pixel ID: {settings.META_PIXEL_ID}")
-    logger.info(f"🌐 Servidor listo en http://{settings.HOST}:{settings.PORT}")
+    except Exception as e:
+        logger.critical(f"🚨 CRITICAL BOOT FAILURE: {e}")
+        # we don't re-raise here to allow the app to at least serve the error page/health check
 
     yield
 
     # Shutdown
     logger.info("🛑 Deteniendo servidor...")
-    gc.collect()  # Force garbage collection on shutdown
+    gc.collect()
+
+
 
 
 # =================================================================

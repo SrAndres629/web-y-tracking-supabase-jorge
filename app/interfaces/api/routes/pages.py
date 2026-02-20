@@ -54,12 +54,19 @@ def bg_save_visitor(
     """Saves visitor without blocking page render"""
     try:
         legacy.save_visitor(
-            external_id, fbclid, client_ip, user_agent, source, utm_data, email=email, phone=phone
+            external_id,
+            fbclid,
+            client_ip,
+            user_agent,
+            source,
+            utm_data,
+            email=email,
+            phone=phone,
         )
         preview: str = external_id[slice(0, 16)]
         logger.info("✅ [BG] Visitor saved: %s...", preview)
-    except (AttributeError, KeyError, ValueError, RuntimeError) as e:
-        logger.exception("❌ [BG] Error saving visitor: %s", e)
+    except (AttributeError, KeyError, ValueError, RuntimeError):
+        logger.exception("❌ [BG] Error saving visitor")
 
 
 async def bg_send_pageview(
@@ -102,8 +109,8 @@ async def bg_send_pageview(
             logger.info("✅ [BG] PageView sent to Meta CAPI")
         else:
             logger.warning("⚠️ [BG] PageView issue: %s", result)
-    except (AttributeError, KeyError, ValueError, RuntimeError) as e:
-        logger.exception("❌ [BG] PageView error: %s", e)
+    except (AttributeError, KeyError, ValueError, RuntimeError):
+        logger.exception("❌ [BG] PageView error")
 
 
 # =================================================================
@@ -223,7 +230,10 @@ async def read_tracking_motor(
     schemas = [
         SEOEngine.get_global_schema(),
         SEOEngine.get_breadcrumb_schema(
-            [{"name": "Inicio", "path": "/"}, {"name": "Tracking Motor", "path": "/tracking-motor"}]
+            [
+                {"name": "Inicio", "path": "/"},
+                {"name": "Tracking Motor", "path": "/tracking-motor"},
+            ]
         ),
     ]
 
@@ -270,8 +280,14 @@ async def read_onboarding(request: Request) -> Response:
     return templates.TemplateResponse(
         request=request,
         name="pages/site/onboarding.html",
-        context={"seo": seo_meta, "services": services_config, "contact": contact_config},
+        context={
+            "seo": seo_meta,
+            "services": services_config,
+            "contact": contact_config,
+        },
     )
+
+
 @router.get("/privacidad", response_class=HTMLResponse)
 async def read_privacy(request: Request) -> Response:
     """Privacy Policy Page."""
@@ -284,7 +300,7 @@ async def read_privacy(request: Request) -> Response:
             "updated_date": "Febrero 2026",
             "contact": await get_contact_config(),
         },
-
+    )
 
 
 @router.get("/privacy", response_class=HTMLResponse)
@@ -490,13 +506,23 @@ def _set_identity_cookies(
     if not fbp:
         val: str = f"fb.1.{int(time.time() * 1000)}.{random.randint(100000000, 999999999)}"
         response.set_cookie(
-            key="_fbp", value=val, max_age=31536000, httponly=False, secure=True, samesite="lax"
+            key="_fbp",
+            value=val,
+            max_age=31536000,
+            httponly=False,
+            secure=True,
+            samesite="lax",
         )
 
     if fbclid:
         val = f"fb.1.{int(time.time())}.{fbclid}"
         response.set_cookie(
-            key="_fbc", value=val, max_age=31536000, httponly=False, secure=True, samesite="lax"
+            key="_fbc",
+            value=val,
+            max_age=31536000,
+            httponly=False,
+            secure=True,
+            samesite="lax",
         )
 
 

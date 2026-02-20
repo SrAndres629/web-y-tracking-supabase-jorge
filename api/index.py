@@ -1,26 +1,41 @@
-"""
-🚀 ENTRY POINT - Vercel/Serverless
-Responsabilidad ÚNICA: Bootstrap de la aplicación
-
-❌ Error anterior: 81 líneas con 4 responsabilidades
-✅ Solución: 15 líneas, solo entry point
-📚 Lección: Separar concerns desde el inicio
-
-Este archivo es el punto de entrada para Vercel y entornos serverless.
-Toda la lógica de manejo de errores ahora está en:
-  app/interfaces/api/middleware/error_handler.py
-"""
-
 import os
 import sys
+import traceback
+from pathlib import Path
 
-# Setup path para imports (único hack permitido en entry point)
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-sys.path.insert(0, parent_dir)
+# Fix path resolution for imports
+root = Path(__file__).parent.parent
+if str(root) not in sys.path:
+    sys.path.append(str(root))
 
-# Importar aplicación principal
-from main import app  # noqa: E402
+try:
+    # 🚀 Intento de importación normal
+    from main import app
+except Exception as e:
+    boot_error = str(e)
+    # 🛡️ Fallback safe entry point en caso de crash total
+    import logging
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger("boot_crash")
+    logger.error("CRITICAL: Application failed to import in api/index.py: %s", boot_error)
+    
+    from fastapi import FastAPI, Request
+    from fastapi.responses import JSONResponse
+
+    app = FastAPI()
+
+    @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"])
+    async def crash_report(request: Request, path: str):
+        return JSONResponse(
+            status_code=500,
+            content={
+                "status": "boot_crash",
+                "message": "The application failed to start (Boot Crash).",
+                "error": boot_error,
+                "path": path,
+                "traceback": traceback.format_exc() if os.getenv("DEBUG") or os.getenv("VERCEL") else "Redacted"
+            }
+        )
 
 # app es expuesto para Vercel/Serverless
 __all__ = ["app"]

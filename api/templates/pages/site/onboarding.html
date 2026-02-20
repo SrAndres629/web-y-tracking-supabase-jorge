@@ -1,149 +1,201 @@
-{% extends "layouts/base.html" %}
+{% extends "layouts/base.html" %} {% block title %}Onboarding | Atomic Tracking
+Motor{% endblock title %} {% block content %}
+<section class="flex items-center py-24 min-h-screen bg-luxury-black">
+  <div class="container px-4 mx-auto">
+    <div
+      class="overflow-hidden mx-auto max-w-2xl rounded-2xl border border-gray-800 shadow-2xl bg-luxury-dark"
+    >
+      <div
+        class="p-8 bg-gradient-to-r to-transparent border-b border-gray-800 from-luxury-gold/20"
+      >
+        <h1 class="mb-2 text-3xl font-bold text-white">Comienza ahora</h1>
+        <p class="text-gray-400">
+          Configura tu motor de tracking en menos de 5 minutos.
+        </p>
+      </div>
 
-{% block title %}Onboarding | Atomic Tracking Motor{% endblock %}
-
-{% block content %}
-<section class="py-24 bg-luxury-black min-h-screen flex items-center">
-    <div class="container mx-auto px-4">
-        <div class="max-w-2xl mx-auto bg-luxury-dark border border-gray-800 rounded-2xl overflow-hidden shadow-2xl">
-            <div class="bg-gradient-to-r from-luxury-gold/20 to-transparent p-8 border-b border-gray-800">
-                <h1 class="text-3xl font-bold text-white mb-2">Comienza ahora</h1>
-                <p class="text-gray-400">Configura tu motor de tracking en menos de 5 minutos.</p>
-            </div>
-
-            <form id="onboarding-form" class="p-8 space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="space-y-2">
-                        <label class="text-sm font-medium text-gray-400">Nombre Completo</label>
-                        <input type="text" name="name" required
-                            class="w-full bg-gray-900 border border-gray-800 rounded-lg px-4 py-3 text-white focus:border-luxury-gold outline-none transition"
-                            placeholder="Ej. Juan Pérez">
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-sm font-medium text-gray-400">Email Corporativo</label>
-                        <input type="email" name="email" required
-                            class="w-full bg-gray-900 border border-gray-800 rounded-lg px-4 py-3 text-white focus:border-luxury-gold outline-none transition"
-                            placeholder="juan@empresa.com">
-                    </div>
-                </div>
-
-                <div class="space-y-2">
-                    <label class="text-sm font-medium text-gray-400">Nombre de la Empresa / Proyecto</label>
-                    <input type="text" name="company" required
-                        class="w-full bg-gray-900 border border-gray-800 rounded-lg px-4 py-3 text-white focus:border-luxury-gold outline-none transition"
-                        placeholder="Ej. E-commerce Alpha">
-                </div>
-
-                <div class="space-y-4 pt-4 border-t border-gray-800">
-                    <h3 class="text-luxury-gold font-bold flex items-center">
-                        <i class="fab fa-facebook mr-2"></i> Configuración Meta CAPI
-                    </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="space-y-2">
-                            <label class="text-sm font-medium text-gray-400">Meta Pixel ID</label>
-                            <input type="text" name="pixel_id" required
-                                class="w-full bg-gray-900 border border-gray-800 rounded-lg px-4 py-3 text-white focus:border-luxury-gold outline-none transition"
-                                placeholder="1234567890">
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-sm font-medium text-gray-400">Access Token CAPI</label>
-                            <input type="password" name="access_token" required
-                                class="w-full bg-gray-900 border border-gray-800 rounded-lg px-4 py-3 text-white focus:border-luxury-gold outline-none transition"
-                                placeholder="EAABb...">
-                        </div>
-                    </div>
-                </div>
-
-                <button type="submit"
-                    class="w-full bg-luxury-gold hover:bg-luxury-gold/90 text-luxury-black font-bold py-4 rounded-lg shadow-lg shadow-luxury-gold/20 transition-all transform hover:scale-[1.02]">
-                    Generar mi API Key de Acceso
-                </button>
-
-                <p class="text-center text-xs text-gray-500">
-                    Al registrarte, aceptas nuestros <a href="#" class="text-luxury-gold underline">Términos de
-                        Servicio</a> y <a href="#" class="text-luxury-gold underline">Política de Privacidad</a>.
-                </p>
-            </form>
-
-            <!-- Success State -->
-            <div id="success-screen" class="hidden p-12 text-center space-y-6">
-                <div
-                    class="w-20 h-20 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <i class="fas fa-check text-4xl"></i>
-                </div>
-                <h2 class="text-3xl font-bold text-white">¡Configuración Exitosa!</h2>
-                <p class="text-gray-400 max-w-md mx-auto">
-                    Tu motor de tracking está listo. Guarda tu API Key en un lugar seguro; no podrás verla de nuevo.
-                </p>
-                <div class="bg-gray-900 p-4 rounded-lg border border-luxury-gold/30 relative group">
-                    <code id="api-key-display" class="text-luxury-gold font-mono text-lg break-all"></code>
-                    <button onclick="copyKey()"
-                        class="absolute right-2 top-2 text-gray-500 hover:text-white transition">
-                        <i class="fas fa-copy"></i>
-                    </button>
-                </div>
-                <div class="pt-8">
-                    <a href="/tracking-motor"
-                        class="text-luxury-gold hover:text-white transition flex items-center justify-center">
-                        <i class="fas fa-arrow-left mr-2"></i> Volver a la documentación
-                    </a>
-                </div>
-            </div>
+      <form id="onboarding-form" class="p-8 space-y-6">
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-gray-400"
+              >Nombre Completo</label
+            >
+            <input
+              type="text"
+              name="name"
+              required
+              class="px-4 py-3 w-full text-white bg-gray-900 rounded-lg border border-gray-800 transition outline-none focus:border-luxury-gold"
+              placeholder="Ej. Juan Pérez"
+            />
+          </div>
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-gray-400"
+              >Email Corporativo</label
+            >
+            <input
+              type="email"
+              name="email"
+              required
+              class="px-4 py-3 w-full text-white bg-gray-900 rounded-lg border border-gray-800 transition outline-none focus:border-luxury-gold"
+              placeholder="juan@empresa.com"
+            />
+          </div>
         </div>
+
+        <div class="space-y-2">
+          <label class="text-sm font-medium text-gray-400"
+            >Nombre de la Empresa / Proyecto</label
+          >
+          <input
+            type="text"
+            name="company"
+            required
+            class="px-4 py-3 w-full text-white bg-gray-900 rounded-lg border border-gray-800 transition outline-none focus:border-luxury-gold"
+            placeholder="Ej. E-commerce Alpha"
+          />
+        </div>
+
+        <div class="pt-4 space-y-4 border-t border-gray-800">
+          <h3 class="flex items-center font-bold text-luxury-gold">
+            <i class="mr-2 fab fa-facebook"></i> Configuración Meta CAPI
+          </h3>
+          <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-gray-400"
+                >Meta Pixel ID</label
+              >
+              <input
+                type="text"
+                name="pixel_id"
+                required
+                class="px-4 py-3 w-full text-white bg-gray-900 rounded-lg border border-gray-800 transition outline-none focus:border-luxury-gold"
+                placeholder="1234567890"
+              />
+            </div>
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-gray-400"
+                >Access Token CAPI</label
+              >
+              <input
+                type="password"
+                name="access_token"
+                required
+                class="px-4 py-3 w-full text-white bg-gray-900 rounded-lg border border-gray-800 transition outline-none focus:border-luxury-gold"
+                placeholder="EAABb..."
+              />
+            </div>
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          class="w-full bg-luxury-gold hover:bg-luxury-gold/90 text-luxury-black font-bold py-4 rounded-lg shadow-lg shadow-luxury-gold/20 transition-all transform hover:scale-[1.02]"
+        >
+          Generar mi API Key de Acceso
+        </button>
+
+        <p class="text-xs text-center text-gray-500">
+          Al registrarte, aceptas nuestros
+          <a href="#" class="underline text-luxury-gold"
+            >Términos de Servicio</a
+          >
+          y
+          <a href="#" class="underline text-luxury-gold"
+            >Política de Privacidad</a
+          >.
+        </p>
+      </form>
+
+      <!-- Success State -->
+      <div id="success-screen" class="hidden p-12 space-y-6 text-center">
+        <div
+          class="flex justify-center items-center mx-auto mb-6 w-20 h-20 text-green-500 rounded-full bg-green-500/20"
+        >
+          <i class="text-4xl fas fa-check"></i>
+        </div>
+        <h2 class="text-3xl font-bold text-white">¡Configuración Exitosa!</h2>
+        <p class="mx-auto max-w-md text-gray-400">
+          Tu motor de tracking está listo. Guarda tu API Key en un lugar seguro;
+          no podrás verla de nuevo.
+        </p>
+        <div
+          class="relative p-4 bg-gray-900 rounded-lg border border-luxury-gold/30 group"
+        >
+          <code
+            id="api-key-display"
+            class="font-mono text-lg break-all text-luxury-gold"
+          ></code>
+          <button
+            onclick="copyKey()"
+            class="absolute top-2 right-2 text-gray-500 transition hover:text-white"
+          >
+            <i class="fas fa-copy"></i>
+          </button>
+        </div>
+        <div class="pt-8">
+          <a
+            href="{{ url_for('tracking_motor') }}"
+            class="flex justify-center items-center transition text-luxury-gold hover:text-white"
+          >
+            <i class="mr-2 fas fa-arrow-left"></i> Volver a la documentación
+          </a>
+        </div>
+      </div>
     </div>
+  </div>
 </section>
-{% endblock %}
+{% endblock content %}
 
 {% block extra_scripts %}
 <script>
-    const form = document.getElementById('onboarding-form');
-    const successScreen = document.getElementById('success-screen');
-    const apiKeyDisplay = document.getElementById('api-key-display');
+  const form = document.getElementById("onboarding-form");
+  const successScreen = document.getElementById("success-screen");
+  const apiKeyDisplay = document.getElementById("api-key-display");
 
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData(form);
-        const data = Object.fromEntries(formData.entries());
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
 
-        // Loader
-        const btn = form.querySelector('button');
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Generando Credenciales...';
+    // Loader
+    const btn = form.querySelector("button");
+    btn.disabled = true;
+    btn.innerHTML =
+      '<i class="mr-2 fas fa-spinner fa-spin"></i> Generando Credenciales...';
 
-        try {
-            const response = await fetch('/onboarding', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: data.name,
-                    email: data.email,
-                    company: data.company,
-                    config: {
-                        meta_pixel_id: data.pixel_id,
-                        meta_access_token: data.access_token
-                    }
-                })
-            });
+    try {
+      const response = await fetch("/onboarding", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+          company: data.company,
+          config: {
+            meta_pixel_id: data.pixel_id,
+            meta_access_token: data.access_token,
+          },
+        }),
+      });
 
-            if (!response.ok) throw new Error('Error en el servidor');
+      if (!response.ok) throw new Error("Error en el servidor");
 
-            const result = await response.json();
+      const result = await response.json();
 
-            form.classList.add('hidden');
-            successScreen.classList.remove('hidden');
-            apiKeyDisplay.innerText = result.api_key;
-
-        } catch (err) {
-            alert('Error: ' + err.message);
-            btn.disabled = false;
-            btn.innerText = 'Generar mi API Key de Acceso';
-        }
-    });
-
-    function copyKey() {
-        const key = apiKeyDisplay.innerText;
-        navigator.clipboard.writeText(key);
-        alert('API Key copiada al portapapeles');
+      form.classList.add("hidden");
+      successScreen.classList.remove("hidden");
+      apiKeyDisplay.innerText = result.api_key;
+    } catch (err) {
+      alert("Error: " + err.message);
+      btn.disabled = false;
+      btn.innerText = "Generar mi API Key de Acceso";
     }
+  });
+
+  function copyKey() {
+    const key = apiKeyDisplay.innerText;
+    navigator.clipboard.writeText(key);
+    alert("API Key copiada al portapapeles");
+  }
 </script>
-{% endblock %}
+{% endblock extra_scripts %}

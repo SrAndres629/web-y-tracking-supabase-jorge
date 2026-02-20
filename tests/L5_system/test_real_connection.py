@@ -36,7 +36,8 @@ def test_real_database_connection():
     from app.database import BACKEND, check_connection, get_db_connection
 
     print(f"   👉 Backend Constraint: {BACKEND}")
-    print(f"   👉 DSN Configured: {settings.DATABASE_URL[:15]}... (Masked)")
+    print(f"Status: {settings.DATABASE_URL}")
+    print(f"   👉 DSN Configured: {(settings.DATABASE_URL or '')[:15]}... (Masked)")
 
     # 2. Check Connection
     is_connected = check_connection()

@@ -33,9 +33,7 @@ try:
         """Attempt to consume event ID using Redis."""
         return dedup_service.try_consume_event(event_id, event_name)
 
-    def cache_visitor_data(
-        _external_id: str, _data: Dict[str, Any], _ttl_hours: int = 24
-    ) -> None:
+    def cache_visitor_data(_external_id: str, _data: Dict[str, Any], _ttl_hours: int = 24) -> None:
         """Cache visitor data in Redis."""
         try:
             dedup_service.cache_visitor(_external_id, _data, ttl=_ttl_hours * 3600)
@@ -63,9 +61,7 @@ except ImportError as e:
         _memory_dedup[event_id] = time.time()
         return True
 
-    def cache_visitor_data(
-        _external_id: str, _data: Dict[str, Any], _ttl_hours: int = 24
-    ) -> None:
+    def cache_visitor_data(_external_id: str, _data: Dict[str, Any], _ttl_hours: int = 24) -> None:
         pass
 
     def get_cached_visitor(_external_id: str) -> Optional[Dict[str, Any]]:
@@ -124,9 +120,7 @@ def extract_fbclid_from_fbc(fbc_cookie: str) -> Optional[str]:
     return None
 
 
-def get_prioritized_fbclid(
-    url_fbclid: Optional[str], cookie_fbc: Optional[str]
-) -> Optional[str]:
+def get_prioritized_fbclid(url_fbclid: Optional[str], cookie_fbc: Optional[str]) -> Optional[str]:
     """
     Decides which fbclid to use.
     Priority: 1. URL Parameter (Fresh click) -> 2. Cookie (Persistent session)
@@ -350,8 +344,8 @@ def send_event(
                 response.text,
             )
             return False
-    except Exception as e:
-        logger.exception("[META CAPI] ❌ Error: %s", str(e))
+    except Exception:
+        logger.exception("[META CAPI] ❌ Error")
         raise
 
 
@@ -442,8 +436,8 @@ async def send_event_async(
                 response.text,
             )
             return False
-    except Exception as e:
-        logger.exception("[META CAPI ASYNC] ❌ Error: %s", str(e))
+    except Exception:
+        logger.exception("[META CAPI ASYNC] ❌ Error")
         raise
 
 
@@ -481,9 +475,7 @@ def track_lead(
         custom_data.update(
             {
                 "content_name": str(service_data.get("name", source)),
-                "content_ids": (
-                    [str(service_data.get("id"))] if service_data.get("id") else []
-                ),
+                "content_ids": ([str(service_data.get("id"))] if service_data.get("id") else []),
                 "content_category": str(service_data.get("intent", "lead")),
                 "trigger_location": source,
             }
@@ -580,9 +572,7 @@ def track_scroll_depth(
         "scroll_depth": depth_percent,
         "time_on_page": time_on_page_seconds,
         "engagement_level": (
-            "high"
-            if depth_percent >= 75
-            else "medium" if depth_percent >= 50 else "low"
+            "high" if depth_percent >= 75 else "medium" if depth_percent >= 50 else "low"
         ),
     }
     return send_event(

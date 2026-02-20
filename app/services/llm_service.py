@@ -1,7 +1,7 @@
 import logging
 from typing import Any, Dict, List, Optional
 
-from groq import Groq
+from groq import AsyncGroq
 
 from app.config import settings
 
@@ -17,7 +17,7 @@ class LLMService:
     a consistent interface for different LLM providers.
     """
 
-    _groq_client: Optional[Groq] = None
+    _groq_client: Optional[AsyncGroq] = None
 
     def __init__(self):
         """
@@ -25,7 +25,7 @@ class LLMService:
         Lazy-loads clients for LLM providers as needed.
         """
         if settings.GROQ_API_KEY:
-            self._groq_client = Groq(api_key=settings.GROQ_API_KEY)
+            self._groq_client = AsyncGroq(api_key=settings.GROQ_API_KEY)
             logger.info("Groq client initialized.")
         else:
             logger.warning("GROQ_API_KEY is not set. Groq client will not be available.")
@@ -61,7 +61,7 @@ class LLMService:
 
         try:
             chat_completion = await self._groq_client.chat.completions.create(
-                messages=messages,
+                messages=messages,  # type: ignore
                 model=model,
                 temperature=temperature,
                 max_tokens=max_tokens,

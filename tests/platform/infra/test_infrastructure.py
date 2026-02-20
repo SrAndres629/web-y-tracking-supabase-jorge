@@ -98,7 +98,7 @@ def test_database_connection():
                 pytest.skip(
                     "✅ SQLite connection verified. Skipping real Postgres check (Local)."
                 )
-            except Exception as e:  # noqa: BLE001
+            except Exception as e:
                 pytest.fail(f"🔥 Fallo conexión SQLite Fallback: {e!s}")
 
     # Real Postgres Check (only if URL looks valid)
@@ -144,7 +144,7 @@ def test_redis_connection():
         )
         ping_result = redis.ping()
         assert ping_result is True or ping_result == "PONG"
-    except Exception as e:  # noqa: BLE001
+    except Exception as e:
         if is_prod:
             pytest.fail(f"🔥 CRITICAL: Production Redis Connection failed: {e!s}")
         else:

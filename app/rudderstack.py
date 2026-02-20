@@ -24,7 +24,7 @@ class RudderStackService:
         if settings.rudderstack_enabled:
             try:
                 analytics.write_key = settings.RUDDERSTACK_WRITE_KEY
-                analytics.data_plane_url = settings.RUDDERSTACK_DATA_PLANE_URL
+                analytics.dataPlaneUrl = settings.RUDDERSTACK_DATA_PLANE_URL
                 # Disable gzip to avoid compatibility issues on some environments
                 analytics.gzip = False
                 self.enabled = True

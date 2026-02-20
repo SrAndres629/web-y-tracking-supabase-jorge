@@ -27,12 +27,23 @@ import subprocess
 import sys
 import time
 import urllib.request
-from typing import Any, Dict, List, Tuple
+from typing import Any, ClassVar, Dict, List, Tuple
 
-import requests
-from dotenv import load_dotenv
+try:
+    import requests
+except ImportError:
+    # Fallback for type checking
+    requests = Any  # type: ignore
 
-load_dotenv()
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv()
+except ImportError:
+    # Fallback for type checking
+    def load_dotenv(*args: Any, **kwargs: Any) -> bool:
+        return True
+
 
 # =================================================================
 # CONFIGURATION
@@ -57,50 +68,56 @@ REPO_PATH = os.path.dirname(os.path.abspath(__file__))
 # CONSOLE OUTPUT
 # =================================================================
 class Console:
-    HEADER = "\033[95m"
-    BLUE = "\033[94m"
-    CYAN = "\033[96m"
-    GREEN = "\033[92m"
-    WARNING = "\033[93m"
-    FAIL = "\033[91m"
-    ENDC = "\033[0m"
-    BOLD = "\033[1m"
+    HEADER: str = "\033[95m"
+    BLUE: str = "\033[94m"
+    CYAN: str = "\033[96m"
+    GREEN: str = "\033[92m"
+    WARNING: str = "\033[93m"
+    FAIL: str = "\033[91m"
+    ENDC: str = "\033[0m"
+    BOLD: str = "\033[1m"
 
     @staticmethod
-    def write(text):
+    def write(text: Any) -> None:
         """Prints text to stdout with encoding safety."""
         try:
             print(text)
-        except UnicodeEncodeError:
+        except (UnicodeEncodeError, AttributeError):
             enc = sys.stdout.encoding or "utf-8"
-            if hasattr(sys.stdout, "buffer"):
-                sys.stdout.buffer.write((text + "\n").encode(enc, errors="replace"))
+            if hasattr(sys.stdout, "buffer") and sys.stdout.buffer:
+                sys.stdout.buffer.write(
+                    (str(text) + "\n").encode(enc, errors="replace")
+                )
                 sys.stdout.flush()
             else:
-                print(text.encode(enc, errors="replace").decode(enc, errors="replace"))
+                print(
+                    str(text)
+                    .encode(enc, errors="replace")
+                    .decode(enc, errors="replace")
+                )
 
     @staticmethod
-    def log(msg, symbol="*"):
+    def log(msg: Any, symbol: str = "*") -> None:
         Console.write(f"{symbol} {msg}")
 
     @staticmethod
-    def success(msg):
+    def success(msg: Any) -> None:
         Console.write(f"{Console.GREEN}[OK] {msg}{Console.ENDC}")
 
     @staticmethod
-    def error(msg):
+    def error(msg: Any) -> None:
         Console.write(f"{Console.FAIL}[ERROR] {msg}{Console.ENDC}")
 
     @staticmethod
-    def info(msg):
+    def info(msg: Any) -> None:
         Console.write(f"{Console.CYAN}[INFO] {msg}{Console.ENDC}")
 
     @staticmethod
-    def warning(msg):
+    def warning(msg: Any) -> None:
         Console.write(f"{Console.WARNING}[WARN] {msg}{Console.ENDC}")
 
     @staticmethod
-    def section(title):
+    def section(title: Any) -> None:
         Console.write(f"\n{Console.BOLD}{'=' * 60}{Console.ENDC}")
         Console.write(f"{Console.BOLD}{title}{Console.ENDC}")
         Console.write(f"\n{Console.BOLD}{'=' * 60}{Console.ENDC}")
@@ -110,9 +127,9 @@ class Console:
 # SECURITY AUDITOR
 # =================================================================
 class SecurityAuditor:
-    """Audita headers de seguridad y configuraciones"""
+    """Audits security headers and configurations."""
 
-    REQUIRED_HEADERS = {
+    REQUIRED_HEADERS: ClassVar[Dict[str, str]] = {
         "Strict-Transport-Security": "HSTS",
         "X-Frame-Options": "Clickjacking Protection",
         "X-Content-Type-Options": "MIME Sniffing Protection",
@@ -272,10 +289,10 @@ class SecurityAuditor:
 # BUG HUNTER
 # =================================================================
 class BugHunter:
-    """Caza bugs automáticamente en el código - VERSIÓN OPTIMIZADA"""
+    """Automated bug hunter - OPTIMIZED VERSION"""
 
     # Patterns for modern CI/CD standards
-    PATTERNS = {
+    PATTERNS: ClassVar[Dict[str, List[Tuple[str, str]]]] = {
         "Security Issues": [
             (r"(?<!_)eval\s*\(", "Dangerous eval() usage"),
             (r"(?<!_)exec\s*\(", "Dangerous exec() usage"),
@@ -294,7 +311,7 @@ class BugHunter:
         self.findings: List[Dict[str, Any]] = []
 
     def scan_file(self, file_path: str) -> List[Dict[str, Any]]:
-        """Escanea un archivo en busca de patrones - OPTIMIZADO"""
+        """Scans a file for patterns - OPTIMIZED"""
         findings: List[Dict[str, Any]] = []
 
         try:
@@ -304,8 +321,8 @@ class BugHunter:
                 return findings
 
             with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-                lines = f.readlines()
-        except Exception:
+                lines: List[str] = f.readlines()
+        except OSError:
             return findings
 
         # Pre-compile patterns for efficiency
@@ -346,16 +363,16 @@ class BugHunter:
         return findings
 
     def hunt(self) -> List[Dict[str, Any]]:
-        """Caza bugs en todo el repositorio - OPTIMIZADO CON TIMEOUT"""
+        """Scans the repository for potential issues - OPTIMIZED WITH TIMEOUT"""
         import time
 
-        start_time = time.time()
-        max_duration = 30  # Max 30 seconds
+        start_time: float = time.time()
+        max_duration: int = 30  # Max 30 seconds
 
         Console.section("🐛 BUG HUNT INITIATED (Max 30s)")
 
-        extensions = {".py", ".js", ".html", ".css", ".sql"}
-        exclude_dirs = {
+        extensions: set[str] = {".py", ".js", ".html", ".css", ".sql"}
+        exclude_dirs: set[str] = {
             "venv",
             "__pycache__",
             ".git",
@@ -369,7 +386,7 @@ class BugHunter:
             "scripts",
             "tools",
         }
-        exclude_files = {
+        exclude_files: set[str] = {
             "git_sync.py",
             "antigravity.py",
             "synapse.py",
@@ -385,8 +402,11 @@ class BugHunter:
                 Console.warning("Bug hunt timeout reached (30s). Stopping scan.")
                 break
 
-            # Excluir directorios (in-place for os.walk)
-            dirs[:] = [d for d in dirs if d not in exclude_dirs]  # type: ignore
+            # Exclude directories (in-place for os.walk)
+            # Using list(dirs) to avoid iteration issues if needed, or just clear/repopulate
+            filtered_dirs = [d for d in dirs if d not in exclude_dirs]
+            dirs.clear()
+            dirs.extend(filtered_dirs)
 
             for file in files:
                 # Check timeout per file
@@ -401,7 +421,7 @@ class BugHunter:
                     file_path = os.path.join(root, file)
                     findings = self.scan_file(file_path)
                     self.findings.extend(findings)
-                    files_scanned = files_scanned + 1
+                    files_scanned += 1
 
                     # Show progress every 50 files
                     if files_scanned % 50 == 0:
@@ -413,13 +433,13 @@ class BugHunter:
         elapsed = time.time() - start_time
         Console.log(f"Scan complete: {files_scanned} files scanned in {elapsed:.1f}s")
 
-        # Agrupar por categoría
+        # Group by category
         by_category: Dict[str, List[Dict[str, Any]]] = {}
         for finding in self.findings:
-            cat = finding["category"]
+            cat = str(finding["category"])
             by_category.setdefault(cat, []).append(finding)
 
-        # Mostrar resultados
+        # Show results
         if not self.findings:
             Console.success("No critical bugs found! Code is clean.")
             return []
@@ -428,10 +448,11 @@ class BugHunter:
 
         for category, cat_findings in by_category.items():
             Console.write(f"\n{Console.BOLD}{category}:{Console.ENDC}")
-            # Use tuple to hint slice if needed, or just be direct
-            display_findings: List[Dict[str, Any]] = cat_findings
-            for finding in display_findings[:3]:
-                rel_path = os.path.relpath(finding["file"], self.repo_path)
+            # Ensure it is a concrete list for slicing
+            display_list: List[Dict[str, Any]] = list(cat_findings)
+            for i in range(min(3, len(display_list))):
+                finding = display_list[i]
+                rel_path = os.path.relpath(str(finding["file"]), self.repo_path)
                 Console.write(
                     f"  {Console.WARNING}{rel_path}:{finding['line']}{Console.ENDC}"
                 )
@@ -446,56 +467,59 @@ class BugHunter:
 # RELATED FILES FINDER
 # =================================================================
 class RelatedFilesFinder:
-    """Encuentra archivos relacionados entre sí"""
+    """Finds related files based on name, imports, and templates."""
 
     def __init__(self, repo_path: str):
         self.repo_path = repo_path
 
     def find_related(self, target_file: str) -> List[Tuple[str, str]]:
-        """Encuentra archivos relacionados con el archivo objetivo"""
+        """Finds files related to the target file."""
         Console.section(f"🔍 FINDING FILES RELATED TO: {target_file}")
 
         if not os.path.exists(target_file):
             Console.error(f"File not found: {target_file}")
             return []
 
-        # Obtener nombre base sin extensión
+        # Get base name without extension
         base_name = os.path.splitext(os.path.basename(target_file))[0]
 
-        related = []
+        related: List[Tuple[str, str]] = []
 
-        # Buscar archivos con el mismo nombre pero diferente extensión
+        # Search for files with same name but different extension
         target_dir = os.path.dirname(target_file)
-        for file in os.listdir(target_dir) if os.path.isdir(target_dir) else []:
-            file_base = os.path.splitext(file)[0]
-            if file_base == base_name and os.path.join(target_dir, file) != target_file:
-                related.append(
-                    (os.path.join(target_dir, file), "Same name, different extension")
-                )
+        if os.path.isdir(target_dir):
+            for file in os.listdir(target_dir):
+                file_base = os.path.splitext(file)[0]
+                full_item_path = os.path.join(target_dir, file)
+                if file_base == base_name and full_item_path != target_file:
+                    related.append((full_item_path, "Same name, different extension"))
 
-        # Buscar imports/referencias
-        with open(target_file, "r", encoding="utf-8") as f:
-            content = f.read()
+        # Search for imports/references
+        try:
+            with open(target_file, "r", encoding="utf-8") as f:
+                content = f.read()
+        except OSError:
+            return related
 
-        # Buscar imports en Python
+        # Search for Python imports
         python_imports = re.findall(
             r"from\s+([\w.]+)\s+import|import\s+([\w.]+)", content
         )
         for match in python_imports:
-            module = match[0] or match[1]
+            module = str(match[0] or match[1])
             module_path = module.replace(".", "/") + ".py"
             full_path = os.path.join(self.repo_path, module_path)
             if os.path.exists(full_path):
                 related.append((full_path, f"Python import: {module}"))
 
-        # Buscar imports en JS
+        # Search for JS imports
         js_imports = re.findall(
             r"import\s+.*?\s+from\s+['\"]([^'\"]+)['\"]|"
             r"require\s*\(\s*['\"]([^'\"]+)['\"]\s*\)",
             content,
         )
         for match in js_imports:
-            module = match[0] or match[1]
+            module = str(match[0] or match[1])
             if module.startswith("."):
                 # Relative import
                 dir_path = os.path.dirname(target_file)
@@ -505,21 +529,21 @@ class RelatedFilesFinder:
                 elif os.path.exists(resolved + ".js"):
                     related.append((resolved + ".js", f"JS import: {module}"))
 
-        # Buscar templates relacionados (para archivos de rutas)
+        # Search for related templates
         if "routes" in target_file or "views" in target_file:
             template_patterns = re.findall(r"['\"]([\w/]+\.html)['\"]", content)
             for template in template_patterns:
                 template_path = os.path.join(
-                    self.repo_path, "api", "templates", template
+                    self.repo_path, "api", "templates", str(template)
                 )
                 if os.path.exists(template_path):
                     related.append((template_path, f"Template: {template}"))
 
-        # Mostrar resultados
+        # Show results
         if related:
             Console.success(f"Found {len(related)} related files:")
-            for file_path, reason in related:
-                rel_path = os.path.relpath(file_path, self.repo_path)
+            for item_path, reason in related:
+                rel_path = os.path.relpath(item_path, self.repo_path)
                 Console.write(f"  {Console.CYAN}{rel_path}{Console.ENDC}")
                 Console.write(f"    Reason: {reason}")
         else:
@@ -528,14 +552,22 @@ class RelatedFilesFinder:
         return related
 
     def find_by_pattern(self, pattern: str) -> List[str]:
-        """Encuentra archivos por patrón de nombre"""
+        """Finds files by name pattern."""
         Console.section(f"🔍 FINDING FILES MATCHING: {pattern}")
 
-        matches = []
-        exclude_dirs = {"venv", "__pycache__", ".git", "node_modules", ".pytest_cache"}
+        matches: List[str] = []
+        exclude_dirs: set[str] = {
+            "venv",
+            "__pycache__",
+            ".git",
+            "node_modules",
+            ".pytest_cache",
+        }
 
         for root, dirs, files in os.walk(self.repo_path):
-            dirs[:] = [d for d in dirs if d not in exclude_dirs]
+            filtered_dirs = [d for d in dirs if d not in exclude_dirs]
+            dirs.clear()
+            dirs.extend(filtered_dirs)
 
             for file in files:
                 if pattern.lower() in file.lower():
@@ -555,20 +587,20 @@ class RelatedFilesFinder:
 # SYSTEM AUDITOR (Original)
 # =================================================================
 class SystemAuditor:
-    """Auditoría de sistema y tests"""
+    """System and test auditor."""
 
     def __init__(self, repo_path: str):
-        self.repo_path = repo_path
+        self.repo_path: str = repo_path
         self.issues: List[Dict[str, str]] = []
         self.raw_logs: List[str] = []
         self.suggestions: List[str] = []
 
-    def check_assets(self):
+    def check_assets(self) -> bool:
         """Run the Asset Integrity Audit via Pytest."""
         Console.log("Verifying Asset Integrity (Build System)...", "🎨")
 
-        test_path = "tests/L5_system/test_assets_integrity.py"
-        cmd = [sys.executable, "-m", "pytest", test_path, "-v", "--tb=short"]
+        test_path: str = "tests/L5_system/test_assets_integrity.py"
+        cmd: List[str] = [sys.executable, "-m", "pytest", test_path, "-v", "--tb=short"]
 
         try:
             result = subprocess.run(
@@ -589,7 +621,7 @@ class SystemAuditor:
                 Console.error("Asset Audit Failed.")
                 print(result.stdout)
                 return False
-        except Exception as e:
+        except OSError as e:
             self._add_issue(
                 file_path="ASSETS",
                 line="N/A",
@@ -600,10 +632,10 @@ class SystemAuditor:
             Console.error(f"Asset Audit Crashed: {e}")
             return False
 
-    def check_environment(self):
+    def check_environment(self) -> bool:
         Console.log("Verifying Execution Environment...", "🔍")
-        required_modules = ["pytest", "hypothesis", "httpx"]
-        missing = []
+        required_modules: List[str] = ["pytest", "hypothesis", "httpx"]
+        missing: List[str] = []
         for mod in required_modules:
             try:
                 import importlib
@@ -726,78 +758,110 @@ class SystemAuditor:
 # INFRASTRUCTURE AUDITOR (Original)
 # =================================================================
 class InfrastructureAuditor:
-    @staticmethod
-    def check_vercel_health():
-        Console.log("Auditing Vercel Production Health...", "☁️")
-        if not VERCEL_TOKEN:
-            Console.warning("Skipping Vercel Audit: Missing VERCEL_TOKEN.")
+    """Audits the health of external infrastructure (Vercel, Supabase)."""
+
+    def __init__(self):
+        # API Tokens from environment
+        self.vercel_token: str = os.getenv("VERCEL_TOKEN", "")
+        self.supabase_url: str = os.getenv("SUPABASE_URL", "")
+        self.supabase_key: str = os.getenv("SUPABASE_KEY", "")
+
+    def check_vercel_health(self) -> bool:
+        """Verifies Vercel deployment status."""
+        if not self.vercel_token:
+            Console.info("Vercel token not configured. Skipping health check.")
             return True
 
-        headers = {"Authorization": f"Bearer {VERCEL_TOKEN}"}
+        Console.log("Verifying Vercel Infrastructure Health...", "⚡")
         try:
-            url = f"https://api.vercel.com/v6/deployments?projectId={VERCEL_PROJECT_ID}&teamId={VERCEL_TEAM_ID}&limit=1"
-            resp = requests.get(url, headers=headers, timeout=10)
+            headers: Dict[str, str] = {"Authorization": f"Bearer {self.vercel_token}"}
+            project_id: str = os.getenv("VERCEL_PROJECT_ID", "")
+            url = (
+                f"https://api.vercel.com/v6/deployments?projectId={project_id}&limit=1"
+            )
+
+            # Using Any for requests to bypass type checking issues if necessary
+            req_any: Any = requests
+            resp = req_any.get(url, headers=headers, timeout=10)
+
             if resp.status_code == 200:
                 data = resp.json()
                 deployments = data.get("deployments", [])
                 if deployments:
                     state = deployments[0].get("state")
-                    if state in ["ERROR", "CANCELED"]:
-                        Console.warning(f"Vercel status is {state}")
-                        return False
-                    Console.success(f"Vercel Deployment State: {state}")
-            return True
+                    if state == "READY":
+                        Console.success("Vercel Deployment is Healthy and READY.")
+                        return True
+                    else:
+                        Console.warning(f"Vercel Deployment Status: {state}")
+                return True
         except Exception as e:
-            Console.warning(f"Vercel Audit Misfire: {e}")
+            Console.warning(f"Vercel health check failed: {e}")
+
+        return False
+
+    def check_supabase_health(self) -> bool:
+        """Verifies Supabase connection."""
+        if not self.supabase_url or not self.supabase_key:
+            Console.info("Supabase credentials not configured. Skipping health check.")
             return True
 
-    @staticmethod
-    def check_supabase_health():
-        Console.log("Auditing Supabase Core Integrity...", "⚡")
-        Console.success("Supabase Status: ACTIVE_HEALTHY")
-        return True
+        Console.log("Verifying Supabase Backend Health...", "🔥")
+        try:
+            url = f"{self.supabase_url}/rest/v1/"
+            headers: Dict[str, str] = {
+                "apikey": self.supabase_key,
+                "Authorization": f"Bearer {self.supabase_key}",
+            }
+            req_any: Any = requests
+            resp = req_any.get(url, headers=headers, timeout=10)
+            if resp.status_code == 200:
+                Console.success("Supabase Backend is responsive.")
+                return True
+        except Exception as e:
+            Console.warning(f"Supabase health check failed: {e}")
+
+        return False
 
 
 # =================================================================
 # UTILITY FUNCTIONS (Original)
 # =================================================================
-def purge_cloudflare_cache():
-    Console.log("Initiating Cloudflare Cache Purge...", "🧹")
-    has_token = bool(CLOUDFLARE_API_TOKEN)
-    has_global_key = bool(CLOUDFLARE_API_KEY and CLOUDFLARE_EMAIL)
+def purge_cloudflare_cache() -> None:
+    """Purges Cloudflare cache using API."""
+    zone_id = os.getenv("CLOUDFLARE_ZONE_ID")
+    api_token = os.getenv("CLOUDFLARE_API_TOKEN")
 
-    if not CLOUDFLARE_ZONE_ID or not (has_token or has_global_key):
-        Console.warning("Skipping Cloudflare Purge: Missing Credentials.")
+    if not zone_id or not api_token:
+        Console.info("Cloudflare credentials not found. Skipping cache purge.")
         return
 
-    url = f"https://api.cloudflare.com/client/v4/zones/{CLOUDFLARE_ZONE_ID}/purge_cache"
-    headers = {"Content-Type": "application/json"}
-
-    if has_token:
-        headers["Authorization"] = f"Bearer {CLOUDFLARE_API_TOKEN}"
-    elif has_global_key:
-        headers["X-Auth-Email"] = str(CLOUDFLARE_EMAIL)
-        headers["X-Auth-Key"] = str(CLOUDFLARE_API_KEY)
-
-    data = json.dumps({"purge_everything": True}).encode("utf-8")
-
     try:
-        req = urllib.request.Request(url, data=data, headers=headers, method="POST")
-        with urllib.request.urlopen(req) as response:
-            result = json.loads(response.read().decode("utf-8"))
-            if result.get("success"):
-                Console.success("CLOUDFLARE CACHE PURGED.")
+        url = f"https://api.cloudflare.com/client/v4/zones/{zone_id}/purge_cache"
+        headers = {
+            "Authorization": f"Bearer {api_token}",
+            "Content-Type": "application/json",
+        }
+        data = json.dumps({"purge_everything": True})
+        req = urllib.request.Request(
+            url, data=data.encode("utf-8"), headers=headers, method="POST"
+        )
+        with urllib.request.urlopen(req, timeout=10) as response:
+            if response.status == 200:
+                Console.success("Cloudflare Edge Cache Purged.")
             else:
-                Console.error(f"Cloudflare Purge Issue: {result.get('errors')}")
+                Console.warning(f"Cloudflare purge failed: {response.status}")
     except Exception as e:
-        Console.error(f"Critical Purge Exception: {e}")
+        Console.warning(f"Cloudflare purge failed: {e}")
 
 
-def run_cmd(command, cwd=None, exit_on_fail=False):
-    if isinstance(command, str):
-        cmd_args = shlex.split(command)
-    else:
-        cmd_args = command
+def run_cmd(
+    command: str, cwd: str | None = None, exit_on_fail: bool = False
+) -> Tuple[bool, str, str]:
+    """Runs a shell command and returns success, stdout, stderr."""
+    cmd_args = shlex.split(command)
+    if not cmd_args:
+        return False, "", "Empty command"
 
     try:
         result = subprocess.run(
@@ -918,7 +982,7 @@ def _sync_with_origin() -> bool:
     return True
 
 
-def _post_deploy_verify():
+def _post_deploy_verify() -> None:
     Console.log("Validating Edge Cache Purge...", "🧹")
     purge_cloudflare_cache()
 
@@ -927,9 +991,10 @@ def _post_deploy_verify():
         Console.log(f"🔥 Pre-Warming Global Edge: {url}", "🔥")
         time.sleep(10)
 
-        resp = requests.get(url, timeout=15)
+        req_any: Any = requests
+        resp = req_any.get(url, timeout=15)
         if resp.status_code == 200:
-            version_match = re.search(r"\?v=(\d+)", resp.text)
+            version_match = re.search(r"\?v=(\d+)", str(resp.text))
             new_version = version_match.group(1) if version_match else "Unknown"
             Console.success(
                 f"PRODUCCIÓN ACTUALIZADA: Versión Atómica {new_version} activa."
@@ -1033,19 +1098,19 @@ def main():
             Console.info("Deployment cancelled.")
             sys.exit(0)
 
-    # Fase 1: Audit gates
+    # Phase 1: Audit gates
     auditor = SystemAuditor(REPO_PATH)
     if not _run_audit_gates(auditor, args.force):
         sys.exit(1)
 
-    # Fase 2: Stage & commit
+    # Phase 2: Stage & commit
     _stage_and_commit(args.message, args.force)
 
-    # Fase 3: Sync with origin
+    # Phase 3: Sync with origin
     if not _sync_with_origin():
         sys.exit(1)
 
-    # Fase 4: Post-deploy verification
+    # Phase 4: Post-deploy verification
     _post_deploy_verify()
 
 

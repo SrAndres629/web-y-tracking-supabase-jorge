@@ -1,0 +1,36 @@
+{
+    "include": [
+        "app",
+        "api/index.py",
+        "main.py",
+        "tests",
+        "git_sync.py"
+    ],
+    "exclude": [
+        "**/node_modules",
+        "**/__pycache__",
+        "venv",
+        ".venv",
+        ".trunk",
+        ".vercel",
+        ".ai",
+        ".gemini",
+        ".agent",
+        "static",
+        "api/templates"
+    ],
+    "venvPath": ".",
+    "venv": "venv",
+    "executionEnvironments": [
+        {
+            "root": ".",
+            "pythonVersion": "3.10",
+            "extraPaths": [
+                "."
+            ]
+        }
+    ],
+    "typeCheckingMode": "basic",
+    "reportMissingImports": true,
+    "reportMissingTypeStubs": false
+}

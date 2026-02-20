@@ -37,3 +37,4 @@ beautifulsoup4>=4.12.0
 typing-extensions>=4.12.0
 pyyaml
 groq
+fastmcp

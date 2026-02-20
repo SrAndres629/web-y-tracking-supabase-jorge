@@ -14,12 +14,49 @@ from __future__ import annotations
 import logging
 import os
 from functools import lru_cache
+from pathlib import Path
 from typing import List, Literal, Optional
 
 from pydantic import Field, validator
 from pydantic_settings import BaseSettings
 
 logger = logging.getLogger(__name__)
+
+
+def _resolve_templates_dirs() -> List[str]:
+    """Resolve template paths using api/templates as single source of truth."""
+    # Use repo root as base
+    project_root = Path(__file__).parent.parent.parent.parent.resolve()
+
+    candidates = []
+    if os.getenv("VERCEL"):
+        candidates.append("/var/task/api/templates")
+        candidates.append("/var/task/templates")
+        candidates.append(str(project_root / "api" / "templates"))
+
+    candidates.append(str(project_root / "api" / "templates"))
+    candidates.append(str(Path.cwd() / "api" / "templates"))
+
+    # Keep only existing directories plus serverless runtime paths on Vercel.
+    is_vercel = bool(os.getenv("VERCEL"))
+    valid_paths = []
+    for p in candidates:
+        if os.path.isdir(p) or (is_vercel and p.startswith("/var/task")):
+            if p not in valid_paths:
+                valid_paths.append(p)
+
+    if not valid_paths:
+        valid_paths = [str(project_root / "api" / "templates")]
+
+    return valid_paths
+
+
+def _resolve_static_dir() -> str:
+    """Resolve static files directory."""
+    project_root = Path(__file__).parent.parent.parent.parent.resolve()
+    if os.getenv("VERCEL"):
+        return str(Path.cwd() / "static")
+    return str(project_root / "static")
 
 
 class DatabaseSettings(BaseSettings):
@@ -204,9 +241,7 @@ class ServerSettings(BaseSettings):
 
     @property
     def is_production(self) -> bool:
-        return (
-            os.getenv("VERCEL") is not None or os.getenv("ENVIRONMENT") == "production"
-        )
+        return os.getenv("VERCEL") is not None or os.getenv("ENVIRONMENT") == "production"
 
 
 class Settings(BaseSettings):
@@ -247,9 +282,220 @@ class Settings(BaseSettings):
     debug: bool = Field(default=False)
 
     @property
+    def system_version(self) -> str:
+        """Alias for Neuro-Vision compatibility."""
+        return self.app_version
+
+    def resolve_tenant(self, tenant_id: Optional[str]) -> str:
+        """Resolve tenant ID to a valid tenant string."""
+        return tenant_id or "default"
+
+    def is_tenant_allowed(self, tenant_id: str) -> bool:
+        """Check if tenant is allowed to perform operations."""
+        return True
+
+    @property
     def whatsapp_url(self) -> str:
         """URL de WhatsApp con número configurado."""
         return "https://wa.me/59164714751"
+
+    @property
+    def templates_dir(self) -> str:
+        """Single source of truth for templates."""
+        dirs = _resolve_templates_dirs()
+        return dirs[0] if dirs else ""
+
+    @property
+    def static_dir(self) -> str:
+        """Single source of truth for static files."""
+        return _resolve_static_dir()
+
+    # =================================================================
+    # 🏛️ Legacy Compatibility Aliases (Flat access)
+    # =================================================================
+    @property
+    def DATABASE_URL(self) -> Optional[str]:
+        return self.db.url
+
+    @DATABASE_URL.setter
+    def DATABASE_URL(self, value: Optional[str]):
+        self.db.url = value
+
+    @property
+    def UPSTASH_REDIS_REST_URL(self) -> Optional[str]:
+        return self.redis.rest_url
+
+    @UPSTASH_REDIS_REST_URL.setter
+    def UPSTASH_REDIS_REST_URL(self, value: Optional[str]):
+        self.redis.rest_url = value
+
+    @property
+    def UPSTASH_REDIS_REST_TOKEN(self) -> Optional[str]:
+        return self.redis.rest_token
+
+    @property
+    def META_PIXEL_ID(self) -> str:
+        return self.meta.pixel_id
+
+    @META_PIXEL_ID.setter
+    def META_PIXEL_ID(self, value: str):
+        self.meta.pixel_id = value
+
+    @property
+    def META_ACCESS_TOKEN(self) -> Optional[str]:
+        return self.meta.access_token
+
+    @META_ACCESS_TOKEN.setter
+    def META_ACCESS_TOKEN(self, value: Optional[str]):
+        self.meta.access_token = value
+
+    @property
+    def TEST_EVENT_CODE(self) -> Optional[str]:
+        return self.meta.test_event_code
+
+    @property
+    def META_SANDBOX_MODE(self) -> bool:
+        return self.meta.sandbox_mode
+
+    @property
+    def meta_api_url(self) -> str:
+        return self.meta.api_url
+
+    @property
+    def ADMIN_KEY(self) -> str:
+        return self.security.admin_key
+
+    @ADMIN_KEY.setter
+    def ADMIN_KEY(self, value: str):
+        self.security.admin_key = value
+
+    @property
+    def TURNSTILE_SECRET_KEY(self) -> Optional[str]:
+        return self.security.turnstile_secret_key
+
+    @TURNSTILE_SECRET_KEY.setter
+    def TURNSTILE_SECRET_KEY(self, value: Optional[str]):
+        self.security.turnstile_secret_key = value
+
+    @property
+    def FLAG_HERO_STYLE(self) -> str:
+        return self.features.hero_style
+
+    @property
+    def FLAG_META_TRACKING(self) -> bool:
+        return self.features.meta_tracking
+
+    @property
+    def FLAG_MAINTENANCE_MODE(self) -> bool:
+        return self.features.maintenance_mode
+
+    @property
+    def FLAG_BOOKING_ENABLED(self) -> bool:
+        return self.features.booking_enabled
+
+    @property
+    def FLAG_SHOW_TESTIMONIALS(self) -> bool:
+        return self.features.show_testimonials
+
+    @property
+    def QSTASH_TOKEN(self) -> Optional[str]:
+        return self.external.qstash_token
+
+    @property
+    def RUDDERSTACK_WRITE_KEY(self) -> Optional[str]:
+        return self.external.rudderstack_write_key
+
+    @property
+    def RUDDERSTACK_DATA_PLANE_URL(self) -> Optional[str]:
+        return self.external.rudderstack_data_plane_url
+
+    @property
+    def rudderstack_enabled(self) -> bool:
+        return bool(self.external.rudderstack_write_key)
+
+    @property
+    def N8N_WEBHOOK_URL(self) -> Optional[str]:
+        return self.external.n8n_webhook_url
+
+    @property
+    def GROQ_API_KEY(self) -> Optional[str]:
+        return self.external.google_api_key
+
+    @property
+    def vercel_url(self) -> Optional[str]:
+        """Vercel environment URL."""
+        return os.getenv("VERCEL_URL")
+
+    @property
+    def FLAG_SHOW_GALLERY(self) -> bool:
+        return self.features.show_gallery
+
+    @property
+    def FLAG_ENABLE_CHAT_WIDGET(self) -> bool:
+        return self.features.enable_chat_widget
+
+    @property
+    def FLAG_CTA_VARIANT(self) -> str:
+        return self.features.cta_variant
+
+    @property
+    def FLAG_ENABLE_HEATMAP(self) -> bool:
+        return self.features.enable_heatmap
+
+    @property
+    def TURNSTILE_SITE_KEY(self) -> str:
+        return self.security.turnstile_site_key
+
+    @property
+    def TEMPLATES_DIR(self) -> str:
+        return self.templates_dir
+
+    @property
+    def TEMPLATES_DIRS(self) -> list[str]:
+        return [self.templates_dir]
+
+    @property
+    def CLARITY_PROJECT_ID(self) -> Optional[str]:
+        return self.observability.clarity_project_id
+
+    @property
+    def GOOGLE_CLIENT_ID(self) -> Optional[str]:
+        return self.external.google_client_id
+
+    @property
+    def BASE_DIR(self) -> str:
+        return str(Path(__file__).parent.parent.parent.parent.resolve())
+
+    @property
+    def redis_enabled(self) -> bool:
+        return self.redis.is_configured
+
+    @property
+    def SENTRY_DSN(self) -> Optional[str]:
+        return self.observability.sentry_dsn
+
+    @property
+    def STATIC_DIR(self) -> str:
+        return self.static_dir
+
+    @property
+    def HOST(self) -> str:
+        return self.server.host
+
+    @property
+    def WHATSAPP_NUMBER(self) -> str:
+        return "59164714751"
+
+    @property
+    def CELERY_BROKER_URL(self) -> Optional[str]:
+        """Legacy Celery broker URL (not actively used in serverless)."""
+        return self.redis.rest_url
+
+    @property
+    def CORS_ALLOWED_ORIGINS(self) -> List[str]:
+        return self.security.cors_origins
+
+    # =================================================================
 
     def validate_critical(self) -> list[str]:
         """

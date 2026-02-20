@@ -14,7 +14,7 @@ import logging
 import time
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +78,7 @@ class EventRateLimiter:
 
     def __init__(self, redis_client=None):
         self.redis = redis_client
-        self.memory_cache: Dict[str, Dict] = {}  # Fallback si no hay Redis
+        self.memory_cache: Dict[str, Dict[str, Any]] = {}  # Fallback si no hay Redis
         self.blocked_ips: Dict[str, float] = {}  # IPs temporalmente bloqueadas
 
     def is_allowed(
@@ -153,9 +153,12 @@ class EventRateLimiter:
             # Memoria local con expiración
             now = time.time()
             # Limpiar entradas viejas
-            for key in list(self.memory_cache.keys()):
-                if self.memory_cache[key].get("expires", 0) < now:
-                    del self.memory_cache[key]
+            expired_keys = [
+                key for key in self.memory_cache
+                if self.memory_cache[key].get("expires", 0) < now
+            ]
+            for key in expired_keys:
+                self.memory_cache.pop(key, None)
 
             return dedup_key in self.memory_cache
 
@@ -183,7 +186,7 @@ class EventRateLimiter:
 
             # Verificar si expiró
             if entry.get("expires", 0) < time.time():
-                del self.memory_cache[key]
+                self.memory_cache.pop(key, None)
                 return 0
 
             return entry.get("count", 0)
@@ -198,9 +201,13 @@ class EventRateLimiter:
         else:
             entry = self.memory_cache.get(key)
             if not entry or entry.get("expires", 0) < time.time():
-                self.memory_cache[key] = {"count": 1, "expires": time.time() + window}
+                self.memory_cache[key] = {
+                    "count": 1, "expires": time.time() + window,
+                }
             else:
-                entry["count"] += 1
+                assert entry is not None
+                current_count: int = int(entry.get("count", 0))
+                entry["count"] = current_count + 1
 
     def _get_timestamp(self, key: str) -> Optional[float]:
         """Obtiene timestamp del último evento"""
@@ -225,7 +232,7 @@ class EventRateLimiter:
 
         # Verificar si el bloqueo expiró (30 min)
         if time.time() - self.blocked_ips[ip] > 1800:
-            del self.blocked_ips[ip]
+            self.blocked_ips.pop(ip, None)
             return False
 
         return True
@@ -235,7 +242,7 @@ class EventRateLimiter:
         self.blocked_ips[ip] = time.time()
         logger.warning(f"🚫 IP {ip} blocked for {duration}s due to suspicious activity")
 
-    def get_stats(self, user_id: Optional[str] = None) -> Dict:
+    def get_stats(self, user_id: Optional[str] = None) -> Dict[str, Any]:
         """Obtiene estadísticas de rate limiting"""
         stats = {
             "blocked_ips": len(self.blocked_ips),
@@ -261,7 +268,7 @@ class EventRateLimiter:
         ]
 
         for key in keys_to_remove:
-            del self.memory_cache[key]
+            self.memory_cache.pop(key, None)
 
         logger.info(f"Rate limits reset for user {user_id}")
 

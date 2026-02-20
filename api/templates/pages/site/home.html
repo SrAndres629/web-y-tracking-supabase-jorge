@@ -1,26 +1,17 @@
 {% extends "layouts/base.html" %}
 {% block extra_head %}
 <!-- LCP Optimization: Preload Hero Image -->
-<link rel="preload" href="/static/assets/images/hero/jorge_hero_premium.webp" as="image" fetchpriority="high">
-{% endblock %}
-
-{% block content %}
-{% include "sections/hero.html" %}
-{% include "sections/process.html" %}
-
-{% if flags.show_gallery %}
-{% include "sections/gallery.html" %}
-{% endif %}
-
-{% if flags.show_testimonials %}
-{% include "sections/testimonials.html" %}
-{% endif %}
-
-{% include "sections/services.html" %}
-{% include "sections/faq.html" %}
-{# {% include "sections/cta_final.html" %} #}
-{% endblock %}
-
-{% block extra_scripts %}
+<link
+  rel="preload"
+  href="{{ url_for('static', path='assets/images/hero/jorge_hero_premium.webp') }}"
+  as="image"
+  fetchpriority="high"
+/>
+{% endblock extra_head %} {% block content %} {% include "sections/hero.html" %}
+{% include "sections/process.html" %} {% if flags.show_gallery %} {% include
+"sections/gallery.html" %} {% endif %} {% if flags.show_testimonials %} {%
+include "sections/testimonials.html" %} {% endif %} {% include
+"sections/services.html" %} {% include "sections/faq.html" %} {# {% include
+"sections/cta_final.html" %} #} {% endblock content %} {% block extra_scripts %}
 <!-- Page-specific scripts only - GSAP/Lenis loaded in base.html -->
-{% endblock %}
+{% endblock extra_scripts %}

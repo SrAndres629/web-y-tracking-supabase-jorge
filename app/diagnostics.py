@@ -53,7 +53,8 @@ def check_database() -> Dict[str, Any]:
             status["backend"] = legacy_database.BACKEND
             with legacy_database.get_cursor() as cur:
                 cur.execute("SELECT version();")
-                v = cur.fetchone()[0]
+                row = cur.fetchone()
+                v = row[0] if row else "Unknown"
                 status["status"] = "ok"
                 status["details"] = v
         else:

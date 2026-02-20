@@ -80,9 +80,7 @@ async def log_consent(request: Request):
     except Exception as e:
         logger.exception("❌ Error logging consent: %s", e)
         # No fallar el request del usuario
-        return JSONResponse(
-            content={"status": "error", "message": str(e)}, status_code=500
-        )
+        return JSONResponse(content={"status": "error", "message": str(e)}, status_code=500)
 
 
 @router.get("/status")

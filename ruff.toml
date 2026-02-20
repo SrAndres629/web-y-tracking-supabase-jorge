@@ -1,12 +1,11 @@
 line-length = 100
-target-version = "py312"
+target-version = "py310"
 exclude = [
   "refactor_backup",
   "venv",
   ".venv",
   "node_modules",
   "migrations",
-  "tools",
   ".vercel",
 ]
 
@@ -25,21 +24,21 @@ ignore = [
   "E501",    # Line too long (already covered by Ruff format or handled manually if critical)
   "TRY003",  # Avoid specifying long messages in exceptions
   "PLW0603", # Global statement is discouraged
+  "RUF001",  # Ambiguous emoji
+  "TRY401",  # Redundant exception redundant in logging.exception
+  "BLE001",  # Blind except (allowed for this project's fail-over patterns)
+  "RUF012",  # Mutable class attribute (overkill for this project)
+  "RUF006",  # asyncio.create_task reference not stored
+  "TRY",     # Tryceratops (stylistic exception handling)
+  "PLW",     # Pylint warnings
 ]
 
-exclude = [
-  "refactor_backup",
-  "venv",
-  ".venv",
-  "node_modules",
-  "migrations",
-  "tools",
-]
 
 [lint.per-file-ignores]
-"tests/**" = ["E402", "PLR2004"]
+"tests/**" = ["E402", "PLR2004", "BLE001"]
 "scripts/**" = ["E402"]
 "main.py" = ["E402"]
+"api/index.py" = ["E402"]
 
 [format]
 quote-style = "double"

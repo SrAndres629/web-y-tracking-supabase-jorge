@@ -7,7 +7,7 @@ import os
 import sqlite3
 import uuid
 from contextlib import contextmanager
-from typing import Any, Dict, Generator, List, Optional, Tuple
+from typing import Any, Dict, Generator, List, Optional, Tuple, Type
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 import app.sql_queries as queries
@@ -62,6 +62,11 @@ class SQLiteCursorWrapper:
         return self.cursor.rowcount
 
     @property
+    def description(self) -> Optional[tuple]:
+        """Returns description of the query result."""
+        return self.cursor.description
+
+    @property
     def lastrowid(self) -> Optional[int]:
         """Returns ID of last inserted row."""
         return self.cursor.lastrowid
@@ -72,8 +77,8 @@ try:
     from psycopg2.extensions import connection as PgConnection
     from psycopg2.extensions import cursor as PgCursor
 except ImportError:
-    PgConnection = Any  # type: ignore
-    PgCursor = Any  # type: ignore
+    from typing import Any as PgConnection  # type: ignore
+    from typing import Any as PgCursor  # type: ignore
 
 try:
     from typing import TypeAlias
@@ -84,13 +89,9 @@ DBConnection: TypeAlias = sqlite3.Connection | PgConnection
 DBCursor: TypeAlias = sqlite3.Cursor | PgCursor | SQLiteCursorWrapper
 
 # DB_ERRORS: Tuple of exceptions for safe catching across backends
-# We use try/except ImportError logic, so we need a common base for typing if needed
-if HAS_POSTGRES:
-    _db_errors = (sqlite3.Error, psycopg2.Error)
-else:
-    _db_errors = (sqlite3.Error, psycopg2.Error)  # type: ignore
-
-DB_ERRORS = _db_errors
+DB_ERRORS: Tuple[Type[Exception], ...] = (
+    (sqlite3.Error, psycopg2.Error) if HAS_POSTGRES else (sqlite3.Error,)
+)
 
 logger = logging.getLogger(__name__)
 
@@ -105,8 +106,7 @@ if settings.DATABASE_URL and HAS_POSTGRES:
     db_url_str = str(settings.DATABASE_URL)
     db_url_clean = db_url_str.strip().lower()
     is_invalid = any(
-        x in db_url_clean
-        for x in ["required", "dsn_here", "none", "production", "placeholder"]
+        x in db_url_clean for x in ["required", "dsn_here", "none", "production", "placeholder"]
     )
 
     if not is_invalid:
@@ -119,7 +119,7 @@ if settings.DATABASE_URL and HAS_POSTGRES:
     else:
         logger.warning(
             "🛡️ Deterministic Guard: detected invalid DSN (%s...). Falling back to SQLite.",
-            str(settings.DATABASE_URL)[:10] if settings.DATABASE_URL else "",
+            str(settings.DATABASE_URL)[:10] if settings.DATABASE_URL else "",  # noqa: E501
         )
         # Logic to append query param could go here, but usually users fix ENV.
 
@@ -184,9 +184,7 @@ def _sanitize_postgres_dsn(raw_url: Optional[str]) -> str:
     unsupported = {"pgbouncer", "connection_limit"}
     filtered = [(k, v) for k, v in query_items if k.lower() not in unsupported]
     clean_query = urlencode(filtered, doseq=True)
-    return urlunsplit(
-        (parsed.scheme, parsed.netloc, parsed.path, clean_query, parsed.fragment)
-    )
+    return urlunsplit((parsed.scheme, parsed.netloc, parsed.path, clean_query, parsed.fragment))
 
 
 def _handle_db_error(conn, e):
@@ -198,9 +196,7 @@ def _handle_db_error(conn, e):
 
     err_msg = str(e).lower()
     if "timeout" in err_msg:
-        logger.error(
-            "🔥 DB ERROR: Connection Timeout. Possible cold start or pooler exhaustion."
-        )
+        logger.error("🔥 DB ERROR: Connection Timeout. Possible cold start or pooler exhaustion.")
     elif "too many connections" in err_msg:
         logger.error("🔥 DB ERROR: Connection Exhaustion. Check pooler settings.")
     elif "password authentication failed" in err_msg:
@@ -213,9 +209,7 @@ def _close_connection(conn):
     if conn:
         try:
             conn.close()
-        except (
-            (sqlite3.Error, psycopg2.Error) if HAS_POSTGRES else sqlite3.Error
-        ) as close_err:
+        except DB_ERRORS as close_err:
             logger.debug("ℹ️ Connection close cleanup: %s", close_err)
 
 
@@ -334,9 +328,7 @@ def _create_core_tables(cf: Dict[str, str]) -> None:
                     )
                 )
                 conn.commit()
-            except (
-                (sqlite3.Error, psycopg2.Error) if HAS_POSTGRES else sqlite3.Error
-            ) as e:
+            except (sqlite3.Error, psycopg2.Error) as e:
                 if conn:
                     conn.rollback()
                 logger.warning("⚠️ Table creation skip/error (%s): %s", q_name, e)
@@ -344,9 +336,7 @@ def _create_core_tables(cf: Dict[str, str]) -> None:
         # Migration for new columns in clients
         try:
             cur = conn.cursor()
-            cur.execute(
-                "ALTER TABLE clients ADD COLUMN IF NOT EXISTS email TEXT UNIQUE"
-            )
+            cur.execute("ALTER TABLE clients ADD COLUMN IF NOT EXISTS email TEXT UNIQUE")
             cur.execute("ALTER TABLE clients ADD COLUMN IF NOT EXISTS company TEXT")
             conn.commit()
         except DB_ERRORS as e:
@@ -408,7 +398,7 @@ def save_emq_score(
         logger.exception("❌ Error saving EMQ score")
 
 
-def get_emq_stats(limit: int = 100) -> List[Dict[str, Any]]:
+def get_emq_stats(limit: int = 100) -> list[dict[str, Any]]:
     """Retrieve EMQ stats for dashboard visualization."""
     query = """
     SELECT event_name, AVG(score) as avg_score, COUNT(*) as count,
@@ -425,9 +415,7 @@ def get_emq_stats(limit: int = 100) -> List[Dict[str, Any]]:
             # Handle cursor.description potentially being None
             if cursor.description:
                 columns = [col[0] for col in cursor.description]
-                results = [
-                    dict(zip(columns, row, strict=False)) for row in cursor.fetchall()
-                ]
+                results = [dict(zip(columns, row, strict=False)) for row in cursor.fetchall()]
             else:
                 results = []
             cursor.close()
@@ -548,17 +536,13 @@ def _run_column_migrations(cur: DBCursor, status_type: str) -> None:
                     )
             else:
                 try:
-                    cur.execute(
-                        f"ALTER TABLE crm_leads ADD COLUMN {col_name} {col_type};"
-                    )
+                    cur.execute(f"ALTER TABLE crm_leads ADD COLUMN {col_name} {col_type};")
                 except sqlite3.Error:
                     pass
                 # Also migrate visitors table for SQLite
                 if col_name in ["email", "phone"]:
                     try:
-                        cur.execute(
-                            f"ALTER TABLE visitors ADD COLUMN {col_name} {col_type};"
-                        )
+                        cur.execute(f"ALTER TABLE visitors ADD COLUMN {col_name} {col_type};")
                     except sqlite3.Error:
                         pass
         except DB_ERRORS:
@@ -586,11 +570,12 @@ def save_visitor(
 
     try:
         with get_cursor() as cur:
+            ua_truncated = user_agent[:500] if user_agent else None
             params = (
                 external_id,
                 fbclid,
                 ip_address,
-                user_agent[:500] if user_agent else None,
+                ua_truncated,
                 source,
                 utm_data.get("utm_source"),
                 utm_data.get("utm_medium"),
@@ -790,8 +775,9 @@ def get_or_create_lead(
                         meta_data.get("name"),
                     ),
                 )
-                lead_id = cur.fetchone()[0]
-                return (str(lead_id), True)
+                row = cur.fetchone()
+                lead_id = str(row[0]) if row else None
+                return (lead_id, True)
             else:
                 new_id = str(uuid.uuid4())
                 cur.execute(
@@ -807,7 +793,7 @@ def get_or_create_lead(
                 )
                 return (new_id, True)
     except DB_ERRORS as e:
-        logger.error("❌ Error creating lead: %s", e)
+        logger.exception("❌ Error creating lead: %s", e)
         return (None, False)
     return (None, False)
 
@@ -878,6 +864,5 @@ def get_visitor_by_id(visitor_id: int) -> Optional[Dict[str, Any]]:
                     "phone": row[6],
                 }
     except DB_ERRORS as e:
-        logger.error("❌ Error buscando visitor %s: %s", visitor_id, e)
-    return None
+        logger.exception("❌ Error buscando visitor %s: %s", visitor_id, e)
     return None

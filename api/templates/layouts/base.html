@@ -1,13 +1,14 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
   <head>
+    <meta name="keywords" content="microblading, jorge aguirre flores, maquillaje permanente, santa cruz, bolivia, belleza, cejas, labios" />
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link
       rel="icon"
       type="image/svg+xml"
-      href="/static/assets/images/branding/luxury_logo.svg?v={{ system_version }}"
+      href="{{ url_for('static', path='assets/images/branding/luxury_logo.svg') }}?v={{ system_version }}"
     />
 
     <!-- 🛡️ GLOBAL CACHE INVALIDATION (Diamond Standard) -->
@@ -23,14 +24,17 @@
     <!-- Theme Bridge: Unificación Luxury ↔ Neuro-Vision (Async) -->
     <link
       rel="preload"
-      href="/static/design-system/tokens/theme-bridge.css?v={{ system_version }}"
+      href="{{ url_for('static', path='design-system/tokens/theme-bridge.css') }}?v={{ system_version }}"
       as="style"
-      onload="this.onload=null;this.rel='stylesheet'"
+      onload="
+        this.onload = null;
+        this.rel = 'stylesheet';
+      "
     />
     <noscript>
       <link
         rel="stylesheet"
-        href="/static/design-system/tokens/theme-bridge.css?v={{ system_version }}"
+        href="{{ url_for('static', path='design-system/tokens/theme-bridge.css') }}?v={{ system_version }}"
       />
     </noscript>
 
@@ -45,7 +49,7 @@
     <!-- SEO Core Tags (Dynamic Silicon Valley Hub) -->
     <title>
       {% block title %}{{ seo.title if seo and seo.title else "Jorge Aguirre
-      Flores | Maquillaje Permanente en Santa Cruz" }}{% endblock %}
+      Flores | Maquillaje Permanente en Santa Cruz" }}{% endblock title %}
     </title>
     {% block meta_tags %}
     <meta
@@ -98,11 +102,11 @@
       name="twitter:image"
       content="{{ seo.og_image if seo and seo.og_image else 'https://jorgeaguirreflores.com/static/assets/images/meta/og-image.webp' }}"
     />
-    {% endblock %}
+    {% endblock meta_tags %}
 
     <!-- Semantic Data (JSON-LD) -->
     {% if seo and seo.json_ld %} {{ seo.json_ld | safe }} {% endif %} {% block
-    extra_schema %}{% endblock %}
+    extra_schema %}{% endblock extra_schema %}
 
     <!-- Cloudflare Zaraz handles Meta Pixel (Auto-Injected) -->
     <!-- End Meta Pixel -->
@@ -133,15 +137,51 @@
         overflow-x: hidden;
       }
       /* NAV — prevents unstyled nav links */
-      nav { position:fixed; top:0; left:0; right:0; z-index:50; padding:1rem 2rem; background:rgba(5,5,5,0.8); backdrop-filter:blur(10px); }
-      nav .container { display:flex; justify-content:space-between; align-items:center; }
-      nav ul { display:none; }
-      @media(min-width:768px){ nav ul { display:flex; gap:2rem; } }
-      #mobileMenu { display:none; }
+      nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 50;
+        padding: 1rem 2rem;
+        background: rgba(5, 5, 5, 0.8);
+        backdrop-filter: blur(10px);
+      }
+      nav .container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      nav ul {
+        display: none;
+      }
+      @media (min-width: 768px) {
+        nav ul {
+          display: flex;
+          gap: 2rem;
+        }
+      }
+      #mobileMenu {
+        display: none;
+      }
       /* HERO — prevents unstyled hero */
-      header { min-height:100vh; display:flex; align-items:center; justify-content:center; position:relative; }
-      header .container { display:grid; gap:3rem; align-items:center; }
-      @media(min-width:768px){ header .container { grid-template-columns:1fr 1fr; } }
+      header {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+      header .container {
+        display: grid;
+        gap: 3rem;
+        align-items: center;
+      }
+      @media (min-width: 768px) {
+        header .container {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
       .text-gradient-gold {
         background: linear-gradient(135deg, var(--gold) 0%, #e5c585 100%);
         -webkit-background-clip: text;
@@ -149,34 +189,89 @@
         background-clip: text;
       }
       .btn-primary {
-        display:inline-flex; align-items:center; justify-content:center; gap:0.5rem;
-        padding:0.75rem 2rem; font-weight:700; text-decoration:none; border-radius:9999px;
-        background:linear-gradient(135deg,var(--gold) 0%,#e5c585 100%); color:var(--bg);
-        text-transform:uppercase; letter-spacing:0.05em; font-size:0.875rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.75rem 2rem;
+        font-weight: 700;
+        text-decoration: none;
+        border-radius: 9999px;
+        background: linear-gradient(135deg, var(--gold) 0%, #e5c585 100%);
+        color: var(--bg);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 0.875rem;
       }
       /* SECTION GRID — prevents stacked cards on desktop */
-      .grid { display:grid; gap:2rem; }
-      @media(min-width:768px){ .md\:grid-cols-2 { grid-template-columns:repeat(2,minmax(0,1fr)); } .md\:grid-cols-3 { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+      .grid {
+        display: grid;
+        gap: 2rem;
+      }
+      @media (min-width: 768px) {
+        .md\:grid-cols-2 {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .md\:grid-cols-3 {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+      }
       /* CARD-GLASS — prevents transparent unstyled cards */
-      .card-glass { position:relative; padding:2rem; border-radius:1rem; border:1px solid rgba(255,255,255,0.05); background:rgba(255,255,255,0.05); overflow:hidden; }
+      .card-glass {
+        position: relative;
+        padding: 2rem;
+        border-radius: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        background: rgba(255, 255, 255, 0.05);
+        overflow: hidden;
+      }
       /* HIDDEN utility — prevents elements that should be hidden on mobile from showing */
-      .hidden { display:none !important; }
-      @media(min-width:768px){ .md\:hidden { display:none !important; } .md\:flex { display:flex; } .md\:block { display:block; } }
+      .hidden {
+        display: none !important;
+      }
+      @media (min-width: 768px) {
+        .md\:hidden {
+          display: none !important;
+        }
+        .md\:flex {
+          display: flex;
+        }
+        .md\:block {
+          display: block;
+        }
+      }
       /* TEXT BASE — prevent blue links */
-      a { color: inherit; text-decoration: none; }
-      img { max-width:100%; height:auto; }
-      .skip-link { position:absolute; top:-40px; left:0; background:var(--gold); color:var(--bg); padding:8px; z-index:100; }
-      .skip-link:focus { top:0; }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      img {
+        max-width: 100%;
+        height: auto;
+      }
+      .skip-link {
+        position: absolute;
+        top: -40px;
+        left: 0;
+        background: var(--gold);
+        color: var(--bg);
+        padding: 8px;
+        z-index: 100;
+      }
+      .skip-link:focus {
+        top: 0;
+      }
       @media (max-width: 768px) {
-        a, button { min-height: 44px; min-width: 44px; }
+        a,
+        button {
+          min-height: 44px;
+          min-width: 44px;
+        }
       }
     </style>
 
     <!-- Main CSS: render-blocking (47KB minified — acceptable for anti-FOUC) -->
-    <link
-      rel="stylesheet"
-      href="/static/dist/css/app.min.css?v={{ system_version }}"
-    />
+    <link rel="stylesheet" href="{{ url_for('static', path='dist/css/app.min.css') }}?v={{ system_version }}" />
 
     <!-- Google Fonts + Icons (Async - Anti-FOUC) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -186,7 +281,10 @@
       rel="preload"
       href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap"
       as="style"
-      onload="this.onload=null;this.rel='stylesheet'"
+      onload="
+        this.onload = null;
+        this.rel = 'stylesheet';
+      "
     />
     <noscript>
       <link
@@ -308,7 +406,7 @@
     {% endif %}
     <!-- End Google One Tap -->
 
-    {% block extra_head %}{% endblock %}
+    {% block extra_head %}{% endblock extra_head %}
 
     <!-- Dynamic Configuration (Server-side rendered data) -->
     {# Transform services list to dict indexed by id for frontend tracking #}
@@ -354,7 +452,7 @@
       })();
     </script>
 
-    {% block schema %}{% endblock %}
+    {% block schema %}{% endblock schema %}
   </head>
 
   <body
@@ -389,13 +487,15 @@
     </noscript>
 
     <!-- Navigation -->
-    {% include 'components/navbar.html' ignore missing %}
+    {% include "components/navbar.html" ignore missing %}
 
     <!-- Main Content -->
-    <main id="main-content" role="main">{% block content %}{% endblock %}</main>
+    <main id="main-content" role="main">
+      {% block content %}{% endblock content %}
+    </main>
 
     <!-- Footer -->
-    {% include 'components/footer.html' ignore missing %}
+    {% include "components/footer.html" ignore missing %}
 
     <!-- Global Scripts (Atomic Architecture v4.0 - ES Modules) -->
     <!-- ✅ ES Modules para siempre tener código actualizado -->
@@ -470,7 +570,7 @@
           );
       }
     </script>
-    {% block extra_scripts %}{% endblock %}
+    {% block extra_scripts %}{% endblock extra_scripts %}
     <!-- Vercel Services (Updated) -->
     <script>
       window.va =

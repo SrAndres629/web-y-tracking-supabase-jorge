@@ -1,1 +1,0 @@
-minetrass los problemas no queden en 0 y git sincronizar no funcione correctamente con todos los test aprovado sigue usando tus mcp y tus skills y tus script para solucionar todos los problemas de forma inteligente ecomomizando tus tokens

@@ -47,9 +47,7 @@ class TrackEventRequest(BaseModel):
     """
 
     event_name: str = Field(..., description="Nombre del evento")
-    external_id: str = Field(
-        ..., description="ID del visitante", min_length=8, max_length=64
-    )
+    external_id: str = Field(..., description="ID del visitante", min_length=8, max_length=64)
     source_url: str = Field(..., description="URL donde ocurrió el evento")
 
     # Facebook tracking
@@ -57,9 +55,7 @@ class TrackEventRequest(BaseModel):
     fbp: Optional[str] = Field(default=None, description="Facebook Browser ID")
 
     # Datos personalizados
-    custom_data: Dict[str, Any] = Field(
-        default_factory=dict, description="Datos adicionales"
-    )
+    custom_data: Dict[str, Any] = Field(default_factory=dict, description="Datos adicionales")
 
     # UTM params
     utm_source: Optional[str] = Field(default=None)
@@ -69,9 +65,7 @@ class TrackEventRequest(BaseModel):
     utm_content: Optional[str] = Field(default=None)
 
     # Seguridad
-    turnstile_token: Optional[str] = Field(
-        default=None, description="Cloudflare Turnstile token"
-    )
+    turnstile_token: Optional[str] = Field(default=None, description="Cloudflare Turnstile token")
 
     @validator("event_name")
     @classmethod

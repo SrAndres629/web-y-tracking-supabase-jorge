@@ -29,10 +29,7 @@ class LegacyRedisCache:
             try:
                 from upstash_redis import Redis
 
-                if (
-                    settings.UPSTASH_REDIS_REST_URL
-                    and settings.UPSTASH_REDIS_REST_TOKEN
-                ):
+                if settings.UPSTASH_REDIS_REST_URL and settings.UPSTASH_REDIS_REST_TOKEN:
                     self._client = Redis(
                         url=settings.UPSTASH_REDIS_REST_URL,
                         token=settings.UPSTASH_REDIS_REST_TOKEN,
@@ -77,9 +74,7 @@ class LegacyRedisCache:
 
 redis_cache = LegacyRedisCache()
 
-REDIS_ENABLED = bool(
-    settings.UPSTASH_REDIS_REST_URL and settings.UPSTASH_REDIS_REST_TOKEN
-)
+REDIS_ENABLED = bool(settings.UPSTASH_REDIS_REST_URL and settings.UPSTASH_REDIS_REST_TOKEN)
 
 
 # In-memory fallback for dedup & visitor cache
@@ -87,9 +82,7 @@ _memory_cache: Dict[str, float] = {}
 _visitor_cache: Dict[str, Dict[str, Any]] = {}
 
 
-def deduplicate_event(
-    event_id: str, event_name: str = "event", ttl_hours: int = 24
-) -> bool:
+def deduplicate_event(event_id: str, event_name: str = "event", ttl_hours: int = 24) -> bool:
     """
     Returns True if event is unique (not seen), False if duplicate.
     """
@@ -102,9 +95,7 @@ def deduplicate_event(
     return True
 
 
-def cache_visitor_data(
-    external_id: str, data: Dict[str, Any], ttl_hours: int = 24
-) -> None:
+def cache_visitor_data(external_id: str, data: Dict[str, Any], ttl_hours: int = 24) -> None:
     """Cache visitor data for quick identity resolution."""
     _visitor_cache[external_id] = {
         "data": data,
@@ -133,6 +124,6 @@ def redis_health_check() -> Dict[str, Any]:
             redis_cache.client.ping()
             return {"status": "ok"}
     except Exception as e:
-        logger.error("Redis health check failed: %s", e)
+        logger.exception("Redis health check failed: %s", e)
         return {"status": "error", "message": str(e)}
     return {"status": "unknown"}
