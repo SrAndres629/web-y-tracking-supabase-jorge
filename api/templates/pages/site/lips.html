@@ -1,28 +1,93 @@
 {% extends "layouts/service_base.html" %}
 
 {% block service_content %}
-<section class="py-24 bg-transparent border-t border-white/5">
-    <div class="container mx-auto px-6">
-        <div class="grid md:grid-cols-2 gap-20 items-center">
-            <div data-aos="fade-right">
-                <h2 class="font-serif text-4xl text-white mb-8">Labios de <span class="text-luxury-gold italic">Seda</span></h2>
-                <p class="text-gray-400 mb-10 font-light leading-relaxed">
-                    Nuestra técnica Full Lip Velvet no solo aporta color; restaura la simetría perdida y define el arco de cupido con una naturalidad asombrosa.
-                </p>
-                <div class="p-8 rounded-[2rem] border border-luxury-gold/20 bg-luxury-gold/5 backdrop-blur-xl">
-                    <h4 class="text-luxury-gold font-bold mb-4 uppercase tracking-[0.2em] text-[10px]">Protocolo de Color</h4>
-                    <p class="text-gray-300 text-sm font-light italic">
-                        "Personalizamos cada mezcla cromática basándonos en tu subtono de piel para garantizar un envejecimiento del pigmento hacia un rubor saludable, nunca hacia tonos extraños."
-                    </p>
+<!-- Elite Detail Section -->
+<section class="bg-background-dark py-32 px-6 overflow-hidden border-t border-white/5">
+    <div class="max-w-7xl mx-auto">
+        <div class="grid lg:grid-cols-2 gap-20 items-center">
+            
+            <!-- Left Column: Content -->
+            <div class="space-y-16" data-aos="fade-right">
+                <header>
+                    <h2 class="font-serif text-luxury-gold text-4xl md:text-5xl lg:text-6xl font-normal leading-tight mb-4">
+                        Labios De <span class="italic text-white">Seda</span>
+                    </h2>
+                    <div class="h-1 w-24 bg-luxury-gold/50 rounded-full"></div>
+                </header>
+
+                <div class="space-y-12">
+                    <!-- Feature 1 -->
+                    <div class="flex gap-6 group">
+                        <div class="flex-shrink-0">
+                            <div class="w-14 h-14 rounded-lg bg-luxury-gold/5 border border-luxury-gold/20 flex items-center justify-center text-luxury-gold group-hover:scale-110 transition-transform shadow-glow-gold/10 backdrop-blur-md">
+                                <i class="fas fa-kiss text-2xl"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-white text-2xl font-bold mb-3 font-serif italic">Restauración de Simetría</h3>
+                            <p class="text-white/60 leading-relaxed font-light text-base md:text-lg">
+                                Nuestra técnica Full Lip Velvet recobra el volumen óptico perdido mediante un diseño anatómico del arco de cupido. No es solo un relleno de color; es un rediseño que exalta tus facciones de forma indetectable.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Feature 2 -->
+                    <div class="flex gap-6 group">
+                        <div class="flex-shrink-0">
+                            <div class="w-14 h-14 rounded-lg bg-luxury-gold/5 border border-luxury-gold/20 flex items-center justify-center text-luxury-gold group-hover:scale-110 transition-transform shadow-glow-gold/10 backdrop-blur-md">
+                                <i class="fas fa-palette text-2xl"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-white text-2xl font-bold mb-3 font-serif italic">Protocolo Cromatico Personal</h3>
+                            <p class="text-white/60 leading-relaxed font-light text-base md:text-lg">
+                                Mezcla pigmentaria formulada en tiempo real según la escala Fitzpatrick y tu subtono de piel exacto. El resultado final asegura un envejecimiento del pigmento hacia un delicado rubor orgánico en 100% de los casos.
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="relative" data-aos="fade-left">
-                <div class="absolute -inset-4 bg-luxury-gold/10 blur-3xl rounded-full"></div>
-                <div class="relative border border-white/10 rounded-[3rem] overflow-hidden aspect-square">
-                    <img src="{{ url_for('static', path='assets/images/services/lips/after/lips_after_aligned.webp') }}" class="w-full h-full object-cover" alt="Detalle Labios" width="800" height="800">
+
+            <!-- Right Column: Image Container -->
+            <div class="relative" data-aos="fade-left" data-aos-delay="200">
+                <div class="absolute -top-20 -right-20 w-80 h-80 bg-luxury-gold/10 rounded-full blur-[100px] pointer-events-none"></div>
+                <div class="absolute -bottom-20 -left-20 w-80 h-80 bg-luxury-gold/5 rounded-full blur-[100px] pointer-events-none"></div>
+
+                <div class="relative bg-luxury-gold/5 border border-luxury-gold/20 p-4 rounded-xl transform lg:rotate-3 hover:rotate-0 transition-transform duration-700 shadow-2xl backdrop-blur-md">
+                    <div class="relative overflow-hidden rounded-lg aspect-square">
+                        <img 
+                            src="{{ url_for('static', path='assets/images/services/lips/after/lips_after_aligned.webp') }}?v={{ system_version }}"
+                            alt="Resultados Lip Blush Permanente" 
+                            class="w-full h-full object-cover grayscale-[5%] contrast-[1.1] hover:scale-110 transition-transform duration-1000"
+                            loading="lazy"
+                            width="800"
+                            height="800">
+                        
+                        <div class="absolute bottom-6 left-6 right-6 p-4 bg-black/60 backdrop-blur-md border border-white/10 rounded-lg">
+                            <div class="flex justify-between items-center">
+                                <span class="text-[10px] uppercase tracking-[0.3em] text-white/70 font-black">Full Lip Velvet</span>
+                                <span class="text-[10px] uppercase tracking-[0.3em] text-luxury-gold font-black"><i class="fas fa-gem mr-1"></i> Excelencia Elite</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
+
         </div>
     </div>
 </section>
+
+<!-- Quote Section -->
+<section class="bg-background-dark py-20 border-t border-white/5">
+    <div class="max-w-4xl mx-auto px-6 text-center" data-aos="fade-up">
+        <i class="fas fa-quote-left text-luxury-gold/40 text-5xl mb-8"></i>
+        <p class="font-serif italic text-white/90 text-2xl md:text-3xl leading-relaxed">
+            "Labios perfectos no significan color artificial; significan arquitectura restaurada con la naturalidad de un rubor de juventud."
+        </p>
+    </div>
+</section>
 {% endblock service_content %}
+
+{% block service_gallery %}
+    {% include "sections/gallery.html" %}
+{% endblock service_gallery %}

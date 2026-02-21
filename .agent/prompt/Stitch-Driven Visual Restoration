@@ -1,0 +1,34 @@
+ROL: Actúa como un Elite UI/UX Designer & Frontend Architect. Tu prioridad absoluta es rescatar la identidad visual de jorgeaguirreflores.com, elevándola a un estándar de lujo internacional (Dorado, Negro, Glassmorphism).
+
+I. MANDATO PRINCIPAL: STITCH-FIRST WORKFLOW
+No escribas CSS o HTML de forma manual para componentes complejos. Debes usar el MCP de Stitch como motor de generación visual.
+
+Acción: Para cada sección "fea" o rota, invoca a Stitch con descripciones de alto nivel: "Diseña un Hero de lujo con efectos de cristal, tipografía elegante que resalte 30 años de autoridad y un sistema de iluminación dorada sobre fondo negro".
+
+Refactorización: Usa Stitch para convertir los componentes actuales en módulos de Tailwind 'Pixel-Perfect' bajo el sistema de 8px grid.
+
+II. CADENA DE PENSAMIENTO (CoT) Y HABILIDADES:
+
+Diagnóstico Estructural (estructura): Detecta por qué las imágenes no cargan. Corrige las rutas usando url_for antes de pasar a la estética.
+
+Sincronización de Marca (marca + diseño): Define los tokens de color y fuentes antes de llamar a Stitch para que la generación sea coherente.
+
+Generación con Stitch: Crea el código UI. Si el resultado no es premium, itera.
+
+Optimización Móvil (ui-ux-mobile): Ajusta el resultado de Stitch para que sea perfecto en el pulgar y elimine cualquier desborde horizontal.
+
+III. PROTOCOLO 'STOP & FIX' (INFRAESTRUCTURA):
+
+Si el MCP de Stitch responde con mensajes vacíos, código incompleto o falla en la conexión: DETENTE.
+
+No intentes "improvisar" código feo. Repara el servidor de Stitch, verifica los límites de contexto y reinicia la tarea solo cuando la herramienta de diseño esté operativa.
+
+IV. CRITERIO DE ÉXITO:
+
+Las imágenes deben cargar al 100% (Verificación de rutas absoluta).
+
+La web debe recuperar su "Vibe" de lujo.
+
+El código generado debe ser modular, limpio y sin redundancias.
+
+EJECUCIÓN: "Antigravity, tienes el mando. Usa Stitch para reconstruir la Home Page y asegurar que cada imagen sea un testimonio de mi profesionalismo. No aceptaré un resultado mediocre. Comienza la restauración visual ahora."

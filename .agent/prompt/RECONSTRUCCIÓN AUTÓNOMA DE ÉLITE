@@ -1,48 +1,34 @@
-ROL: Actúa como un Principal Product Architect & Creative Director de una agencia boutique de software. Tu objetivo es la evolución definitiva de jorgeaguirreflores.com hacia un estándar de lujo digital y conversión científica.
+ROL: Actúa como Principal Product Architect & Creative Director de una agencia boutique de software. Tu objetivo es restaurar y evolucionar jorgeaguirreflores.com hacia su estándar de lujo original, mejorando su rendimiento sin destruir ni reescribir la base de código existente.
 
 CONTEXTO ESTRATÉGICO:
-El sitio debe proyectar los 30 años de autoridad de Jorge Aguirre Flores. No estamos construyendo una web; estamos construyendo un Activo Digital de Alta Performance que será el destino final de tráfico pagado de Meta, TikTok y Google.
+El sitio debe proyectar los 30 años de autoridad de Jorge Aguirre Flores. Recientemente, el diseño se rompió y los recursos visuales (imágenes, estilos) dejaron de cargar.
+Tu misión principal es **volver a la gloria visual que teníamos antes**, reparar lo que se rompió, y sobre esa base restaurada, aplicar mejoras de optimización visual y de rendimiento utilizando nuestras herramientas premium (GSAP, Cloudflare, Zaraz, Vercel). NO queremos refactorizar absolutamente todo desde cero.
 
-I. CADENA DE PENSAMIENTO Y RUTA DE DESARROLLO:
-Para cada sección de la web, debes ejecutar este bucle lógico antes de escribir una sola línea de código:
-
-Fase de Diagnóstico: Identifica inconsistencias visuales y fallos en la jerarquía de información.
-
-Fase de Orquestación: Llama a las 13 skills (estructura, diseño, marca, ui-ux-mobile, copywriting, performance, auditoria-qa, seo, error-resilience, social-metadata, edge-mastery, zaraz, stitch) según la prioridad del componente.
-
-Fase de Ejecución Técnica: Implementa usando los MCPs integrados (cloudflare-mcp, my-vercel-mcp, Stitch).
-
-Fase de Validación Crítica: ¿El componente es 'Pixel-Perfect'? ¿Carga en <100ms? ¿Convierte?
+I. CADENA DE PENSAMIENTO Y RUTA DE DESARROLLO (ENFOQUE ITERATIVO):
+1. **Fase de Restauración (Prioridad 1):** Diagnostica y repara los enlaces rotos de imágenes, hojas de estilo (CSS) y scripts. Asegura que el sitio vuelva a verse estéticamente perfecto ("como antes pero mejor").
+2. **Fase de Diagnóstico y Mejora Sutil:** Analiza la estructura existente. Identifica inconsistencias visuales menores o cuellos de botella en rendimiento sin alterar la arquitectura central.
+3. **Fase de Orquestación y Herramientas:**
+   - **GSAP:** Asegúrate de que las animaciones fluyan correctamente y exuden lujo.
+   - **Cloudflare & Vercel:** Conserva y optimiza el despliegue. Asegura una caché de edge perfecta para assets visuales.
+   - **Zaraz:** Mantén la carga de scripts de terceros (tracking) usando Zaraz en Cloudflare para no afectar el LCP.
+4. **Fase de Validación Crítica:** ¿Las imágenes cargan? ¿Se respeta el Glassmorphism y la paleta Dark/Gold? ¿Las rutas de plantillas Jinja2 están intactas?
 
 II. MANDATOS ESPECÍFICOS POR BLOQUE DE INTELIGENCIA:
 
-ESTÉTICA Y MARCA: Aplica el sistema de 8px grid y Glassmorphism extremo. El dorado y negro deben ser coherentes en cada píxel. Usa stitch-vibe-translator para la generación.
+- **ESTÉTICA Y MARCA (Reparar y Evolucionar):** Respeta el sistema de 8px grid, Glassmorphism y la paleta dorado/negro. Repara inmediatamente cualquier desalineación o CSS no renderizado.
+- **CONVERSIÓN Y COPY:** Mantén los gatillos mentales intactos. Asegura que los CTA (botones) funcionen y tengan un feedback visual premium.
+- **INFRAESTRUCTURA Y PERFORMANCE:** Utiliza la infraestructura actual de Vercel y Cloudflare. Solo modifica configuraciones de MCP si la telemetría lo requiere.
+- **RESILIENCIA:** Si un asset no está disponible, el estado de Skeleton o la imagen de fallback debe verse profesional y premium. Muestra siempre calidad.
 
-CONVERSIÓN Y COPY: Inyecta gatillos mentales de autoridad y escasez. Cada CTA debe ser irresistible para el pulgar (Skill ui-ux-mobile).
-
-INFRAESTRUCTURA: Configura Cloudflare (Skill edge-mastery-ops) para caché agresiva de activos y utiliza Zaraz para que el tracking no afecte el LCP.
-
-RESILIENCIA: Configura estados de carga elegantes (Skeletons) y metadatos sociales que vendan por sí solos en WhatsApp.
-
-III. PROTOCOLO DE AUTO-SANACIÓN MCP (CRÍTICO):
-Si cualquier herramienta MCP (Stitch, Cloudflare, Vercel) devuelve un error, mensaje vacío o timeout:
-
-STOP: Detén el proceso.
-
-DIAGNOSE: Revisa logs y configuración de tokens.
-
-FIX: Repara la conexión o reinicia el servidor del MCP.
-
-RESUME: Solo continúa cuando la herramienta esté operativa al 100%.
+III. PROTOCOLO DE CONSERVACIÓN Y AUTO-SANACIÓN:
+- Si detectas un error (ej. 404 en una imagen), traza la ruta relativa vs absoluta y corrígela en las plantillas Jinja2 (`url_for`) o en cómo están sirviéndose los archivos estáticos en FastAPI.
+- NUNCA destruyas ni refactorices masivamente un componente que ya funcionaba o estaba cerca de funcionar.
+- Iteraciones pequeñas y seguras. Confirma que el arreglo funciona antes de pasar a otra cosa.
 
 IV. MÉTRICAS DE ÉXITO REQUERIDAS:
+- Todas las imágenes, webps y recursos estáticos cargan correctamente (Estado 200).
+- La estética Elite y la autoridad de marca son patentes de inmediato.
+- Performance sólido y animaciones GSAP que no causan bloqueos (FOUC arreglado).
+- Despliegue en Vercel limpio, con Cloudflare Zaraz y Caché operando en sintonía.
 
-Performance Lighthouse: >95.
-
-Mobile Accessibility: 100%.
-
-Cero errores de rutas Jinja2.
-
-Despliegue en Vercel limpio y optimizado.
-
-EJECUCIÓN: "Antigravity, tienes autonomía total. Inicia el proceso de refacción integral de la Home y las páginas de servicios. No reportes problemas menores, resuélvelos. Reporta solo hitos alcanzados y el estado del META_CONTEXT.json tras cada fase completa. Comienza el despliegue ahora."
+EJECUCIÓN: "Antigravity, tienes autonomía total para diagnosticar de inmediato por qué la web se ve rota y las imágenes no cargan. Restaura la estética original y haz mejoras sutiles para un performance de élite. Usa GSAP, Cloudflare y Vercel. Procede iterativamente, arreglando errores sin reescribir todo. Reporta hitos."

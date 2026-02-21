@@ -1,43 +1,105 @@
 {% extends "layouts/service_base.html" %}
 
-{% block service_gallery %}
-    {% include "sections/gallery.html" %}
-{% endblock %}
-
 {% block service_content %}
-<section class="py-24 bg-transparent border-t border-white/5">
-    <div class="container mx-auto px-6">
-        <div class="grid md:grid-cols-2 gap-20 items-center">
-            <div data-aos="fade-right">
-                <h2 class="font-serif text-4xl text-white mb-8">La Ciencia Detrás de la <span class="text-luxury-gold italic">Perfección</span></h2>
-                <div class="space-y-8">
-                    <div class="flex gap-6">
-                        <div class="w-12 h-12 rounded-full bg-luxury-gold/10 flex items-center justify-center shrink-0">
-                            <i class="fas fa-microscope text-luxury-gold"></i>
+<!-- The Science of Perfection Section (Stitch Elite) -->
+<section class="bg-background-dark py-32 px-6 overflow-hidden border-t border-white/5">
+    <div class="max-w-7xl mx-auto">
+        <div class="grid lg:grid-cols-2 gap-20 items-center">
+            
+            <!-- Left Column: Content -->
+            <div class="space-y-16" data-aos="fade-right">
+                <header>
+                    <h2 class="font-serif text-luxury-gold text-4xl md:text-5xl lg:text-6xl font-normal leading-tight mb-4">
+                        La Ciencia De La <span class="italic text-white">Perfección</span>
+                    </h2>
+                    <div class="h-1 w-24 bg-luxury-gold/50 rounded-full"></div>
+                </header>
+
+                <div class="space-y-12">
+                    <!-- Feature 1 -->
+                    <div class="flex gap-6 group">
+                        <div class="flex-shrink-0">
+                            <div class="w-14 h-14 rounded-lg bg-luxury-gold/5 border border-luxury-gold/20 flex items-center justify-center text-luxury-gold group-hover:scale-110 transition-transform shadow-glow-gold/10 backdrop-blur-md">
+                                <i class="fas fa-drafting-compass text-2xl"></i>
+                            </div>
                         </div>
                         <div>
-                            <h4 class="text-white font-bold mb-2 uppercase tracking-widest text-xs">Visajismo Avanzado</h4>
-                            <p class="text-gray-400 font-light text-sm">Calculamos la proporción áurea de tu rostro para determinar el arco y grosor exacto que rejuvenece tu mirada.</p>
+                            <h3 class="text-white text-2xl font-bold mb-3 font-serif italic">Visagismo Avanzado</h3>
+                            <p class="text-white/60 leading-relaxed font-light text-base md:text-lg">
+                                Calculamos la proporción áurea de tu rostro empleando mapeo digital milimétrico. Cada trazo es diseñado para complementar la estructura ósea, garantizando una simetría perfecta que rejuvenece la mirada de forma innata.
+                            </p>
                         </div>
                     </div>
-                    <div class="flex gap-6">
-                        <div class="w-12 h-12 rounded-full bg-luxury-gold/10 flex items-center justify-center shrink-0">
-                            <i class="fas fa-vial text-luxury-gold"></i>
+
+                    <!-- Feature 2 -->
+                    <div class="flex gap-6 group">
+                        <div class="flex-shrink-0">
+                            <div class="w-14 h-14 rounded-lg bg-luxury-gold/5 border border-luxury-gold/20 flex items-center justify-center text-luxury-gold group-hover:scale-110 transition-transform shadow-glow-gold/10 backdrop-blur-md">
+                                <i class="fas fa-flask text-2xl"></i>
+                            </div>
                         </div>
                         <div>
-                            <h4 class="text-white font-bold mb-2 uppercase tracking-widest text-xs">Pigmentos Biocompatibles</h4>
-                            <p class="text-gray-400 font-light text-sm">Utilizamos pigmentos de grado médico que no cambian a tonos rojizos o grisáceos con el tiempo.</p>
+                            <h3 class="text-white text-2xl font-bold mb-3 font-serif italic">Pigmentos Biocompatibles</h3>
+                            <p class="text-white/60 leading-relaxed font-light text-base md:text-lg">
+                                Utilización exclusiva de paletas orgánicas de grado clínico HD. Nuestra formulación de lujo asegura una retención de color superior sin degradaciones a grises o rojizos, protegiendo la salud de tu dermis a largo plazo.
+                            </p>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="relative" data-aos="fade-left">
-                <div class="absolute -inset-4 bg-luxury-gold/10 blur-3xl rounded-full"></div>
-                <div class="relative border border-white/10 rounded-[3rem] overflow-hidden aspect-square">
-                    <img src="{{ url_for('static', path='assets/images/services/brows/after/microblading_after_v3.webp') }}" class="w-full h-full object-cover" alt="Detalle Microblading" width="800" height="800">
+
+            <!-- Right Column: Image Container -->
+            <div class="relative" data-aos="fade-left" data-aos-delay="200">
+                <!-- Background Glow Decor -->
+                <div class="absolute -top-20 -right-20 w-80 h-80 bg-luxury-gold/10 rounded-full blur-[100px] pointer-events-none"></div>
+                <div class="absolute -bottom-20 -left-20 w-80 h-80 bg-luxury-gold/5 rounded-full blur-[100px] pointer-events-none"></div>
+
+                <!-- Floating Glassmorphism Container -->
+                <div class="relative bg-luxury-gold/5 border border-luxury-gold/20 p-4 rounded-xl transform lg:rotate-3 hover:rotate-0 transition-transform duration-700 shadow-2xl backdrop-blur-md">
+                    <div class="relative overflow-hidden rounded-lg aspect-square">
+                        <img 
+                            src="{{ url_for('static', path='assets/images/services/brows/after/microblading_after_v3.webp') }}?v={{ system_version }}"
+                            alt="Resultados Macro Detail HD Microblading" 
+                            class="w-full h-full object-cover grayscale-[10%] contrast-[1.1] hover:scale-110 transition-transform duration-1000"
+                            loading="lazy"
+                            width="800"
+                            height="800">
+                        
+                        <!-- Decorative label -->
+                        <div class="absolute bottom-6 left-6 right-6 p-4 bg-black/60 backdrop-blur-md border border-white/10 rounded-lg">
+                            <div class="flex justify-between items-center">
+                                <span class="text-[10px] uppercase tracking-[0.3em] text-white/70 font-black">Macro Detail HD</span>
+                                <span class="text-[10px] uppercase tracking-[0.3em] text-luxury-gold font-black"><i class="fas fa-gem mr-1"></i> Excelencia Elite</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
+
         </div>
     </div>
 </section>
-{% endblock %}
+
+<!-- Quote/Transition Section -->
+<section class="bg-background-dark py-20 border-t border-white/5">
+    <div class="max-w-4xl mx-auto px-6 text-center" data-aos="fade-up">
+        <i class="fas fa-quote-left text-luxury-gold/40 text-5xl mb-8"></i>
+        <p class="font-serif italic text-white/90 text-2xl md:text-3xl leading-relaxed">
+            "La verdadera belleza no se crea en un molde, se revela a través de la precisión matemática y el arte anatómico."
+        </p>
+        <div class="mt-8 flex flex-col items-center">
+            <div class="size-12 rounded-full border border-luxury-gold/30 p-1 mb-4">
+                <img src="{{ url_for('static', path='assets/images/meta/og_promo_30_anos.jpg') }}?v={{ system_version }}" alt="Jorge Aguirre Flores Portrait" class="w-full h-full object-cover rounded-full" loading="lazy" width="200" height="200">
+            </div>
+            <span class="text-white font-black tracking-widest text-xs uppercase">Jorge Aguirre Flores</span>
+            <span class="text-luxury-gold text-[10px] uppercase tracking-[0.3em] font-medium mt-1">Master Specialist</span>
+        </div>
+    </div>
+</section>
+
+{% endblock service_content %}
+
+{% block service_gallery %}
+    <!-- Inheriting Gallery exactly as mapped in Base, but overriding any container constraints if needed -->
+    {% include "sections/gallery.html" %}
+{% endblock service_gallery %}

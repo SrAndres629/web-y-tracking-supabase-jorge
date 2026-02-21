@@ -18,6 +18,7 @@ Gobernar la consistencia visual y la implementación técnica de los componentes
    - Utiliza `scripts/design_manager.py` para analizar el estado actual de los componentes.
 
 ## Constraints
+- **Protocolo Check-Before-Change (CBC) OBLIGATORIO:** Valida la existencia de los assets vinculados. Si el archivo CSS principal no se carga (HTTP 404 / path no existe localmente), detente y prioriza la reparación de la ruta en lugar de intentar añadir nuevos estilos.
 - Siempre debe haber coherencia absoluta con la skill `marca`.
 - Los componentes deben ser responsivos y accesibles.
 - Cualquier cambio estético significativo debe ser verificado visualmente (si el entorno lo permite).
