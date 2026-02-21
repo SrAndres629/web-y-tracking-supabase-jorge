@@ -77,9 +77,9 @@
                 © 2025 JORGE AGUIRRE FLORES • ARTE FACIAL & MICROBLADING
             </p>
             <div class="flex gap-6 text-xs text-gray-700 uppercase tracking-widest font-medium">
-                <a href="{{ url_for('read_privacy') }}" class="hover:text-luxury-gold" aria-label="Ver política de privacidad">Privacidad</a>
-                <a href="{{ url_for('read_terms') }}" class="hover:text-luxury-gold" aria-label="Ver términos y condiciones">Términos</a>
-                <a href="{{ url_for('sitemap_xml') }}" class="hover:text-luxury-gold" aria-label="Ver mapa del sitio">Sitemap</a>
+                <a href="/privacidad" class="hover:text-luxury-gold" aria-label="Ver política de privacidad">Privacidad</a>
+                <a href="/terminos" class="hover:text-luxury-gold" aria-label="Ver términos y condiciones">Términos</a>
+                <a href="/sitemap.xml" class="hover:text-luxury-gold" aria-label="Ver mapa del sitio">Sitemap</a>
             </div>
         </div>
     </div>
@@ -88,5 +88,5 @@
 
 
 {# WhatsApp Buttons - Usando componente reutilizable #}
-{% with variant="floating" %}{% include "components/whatsapp-button.html" %}{% endwith %}
-{% with variant="sticky-mobile" %}{% include "components/whatsapp-button.html" %}{% endwith %}
+{% with variant='floating' %}{% include 'components/whatsapp-button.html' %}{% endwith %}
+{% with variant='sticky-mobile' %}{% include 'components/whatsapp-button.html' %}{% endwith %}
