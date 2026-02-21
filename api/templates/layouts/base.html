@@ -328,8 +328,8 @@
           "META_PIXEL_ID": "{{ pixel_id }}",
           "META_EVENT_ID": "{{ pageview_event_id }}",
           "EXTERNAL_ID": "{{ external_id }}",
-          "SERVICES_CONFIG": {{ services_dict | tojson }},
-          "CONTACT_CONFIG": {{ contact | tojson }}
+          "SERVICES_CONFIG": {{ services_dict | tojson | replace('static/images/', 'static/assets/images/') }},
+          "CONTACT_CONFIG": {{ contact | tojson | replace('static/images/', 'static/assets/images/') }}
       }
     </script>
 
