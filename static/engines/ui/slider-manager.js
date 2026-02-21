@@ -8,7 +8,7 @@ export const SliderManager = {
   observer: null,
 
   init() {
-    const containers = document.querySelectorAll('.slider-container, .ba-slider');
+    const containers = document.querySelectorAll('.slider-container');
     if (!containers.length) return;
 
     this._setupObserver();

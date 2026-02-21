@@ -1,116 +1,92 @@
-<!-- Contact & Studio Section (Stitch Elite) -->
-<section id="contacto" class="relative flex flex-col justify-end overflow-hidden pt-20 pb-10 bg-background-dark section-optimized intrinsic-section">
-  <!-- Abstract background glow -->
-  <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full opacity-20 pointer-events-none">
-    <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-luxury-gold/20 blur-[120px] rounded-full"></div>
-    <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-luxury-gold/10 blur-[100px] rounded-full"></div>
-  </div>
-  
-  <div class="container mx-auto px-6 lg:px-20 relative z-10">
-    <!-- Main Floating Glassmorphism Card -->
-    <div class="card-glass rounded-3xl overflow-hidden mb-20 shadow-2xl" data-aos="fade-up">
-      <div class="flex flex-col lg:flex-row">
-        <!-- Left Side: Persuasion & CTA -->
-        <div class="flex-1 p-8 lg:p-16 flex flex-col justify-center border-b lg:border-b-0 lg:border-r border-luxury-gold/10">
-          <span class="text-luxury-gold font-medium tracking-[0.2em] uppercase text-sm mb-4 block">Exclusividad Garantizada</span>
-          <h2 class="font-serif text-4xl lg:text-6xl text-luxury-gold mb-6 leading-tight">
-             Reserva tu <br/><span class="italic text-white">Experiencia</span>
-          </h2>
-          <div class="space-y-4 max-w-md">
-            <p class="text-slate-300 text-lg leading-relaxed font-light">
-               Descubre el arte del <span class="text-white font-semibold">diagnóstico de visagismo computarizado</span>, una técnica que fusiona tecnología y estética para resaltar tu esencia natural.
-            </p>
-            <p class="text-slate-400 text-base italic border-l-2 border-luxury-gold/40 pl-4 py-1">
-               30 años de autoridad internacional en micropigmentación de lujo.
-            </p>
-          </div>
-          <div class="mt-10">
-            <a href="https://wa.me/59178000574?text=Hola,%20quisiera%20agendar%20una%20valoración%20para%20diseño%20de%20mirada%20elite" target="_blank" onclick="handleConversion('Footer WhatsApp Lead')" class="btn-gold-liquid text-black inline-flex items-center gap-3 px-8 py-4 rounded-xl font-bold text-lg uppercase tracking-wider group shadow-glow-gold/20">
-               <i class="fab fa-whatsapp text-2xl"></i>
-               Contactar vía WhatsApp
-            </a>
-            <p class="text-slate-500 text-xs mt-4 uppercase tracking-widest font-black">Respuesta inmediata de lunes a viernes</p>
-          </div>
-        </div>
-
-        <!-- Right Side: Studio & Details -->
-        <div class="flex-1 p-8 lg:p-16 bg-black/40">
-          <div class="h-full flex flex-col">
-            <div class="mb-10">
-              <h3 class="font-serif text-2xl text-white mb-8">Estudio Clínico</h3>
-              <!-- Studio Image -->
-              <div class="relative w-full aspect-video rounded-xl overflow-hidden border border-white/5 mb-8 group">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10 pointer-events-none"></div>
-                <img src="{{ url_for('static', path='assets/images/studio/clinic_room.webp') }}?v={{ system_version }}" class="w-full h-full object-cover grayscale transition-all duration-700 group-hover:grayscale-0 group-hover:scale-110" alt="Interior de la clínica de lujo minimalista" loading="lazy" width="800" height="450">
-                <div class="absolute bottom-4 left-4 z-20 flex items-center gap-2">
-                  <i class="fas fa-map-marker-alt text-luxury-gold"></i>
-                  <span class="text-[10px] font-black uppercase tracking-widest text-white">Barrio Equipetrol, Santa Cruz</span>
-                </div>
-              </div>
-              
-              <!-- Details Grid -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="space-y-2">
-                  <div class="flex items-center gap-2 text-luxury-gold mb-2">
-                    <i class="fas fa-clock text-xl"></i>
-                    <span class="text-[10px] uppercase tracking-widest font-black">Horarios</span>
-                  </div>
-                  <p class="text-slate-300 text-sm font-medium">Atención exclusiva con cita previa</p>
-                  <p class="text-slate-500 text-sm">Lunes — Viernes: 09:00 - 19:00</p>
-                </div>
-                <div class="space-y-2">
-                  <div class="flex items-center gap-2 text-luxury-gold mb-2">
-                    <i class="fas fa-phone-alt text-xl"></i>
-                    <span class="text-[10px] uppercase tracking-widest font-black">Línea Directa</span>
-                  </div>
-                  <p class="text-slate-300 text-sm font-medium">+591 78000574</p>
-                  <p class="text-slate-500 text-sm">jorgeaguirref@gmail.com</p>
-                </div>
-              </div>
-            </div>
-            
-            <div class="mt-auto pt-8 border-t border-white/10 flex items-center justify-between">
-              <span class="text-slate-500 text-[10px] uppercase tracking-[0.2em] font-black">Nivel de Excelencia Elite</span>
-              <div class="flex gap-4">
-                <i class="fas fa-certificate text-luxury-gold/50 text-lg"></i>
-                <i class="fas fa-gem text-luxury-gold/50 text-lg"></i>
-                <i class="fas fa-microscope text-luxury-gold/50 text-lg"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+<!-- ========== FOOTER ========== -->
+<footer class="bg-luxury-black py-24 border-t border-white/5 relative overflow-hidden">
+    <!-- Ambience Glow -->
+    <div
+        class="absolute top-0 right-0 w-full max-w-[500px] aspect-square bg-luxury-gold/[0.05] blur-[120px] rounded-full pointer-events-none">
     </div>
-  </div>
 
-  <!-- Minimalist Footer Area -->
-  <footer class="w-full bg-[#080808] border-t border-white/5 py-12 relative z-20">
-    <div class="container mx-auto px-6 lg:px-20">
-        <div class="flex flex-col md:flex-row justify-between items-center gap-8">
+    <div class="container mx-auto px-6 relative z-10">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 text-left mb-16">
             <!-- Branding -->
-            <div class="text-center md:text-left">
-                <h4 class="font-serif text-2xl text-white tracking-tight mb-1">Jorge Aguirre Flores</h4>
-                <p class="text-luxury-gold text-[10px] uppercase tracking-[0.4em] font-black">Integridad y Autoridad</p>
+            <div class="sm:col-span-2">
+                <p class="text-luxury-gold font-serif text-3xl mb-6 font-bold tracking-tight">Jorge Aguirre Flores</p>
+                <p class="text-gray-300 text-base leading-relaxed max-w-sm mb-8 font-light">
+                    Más de 30 años transformando miradas con arte y precisión. El estándar de oro en microblading y
+                    maquillaje permanente en Bolivia.
+                </p>
+                <div class="flex gap-4">
+                    <a href="https://www.facebook.com/jorgeaguirreflores" target="_blank" rel="noopener noreferrer"
+                        aria-label="Facebook de Jorge Aguirre Flores"
+                        class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-gray-500 hover:text-luxury-gold hover:border-luxury-gold transition-all">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="https://www.instagram.com/jorgeaguirreflores" target="_blank" rel="noopener noreferrer"
+                        aria-label="Instagram de Jorge Aguirre Flores"
+                        class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-gray-500 hover:text-luxury-gold hover:border-luxury-gold transition-all">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="https://www.tiktok.com/@jorgeaguirreflores" target="_blank" rel="noopener noreferrer"
+                        aria-label="TikTok de Jorge Aguirre Flores"
+                        class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-gray-500 hover:text-luxury-gold hover:border-luxury-gold transition-all">
+                        <i class="fab fa-tiktok"></i>
+                    </a>
+                </div>
             </div>
-            
-            <!-- Copyright -->
-            <div class="text-slate-500 text-[9px] font-black tracking-widest text-center uppercase">
-                © {{ helpers.current_year() if helpers else "2026" }} JORGE AGUIRRE FLORES. TODOS LOS DERECHOS RESERVADOS. <br/>
-                <span class="opacity-50">Desarrollado para Conversión Elite.</span>
+
+            <!-- Contact -->
+            <div>
+                <h3 class="text-white font-bold text-xs uppercase tracking-widest mb-6">Contacto</h3>
+                <ul class="space-y-4 text-xs">
+                    <li class="flex items-start gap-3 text-gray-500">
+                        <i class="fas fa-location-dot text-luxury-gold mt-1"></i>
+                        <span>{{ contact.address }}</span>
+                    </li>
+                    <li class="flex items-center gap-3 text-gray-500">
+                        <i class="fab fa-whatsapp text-luxury-gold"></i>
+                        <span>{{ contact.phone }}</span>
+                    </li>
+                    <li class="flex items-center gap-3 text-gray-500">
+                        <i class="far fa-envelope text-luxury-gold"></i>
+                        <span>{{ contact.email }}</span>
+                    </li>
+                </ul>
             </div>
-            
-            <!-- Social Icons -->
-            <div class="flex items-center gap-6">
-                <a href="{{ contact.instagram }}" target="_blank" class="text-slate-400 hover:text-luxury-gold transition-colors duration-300 flex items-center gap-2 group">
-                    <span class="text-[10px] font-black uppercase tracking-widest hidden group-hover:block transition-all">Instagram</span>
-                    <i class="fab fa-instagram text-xl"></i>
-                </a>
-                <a href="{{ contact.facebook }}" target="_blank" class="text-slate-400 hover:text-luxury-gold transition-colors duration-300 flex items-center gap-2 group">
-                    <span class="text-[10px] font-black uppercase tracking-widest hidden group-hover:block transition-all text-right">Facebook</span>
-                    <i class="fab fa-facebook-f text-xl"></i>
-                </a>
+
+            <!-- Schedule -->
+            <div>
+                <h3 class="text-white font-bold text-xs uppercase tracking-widest mb-6">Horarios</h3>
+                <ul class="space-y-4 text-xs text-gray-500">
+                    <li class="flex justify-between">
+                        <span>Lun - Vie:</span>
+                        <span class="text-white">09:00 - 18:00</span>
+                    </li>
+                    <li class="flex justify-between">
+                        <span>Sábado:</span>
+                        <span class="text-white">09:00 - 14:00</span>
+                    </li>
+                    <li class="flex justify-between">
+                        <span>Domingo:</span>
+                        <span class="text-luxury-gold italic">Cerrado</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p class="text-gray-700 text-xs tracking-wider uppercase">
+                © 2025 JORGE AGUIRRE FLORES • ARTE FACIAL & MICROBLADING
+            </p>
+            <div class="flex gap-6 text-xs text-gray-700 uppercase tracking-widest font-medium">
+                <a href="{{ url_for('read_privacy') }}" class="hover:text-luxury-gold" aria-label="Ver política de privacidad">Privacidad</a>
+                <a href="{{ url_for('read_terms') }}" class="hover:text-luxury-gold" aria-label="Ver términos y condiciones">Términos</a>
+                <a href="{{ url_for('sitemap_xml') }}" class="hover:text-luxury-gold" aria-label="Ver mapa del sitio">Sitemap</a>
             </div>
         </div>
     </div>
-  </footer>
-</section>
+</footer>
+
+
+
+{# WhatsApp Buttons - Usando componente reutilizable #}
+{% with variant="floating" %}{% include "components/whatsapp-button.html" %}{% endwith %}
+{% with variant="sticky-mobile" %}{% include "components/whatsapp-button.html" %}{% endwith %}

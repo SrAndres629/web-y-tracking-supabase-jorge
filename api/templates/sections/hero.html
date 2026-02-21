@@ -1,107 +1,111 @@
 <!-- ========== HERO SECTION ========== -->
-<header class="relative min-h-screen flex items-center overflow-hidden bg-luxury-black font-display text-slate-100 pt-20 pb-12 lg:pt-32">
-  
+<header
+  class="flex overflow-hidden relative justify-center items-center pt-24 md:pt-16 min-h-screen bg-luxury-black"
+>
   <!-- Interactive GSAP Particles Canvas -->
   <canvas id="hero-particles" class="absolute inset-0 z-0 opacity-40 pointer-events-none"></canvas>
+
+  <!-- Deep Luxury Gradient Overlay -->
   <div class="absolute inset-0 z-[1] bg-gradient-to-b from-luxury-black via-luxury-black/90 to-[#0c0c0c] pointer-events-none"></div>
 
-  <!-- Ambient Light Effects (Stitch Generated & Adapted) -->
-  <div id="hero-spotlight" class="absolute top-1/4 -left-20 w-96 h-96 bg-luxury-gold/10 blur-[120px] rounded-full pointer-events-none transition-transform duration-700 opacity-60"></div>
-  <div class="absolute bottom-1/4 -right-20 w-[30rem] h-[30rem] bg-luxury-gold/5 blur-[120px] rounded-full pointer-events-none"></div>
+  <!-- Ambient Luxury Glows (Interactive) -->
+  <div id="hero-spotlight" class="absolute top-0 right-0 w-full max-w-[800px] aspect-square bg-luxury-gold/10 blur-[130px] rounded-full pointer-events-none transition-transform duration-700 opacity-60"></div>
+  <div class="absolute bottom-[-20%] left-[-10%] w-full max-w-[500px] aspect-square bg-white/[0.02] blur-[150px] rounded-full pointer-events-none"></div>
 
-  <div class="max-w-screen-2xl mx-auto px-6 w-full relative z-10 grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-    
-    <!-- Content Section -->
-    <div class="flex flex-col gap-8 reveal-hero-text">
-        <div class="flex flex-col gap-4">
-            <span class="text-luxury-gold uppercase tracking-[0.5em] text-xs font-semibold flex items-center gap-3">
-                <i class="fas fa-certificate text-xs"></i> 30 Años de Autoridad en Bolivia
-            </span>
-            <h1 class="font-serif text-5xl md:text-6xl lg:text-7xl xl:text-8xl leading-none text-white tracking-tight">
-                <span class="block text-luxury-gold-light opacity-90 mb-4 text-2xl md:text-3xl lg:text-5xl font-light tracking-[0.1em] uppercase">Refinamiento Profundo</span>
-                {{ hero_content.title|safe }}
-            </h1>
-            <p class="max-w-2xl text-slate-300 text-lg lg:text-2xl leading-relaxed font-light border-l-2 border-luxury-gold/30 pl-6 lg:pl-8 italic">
-                Maquillaje permanente que trasciende modas. El equilibrio perfecto entre estandarización clínica y arte estético.
-            </p>
+  <div
+    class="container grid relative z-10 gap-8 md:gap-16 items-center px-6 mx-auto text-center md:text-left md:grid-cols-2"
+  >
+    <!-- Left Column: Authority & Messaging -->
+    <div class="space-y-10 reveal-hero-text">
+      <!-- Elite Authority Badge (Stitch-inspired) -->
+      <div
+        class="inline-flex items-center gap-3 px-5 py-2 mb-2 rounded-full border backdrop-blur-xl border-luxury-gold/30 bg-luxury-gold/10 shadow-glow-gold-sm group cursor-default transition-all duration-500 hover:border-luxury-gold/60"
+      >
+        <div class="relative w-2 h-2">
+            <div class="absolute inset-0 rounded-full bg-luxury-gold animate-ping"></div>
+            <div class="absolute inset-0 rounded-full bg-luxury-gold"></div>
         </div>
+        <span
+          class="text-luxury-gold text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] flex items-center gap-2"
+        >
+          <i class="fas fa-certificate text-xs"></i> 30 Años de Autoridad en Bolivia
+        </span>
+      </div>
 
-        <div class="flex flex-col md:flex-row gap-6 mt-4 items-center">
-            <a href="{{ contact.whatsapp }}?text={{ contact.cta_text|urlencode }}" 
-               target="_blank" 
-               onclick="handleConversion('Hero CTA')"
-               class="btn-gold-liquid text-black h-16 lg:h-20 px-12 lg:px-16 rounded-xl flex items-center justify-center gap-4 group transition-all duration-500 hover:scale-105 hover:shadow-glow-gold/40 w-full md:w-auto">
-                <span class="text-sm lg:text-base font-black uppercase tracking-widest">Reserva vía WhatsApp</span>
-                <i class="fas fa-arrow-right text-lg transition-transform group-hover:translate-x-2"></i>
-            </a>
-            
-            <div class="flex items-center gap-4 py-4 md:py-0 md:px-6 md:border-l border-luxury-gold/20 w-full md:w-auto">
-                <i class="fas fa-check-circle text-luxury-gold text-2xl"></i>
-                <div class="flex flex-col">
-                    <span class="text-sm lg:text-base uppercase tracking-widest font-black text-white">Garantía de Excelencia</span>
-                    <div class="flex gap-1 items-center text-xs text-luxury-gold mt-1">
-                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
+      <h1
+        class="font-heading-hero text-white leading-[1.1]"
+      >
+        <span class="block text-luxury-gold-light opacity-90 mb-2 text-2xl md:text-3xl font-light tracking-[0.15em] uppercase">Refinamiento Profundo</span>
+        {{ hero_content.title|safe }}
+      </h1>
+      
+      <p
+        class="max-w-xl text-lg font-light tracking-wide leading-relaxed text-gray-400 md:text-xl md:mx-0 border-l-2 border-luxury-gold/20 pl-8 py-2 italic"
+      >
+        Maquillaje permanente que trasciende modas. <br />
+        <span class="font-medium text-luxury-gold/90"
+          >El equilibrio perfecto entre ciencia facial y arte estético.</span
+        >
+      </p>
 
-        <!-- Floating Glass Cards (Left) -->
-        <div class="grid grid-cols-2 gap-6 pt-10">
-            <div class="card-glass p-6 md:p-8 rounded-2xl flex flex-col gap-3 transition-all duration-500 hover:-translate-y-2 hover:bg-white/5 cursor-default">
-                <i class="fas fa-award text-luxury-gold text-3xl"></i>
-                <div>
-                    <h3 class="text-white text-base lg:text-lg font-bold uppercase tracking-tight">Certificaciones</h3>
-                    <p class="text-slate-400 text-xs lg:text-sm">Acreditación Global HD</p>
-                </div>
-            </div>
-            <div class="card-glass p-6 md:p-8 rounded-2xl flex flex-col gap-3 transition-all duration-500 hover:-translate-y-2 hover:bg-white/5 cursor-default">
-                <i class="fas fa-map-marker-alt text-luxury-gold text-3xl"></i>
-                <div>
-                    <h3 class="text-white text-base lg:text-lg font-bold uppercase tracking-tight">Ubicación</h3>
-                    <p class="text-slate-400 text-xs lg:text-sm text-balance">Equipetrol, Santa Cruz</p>
-                </div>
-            </div>
+      <div
+        class="flex flex-col gap-6 justify-center pt-8 sm:flex-row md:justify-start items-center"
+      >
+        <a
+          href="{{ contact.whatsapp }}?text={{ contact.cta_text|urlencode }}"
+          target="_blank"
+          onclick="handleConversion('Hero CTA')"
+          class="btn-gold-liquid w-full md:w-auto px-10 py-5 transition-all duration-700"
+        >
+          <span class="relative z-10 flex items-center justify-center gap-3 text-sm font-bold tracking-widest uppercase">
+            <i class="text-xl fab fa-whatsapp"></i> Iniciar Diagnóstico Elite
+          </span>
+        </a>
+        
+        <div class="flex flex-col items-center md:items-start gap-1">
+          <div class="flex gap-1 items-center text-[10px] text-luxury-gold">
+            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+          </div>
+          <p class="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium whitespace-nowrap">
+            1,500+ Casos de Transformación
+          </p>
         </div>
+      </div>
     </div>
 
-    <!-- Image Section -->
-    <div class="relative flex justify-center lg:justify-end perspective-1000 mt-16 lg:mt-0">
-        <!-- Decorative frames -->
-        <div class="absolute -top-10 -right-10 w-48 h-48 border-t-2 border-r-2 border-luxury-gold/20 rounded-tr-[3rem] hidden lg:block pointer-events-none"></div>
-        <div class="absolute -bottom-10 -left-10 w-48 h-48 border-b-2 border-l-2 border-luxury-gold/20 rounded-bl-[3rem] hidden lg:block pointer-events-none"></div>
+    <!-- Right Column: Visual Excellence -->
+    <div class="relative flex justify-center items-center perspective-1000">
+      <div class="relative w-full max-w-lg group">
+        <!-- Luxury Floating Frame -->
+        <div class="absolute -inset-1 bg-gradient-to-br from-luxury-gold/20 via-transparent to-white/10 rounded-[2.5rem] blur-sm transition-opacity duration-1000 opacity-50 group-hover:opacity-100"></div>
         
-        <!-- Main Portrait Container -->
-        <div class="relative w-full max-w-[600px] xl:max-w-[700px] aspect-[4/5] rounded-[2rem] overflow-hidden shadow-2xl shadow-luxury-gold/10 group hover:shadow-glow-gold/30 transition-all duration-1000">
-            <div class="absolute inset-0 bg-gradient-to-t from-luxury-black via-transparent to-transparent opacity-70 z-10 pointer-events-none transition-opacity group-hover:opacity-40 duration-700"></div>
-            
-            <picture>
-                <source srcset="{{ url_for('static', path='assets/images/hero/jorge_hero_premium.webp') }}?v={{ system_version }}" type="image/webp" />
-                <img src="{{ url_for('static', path='assets/images/hero/jorge_hero_premium.png') }}?v={{ system_version }}" 
-                     alt="Jorge Aguirre Flores - Especialista Elite en Estética Facial" 
-                     class="w-full h-full object-cover grayscale-[15%] group-hover:scale-105 group-hover:grayscale-0 transition-all duration-1000"
-                     width="800"
-                     height="1000"
-                     loading="eager"
-                     fetchpriority="high" />
-            </picture>
-
-            <!-- Floating Highlight -->
-            <div class="absolute bottom-10 right-10 lg:-right-12 lg:bottom-16 animate-float hidden md:block z-20">
-                <div class="card-glass px-8 py-6 rounded-2xl flex items-center gap-5 border border-luxury-gold/30 backdrop-blur-xl group-hover:bg-black/80 transition-colors duration-500">
-                    <div class="bg-luxury-gold/10 border border-luxury-gold/20 p-3 rounded-full flex items-center justify-center shadow-inner">
-                        <i class="fas fa-globe text-luxury-gold text-2xl"></i>
-                    </div>
-                    <div class="flex flex-col">
-                        <span class="text-white font-black text-2xl lg:text-3xl tracking-tight">30+ Años</span>
-                        <span class="text-luxury-gold text-[10px] lg:text-xs uppercase tracking-[0.3em] font-bold">Experiencia Internacional</span>
-                    </div>
-                </div>
-            </div>
+        <div class="relative rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl bg-[#080808] transition-all duration-700 transform group-hover:scale-[1.01] hover:shadow-glow-gold/20">
+          <picture>
+            <source
+              srcset="{{ url_for('static', path='assets/images/hero/jorge_hero_premium.webp') }}?v={{ system_version }}"
+              type="image/webp"
+            />
+            <img
+              src="{{ url_for('static', path='assets/images/hero/jorge_hero_premium.png') }}?v={{ system_version }}"
+              alt="Jorge Aguirre Flores - Especialista Elite en Estética Facial"
+              class="w-full h-auto object-cover aspect-[4/5] opacity-90 group-hover:opacity-100 transition-opacity duration-1000"
+              width="800"
+              height="1000"
+              loading="eager"
+              fetchpriority="high"
+            />
+          </picture>
+          
+          <!-- Glossy Reflection Overlay -->
+          <div class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.02] to-transparent pointer-events-none"></div>
         </div>
 
-        <!-- Background Accents -->
-        <div class="absolute -z-10 w-[120%] h-[120%] bg-luxury-gold/5 rounded-full blur-[100px] -top-[10%] -right-[10%] pointer-events-none transition-opacity duration-1000 group-hover:opacity-100 opacity-60"></div>
+        <!-- Floating UI Element: Experience Badge -->
+        <div class="absolute -bottom-6 -right-6 md:-right-10 bg-luxury-black/80 backdrop-blur-2xl border border-luxury-gold/30 p-6 rounded-2xl shadow-glow-gold-sm hidden md:block animate-float">
+            <p class="text-luxury-gold font-serif text-3xl font-bold leading-none mb-1">30+</p>
+            <p class="text-[9px] uppercase tracking-widest text-gray-400 font-bold">Años de Expertise</p>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -114,5 +118,15 @@
             spotlight.style.transform = `translate(${x}px, ${y}px)`;
         }
     });
+
+    // Auto-hide scroll indicator on scroll
+    window.addEventListener('scroll', () => {
+        const indicator = document.querySelector('.bottom-12');
+        if (indicator) {
+            const opacity = Math.max(0, 1 - window.scrollY / 200);
+            indicator.style.opacity = opacity;
+            indicator.style.pointerEvents = opacity < 0.1 ? 'none' : 'auto';
+        }
+    }, { passive: true });
   </script>
 </header>

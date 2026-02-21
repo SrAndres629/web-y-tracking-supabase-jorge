@@ -297,11 +297,6 @@
       "date": "2026-02-18",
       "decision": "CTA touch targets increased to py-4 (≥44px height)",
       "rationale": "Fitts' law compliance for mobile thumb interaction"
-    },
-    {
-      "date": "2026-02-21",
-      "decision": "Implementar Protocolo de 'Check-Before-Change' (CBC) para todos los assets.",
-      "rationale": "Nunca asumas que una ruta es correcta; verifícala siempre mediante el sistema de archivos (ej. list_dir, view_file) antes de inyectarla en el HTML o CSS. Si no lo haces, puedes provocar rutas rotas y FOUC."
     }
   ]
 }

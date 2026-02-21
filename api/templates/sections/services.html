@@ -1,100 +1,143 @@
 <!-- ========== SERVICIOS ========== -->
-<section id="servicios" class="relative py-24 lg:py-32 bg-transparent section-optimized intrinsic-services overflow-hidden">
-  
-  <div class="max-w-screen-2xl mx-auto px-6 lg:px-12 xl:px-20 relative z-10 w-full">
-    <!-- Section Header (Stitch Designed) -->
-    <div class="text-center mb-16 lg:mb-24 space-y-4 lg:space-y-6" data-aos="fade-up">
-        <span class="text-luxury-gold tracking-[0.4em] uppercase text-xs lg:text-sm font-semibold">Servicios Exclusivos</span>
-        <h2 class="font-serif text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black text-gradient-gold tracking-tighter">Especialidades Elite</h2>
-        <div class="h-1 w-24 bg-luxury-gold/40 mx-auto mt-6 lg:mt-8 rounded-full"></div>
-        <p class="max-w-3xl mx-auto text-slate-300 text-lg lg:text-2xl font-light leading-relaxed pt-4 lg:pt-6">
-            Arte y precisión en maquillaje permanente de alta gama para resultados hiperrealistas diseñados para la elegancia absoluta.
-        </p>
+<section
+  id="servicios"
+  class="overflow-hidden relative py-24 bg-transparent section-optimized intrinsic-services"
+>
+  <!-- Background Glow -->
+  <div
+    class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[900px] aspect-square bg-luxury-gold/5 blur-luxury-2xl rounded-full pointer-events-none"
+  ></div>
+
+  <div class="container relative z-10 px-6 mx-auto">
+    <!-- Section Header: Elite Messaging -->
+    <div class="mb-20 text-center">
+      <div class="inline-flex items-center gap-3 px-4 py-1.5 mb-6 rounded-full border border-luxury-gold/20 bg-luxury-gold/5 backdrop-blur-md">
+        <span class="text-[10px] text-luxury-gold font-bold uppercase tracking-[0.3em]">
+            Protocolos de Autoridad
+        </span>
+      </div>
+      <h2 class="tracking-tight font-heading-section text-4xl md:text-5xl lg:text-6xl text-white">
+        Especialidades <span class="italic text-luxury-gold font-light">Elite</span>
+      </h2>
+      <p class="mx-auto mt-6 max-w-3xl text-lg font-light leading-relaxed text-gray-400">
+        Cada rostro es un lienzo único que merece una técnica de vanguardia. <br class="hidden md:block"/>
+        Fusionamos <span class="text-white font-medium">precisión doctoral</span> con sensibilidad artística para resultados que trascienden el tiempo.
+      </p>
     </div>
 
-    <!-- Services Grid (Stitch Designed) -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12 xl:gap-16">
+    <!-- Service Cards Grid: Premium Glassmorphism -->
+    <div class="grid gap-10 md:grid-cols-3">
       {% for service in services %}
-      <!-- Glass Card -->
-      <div class="card-glass flex flex-col rounded-2xl overflow-hidden group transition-all duration-700 hover:-translate-y-4 hover:shadow-2xl hover:shadow-glow-gold/30 hover:border-luxury-gold/50 cursor-pointer" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 100 }}" onclick="window.location.href='{{ url_for('read_microblading' if service.id == 'microblading' else ('read_brows' if service.id == 'brows' else ('read_eyes' if service.id == 'eyeliner' else 'read_lips'))) }}'">
-        
-        <!-- Image Container -->
-        <div class="relative aspect-[4/3] lg:aspect-video xl:aspect-[4/3] overflow-hidden">
-          <div class="absolute inset-0 bg-luxury-gold/10 group-hover:bg-transparent transition-colors duration-700 z-10 pointer-events-none"></div>
-          
+      <div
+        class="group relative flex flex-col h-full rounded-[2.5rem] bg-[#0c0c0c] border border-white/5 overflow-hidden transition-all duration-700 hover:border-luxury-gold/30 hover:shadow-glow-gold/10"
+        data-aos="fade-up"
+        data-aos-delay="{{ loop.index0 * 100 }}"
+      >
+        <!-- Luxury Card Glow (Hover Based) -->
+        <div class="absolute -inset-2 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 bg-gradient-to-tr from-luxury-gold/5 via-transparent to-white/5 blur-2xl pointer-events-none"></div>
+
+        <!-- Image Container: Cinematic Focus -->
+        <div class="relative h-[300px] overflow-hidden">
           <picture>
-            <source srcset="{{ url_for('static', path=(service.image|replace('/static/', ''))) }}?v={{ system_version }}" type="image/webp" />
-            <img class="w-full h-full object-cover scale-110 group-hover:scale-100 transition-transform duration-1000" 
-                 src="{{ url_for('static', path=(service.image|replace('/static/', ''))) }}?v={{ system_version }}"
-                 alt="{{ service.title | e }}"
-                 loading="lazy"
-                 width="800"
-                 height="600"/>
+            <source srcset="{{ service.image | e }}?v={{ system_version }}" type="image/webp" />
+            <img
+              src="{{ service.image | e }}?v={{ system_version }}"
+              class="object-cover w-full h-full transition-transform duration-[1.5s] ease-out group-hover:scale-105"
+              alt="{{ service.title | e }}"
+              loading="lazy"
+              width="500"
+              height="400"
+            />
           </picture>
           
+          <!-- Inner Shadow Overlay -->
+          <div class="absolute inset-0 bg-gradient-to-t from-[#0c0c0c] via-transparent to-black/20"></div>
+
+          <!-- Badges: Premium floating label -->
           {% if service.badges %}
-          <div class="absolute top-6 left-6 z-20">
-             <span class="px-4 py-2 text-[10px] font-black uppercase tracking-[0.3em] bg-white text-black rounded shadow-2xl transition-transform duration-500 group-hover:scale-105">
+          <div class="absolute top-6 left-6 right-6 flex justify-between items-start">
+             <span class="px-3 py-1 text-[9px] font-black uppercase tracking-[0.2em] bg-white text-black rounded-sm shadow-xl">
                  {{ service.badges[0] }}
              </span>
+             <div class="flex gap-1.5">
+                <div class="w-1.5 h-1.5 rounded-full bg-luxury-gold shadow-glow-gold"></div>
+                <div class="w-1.5 h-1.5 rounded-full bg-white/20"></div>
+             </div>
           </div>
           {% endif %}
         </div>
-        
-        <!-- Content Area -->
-        <div class="p-8 lg:p-10 flex flex-col flex-grow relative z-20 bg-gradient-to-b from-transparent to-black/40">
-            <div class="flex justify-between items-center mb-6">
-                <span class="text-[10px] lg:text-xs uppercase font-black tracking-[0.3em] text-luxury-gold/80">
-                    {{ service.subtitle }}
-                </span>
-                <div class="flex items-center gap-1.5 text-luxury-gold">
-                    <i class="fas fa-star text-[10px] lg:text-xs"></i>
-                    <span class="text-xs lg:text-sm font-bold">{{ service.rating }}</span>
-                </div>
-            </div>
+
+        <!-- Content Area: Authority Layout -->
+        <div class="relative z-10 p-10 flex flex-col flex-grow">
+          <div class="flex justify-between items-center mb-6">
+             <span class="text-[10px] uppercase font-bold tracking-[0.2em] text-luxury-gold/70">
+                 {{ service.subtitle }}
+             </span>
+             <div class="flex items-center gap-1.5 text-luxury-gold">
+                 <i class="fas fa-star text-[10px]"></i>
+                 <span class="text-xs font-bold">{{ service.rating }}</span>
+             </div>
+          </div>
+
+          <h3 class="font-serif text-3xl text-white mb-6 group-hover:text-luxury-gold transition-colors duration-500">
+            {{ service.title }}
+          </h3>
           
-            <h3 class="font-serif text-3xl lg:text-4xl font-bold text-white mb-4 transition-colors group-hover:text-luxury-gold-light">{{ service.title }}</h3>
-            <p class="text-slate-300 text-sm xl:text-base leading-relaxed mb-8 font-light">
-                {{ service.description }}
-            </p>
-            
-            <ul class="space-y-4 mb-10 flex-grow">
-                {% for benefit in service.benefits %}
-                <li class="flex items-center gap-4 text-sm xl:text-base text-slate-200">
-                    <i class="fas fa-check-circle text-luxury-gold text-lg lg:text-xl"></i>
-                    {{ benefit }}
-                </li>
-                {% endfor %}
-            </ul>
-            
-            <span class="block w-full border border-luxury-gold/40 group-hover:bg-luxury-gold/10 text-luxury-gold group-hover:text-white py-4 xl:py-5 rounded-xl text-xs xl:text-sm font-black uppercase tracking-widest transition-all text-center">
-                Ver Detalles de Inmersión
-            </span>
+          <p class="text-gray-400 text-sm leading-relaxed mb-8 flex-grow font-light italic">
+            "{{ service.description }}"
+          </p>
+
+          <!-- Benefits List -->
+          <ul class="space-y-4 mb-10">
+            {% for benefit in service.benefits %}
+            <li class="flex items-center gap-3 text-xs text-gray-300 font-medium">
+                <i class="fas fa-check text-luxury-gold/60"></i>
+                {{ benefit }}
+            </li>
+            {% endfor %}
+          </ul>
+
+          <!-- Action: Premium Button -->
+          <div class="mt-auto">
+            <a
+              href="{{ url_for('read_microblading' if service.id == 'microblading' else ('read_brows' if service.id == 'brows' else ('read_eyes' if service.id == 'eyeliner' else 'read_lips'))) }}"
+              class="relative block w-full py-5 overflow-hidden group/btn rounded-full border border-luxury-gold/30 hover:border-luxury-gold bg-transparent transition-all duration-500 text-center"
+            >
+              <div class="absolute inset-0 bg-luxury-gold translate-y-[100%] group-hover/btn:translate-y-0 transition-transform duration-500"></div>
+              <span class="relative z-10 text-[10px] font-bold uppercase tracking-[0.3em] text-luxury-gold group-hover/btn:text-black transition-colors duration-500">
+                  Ver Detalles Elite
+              </span>
+            </a>
+          </div>
         </div>
       </div>
       {% endfor %}
     </div>
 
-    <!-- Specialized Support CTA (Stitch Adapted) -->
-    <div class="mt-40 text-center py-24 px-8 rounded-[3rem] border border-luxury-gold/20 bg-gradient-to-b from-luxury-gold/5 to-transparent relative overflow-hidden group max-w-6xl mx-auto shadow-2xl hover:shadow-glow-gold/20 transition-all duration-700">
-        <div class="absolute -top-32 -left-32 w-80 h-80 bg-luxury-gold/10 blur-[120px] rounded-full transition-transform duration-1000 group-hover:scale-150 pointer-events-none"></div>
-        <div class="absolute -bottom-32 -right-32 w-80 h-80 bg-luxury-gold/10 blur-[120px] rounded-full transition-transform duration-1000 group-hover:scale-150 pointer-events-none"></div>
-        
-        <div class="relative z-10">
-            <h3 class="font-serif text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-8 tracking-tight">¿Buscas una Transformación Elite?</h3>
-            <p class="text-slate-300 max-w-2xl mx-auto mb-12 text-lg lg:text-xl font-light leading-relaxed">Permíteme realizar un diagnóstico de visajismo computarizado para encontrar la geometría exacta que favorece tus facciones anatómicas.</p>
-            
-            <div class="flex flex-col sm:flex-row justify-center items-center gap-8">
-                <button type="button" onclick="handleConversion('Asesoría Servicios')" class="btn-gold-liquid px-12 py-6 w-full sm:w-auto flex items-center justify-center gap-4 shadow-xl hover:scale-105 transition-transform duration-500">
-                    <i class="fab fa-whatsapp text-2xl"></i> <span class="text-base font-black uppercase tracking-widest">Asesoría de Diseño Gratis</span>
-                </button>
-                <div class="flex items-center gap-4">
-                    <p class="text-xs lg:text-sm uppercase tracking-[0.2em] text-gray-400 font-bold sm:border-l sm:border-white/20 sm:pl-8 text-left">
-                        Solo 5 valoraciones <br/> por semana
-                    </p>
-                </div>
-            </div>
+    <!-- Specialized Support: Luxury CTA -->
+    <div class="mt-24 p-12 md:p-16 rounded-[3rem] border border-white/5 bg-gradient-to-br from-white/[0.03] to-transparent backdrop-blur-3xl text-center relative overflow-hidden group">
+      <div class="absolute top-0 right-0 w-[400px] h-[400px] bg-luxury-gold/[0.03] blur-[100px] -translate-y-1/2 translate-x-1/2 rounded-full"></div>
+      
+      <div class="relative z-10">
+        <h3 class="font-serif text-3xl md:text-5xl text-white mb-6">
+            ¿Buscas una <span class="italic text-luxury-gold">Transformación Personalizada</span>?
+        </h3>
+        <p class="mx-auto mb-10 max-w-2xl text-gray-400 text-lg font-light leading-relaxed">
+            Permíteme realizar un diagnóstico de visajismo computarizado para encontrar la geometría exacta que favorece tus facciones.
+        </p>
+        <div class="flex flex-col md:flex-row gap-6 justify-center items-center">
+            <button
+                type="button"
+                onclick="handleConversion('Asesoría Servicios')"
+                class="btn-gold-liquid px-12 py-5"
+            >
+                <i class="fab fa-whatsapp mr-2 text-lg"></i> Asesoría de Diseño Gratis
+            </button>
+            <p class="text-[10px] uppercase tracking-widest text-gray-500 font-bold border-l border-white/10 pl-6 hidden md:block">
+                Solo 5 valoraciones <br/> por semana
+            </p>
         </div>
+      </div>
     </div>
   </div>
 </section>

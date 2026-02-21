@@ -16,8 +16,6 @@ Garantizar una arquitectura de plantillas sólida, escalable y optimizada para e
 3. **Verificación**: Utiliza `scripts/structure_manager.py` para analizar la jerarquía de bloques y asegurar que la herencia sea correcta.
 
 ## Constraints
-- **Protocolo Check-Before-Change (CBC) OBLIGATORIO:** NUNCA asumas que una ruta es correcta. Antes de inyectar rutas relativas o absolutas en plantillas (por ej. imágenes, CSS, scripts), DEBES verificar que el archivo existe en el sistema de archivos (`/static/...`).
-- Todo debe pasar por `url_for('static', path='...')` en Jinja2. Prohibido el uso de rutas relativas simples. Si falla, reporta el error exacto antes de guardar el archivo.
 - Es mandatorio mantener la coherencia con las skills de `marca` (estética) y `diseño` (componentes).
 - No se deben alterar las etiquetas críticas de tracking y SEO integradas en el layout base.
 

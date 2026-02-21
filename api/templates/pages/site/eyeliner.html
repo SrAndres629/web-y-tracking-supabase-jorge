@@ -1,93 +1,36 @@
 {% extends "layouts/service_base.html" %}
 
 {% block service_content %}
-<!-- Elite Detail Section -->
-<section class="bg-background-dark py-32 px-6 overflow-hidden border-t border-white/5">
-    <div class="max-w-7xl mx-auto">
-        <div class="grid lg:grid-cols-2 gap-20 items-center">
-            
-            <!-- Left Column: Content -->
-            <div class="space-y-16" data-aos="fade-right">
-                <header>
-                    <h2 class="font-serif text-luxury-gold text-4xl md:text-5xl lg:text-6xl font-normal leading-tight mb-4">
-                        Mirada <span class="italic text-white">Intensa 24/7</span>
-                    </h2>
-                    <div class="h-1 w-24 bg-luxury-gold/50 rounded-full"></div>
-                </header>
-
-                <div class="space-y-12">
-                    <!-- Feature 1 -->
-                    <div class="flex gap-6 group">
-                        <div class="flex-shrink-0">
-                            <div class="w-14 h-14 rounded-lg bg-luxury-gold/5 border border-luxury-gold/20 flex items-center justify-center text-luxury-gold group-hover:scale-110 transition-transform shadow-glow-gold/10 backdrop-blur-md">
-                                <i class="fas fa-eye text-2xl"></i>
-                            </div>
-                        </div>
-                        <div>
-                            <h3 class="text-white text-2xl font-bold mb-3 font-serif italic">Arquitectura Ocular</h3>
-                            <p class="text-white/60 leading-relaxed font-light text-base md:text-lg">
-                                Estudiamos la morfología de tu párpado para trazar un delineado que realce y levante tu mirada de forma permanente. Un diseño anatómico que sustituye al maquillaje convencional.
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Feature 2 -->
-                    <div class="flex gap-6 group">
-                        <div class="flex-shrink-0">
-                            <div class="w-14 h-14 rounded-lg bg-luxury-gold/5 border border-luxury-gold/20 flex items-center justify-center text-luxury-gold group-hover:scale-110 transition-transform shadow-glow-gold/10 backdrop-blur-md">
-                                <i class="fas fa-tint-slash text-2xl"></i>
-                            </div>
-                        </div>
-                        <div>
-                            <h3 class="text-white text-2xl font-bold mb-3 font-serif italic">Waterproof Absoluto</h3>
-                            <p class="text-white/60 leading-relaxed font-light text-base md:text-lg">
-                                Olvídate de los retoques. Nuestra técnica de implantación garante densidad natural resistente al agua, sudor y rutinas exigentes, con una cicatrización de tiempo récord en cabina clínica.
-                            </p>
-                        </div>
-                    </div>
+<section class="py-24 bg-transparent border-t border-white/5">
+    <div class="container mx-auto px-6">
+        <div class="grid md:grid-cols-2 gap-20 items-center">
+            <div data-aos="fade-right">
+                <h2 class="font-serif text-4xl text-white mb-8">Mirada <span class="text-luxury-gold italic">Intensa</span> 24/7</h2>
+                <p class="text-gray-400 mb-10 font-light leading-relaxed">
+                    A diferencia del maquillaje convencional, nuestra técnica de delineado permanente se integra con la línea de las pestañas para un efecto de densidad natural y elegancia eterna.
+                </p>
+                <ul class="space-y-6">
+                    <li class="flex items-center gap-4 text-white text-sm">
+                        <i class="fas fa-check-circle text-luxury-gold"></i>
+                        Waterproof & Smudge-proof absoluto.
+                    </li>
+                    <li class="flex items-center gap-4 text-white text-sm">
+                        <i class="fas fa-check-circle text-luxury-gold"></i>
+                        Diseño adaptado a la forma de tu párpado.
+                    </li>
+                    <li class="flex items-center gap-4 text-white text-sm">
+                        <i class="fas fa-check-circle text-luxury-gold"></i>
+                        Cicatrización en tiempo récord.
+                    </li>
+                </ul>
+            </div>
+            <div class="relative" data-aos="fade-left">
+                <div class="absolute -inset-4 bg-luxury-gold/10 blur-3xl rounded-full"></div>
+                <div class="relative border border-white/10 rounded-[3rem] overflow-hidden aspect-square">
+                    <img src="{{ url_for('static', path='assets/images/services/eyes/after/eyes_after.webp') }}" class="w-full h-full object-cover" alt="Detalle Eyeliner" width="800" height="800">
                 </div>
             </div>
-
-            <!-- Right Column: Image Container -->
-            <div class="relative" data-aos="fade-left" data-aos-delay="200">
-                <div class="absolute -top-20 -right-20 w-80 h-80 bg-luxury-gold/10 rounded-full blur-[100px] pointer-events-none"></div>
-                <div class="absolute -bottom-20 -left-20 w-80 h-80 bg-luxury-gold/5 rounded-full blur-[100px] pointer-events-none"></div>
-
-                <div class="relative bg-luxury-gold/5 border border-luxury-gold/20 p-4 rounded-xl transform lg:rotate-3 hover:rotate-0 transition-transform duration-700 shadow-2xl backdrop-blur-md">
-                    <div class="relative overflow-hidden rounded-lg aspect-square">
-                        <img 
-                            src="{{ url_for('static', path='assets/images/services/eyes/after/eyes_after.webp') }}?v={{ system_version }}"
-                            alt="Resultados Eyeliner Permanente HD" 
-                            class="w-full h-full object-cover grayscale-[10%] contrast-[1.1] hover:scale-110 transition-transform duration-1000"
-                            loading="lazy"
-                            width="800"
-                            height="800">
-                        
-                        <div class="absolute bottom-6 left-6 right-6 p-4 bg-black/60 backdrop-blur-md border border-white/10 rounded-lg">
-                            <div class="flex justify-between items-center">
-                                <span class="text-[10px] uppercase tracking-[0.3em] text-white/70 font-black">Eyeliner HD</span>
-                                <span class="text-[10px] uppercase tracking-[0.3em] text-luxury-gold font-black"><i class="fas fa-gem mr-1"></i> Excelencia Elite</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
         </div>
     </div>
 </section>
-
-<!-- Quote Section -->
-<section class="bg-background-dark py-20 border-t border-white/5">
-    <div class="max-w-4xl mx-auto px-6 text-center" data-aos="fade-up">
-        <i class="fas fa-quote-left text-luxury-gold/40 text-5xl mb-8"></i>
-        <p class="font-serif italic text-white/90 text-2xl md:text-3xl leading-relaxed">
-            "Una mirada impactante comienza con la sutileza de un trazo imperceptible."
-        </p>
-    </div>
-</section>
 {% endblock service_content %}
-
-{% block service_gallery %}
-    {% include "sections/gallery.html" %}
-{% endblock service_gallery %}
