@@ -34,7 +34,6 @@ from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 # Internal Imports
 from app.config import settings
-from app.middleware.error_handler import setup_error_handlers
 from app.interfaces.api.routes import (
     admin,
     consent,
@@ -49,6 +48,7 @@ from app.limiter import limiter
 from app.middleware.auth import APIKeyMiddleware
 from app.middleware.cache import CacheControlMiddleware
 from app.middleware.early_hints import EarlyHintsMiddleware
+from app.middleware.error_handler import setup_error_handlers
 from app.middleware.identity import ServerSideIdentityMiddleware
 from app.middleware.security import SecurityHeadersMiddleware
 from app.version import VERSION
@@ -83,9 +83,7 @@ def init_sentry():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Ciclo de vida de la aplicación con manejo de contexto robusto"""
-    logger.info(
-        f"🚀 Iniciando Jorge Aguirre Flores Web v{VERSION} (Atomic Architecture Mode)"
-    )
+    logger.info(f"🚀 Iniciando Jorge Aguirre Flores Web v{VERSION} (Atomic Architecture Mode)")
 
     try:
         # 1. Initialize Sentry (Essential but shouldn't crash boot)
@@ -107,6 +105,7 @@ async def lifespan(app: FastAPI):
             # Warm cache (Non-critical)
             try:
                 from app.services import ContentManager
+
                 await asyncio.wait_for(ContentManager.warm_cache(), timeout=3)
             except Exception as e:
                 logger.warning(f"⚠️ warm_cache skipped: {e}")
@@ -114,6 +113,7 @@ async def lifespan(app: FastAPI):
             # Database initialization (Trigger in background to prevent boot block)
             try:
                 from app.database import init_tables
+
                 # No esperamos a que termine si tarda mucho, permitimos lazy init
                 asyncio.create_task(asyncio.to_thread(init_tables))
                 logger.info("⚡ Background DB init triggered")
@@ -131,8 +131,6 @@ async def lifespan(app: FastAPI):
     # Shutdown
     logger.info("🛑 Deteniendo servidor...")
     gc.collect()
-
-
 
 
 # =================================================================

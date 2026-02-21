@@ -154,8 +154,7 @@ class EventRateLimiter:
             now = time.time()
             # Limpiar entradas viejas
             expired_keys = [
-                key for key in self.memory_cache
-                if self.memory_cache[key].get("expires", 0) < now
+                key for key in self.memory_cache if self.memory_cache[key].get("expires", 0) < now
             ]
             for key in expired_keys:
                 self.memory_cache.pop(key, None)
@@ -202,7 +201,8 @@ class EventRateLimiter:
             entry = self.memory_cache.get(key)
             if not entry or entry.get("expires", 0) < time.time():
                 self.memory_cache[key] = {
-                    "count": 1, "expires": time.time() + window,
+                    "count": 1,
+                    "expires": time.time() + window,
                 }
             else:
                 assert entry is not None

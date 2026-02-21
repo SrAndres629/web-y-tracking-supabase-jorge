@@ -27,9 +27,7 @@ def run_mutation_audit():
 
         print(result.stdout)
         if result.returncode != 0:
-            print(
-                "⚠️ Mutation audit completed with findings or errors. Check mutmut_projects/html"
-            )
+            print("⚠️ Mutation audit completed with findings or errors. Check mutmut_projects/html")
 
     except FileNotFoundError:
         print("❌ mutmut not found. Please install it with 'pip install mutmut'")

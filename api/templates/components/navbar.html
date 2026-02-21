@@ -14,23 +14,33 @@
         </a>
 
         <!-- Desktop Menu -->
-        <ul class="hidden md:flex space-x-8 text-sm font-medium text-gray-300">
-            <li><a href="#galeria" class="hover:text-luxury-gold transition-colors relative group">
+        <ul class="hidden md:flex items-center space-x-8 text-sm font-medium text-gray-300">
+            <li><a href="{{ url_for('read_root') }}#galeria" class="hover:text-luxury-gold transition-colors relative group">
                     Galería
                     <span
                         class="absolute -bottom-1 left-0 w-0 h-0.5 bg-luxury-gold transition-all duration-300 group-hover:w-full"></span>
                 </a></li>
-            <li><a href="#servicios" class="hover:text-luxury-gold transition-colors relative group">
-                    Servicios
-                    <span
-                        class="absolute -bottom-1 left-0 w-0 h-0.5 bg-luxury-gold transition-all duration-300 group-hover:w-full"></span>
-                </a></li>
-            <li><a href="#proceso" class="hover:text-luxury-gold transition-colors relative group">
+            <li>
+                <div class="relative group">
+                    <button class="hover:text-luxury-gold transition-colors flex items-center gap-1 group">
+                        Servicios <i class="fas fa-chevron-down text-[10px] transition-transform group-hover:rotate-180"></i>
+                    </button>
+                    <div class="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-48 bg-luxury-black/95 backdrop-blur-2xl border border-white/5 rounded-2xl p-4 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-300 shadow-2xl">
+                        <ul class="space-y-3">
+                            <li><a href="{{ url_for('read_microblading') }}" class="text-xs hover:text-luxury-gold transition-colors block">Microblading HD</a></li>
+                            <li><a href="{{ url_for('read_brows') }}" class="text-xs hover:text-luxury-gold transition-colors block">Sombreado Dual</a></li>
+                            <li><a href="{{ url_for('read_eyes') }}" class="text-xs hover:text-luxury-gold transition-colors block">Ocular Precision</a></li>
+                            <li><a href="{{ url_for('read_lips') }}" class="text-xs hover:text-luxury-gold transition-colors block">Full Lip Velvet</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            <li><a href="{{ url_for('read_root') }}#proceso" class="hover:text-luxury-gold transition-colors relative group">
                     Proceso
                     <span
                         class="absolute -bottom-1 left-0 w-0 h-0.5 bg-luxury-gold transition-all duration-300 group-hover:w-full"></span>
                 </a></li>
-            <li><a href="#testimonios" class="hover:text-luxury-gold transition-colors relative group">
+            <li><a href="{{ url_for('read_root') }}#testimonios" class="hover:text-luxury-gold transition-colors relative group">
                     Testimonios
                     <span
                         class="absolute -bottom-1 left-0 w-0 h-0.5 bg-luxury-gold transition-all duration-300 group-hover:w-full"></span>
@@ -61,11 +71,16 @@
             onclick="closeMobileMenu()">
             ×
         </button>
-        <a href="#galeria" class="text-2xl font-serif text-white hover:text-luxury-gold transition-colors" onclick="closeMobileMenu()">Galería</a>
-        <a href="#servicios"
-            class="text-2xl font-serif text-white hover:text-luxury-gold transition-colors" onclick="closeMobileMenu()">Servicios</a>
-        <a href="#proceso" class="text-2xl font-serif text-white hover:text-luxury-gold transition-colors" onclick="closeMobileMenu()">Proceso</a>
-        <a href="#testimonios"
+        <a href="{{ url_for('read_root') }}#galeria" class="text-2xl font-serif text-white hover:text-luxury-gold transition-colors" onclick="closeMobileMenu()">Galería</a>
+        <div class="flex flex-col items-center space-y-4">
+            <span class="text-[10px] uppercase tracking-[0.3em] text-luxury-gold font-bold">Servicios Elite</span>
+            <a href="{{ url_for('read_microblading') }}" class="text-xl font-serif text-white/80 hover:text-luxury-gold transition-colors" onclick="closeMobileMenu()">Microblading HD</a>
+            <a href="{{ url_for('read_brows') }}" class="text-xl font-serif text-white/80 hover:text-luxury-gold transition-colors" onclick="closeMobileMenu()">Sombreado Dual</a>
+            <a href="{{ url_for('read_eyes') }}" class="text-xl font-serif text-white/80 hover:text-luxury-gold transition-colors" onclick="closeMobileMenu()">Ocular Precision</a>
+            <a href="{{ url_for('read_lips') }}" class="text-xl font-serif text-white/80 hover:text-luxury-gold transition-colors" onclick="closeMobileMenu()">Full Lip Velvet</a>
+        </div>
+        <a href="{{ url_for('read_root') }}#proceso" class="text-2xl font-serif text-white hover:text-luxury-gold transition-colors" onclick="closeMobileMenu()">Proceso</a>
+        <a href="{{ url_for('read_root') }}#testimonios"
             class="text-2xl font-serif text-white hover:text-luxury-gold transition-colors" onclick="closeMobileMenu()">Testimonios</a>
         <button type="button" onclick="handleConversion('Mobile Menu CTA'); closeMobileMenu();"
             class="mt-8 px-8 py-4 border border-luxury-gold text-luxury-gold uppercase tracking-widest text-sm rounded-lg hover:bg-luxury-gold hover:text-black transition-all">

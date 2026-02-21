@@ -98,16 +98,17 @@
           </ul>
 
           <!-- Action: Premium Button -->
-          <button
-            type="button"
-            onclick="handleConversion('Servicio {{ service.title }}')"
-            class="relative w-full py-5 overflow-hidden group/btn rounded-full border border-luxury-gold/30 hover:border-luxury-gold bg-transparent transition-all duration-500"
-          >
-            <div class="absolute inset-0 bg-luxury-gold translate-y-[100%] group-hover/btn:translate-y-0 transition-transform duration-500"></div>
-            <span class="relative z-10 text-[10px] font-bold uppercase tracking-[0.3em] text-luxury-gold group-hover/btn:text-black transition-colors duration-500">
-                Reserva Consultoría Elite
-            </span>
-          </button>
+          <div class="mt-auto">
+            <a
+              href="{{ url_for('read_microblading' if service.id == 'microblading' else ('read_brows' if service.id == 'brows' else ('read_eyes' if service.id == 'eyeliner' else 'read_lips'))) }}"
+              class="relative block w-full py-5 overflow-hidden group/btn rounded-full border border-luxury-gold/30 hover:border-luxury-gold bg-transparent transition-all duration-500 text-center"
+            >
+              <div class="absolute inset-0 bg-luxury-gold translate-y-[100%] group-hover/btn:translate-y-0 transition-transform duration-500"></div>
+              <span class="relative z-10 text-[10px] font-bold uppercase tracking-[0.3em] text-luxury-gold group-hover/btn:text-black transition-colors duration-500">
+                  Ver Detalles Elite
+              </span>
+            </a>
+          </div>
         </div>
       </div>
       {% endfor %}

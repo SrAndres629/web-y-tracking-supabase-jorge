@@ -1,0 +1,36 @@
+{% extends "layouts/service_base.html" %}
+
+{% block service_gallery %}
+    {% include "sections/gallery.html" %}
+{% endblock service_gallery %}
+
+{% block service_content %}
+<section class="py-24 bg-transparent border-t border-white/5">
+    <div class="container mx-auto px-6">
+        <div class="grid md:grid-cols-2 gap-20 items-center">
+            <div data-aos="fade-right">
+                <h2 class="font-serif text-4xl text-white mb-8">El Arte del <span class="text-luxury-gold italic">Sombreado</span></h2>
+                <p class="text-gray-400 mb-10 font-light leading-relaxed">
+                    Nuestra técnica de Sombreado Dual (Powder Brows) crea un efecto de maquillaje empolvado extremadamente natural. Es ideal para quienes desean cejas definidas pero suaves, con un degradado perfecto de principio a fin.
+                </p>
+                <div class="space-y-6">
+                    <div class="flex items-start gap-4">
+                        <div class="mt-1 w-2 h-2 rounded-full bg-luxury-gold shadow-glow-gold"></div>
+                        <p class="text-sm text-gray-300"><span class="text-white font-bold">Ideal para piel grasa:</span> Mayor retención de pigmento y durabilidad.</p>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <div class="mt-1 w-2 h-2 rounded-full bg-luxury-gold shadow-glow-gold"></div>
+                        <p class="text-sm text-gray-300"><span class="text-white font-bold">Efecto Degrade:</span> El inicio de la ceja es más suave, intensificándose hacia la cola.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="relative" data-aos="fade-left">
+                <div class="absolute -inset-4 bg-luxury-gold/10 blur-3xl rounded-full"></div>
+                <div class="relative border border-white/10 rounded-[3rem] overflow-hidden aspect-square">
+                    <img src="{{ url_for('static', path='assets/images/services/brows/after/powder_brows_after.webp') }}" class="w-full h-full object-cover" alt="Detalle Sombreado Dual" width="800" height="800">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock service_content %}

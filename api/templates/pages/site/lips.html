@@ -1,0 +1,28 @@
+{% extends "layouts/service_base.html" %}
+
+{% block service_content %}
+<section class="py-24 bg-transparent border-t border-white/5">
+    <div class="container mx-auto px-6">
+        <div class="grid md:grid-cols-2 gap-20 items-center">
+            <div data-aos="fade-right">
+                <h2 class="font-serif text-4xl text-white mb-8">Labios de <span class="text-luxury-gold italic">Seda</span></h2>
+                <p class="text-gray-400 mb-10 font-light leading-relaxed">
+                    Nuestra técnica Full Lip Velvet no solo aporta color; restaura la simetría perdida y define el arco de cupido con una naturalidad asombrosa.
+                </p>
+                <div class="p-8 rounded-[2rem] border border-luxury-gold/20 bg-luxury-gold/5 backdrop-blur-xl">
+                    <h4 class="text-luxury-gold font-bold mb-4 uppercase tracking-[0.2em] text-[10px]">Protocolo de Color</h4>
+                    <p class="text-gray-300 text-sm font-light italic">
+                        "Personalizamos cada mezcla cromática basándonos en tu subtono de piel para garantizar un envejecimiento del pigmento hacia un rubor saludable, nunca hacia tonos extraños."
+                    </p>
+                </div>
+            </div>
+            <div class="relative" data-aos="fade-left">
+                <div class="absolute -inset-4 bg-luxury-gold/10 blur-3xl rounded-full"></div>
+                <div class="relative border border-white/10 rounded-[3rem] overflow-hidden aspect-square">
+                    <img src="{{ url_for('static', path='assets/images/services/lips/after/lips_after_aligned.webp') }}" class="w-full h-full object-cover" alt="Detalle Labios" width="800" height="800">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock service_content %}

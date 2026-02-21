@@ -11,9 +11,7 @@ import pytest
 
 # ─── Constants ───────────────────────────────────────────────────
 PROJECT_ROOT = Path(
-    os.path.dirname(
-        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    )
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 )
 TEMPLATES_DIR = PROJECT_ROOT / "api" / "templates"
 TRACKING_DIR = PROJECT_ROOT / "static" / "engines" / "tracking"
@@ -66,9 +64,9 @@ class TestNoTrackingConflicts:
         content = _read_file(template)
         for pattern, description in BANNED_PATTERNS.items():
             matches = re.findall(pattern, content, re.IGNORECASE)
-            assert (
-                len(matches) == 0
-            ), f"{template.name}: Found banned pattern: {description}\n  Matches: {matches}"
+            assert len(matches) == 0, (
+                f"{template.name}: Found banned pattern: {description}\n  Matches: {matches}"
+            )
 
     @pytest.mark.parametrize(
         "template",
@@ -78,9 +76,9 @@ class TestNoTrackingConflicts:
     def test_no_inline_clarity(self, template):
         """Microsoft Clarity must NOT be loaded via inline script (use Zaraz tool)."""
         content = _read_file(template)
-        assert (
-            "clarity.ms/tag/" not in content
-        ), f"{template.name}: Inline Clarity script found — should be a Zaraz tool"
+        assert "clarity.ms/tag/" not in content, (
+            f"{template.name}: Inline Clarity script found — should be a Zaraz tool"
+        )
 
     @pytest.mark.parametrize(
         "template",
@@ -92,9 +90,9 @@ class TestNoTrackingConflicts:
         content = _read_file(template)
         # Check for direct fbq('init', ...) calls
         has_init = re.search(r'fbq\s*\(\s*["\']init["\']', content)
-        assert (
-            not has_init
-        ), f"{template.name}: Direct fbq('init') found — Zaraz handles pixel initialization"
+        assert not has_init, (
+            f"{template.name}: Direct fbq('init') found — Zaraz handles pixel initialization"
+        )
 
 
 # =================================================================
@@ -123,30 +121,28 @@ class TestBaseTemplateZaraz:
     def test_noscript_has_pixel(self):
         """The noscript tag must contain a Meta Pixel tracking pixel."""
         content = self._get_base_html()
-        assert (
-            "facebook.com/tr" in content
-        ), "Noscript fallback missing Facebook tracking pixel"
+        assert "facebook.com/tr" in content, "Noscript fallback missing Facebook tracking pixel"
 
     def test_no_duplicate_zaraz_script(self):
         """Base template must NOT manually load Zaraz script (autoInject handles it)."""
         content = self._get_base_html()
-        assert (
-            "zaraz.js" not in content
-        ), "Manual Zaraz script inclusion found — autoInjectScript handles this"
+        assert "zaraz.js" not in content, (
+            "Manual Zaraz script inclusion found — autoInjectScript handles this"
+        )
 
     def test_clarity_not_inline(self):
         """Microsoft Clarity must not be loaded as inline script."""
         content = self._get_base_html()
-        assert (
-            "clarity.ms/tag/" not in content
-        ), "Inline Clarity script found in base.html — use Zaraz tool"
+        assert "clarity.ms/tag/" not in content, (
+            "Inline Clarity script found in base.html — use Zaraz tool"
+        )
 
     def test_clarity_has_zaraz_comment(self):
         """There should be a comment indicating Clarity is managed via Zaraz."""
         content = self._get_base_html()
-        assert (
-            "Zaraz Dashboard" in content or "Zaraz" in content
-        ), "Missing comment about Clarity being managed via Zaraz"
+        assert "Zaraz Dashboard" in content or "Zaraz" in content, (
+            "Missing comment about Clarity being managed via Zaraz"
+        )
 
 
 # =================================================================
@@ -170,27 +166,25 @@ class TestTrackingJsZaraz:
     def test_zaraz_track_bridge_exists(self):
         """tracking.js must check for zaraz.track before falling back to fbq."""
         content = self._get_pixel_bridge()
-        assert (
-            "zaraz" in content and "window.zaraz.track" in content
-        ), "tracking.js does not reference zaraz.track() — missing Zaraz bridge"
+        assert "zaraz" in content and "window.zaraz.track" in content, (
+            "tracking.js does not reference zaraz.track() — missing Zaraz bridge"
+        )
 
     def test_no_duplicate_pageview_pixel(self):
         """tracking.js must NOT fire PageView via safeFbq/fbq (Zaraz handles this)."""
         content = self._get_tracking_engine()
         # Pixel-side PageView should not be sent explicitly
-        has_duplicate = re.search(
-            r"PixelBridge\.track\s*\(\s*['\"]PageView['\"]", content
+        has_duplicate = re.search(r"PixelBridge\.track\s*\(\s*['\"]PageView['\"]", content)
+        assert not has_duplicate, (
+            "tracking.js fires PageView via safeFbq — this duplicates Zaraz's AllPageviews action"
         )
-        assert (
-            not has_duplicate
-        ), "tracking.js fires PageView via safeFbq — this duplicates Zaraz's AllPageviews action"
 
     def test_capi_pageview_exists(self):
         """tracking.js should still send PageView to CAPI for server-side dedup."""
         content = self._get_tracking_engine()
-        assert (
-            "CAPI.track('PageView'" in content or 'CAPI.track("PageView"' in content
-        ), "tracking.js missing CAPI PageView event — needed for server-side deduplication"
+        assert "CAPI.track('PageView'" in content or 'CAPI.track("PageView"' in content, (
+            "tracking.js missing CAPI PageView event — needed for server-side deduplication"
+        )
 
     def test_zaraz_first_priority(self):
         """Zaraz should be checked BEFORE fbq in the safeFbq function."""
@@ -199,18 +193,16 @@ class TestTrackingJsZaraz:
         fbq_pos = content.find("window.fbq")
         # Allow for both existing, but zaraz should come first in safeFbq
         if zaraz_pos >= 0 and fbq_pos >= 0:
-            assert (
-                zaraz_pos < fbq_pos
-            ), "zaraz.track() must be checked before fbq() in safeFbq()"
+            assert zaraz_pos < fbq_pos, "zaraz.track() must be checked before fbq() in safeFbq()"
 
     def test_retry_queue_supports_zaraz(self):
         """The retry queue should attempt zaraz.track before fbq."""
         content = self._get_pixel_bridge()
         # In the retry interval, zaraz should be checked
         retry_section = content[content.find("_startRetryLoop") :]
-        assert (
-            "window.zaraz.track" in retry_section
-        ), "Retry queue does not check for zaraz — events may be lost"
+        assert "window.zaraz.track" in retry_section, (
+            "Retry queue does not check for zaraz — events may be lost"
+        )
 
 
 # =================================================================
@@ -224,27 +216,27 @@ class TestCTATrackingHooks:
     def test_hero_has_conversion_handler(self):
         """Hero section must have a handleConversion call."""
         content = _read_file(TEMPLATES_DIR / "sections" / "hero.html")
-        assert (
-            "handleConversion" in content
-        ), "hero.html missing handleConversion — CTA clicks won't be tracked"
+        assert "handleConversion" in content, (
+            "hero.html missing handleConversion — CTA clicks won't be tracked"
+        )
 
     def test_cta_final_has_conversion_handler(self):
         """CTA Final section must have a handleConversion call."""
         content = _read_file(TEMPLATES_DIR / "sections" / "cta_final.html")
-        assert (
-            "handleConversion" in content
-        ), "cta_final.html missing handleConversion — CTA clicks won't be tracked"
+        assert "handleConversion" in content, (
+            "cta_final.html missing handleConversion — CTA clicks won't be tracked"
+        )
 
     def test_services_has_data_attributes(self):
         """Services section must have data-service-category for ViewContent tracking."""
         content = _read_file(TEMPLATES_DIR / "sections" / "services.html")
-        assert (
-            "data-service-category" in content
-        ), "services.html missing data-service-category — ViewContent won't fire"
+        assert "data-service-category" in content, (
+            "services.html missing data-service-category — ViewContent won't fire"
+        )
 
     def test_gallery_has_conversion_handler(self):
         """Gallery section must have a handleConversion call."""
         content = _read_file(TEMPLATES_DIR / "sections" / "gallery.html")
-        assert (
-            "handleConversion" in content
-        ), "gallery.html missing handleConversion — CTA clicks won't be tracked"
+        assert "handleConversion" in content, (
+            "gallery.html missing handleConversion — CTA clicks won't be tracked"
+        )

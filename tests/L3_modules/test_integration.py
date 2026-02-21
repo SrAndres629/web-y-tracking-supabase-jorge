@@ -48,8 +48,8 @@ def test_tracking_flow_simulated(client):
             "user_agent": "TestBot",
         },
         "custom_data": {
-             "turnstile_token": "dummy_token_for_test" # Mocked in test env
-        }
+            "turnstile_token": "dummy_token_for_test"  # Mocked in test env
+        },
     }
 
     # Send to actual endpoint

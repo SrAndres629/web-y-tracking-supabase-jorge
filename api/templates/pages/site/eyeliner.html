@@ -1,0 +1,36 @@
+{% extends "layouts/service_base.html" %}
+
+{% block service_content %}
+<section class="py-24 bg-transparent border-t border-white/5">
+    <div class="container mx-auto px-6">
+        <div class="grid md:grid-cols-2 gap-20 items-center">
+            <div data-aos="fade-right">
+                <h2 class="font-serif text-4xl text-white mb-8">Mirada <span class="text-luxury-gold italic">Intensa</span> 24/7</h2>
+                <p class="text-gray-400 mb-10 font-light leading-relaxed">
+                    A diferencia del maquillaje convencional, nuestra técnica de delineado permanente se integra con la línea de las pestañas para un efecto de densidad natural y elegancia eterna.
+                </p>
+                <ul class="space-y-6">
+                    <li class="flex items-center gap-4 text-white text-sm">
+                        <i class="fas fa-check-circle text-luxury-gold"></i>
+                        Waterproof & Smudge-proof absoluto.
+                    </li>
+                    <li class="flex items-center gap-4 text-white text-sm">
+                        <i class="fas fa-check-circle text-luxury-gold"></i>
+                        Diseño adaptado a la forma de tu párpado.
+                    </li>
+                    <li class="flex items-center gap-4 text-white text-sm">
+                        <i class="fas fa-check-circle text-luxury-gold"></i>
+                        Cicatrización en tiempo récord.
+                    </li>
+                </ul>
+            </div>
+            <div class="relative" data-aos="fade-left">
+                <div class="absolute -inset-4 bg-luxury-gold/10 blur-3xl rounded-full"></div>
+                <div class="relative border border-white/10 rounded-[3rem] overflow-hidden aspect-square">
+                    <img src="{{ url_for('static', path='assets/images/services/eyes/after/eyes_after.webp') }}" class="w-full h-full object-cover" alt="Detalle Eyeliner" width="800" height="800">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock service_content %}

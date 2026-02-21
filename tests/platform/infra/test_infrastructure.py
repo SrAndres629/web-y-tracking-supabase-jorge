@@ -55,9 +55,7 @@ def test_environment_variables():
                 f"Missing: {missing_vars}, Placeholders: {placeholder_vars}"
             )
         elif is_ci and not is_strict_audit:
-            pytest.skip(
-                f"💡 CI Mode: Missing secrets {missing_vars}. Skipping integration audit."
-            )
+            pytest.skip(f"💡 CI Mode: Missing secrets {missing_vars}. Skipping integration audit.")
         else:
             pytest.skip(
                 f"⚠️ Skipping infrastructure integration: "
@@ -85,9 +83,7 @@ def test_database_connection():
         if is_prod:
             pytest.fail("🚨 PRODUCTION ERROR: DATABASE_URL contains a placeholder.")
         else:
-            logger.info(
-                "⚠️ Stub/Placeholder DSN detected. Verifying SQLite fallback path."
-            )
+            logger.info("⚠️ Stub/Placeholder DSN detected. Verifying SQLite fallback path.")
             from app.database import get_db_connection
 
             try:
@@ -95,9 +91,7 @@ def test_database_connection():
                     cur = conn.cursor()
                     cur.execute("SELECT 1")
                     assert cur.fetchone() is not None
-                pytest.skip(
-                    "✅ SQLite connection verified. Skipping real Postgres check (Local)."
-                )
+                pytest.skip("✅ SQLite connection verified. Skipping real Postgres check (Local).")
             except Exception as e:
                 pytest.fail(f"🔥 Fallo conexión SQLite Fallback: {e!s}")
 
@@ -127,11 +121,7 @@ def test_redis_connection():
     redis_url = str(settings.UPSTASH_REDIS_REST_URL or "")
     is_prod = os.getenv("VERCEL") or os.getenv("RENDER")
 
-    if (
-        not redis_url
-        or "stub" in redis_url.lower()
-        or "set_in_production" in redis_url.lower()
-    ):
+    if not redis_url or "stub" in redis_url.lower() or "set_in_production" in redis_url.lower():
         if is_prod:
             pytest.fail("🚨 PRODUCTION ERROR: Redis URL is a placeholder.")
         else:

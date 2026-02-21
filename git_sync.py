@@ -85,16 +85,10 @@ class Console:
         except (UnicodeEncodeError, AttributeError):
             enc = sys.stdout.encoding or "utf-8"
             if hasattr(sys.stdout, "buffer") and sys.stdout.buffer:
-                sys.stdout.buffer.write(
-                    (str(text) + "\n").encode(enc, errors="replace")
-                )
+                sys.stdout.buffer.write((str(text) + "\n").encode(enc, errors="replace"))
                 sys.stdout.flush()
             else:
-                print(
-                    str(text)
-                    .encode(enc, errors="replace")
-                    .decode(enc, errors="replace")
-                )
+                print(str(text).encode(enc, errors="replace").decode(enc, errors="replace"))
 
     @staticmethod
     def log(msg: Any, symbol: str = "*") -> None:
@@ -149,9 +143,7 @@ class SecurityAuditor:
         """Verifica que el middleware de seguridad tenga todos los headers"""
         Console.section("🔒 SECURITY MIDDLEWARE AUDIT")
 
-        middleware_path = os.path.join(
-            self.repo_path, "app", "middleware", "security.py"
-        )
+        middleware_path = os.path.join(self.repo_path, "app", "middleware", "security.py")
         if not os.path.exists(middleware_path):
             self.issues.append("Security middleware not found!")
             return False
@@ -174,9 +166,7 @@ class SecurityAuditor:
 
         # Verificar CSP en modo estricto (no report-only)
         if "Content-Security-Policy-Report-Only" in content:
-            self.warnings.append(
-                "CSP is in Report-Only mode. Consider using strict mode."
-            )
+            self.warnings.append("CSP is in Report-Only mode. Consider using strict mode.")
             Console.warning("CSP in Report-Only mode")
 
         if "Content-Security-Policy" in content:
@@ -196,9 +186,7 @@ class SecurityAuditor:
         """Verifica que existan robots.txt y sitemap.xml"""
         Console.section("🔍 SEO FILES AUDIT")
 
-        routes_path = os.path.join(
-            self.repo_path, "app", "interfaces", "api", "routes", "seo.py"
-        )
+        routes_path = os.path.join(self.repo_path, "app", "interfaces", "api", "routes", "seo.py")
         if not os.path.exists(routes_path):
             self.issues.append("SEO routes not found!")
             return False
@@ -228,9 +216,7 @@ class SecurityAuditor:
         """Verifica meta tags en templates"""
         Console.section("🏷️  META TAGS AUDIT")
 
-        base_template = os.path.join(
-            self.repo_path, "api", "templates", "layouts", "base.html"
-        )
+        base_template = os.path.join(self.repo_path, "api", "templates", "layouts", "base.html")
         if not os.path.exists(base_template):
             self.issues.append("Base template not found!")
             return False
@@ -340,11 +326,7 @@ class BugHunter:
         for line_num, line in enumerate(lines, 1):
             # Skip comment lines quickly
             stripped = line.strip()
-            if (
-                not stripped
-                or stripped[0] in "#*-"
-                or stripped[:2] in ("//", "--", "/*", "* ")
-            ):
+            if not stripped or stripped[0] in "#*-" or stripped[:2] in ("//", "--", "/*", "* "):
                 continue
 
             for compiled_re, category, description in compiled_patterns:
@@ -402,8 +384,6 @@ class BugHunter:
                 Console.warning("Bug hunt timeout reached (30s). Stopping scan.")
                 break
 
-            # Exclude directories (in-place for os.walk)
-            # Using list(dirs) to avoid iteration issues if needed, or just clear/repopulate
             filtered_dirs = [d for d in dirs if d not in exclude_dirs]
             dirs.clear()
             dirs.extend(filtered_dirs)
@@ -426,9 +406,7 @@ class BugHunter:
                     # Show progress every 50 files
                     if files_scanned % 50 == 0:
                         elapsed = time.time() - start_time
-                        Console.log(
-                            f"Scanned {files_scanned} files... ({elapsed:.1f}s)"
-                        )
+                        Console.log(f"Scanned {files_scanned} files... ({elapsed:.1f}s)")
 
         elapsed = time.time() - start_time
         Console.log(f"Scan complete: {files_scanned} files scanned in {elapsed:.1f}s")
@@ -453,9 +431,7 @@ class BugHunter:
             for i in range(min(3, len(display_list))):
                 finding = display_list[i]
                 rel_path = os.path.relpath(str(finding["file"]), self.repo_path)
-                Console.write(
-                    f"  {Console.WARNING}{rel_path}:{finding['line']}{Console.ENDC}"
-                )
+                Console.write(f"  {Console.WARNING}{rel_path}:{finding['line']}{Console.ENDC}")
                 Console.write(f"    {finding['description']}")
             if len(cat_findings) > 3:
                 Console.write(f"  ... and {len(cat_findings) - 3} more")
@@ -502,9 +478,7 @@ class RelatedFilesFinder:
             return related
 
         # Search for Python imports
-        python_imports = re.findall(
-            r"from\s+([\w.]+)\s+import|import\s+([\w.]+)", content
-        )
+        python_imports = re.findall(r"from\s+([\w.]+)\s+import|import\s+([\w.]+)", content)
         for match in python_imports:
             module = str(match[0] or match[1])
             module_path = module.replace(".", "/") + ".py"
@@ -533,9 +507,7 @@ class RelatedFilesFinder:
         if "routes" in target_file or "views" in target_file:
             template_patterns = re.findall(r"['\"]([\w/]+\.html)['\"]", content)
             for template in template_patterns:
-                template_path = os.path.join(
-                    self.repo_path, "api", "templates", str(template)
-                )
+                template_path = os.path.join(self.repo_path, "api", "templates", str(template))
                 if os.path.exists(template_path):
                     related.append((template_path, f"Template: {template}"))
 
@@ -747,9 +719,7 @@ class SystemAuditor:
 
         Console.error(f"Score de Salud: < 100% ({len(self.issues)} errores)")
         for issue in self.issues:
-            Console.write(
-                f"- {issue['file']}:{issue['line']} [{issue['type']}] {issue['message']}"
-            )
+            Console.write(f"- {issue['file']}:{issue['line']} [{issue['type']}] {issue['message']}")
 
         return False
 
@@ -778,9 +748,7 @@ class InfrastructureAuditor:
         try:
             headers: Dict[str, str] = {"Authorization": f"Bearer {self.vercel_token}"}
             project_id: str = os.getenv("VERCEL_PROJECT_ID", "")
-            url = (
-                f"https://api.vercel.com/v6/deployments?projectId={project_id}&limit=1"
-            )
+            url = f"https://api.vercel.com/v6/deployments?projectId={project_id}&limit=1"
 
             # Using Any for requests to bypass type checking issues if necessary
             req_any: Any = requests
@@ -845,9 +813,7 @@ def purge_cloudflare_cache() -> None:
             "Content-Type": "application/json",
         }
         data = json.dumps({"purge_everything": True})
-        req = urllib.request.Request(
-            url, data=data.encode("utf-8"), headers=headers, method="POST"
-        )
+        req = urllib.request.Request(url, data=data.encode("utf-8"), headers=headers, method="POST")
         with urllib.request.urlopen(req, timeout=10) as response:
             if response.status == 200:
                 Console.success("Cloudflare Edge Cache Purged.")
@@ -998,39 +964,25 @@ def _post_deploy_verify() -> None:
         if resp.status_code == 200:
             version_match = re.search(r"\?v=(\d+)", str(resp.text))
             new_version = version_match.group(1) if version_match else "Unknown"
-            Console.success(
-                f"PRODUCCIÓN ACTUALIZADA: Versión Atómica {new_version} activa."
-            )
+            Console.success(f"PRODUCCIÓN ACTUALIZADA: Versión Atómica {new_version} activa.")
         else:
             Console.warning(f"Pre-Warm status: {resp.status_code}")
     except Exception as e:
         Console.warning(f"Pre-Warm failed: {e}")
 
-    print(
-        f"\n{Console.GREEN}System is Live: https://jorgeaguirreflores.com{Console.ENDC}"
-    )
+    print(f"\n{Console.GREEN}System is Live: https://jorgeaguirreflores.com{Console.ENDC}")
 
 
 # =================================================================
 # MAIN ENTRY POINT
 # =================================================================
 def main():
-    parser = argparse.ArgumentParser(
-        description="Silicon Valley Deployment & Audit Tool"
-    )
-    parser.add_argument(
-        "--force", action="store_true", help="⚠️ DANGER: Bypass all checks"
-    )
-    parser.add_argument(
-        "--security", action="store_true", help="🔒 Run security audit only"
-    )
+    parser = argparse.ArgumentParser(description="Silicon Valley Deployment & Audit Tool")
+    parser.add_argument("--force", action="store_true", help="⚠️ DANGER: Bypass all checks")
+    parser.add_argument("--security", action="store_true", help="🔒 Run security audit only")
     parser.add_argument("--bug-hunt", action="store_true", help="🐛 Run bug hunt only")
-    parser.add_argument(
-        "--find-related", metavar="FILE", help="🔍 Find files related to FILE"
-    )
-    parser.add_argument(
-        "--pattern", metavar="PATTERN", help="🔍 Find files matching pattern"
-    )
+    parser.add_argument("--find-related", metavar="FILE", help="🔍 Find files related to FILE")
+    parser.add_argument("--pattern", metavar="PATTERN", help="🔍 Find files matching pattern")
     parser.add_argument("message", nargs="?", default=None, help="Commit message")
     parser.add_argument(
         "--yes-to-deploy",
@@ -1078,9 +1030,7 @@ def main():
         sys.exit(0 if passed else 1)
 
     # Modo: Full Deployment Pipeline
-    print(
-        f"\n{Console.BOLD}[NEURAL-SYNC] Initializing Silicon Valley Protocol...{Console.ENDC}\n"
-    )
+    print(f"\n{Console.BOLD}[NEURAL-SYNC] Initializing Silicon Valley Protocol...{Console.ENDC}\n")
 
     # Ejecutar auditoría de seguridad primero
     security = SecurityAuditor(REPO_PATH)

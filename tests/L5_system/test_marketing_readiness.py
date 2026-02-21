@@ -7,7 +7,6 @@ import pytest
 @pytest.mark.performance
 @pytest.mark.asyncio
 async def test_performance_optimization_headers():
-
     """
     Verifies that Gzip and Cache-Control are working.
     These are critical for low CPM and high ROI.

@@ -90,9 +90,7 @@ DBCursor: TypeAlias = sqlite3.Cursor | PgCursor | SQLiteCursorWrapper
 
 # DB_ERRORS: Tuple of exceptions for safe catching across backends
 DB_ERRORS: Tuple[Type[Exception], ...] = (  # type: ignore[assignment]
-    (sqlite3.Error, psycopg2.Error)
-    if HAS_POSTGRES
-    else (sqlite3.Error,)
+    (sqlite3.Error, psycopg2.Error) if HAS_POSTGRES else (sqlite3.Error,)
 )
 
 logger = logging.getLogger(__name__)
@@ -121,7 +119,7 @@ if settings.DATABASE_URL and HAS_POSTGRES:
     else:
         logger.warning(
             "🛡️ Deterministic Guard: detected invalid DSN (%s...). Falling back to SQLite.",
-            str(settings.DATABASE_URL)[:10] if settings.DATABASE_URL else "",  # noqa: E501
+            str(settings.DATABASE_URL)[:10] if settings.DATABASE_URL else "",
         )
         # Logic to append query param could go here, but usually users fix ENV.
 

@@ -29,7 +29,9 @@ if (
     limiter_storage = broker_url
     logger.info(f"🌀 Rate Limiter using Redis storage: {limiter_storage.split('@')[-1]}")
 elif isinstance(broker_url, str) and broker_url.startswith("https://"):
-    logger.warning("⚠️ Rate Limiter: Upstash REST URL detected. Falling back to MEMORY (REST not supported by slowapi).")
+    logger.warning(
+        "⚠️ Rate Limiter: Upstash REST URL detected. Falling back to MEMORY (REST not supported by slowapi)."
+    )
     limiter_storage = "memory://"
 else:
     logger.info("⚡ Rate Limiter using MEMORY storage (No valid Redis URI or Serverless)")

@@ -3,7 +3,8 @@ import os
 import sys
 
 # Rutas base
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../'))
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../"))
+
 
 def check_infra_status():
     """Simula auditoría de infraestructura (Vercel/CF)."""
@@ -11,8 +12,9 @@ def check_infra_status():
     return [
         "OK: Conectividad con Edge Network (Simulada).",
         "OK: Cache Policy verificada.",
-        "INFO: Vercel Readiness: READY."
+        "INFO: Vercel Readiness: READY.",
     ]
+
 
 def run_edge_audit():
     print("======== INFORME DE INFRAESTRUCTURA (SRE) ========")
@@ -20,6 +22,7 @@ def run_edge_audit():
         print(f"  {res}")
     print("\n[ESTADO FINAL] Auditoría de infraestructura completada.")
     print("===================================================")
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 2 or sys.argv[1] == "audit":

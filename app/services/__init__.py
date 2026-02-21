@@ -94,6 +94,26 @@ class ContentManager:
                 ],
             },
             {
+                "id": "brows",
+                "title": "Sombreado Dual (Powder Brows)",
+                "subtitle": "Efectos de Sombra y Degradado",
+                "description": (
+                    "¿Buscas un efecto de maquillaje suave y duradero? "
+                    "Nuestra técnica de sombreado aporta densidad y definición "
+                    "con un degradado elegante que enmarca tu rostro a la perfección."
+                ),
+                "icon": "fa-paint-brush",
+                "image": "/static/assets/images/service_brows.webp",
+                "rating": "4.9",
+                "clients": "+540",
+                "badges": ["Top Choice", "Efecto Maquillaje", "Duración: 2-3 años"],
+                "benefits": [
+                    "Diseño de Visajismo incluido",
+                    "Perfecto para pieles grasas",
+                    "Resultado natural y definido",
+                ],
+            },
+            {
                 "id": "lips",
                 "title": "Labios Velvet Gloss",
                 "subtitle": "Rejuvenecimiento y Volumen",
@@ -125,8 +145,7 @@ class ContentManager:
             "facebook": "https://facebook.com/jorgeaguirreflores",
             "tiktok": "https://tiktok.com/@jorgeaguirreflores",
             "cta_text": (
-                "Hola Jorge, vi su web y me interesa una "
-                "valoración para micropigmentación."
+                "Hola Jorge, vi su web y me interesa una valoración para micropigmentación."
             ),
             "cta_assessment": (
                 "Hola Jorge, quiero agendar mi diagnóstico "
@@ -184,9 +203,7 @@ class ContentManager:
                     cls._ram_cache[key] = content
                     cls._cache_times[key] = time.time()
                     try:
-                        await redis_cache.set_json(
-                            f"content:{key}", content, expire=cls.CACHE_TTL
-                        )
+                        await redis_cache.set_json(f"content:{key}", content, expire=cls.CACHE_TTL)
                         logger.debug(
                             "✅ [SWR] Cache updated for '%s' (%dms)",
                             key,
@@ -213,9 +230,7 @@ class ContentManager:
         return None
 
     @classmethod
-    def _validate_services_list(
-        cls, content: List[Dict[str, Any]]
-    ) -> List[Dict[str, Any]]:
+    def _validate_services_list(cls, content: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Deep validation for the services configuration list"""
         valid_items: List[Dict[str, Any]] = []
         fallback_cfg = cast(List[Dict[str, Any]], cls._FALLBACKS["services_config"])

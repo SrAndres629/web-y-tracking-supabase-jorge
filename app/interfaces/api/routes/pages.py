@@ -263,6 +263,114 @@ async def read_tracking_motor(
     return response
 
 
+@router.get("/microblading", response_class=HTMLResponse)
+async def read_microblading(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    fbp_cookie: Optional[str] = Cookie(default=None, alias="_fbp"),
+    fbc_cookie: Optional[str] = Cookie(default=None, alias="_fbc"),
+) -> Response:
+    """PÁGINA: Microblading HD - Ingeniería de la Mirada."""
+    return await _render_service_page(
+        request, background_tasks, "microblading", fbp_cookie, fbc_cookie
+    )
+
+
+@router.get("/cejas", response_class=HTMLResponse)
+async def read_brows(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    fbp_cookie: Optional[str] = Cookie(default=None, alias="_fbp"),
+    fbc_cookie: Optional[str] = Cookie(default=None, alias="_fbc"),
+) -> Response:
+    """PÁGINA: Sombreado Dual (Powder Brows)."""
+    return await _render_service_page(request, background_tasks, "brows", fbp_cookie, fbc_cookie)
+
+
+@router.get("/ojos", response_class=HTMLResponse)
+async def read_eyes(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    fbp_cookie: Optional[str] = Cookie(default=None, alias="_fbp"),
+    fbc_cookie: Optional[str] = Cookie(default=None, alias="_fbc"),
+) -> Response:
+    """PÁGINA: Ocular Precision (Eyeliner)."""
+    return await _render_service_page(request, background_tasks, "eyeliner", fbp_cookie, fbc_cookie)
+
+
+@router.get("/labios", response_class=HTMLResponse)
+async def read_lips(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    fbp_cookie: Optional[str] = Cookie(default=None, alias="_fbp"),
+    fbc_cookie: Optional[str] = Cookie(default=None, alias="_fbc"),
+) -> Response:
+    """PÁGINA: Full Lip Velvet (Acuarela de Labios)."""
+    return await _render_service_page(request, background_tasks, "lips", fbp_cookie, fbc_cookie)
+
+
+async def _render_service_page(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    service_id: str,
+    fbp_cookie: Optional[str],
+    fbc_cookie: Optional[str],
+) -> Response:
+    """Helper to render service pages with specialized elite logic."""
+    ident = _extract_identity_info(request)
+    services_config = await get_services_config()
+    contact_config = await get_contact_config()
+
+    # Find specific service
+    service = next((s for s in services_config if s["id"] == service_id), None)
+    if not service:
+        # Fallback to first if not found (defensive)
+        service = services_config[0]
+
+    event_id = str(int(time.time() * 1000))
+    external_id = legacy.generate_external_id(ident["ip"], ident["ua"])
+    fbclid = await _resolve_fbclid_full(request, fbc_cookie, external_id)
+
+    # SEO Specialized for the service
+    seo_meta = SEOEngine.get_page_metadata(
+        f"/{service_id}",
+        {
+            "title": f"{service['title']} | Jorge Aguirre Flores Elite",
+            "description": service["description"],
+        },
+    )
+
+    schemas = [
+        SEOEngine.get_global_schema(),
+        SEOEngine.get_service_schema(service),
+        SEOEngine.get_breadcrumb_schema(
+            [
+                {"name": "Inicio", "path": "/"},
+                {"name": service["title"], "path": f"/{service_id}"},
+            ]
+        ),
+    ]
+
+    _schedule_tracking(background_tasks, request, ident, external_id, fbclid, fbp_cookie, event_id)
+
+    response = templates.TemplateResponse(
+        request=request,
+        name=f"pages/site/{service_id}.html",
+        context={
+            "pixel_id": settings.META_PIXEL_ID,
+            "pageview_event_id": event_id,
+            "external_id": external_id,
+            "fbclid": fbclid or "",
+            "service": service,
+            "all_services": services_config,
+            "contact": contact_config,
+            "seo": {**seo_meta, "json_ld": SEOEngine.generate_all_json_ld(schemas)},
+        },
+    )
+    _set_identity_cookies(response, "variant_a", ident, fbclid, fbp_cookie)
+    return response
+
+
 @router.get("/onboarding", response_class=HTMLResponse)
 async def read_onboarding(request: Request) -> Response:
     """CLIENT ONBOARDING PAGE - Self-service credential generation."""

@@ -4,6 +4,7 @@ from main import app
 
 client = TestClient(app)
 
+
 def test_diagnostic_endpoint():
     """Verifica que el endpoint de diagnóstico responda correctamente."""
     response = client.get("/health/diagnostics")
@@ -12,6 +13,7 @@ def test_diagnostic_endpoint():
     assert "status" in data
     assert "checks" in data
     assert "version" in data
+
 
 def test_root_access():
     """Verifica que el home cargue o al menos no crashee el servidor."""
