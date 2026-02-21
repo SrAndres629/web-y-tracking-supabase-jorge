@@ -1,0 +1,23 @@
+---
+name: {{ name }}
+description: {{ description }}
+---
+
+# {{ title }}
+
+## Goal
+{{ goal }}
+
+## Instructions
+1. **Analyze Input**: ...
+2. **Execute Logic**: ...
+   - Use scripts if necessary: `python3 scripts/example.py`
+3. **Present Results**: ...
+
+## Examples
+- Input: ...
+- Output: ...
+
+## Constraints
+- Do not ...
+- Always ...

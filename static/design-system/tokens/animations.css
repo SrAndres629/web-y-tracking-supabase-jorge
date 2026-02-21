@@ -147,6 +147,16 @@
   }
 }
 
+@keyframes scroll-vertical {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(200%); }
+}
+
+@keyframes pulse-slow {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.1); }
+}
+
 /* -----------------------------------------------------------------
    UTILITY CLASSES (Optional - can be used with @apply)
    ----------------------------------------------------------------- */
@@ -174,6 +184,14 @@
 .animate-liquid-gold {
   background-size: 200% auto;
   animation: liquid-gold-flow 6s linear infinite;
+}
+
+.animate-scroll-vertical {
+    animation: scroll-vertical 2s cubic-bezier(0.7, 0, 0.3, 1) infinite;
+}
+
+.animate-pulse-slow {
+    animation: pulse-slow 8s ease-in-out infinite;
 }
 
 /* Pause animations for accessibility */

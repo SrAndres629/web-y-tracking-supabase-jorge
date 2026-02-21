@@ -764,7 +764,9 @@ class InfrastructureAuditor:
         # API Tokens from environment
         self.vercel_token: str = os.getenv("VERCEL_TOKEN", "")
         self.supabase_url: str = os.getenv("SUPABASE_URL", "")
-        self.supabase_key: str = os.getenv("SUPABASE_KEY", "")
+        self.supabase_key: str = (
+            os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_KEY") or ""
+        )
 
     def check_vercel_health(self) -> bool:
         """Verifies Vercel deployment status."""

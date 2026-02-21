@@ -9,7 +9,12 @@ from typing import Any, Coroutine, Dict, List, Optional, cast
 # from functools import lru_cache
 import httpx
 from starlette.concurrency import run_in_threadpool
-from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
 
 from app import database as legacy_database
 from app.cache import redis_cache
@@ -49,48 +54,64 @@ class ContentManager:
         "services_config": [
             {
                 "id": "microblading",
-                "title": "Microblading 3D",
-                "subtitle": "Efecto Pelo a Pelo",
+                "title": "Microblading Elite 3D",
+                "subtitle": "Ingeniería de la Mirada",
                 "description": (
-                    "Técnica pelo a pelo para cejas ultra naturales. "
-                    "Rellena huecos y recupera la forma joven de tu ceja."
+                    "¿Cansada de cejas que no te representan? "
+                    "Nuestra técnica hiper-realista recrea cada vello "
+                    "con precisión quirúrgica para una mirada despierta y joven. "
+                    "Luce perfecta sin maquillarte."
                 ),
                 "icon": "fa-eye-dropper",
                 "image": "/static/assets/images/service_brows.webp",
                 "rating": "4.9",
                 "clients": "+620",
-                "badges": ["Más Pedido", "100% Natural", "2-3 años"],
-                "benefits": ["2 hrs sesión", "Sin dolor", "Retoque incluido"],
+                "badges": ["Top Choice", "Hiper-Realista", "Duración: 2-3 años"],
+                "benefits": [
+                    "Diseño de Visajismo incluido",
+                    "Cero dolor (Anestesia Dual)",
+                    "Retoque de perfeccionamiento",
+                ],
             },
             {
                 "id": "eyeliner",
-                "title": "Delineado Permanente",
-                "subtitle": "Efecto Pestañas",
+                "title": "Delineado Ultra-Fine",
+                "subtitle": "Definición de Mirada 24/7",
                 "description": (
-                    "Despierta con una mirada intensa y expresiva. "
-                    "Olvídate de que se corra el maquillaje."
+                    "Despierta lista para el éxito. Pigmentos premium que realzan "
+                    "el brillo de tus ojos sin que el maquillaje se corra jamás. "
+                    "Ahorra 15 minutos cada mañana con resultados de lujo."
                 ),
                 "icon": "fa-eye",
                 "image": "/static/assets/images/service_eyes.webp",
                 "rating": "4.9",
                 "clients": "+480",
-                "badges": ["Sin Dolor", "Efecto Pestañas", "2-3 años"],
-                "benefits": ["1.5 hrs sesión", "Anestesia tópica", "Resultados inmediatos"],
+                "badges": ["Mirada Intensa", "Waterproof 24/7", "Duración: 3 años"],
+                "benefits": [
+                    "Efecto densificador de pestañas",
+                    "Simetría perfecta garantizada",
+                    "Cicatrización ultra-rápida",
+                ],
             },
             {
                 "id": "lips",
-                "title": "Labios Full Color",
-                "subtitle": "Corrección y Volumen",
+                "title": "Labios Velvet Gloss",
+                "subtitle": "Rejuvenecimiento y Volumen",
                 "description": (
-                    "Correcciones y luce una boca jugosa y saludable. "
-                    "Tu color perfecto sin retocarte."
+                    "Recupera el color vibrante de tu juventud. Nuestra técnica Velvet "
+                    "define el contorno y aporta un rubor saludable irresistible. "
+                    "Labios jugosos y simétricos sin necesidad de labiales constantes."
                 ),
                 "icon": "fa-kiss-wink-heart",
                 "image": "/static/assets/images/service_lips.webp",
                 "rating": "5.0",
                 "clients": "+400",
-                "badges": ["Premium", "Color Natural", "1-2 años"],
-                "benefits": ["2 hrs sesión", "Corrige volumen", "Efecto rejuvenecedor"],
+                "badges": ["Efecto Volumen", "Pigmentos Orgánicos", "Duración: 2 años"],
+                "benefits": [
+                    "Corrección de asimetrías",
+                    "Color personalizado a tu piel",
+                    "Acabado aterciopelado natural",
+                ],
             },
         ],
         "contact_config": {
@@ -104,7 +125,8 @@ class ContentManager:
             "facebook": "https://facebook.com/jorgeaguirreflores",
             "tiktok": "https://tiktok.com/@jorgeaguirreflores",
             "cta_text": (
-                "Hola Jorge, vi su web y me interesa una valoración para micropigmentación."
+                "Hola Jorge, vi su web y me interesa una "
+                "valoración para micropigmentación."
             ),
             "cta_assessment": (
                 "Hola Jorge, quiero agendar mi diagnóstico "
@@ -162,7 +184,9 @@ class ContentManager:
                     cls._ram_cache[key] = content
                     cls._cache_times[key] = time.time()
                     try:
-                        await redis_cache.set_json(f"content:{key}", content, expire=cls.CACHE_TTL)
+                        await redis_cache.set_json(
+                            f"content:{key}", content, expire=cls.CACHE_TTL
+                        )
                         logger.debug(
                             "✅ [SWR] Cache updated for '%s' (%dms)",
                             key,
@@ -189,7 +213,9 @@ class ContentManager:
         return None
 
     @classmethod
-    def _validate_services_list(cls, content: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def _validate_services_list(
+        cls, content: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
         """Deep validation for the services configuration list"""
         valid_items: List[Dict[str, Any]] = []
         fallback_cfg = cast(List[Dict[str, Any]], cls._FALLBACKS["services_config"])
@@ -207,7 +233,8 @@ class ContentManager:
             if "badges" not in item or not isinstance(item["badges"], list):
                 item["badges"] = base_fallback["badges"]
                 logger.warning(
-                    "🩹 Injected fallback badges for service: %s", item.get("id", "unknown")
+                    "🩹 Injected fallback badges for service: %s",
+                    item.get("id", "unknown"),
                 )
 
             if "benefits" not in item or not isinstance(item["benefits"], list):

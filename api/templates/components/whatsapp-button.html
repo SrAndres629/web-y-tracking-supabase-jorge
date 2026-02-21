@@ -11,7 +11,8 @@
 {# Botón flotante premium (desktop + tablet) #}
 <div class="whatsapp-premium-container hidden md:block">
     <div id="experienceBadge" class="experience-mini-badge">
-        <img src="/static/assets/images/hero/jorge_hero_new.webp" alt="Jorge Aguirre Flores" loading="lazy">
+        <img src="{{ url_for('static', path='assets/images/hero/jorge_hero_new.webp') }}?v={{ system_version }}" 
+             alt="Jorge Aguirre Flores" loading="lazy" width="40" height="40">
         <span>30 Años de Arte</span>
     </div>
 
@@ -34,9 +35,9 @@
             shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
     <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-full border border-luxury-gold p-0.5">
-            <img src="/static/assets/images/hero/jorge_hero_new.webp" 
+            <img src="{{ url_for('static', path='assets/images/hero/jorge_hero_new.webp') }}?v={{ system_version }}" 
                  class="w-full h-full object-cover rounded-full"
-                 alt="Jorge Aguirre" loading="lazy">
+                 alt="Jorge Aguirre" loading="lazy" width="40" height="40">
         </div>
         <div>
             <p class="text-white text-xs font-bold leading-tight">Jorge Aguirre Flores</p>

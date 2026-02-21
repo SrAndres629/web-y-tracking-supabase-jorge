@@ -1,0 +1,24 @@
+/**
+ * ⚡ PERFORMANCE TOKENS
+ * Rentabilidad de renderizado y optimización de LCP/CLS
+ */
+
+.section-optimized {
+    content-visibility: auto;
+}
+
+.intrinsic-hero {
+    contain-intrinsic-size: 100vh;
+}
+
+.intrinsic-section {
+    contain-intrinsic-size: 1000px;
+}
+
+.intrinsic-services {
+    contain-intrinsic-size: 1200px;
+}
+
+.intrinsic-process {
+    contain-intrinsic-size: 800px;
+}

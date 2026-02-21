@@ -107,3 +107,39 @@
     @apply absolute left-4 top-4 text-gray-400 text-sm transition-all duration-300 pointer-events-none origin-[0];
   }
 }
+/* 💎 ELITE RECONSTRUCTION ANIMATIONS */
+@keyframes reveal-up {
+  0% { transform: translateY(100%); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+.animate-reveal-up {
+  animation: reveal-up 1.2s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes scroll-vertical {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(200%); }
+}
+.animate-scroll-vertical {
+  animation: scroll-vertical 2s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+@keyframes shimmer-fast {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
+}
+.animate-shimmer-fast {
+  animation: shimmer-fast 3s infinite linear;
+}
+
+.perspective-1000 {
+  perspective: 1000px;
+}

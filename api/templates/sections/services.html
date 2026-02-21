@@ -1,176 +1,141 @@
 <!-- ========== SERVICIOS ========== -->
 <section
   id="servicios"
-  class="overflow-hidden relative py-24 bg-transparent"
-  style="content-visibility: auto; contain-intrinsic-size: 1200px"
+  class="overflow-hidden relative py-24 bg-transparent section-optimized intrinsic-services"
 >
   <!-- Background Glow -->
   <div
-    class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150vw] max-w-[900px] h-[150vw] max-h-[900px] bg-luxury-gold/5 blur-luxury-2xl rounded-full pointer-events-none"
+    class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[900px] aspect-square bg-luxury-gold/5 blur-luxury-2xl rounded-full pointer-events-none"
   ></div>
 
   <div class="container relative z-10 px-6 mx-auto">
-    <!-- Section Header -->
-    <div class="mb-16 text-center">
-      <span
-        class="text-luxury-gold text-xs font-bold uppercase tracking-[0.4em]"
-        >Especialidades</span
-      >
-      <h2 class="mt-4 tracking-wide font-heading-section">
-        Servicios Exclusivos
-        <span class="italic text-gradient-gold">de Maquillaje Permanente</span>
+    <!-- Section Header: Elite Messaging -->
+    <div class="mb-20 text-center">
+      <div class="inline-flex items-center gap-3 px-4 py-1.5 mb-6 rounded-full border border-luxury-gold/20 bg-luxury-gold/5 backdrop-blur-md">
+        <span class="text-[10px] text-luxury-gold font-bold uppercase tracking-[0.3em]">
+            Protocolos de Autoridad
+        </span>
+      </div>
+      <h2 class="tracking-tight font-heading-section text-4xl md:text-5xl lg:text-6xl text-white">
+        Especialidades <span class="italic text-luxury-gold font-light">Elite</span>
       </h2>
-      <p
-        class="mx-auto mt-4 max-w-2xl font-light leading-relaxed text-gray-300"
-      >
-        Cada procedimiento es una obra de arte personalizada. Utilizamos las
-        técnicas más avanzadas para realzar tu belleza natural.
+      <p class="mx-auto mt-6 max-w-3xl text-lg font-light leading-relaxed text-gray-400">
+        Cada rostro es un lienzo único que merece una técnica de vanguardia. <br class="hidden md:block"/>
+        Fusionamos <span class="text-white font-medium">precisión doctoral</span> con sensibilidad artística para resultados que trascienden el tiempo.
       </p>
     </div>
 
-    <!-- Service Cards Grid -->
-    <div class="grid gap-8 md:grid-cols-3">
+    <!-- Service Cards Grid: Premium Glassmorphism -->
+    <div class="grid gap-10 md:grid-cols-3">
       {% for service in services %}
-      <!-- Servicio Dynamic: {{ service.title | e }} -->
       <div
-        data-service-category="{{ service.id | e }}"
-        class="flex flex-col p-0 h-full transition-transform duration-500 card-glass group hover:-translate-y-2"
+        class="group relative flex flex-col h-full rounded-[2.5rem] bg-[#0c0c0c] border border-white/5 overflow-hidden transition-all duration-700 hover:border-luxury-gold/30 hover:shadow-glow-gold/10"
         data-aos="fade-up"
-        data-aos-delay="{{ loop.index0 * 150 }}"
+        data-aos-delay="{{ loop.index0 * 100 }}"
       >
-        <!-- Image Container -->
-        <div
-          class="relative h-[280px] md:h-[320px] overflow-hidden rounded-t-2xl"
-        >
+        <!-- Luxury Card Glow (Hover Based) -->
+        <div class="absolute -inset-2 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 bg-gradient-to-tr from-luxury-gold/5 via-transparent to-white/5 blur-2xl pointer-events-none"></div>
+
+        <!-- Image Container: Cinematic Focus -->
+        <div class="relative h-[300px] overflow-hidden">
           <picture>
-            <source srcset="{{ service.image | e }}" type="image/webp" />
+            <source srcset="{{ service.image | e }}?v={{ system_version }}" type="image/webp" />
             <img
-              src="{{ service.image | e }}"
-              class="object-cover absolute inset-0 w-full h-full transition duration-700 group-hover:scale-110"
-              alt="{{ service.title | e }} - {{ service.subtitle | e }}"
+              src="{{ service.image | e }}?v={{ system_version }}"
+              class="object-cover w-full h-full transition-transform duration-[1.5s] ease-out group-hover:scale-105"
+              alt="{{ service.title | e }}"
               loading="lazy"
-              width="400"
-              height="320"
+              width="500"
+              height="400"
             />
           </picture>
-          <div
-            class="absolute inset-0 bg-gradient-to-t from-black to-transparent via-black/40"
-          ></div>
+          
+          <!-- Inner Shadow Overlay -->
+          <div class="absolute inset-0 bg-gradient-to-t from-[#0c0c0c] via-transparent to-black/20"></div>
 
-          <!-- Badges -->
-          <div class="flex absolute -top-3 right-4 z-20 flex-col gap-2">
-            {% if service.badges %}
-            <span
-              class="px-3 py-1 text-xs font-bold tracking-widest text-black uppercase rounded-full border shadow-lg service-badge popular bg-luxury-gold border-white/20"
-            >
-              <i class="fas fa-fire"></i> {{ service.badges[0] }}
-            </span>
-            {% endif %}
+          <!-- Badges: Premium floating label -->
+          {% if service.badges %}
+          <div class="absolute top-6 left-6 right-6 flex justify-between items-start">
+             <span class="px-3 py-1 text-[9px] font-black uppercase tracking-[0.2em] bg-white text-black rounded-sm shadow-xl">
+                 {{ service.badges[0] }}
+             </span>
+             <div class="flex gap-1.5">
+                <div class="w-1.5 h-1.5 rounded-full bg-luxury-gold shadow-glow-gold"></div>
+                <div class="w-1.5 h-1.5 rounded-full bg-white/20"></div>
+             </div>
           </div>
+          {% endif %}
         </div>
 
-        <!-- Content -->
-        <div class="relative z-10 p-6 rounded-b-2xl service-content-glass">
-          <!-- Icon -->
-          <div class="service-icon">
-            <i class="fas {{ service.icon }}"></i>
+        <!-- Content Area: Authority Layout -->
+        <div class="relative z-10 p-10 flex flex-col flex-grow">
+          <div class="flex justify-between items-center mb-6">
+             <span class="text-[10px] uppercase font-bold tracking-[0.2em] text-luxury-gold/70">
+                 {{ service.subtitle }}
+             </span>
+             <div class="flex items-center gap-1.5 text-luxury-gold">
+                 <i class="fas fa-star text-[10px]"></i>
+                 <span class="text-xs font-bold">{{ service.rating }}</span>
+             </div>
           </div>
 
-          <!-- Rating -->
-          <div class="service-rating">
-            <div class="stars">
-              <i class="fas fa-star"></i>
-              <i class="fas fa-star"></i>
-              <i class="fas fa-star"></i>
-              <i class="fas fa-star"></i>
-              <i class="fas fa-star"></i>
-            </div>
-            <span class="rating-text"
-              >{{ service.rating }} • {{ service.clients }} clientas</span
-            >
-          </div>
-
-          <h3 class="mb-2 font-serif text-xl tracking-wide text-luxury-text">
+          <h3 class="font-serif text-3xl text-white mb-6 group-hover:text-luxury-gold transition-colors duration-500">
             {{ service.title }}
           </h3>
-          <p class="mb-4 text-sm leading-relaxed text-gray-300">
-            {{ service.description }}
+          
+          <p class="text-gray-400 text-sm leading-relaxed mb-8 flex-grow font-light italic">
+            "{{ service.description }}"
           </p>
 
-          <!-- Benefits Row -->
-          <div class="service-info-row">
-            {% if service.badges and service.badges|length > 1 %} {% for badge
-            in service.badges[1:] %}
-            <span
-              class="service-badge {% if loop.index == 1 %}natural{% else %}duration{% endif %} font-bold text-xs"
-            >
-              {{ badge }}
-            </span>
-            {% endfor %} {% endif %}
-          </div>
-
-          <!-- Benefit Points -->
-          <div class="flex flex-wrap gap-3 mb-4">
+          <!-- Benefits List -->
+          <ul class="space-y-4 mb-10">
             {% for benefit in service.benefits %}
-            <span class="service-benefit"
-              ><i class="fas fa-check"></i> {{ benefit }}</span
-            >
+            <li class="flex items-center gap-3 text-xs text-gray-300 font-medium">
+                <i class="fas fa-check text-luxury-gold/60"></i>
+                {{ benefit }}
+            </li>
             {% endfor %}
-          </div>
+          </ul>
 
-          <!-- CTA Button -->
+          <!-- Action: Premium Button -->
           <button
             type="button"
             onclick="handleConversion('Servicio {{ service.title }}')"
-            class="py-4 w-full text-sm tracking-widest uppercase rounded-lg shadow-none btn-primary hover:shadow-glow-gold"
+            class="relative w-full py-5 overflow-hidden group/btn rounded-full border border-luxury-gold/30 hover:border-luxury-gold bg-transparent transition-all duration-500"
           >
-            <i class="fab fa-whatsapp"></i> Agendar Mi Cita
+            <div class="absolute inset-0 bg-luxury-gold translate-y-[100%] group-hover/btn:translate-y-0 transition-transform duration-500"></div>
+            <span class="relative z-10 text-[10px] font-bold uppercase tracking-[0.3em] text-luxury-gold group-hover/btn:text-black transition-colors duration-500">
+                Reserva Consultoría Elite
+            </span>
           </button>
         </div>
       </div>
       {% endfor %}
     </div>
 
-    <!-- Help CTA Section -->
-    <div class="help-cta-section" data-aos="fade-up" data-aos-delay="400">
+    <!-- Specialized Support: Luxury CTA -->
+    <div class="mt-24 p-12 md:p-16 rounded-[3rem] border border-white/5 bg-gradient-to-br from-white/[0.03] to-transparent backdrop-blur-3xl text-center relative overflow-hidden group">
+      <div class="absolute top-0 right-0 w-[400px] h-[400px] bg-luxury-gold/[0.03] blur-[100px] -translate-y-1/2 translate-x-1/2 rounded-full"></div>
+      
       <div class="relative z-10">
-        <span class="block mb-3 text-2xl text-luxury-gold"
-          ><i class="fas fa-comments"></i
-        ></span>
-        <h3 class="mb-3 font-serif text-xl md:text-2xl text-luxury-text">
-          ¿No sabes cuál elegir?
+        <h3 class="font-serif text-3xl md:text-5xl text-white mb-6">
+            ¿Buscas una <span class="italic text-luxury-gold">Transformación Personalizada</span>?
         </h3>
-        <p class="mx-auto mb-5 max-w-lg text-sm text-gray-300">
-          Te ayudo a encontrar el tratamiento perfecto para ti. Agenda una
-          valoración gratuita y diseñamos juntos tu transformación.
+        <p class="mx-auto mb-10 max-w-2xl text-gray-400 text-lg font-light leading-relaxed">
+            Permíteme realizar un diagnóstico de visajismo computarizado para encontrar la geometría exacta que favorece tus facciones.
         </p>
-        <button
-          type="button"
-          onclick="handleConversion('Asesoría Servicios')"
-          class="btn-outline-gold"
-        >
-          <i class="fab fa-whatsapp"></i> Pedir Asesoría Gratis
-        </button>
-      </div>
-    </div>
-
-    <!-- Trust Strip -->
-    <div class="trust-strip" data-aos="fade-up" data-aos-delay="500">
-      <div class="trust-item">
-        <i class="fas fa-award"></i>
-        <span>30 Años de Experiencia</span>
-      </div>
-      <div class="trust-item">
-        <i class="fas fa-shield-alt"></i>
-        <span>Técnicas Certificadas</span>
-      </div>
-      <div class="trust-item">
-        <i class="fas fa-heart"></i>
-        <span>+1,500 Clientas Felices</span>
-      </div>
-      <div class="trust-item">
-        <i class="fas fa-syringe"></i>
-        <span>Pigmentos Premium</span>
+        <div class="flex flex-col md:flex-row gap-6 justify-center items-center">
+            <button
+                type="button"
+                onclick="handleConversion('Asesoría Servicios')"
+                class="btn-gold-liquid px-12 py-5"
+            >
+                <i class="fab fa-whatsapp mr-2 text-lg"></i> Asesoría de Diseño Gratis
+            </button>
+            <p class="text-[10px] uppercase tracking-widest text-gray-500 font-bold border-l border-white/10 pl-6 hidden md:block">
+                Solo 5 valoraciones <br/> por semana
+            </p>
+        </div>
       </div>
     </div>
   </div>

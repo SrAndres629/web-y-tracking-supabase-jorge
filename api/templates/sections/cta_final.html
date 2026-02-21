@@ -2,28 +2,57 @@
 <section class="py-24 bg-luxury-black border-t border-luxury-gold/10 relative overflow-hidden">
     <!-- Spot Light Sutil -->
     <div
-        class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-luxury-gold/5 blur-[120px] rounded-full pointer-events-none">
+        class="absolute bottom-0 left-0 w-full max-w-[500px] aspect-square bg-luxury-gold/5 blur-[120px] rounded-full pointer-events-none">
     </div>
 
-    <div class="container mx-auto px-6 text-center relative z-10">
-        <span
-            class="inline-block py-1 px-3 rounded border border-luxury-gold/30 text-luxury-text text-xs font-bold uppercase tracking-widest mb-6">
-            Agenda Abierta 2025
-        </span>
-        <h2 class="font-serif text-4xl md:text-6xl text-luxury-text mb-8 tracking-wide">¿Lista para dejar de
-            <span class="italic text-luxury-gold">Maquillarte</span>?
-        </h2>
-        <p class="text-gray-400 max-w-2xl mx-auto mb-10 text-lg">
-            Agenda tu diseño gratuito hoy. Solo liberamos 5 cupos de valoración por semana.
-        </p>
-        <button type="button" onclick="handleConversion('CTA Final')"
-            class="btn-gold-liquid px-12 py-6 text-xl uppercase tracking-widest">
-            <i class="fab fa-whatsapp mr-3"></i> Agendar Valoración GRATIS
-        </button>
-        <a href="{{ contact.maps_url }}" target="_blank" rel="noopener noreferrer"
-            aria-label="Ver ubicación en Google Maps"
-            class="text-gray-600 block text-sm mt-6 hover:text-luxury-gold transition duration-300">
-            <i class="fas fa-map-marker-alt mr-2"></i> {{ contact.address }}
-        </a>
+  <div class="container mx-auto px-6 relative z-10">
+    <div class="max-w-4xl mx-auto rounded-[3rem] border border-luxury-gold/20 bg-[#0c0c0c] p-12 md:p-20 relative overflow-hidden shadow-glow-gold/10" data-aos="zoom-in">
+        <!-- Ambient Glows -->
+        <div class="absolute -top-24 -right-24 w-64 h-64 bg-luxury-gold/10 blur-[100px] rounded-full"></div>
+        <div class="absolute -bottom-24 -left-24 w-64 h-64 bg-luxury-gold/10 blur-[100px] rounded-full"></div>
+
+        <div class="relative z-10 text-center">
+            <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-luxury-gold/30 text-luxury-gold text-[10px] font-black uppercase tracking-[0.4em] mb-10">
+                <span class="relative flex h-2 w-2">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-luxury-gold opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2 w-2 bg-luxury-gold"></span>
+                </span>
+                Disponibilidad Limitada
+            </span>
+            
+            <h2 class="font-serif text-4xl md:text-7xl text-white mb-8 tracking-tight leading-tight">
+                Diseñemos tu <br class="hidden md:block"/>
+                <span class="italic text-luxury-gold font-light">Nueva Mirada</span>
+            </h2>
+            
+            <p class="text-gray-400 max-w-xl mx-auto mb-12 text-lg font-light leading-relaxed">
+                Agenda hoy tu sesión de visajismo avanzada. Solo liberamos <span class="text-white font-medium">5 cupos de diagnóstico gratuito</span> por semana para garantizar exclusividad clínica.
+            </p>
+
+            <div class="flex flex-col md:flex-row items-center justify-center gap-6">
+                <button 
+                    type="button" 
+                    onclick="handleConversion('CTA Final Main')"
+                    class="btn-gold-liquid px-12 py-6 text-lg w-full md:w-auto"
+                >
+                    <i class="fab fa-whatsapp mr-3 text-xl"></i> Reservar Diagnóstico VIP
+                </button>
+                
+                <a 
+                    href="{{ contact.maps_url }}" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    class="group flex items-center gap-3 text-gray-400 hover:text-white transition-colors duration-300 px-6 py-4"
+                >
+                    <i class="fas fa-location-dot text-luxury-gold group-hover:animate-bounce"></i>
+                    <span class="text-xs font-bold uppercase tracking-widest">{{ contact.address }}</span>
+                </a>
+            </div>
+            
+            <p class="mt-12 text-[10px] text-gray-500 uppercase tracking-[0.3em] font-medium">
+               Jorge Aguirre Flores • Estudio de Dermopigmentación Elite
+            </p>
+        </div>
     </div>
+  </div>
 </section>

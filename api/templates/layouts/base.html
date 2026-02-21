@@ -82,11 +82,54 @@
     />
     <meta
       property="og:image"
-      content="{{ seo.og_image if seo and seo.og_image else 'https://jorgeaguirreflores.com/static/assets/images/meta/og-image.webp' }}"
+      content="{{ seo.og_image if seo and seo.og_image else url_for('static', path='assets/images/meta/og-image.webp') }}?v={{ system_version }}"
     />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:locale" content="es_BO" />
+
+    <!-- 🗺️ SEMANTIC AUTHORITY (JSON-LD) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": "Jorge Aguirre Flores",
+        "image": "{{ url_for('static', path='assets/images/branding/luxury_logo.svg') }}",
+        "@id": "https://jorgeaguirreflores.com",
+        "url": "https://jorgeaguirreflores.com",
+        "telephone": "+591XXXXXXXXX",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Equipetrol",
+          "addressLocality": "Santa Cruz de la Sierra",
+          "addressRegion": "Santa Cruz",
+          "addressCountry": "BO"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": -17.7818,
+          "longitude": -63.1821
+        },
+        "openingHoursSpecification": {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday"
+          ],
+          "opens": "09:00",
+          "closes": "19:00"
+        },
+        "sameAs": [
+          "https://facebook.com/jorgeaguirreflores",
+          "https://instagram.com/jorgeaguirreflores"
+        ],
+        "description": "30 años de experiencia en Maquillaje Permanente y Microblading en Santa Cruz de la Sierra."
+      }
+    </script>
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
@@ -100,7 +143,7 @@
     />
     <meta
       name="twitter:image"
-      content="{{ seo.og_image if seo and seo.og_image else 'https://jorgeaguirreflores.com/static/assets/images/meta/og-image.webp' }}"
+      content="{{ seo.og_image if seo and seo.og_image else url_for('static', path='assets/images/meta/og-image.webp') }}?v={{ system_version }}"
     />
     {% endblock meta_tags %}
 

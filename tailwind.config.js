@@ -11,7 +11,7 @@ module.exports = {
     theme: {
         extend: {
             colors: {
-                'luxury-gold': '#D4AF37', // Gold 1
+                'luxury-gold': '#C5A059', // Gold 1
                 'luxury-gold-light': '#F1D06E', // Gold 2
                 'luxury-gold-dark': '#aa8c2c', // Gold 3 (generated dim)
                 'luxury-black': '#0a0a0a', // Deep Black
