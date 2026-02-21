@@ -105,10 +105,11 @@ class RedisSettings(BaseSettings):
 
     rest_url: Optional[str] = Field(default=None, alias="UPSTASH_REDIS_REST_URL")
     rest_token: Optional[str] = Field(default=None, alias="UPSTASH_REDIS_REST_TOKEN")
+    url: Optional[str] = Field(default=None, alias="REDIS_URL")
 
     @property
     def is_configured(self) -> bool:
-        return bool(self.rest_url and self.rest_token)
+        return bool(self.url or (self.rest_url and self.rest_token))
 
 
 class MetaSettings(BaseSettings):
@@ -489,7 +490,7 @@ class Settings(BaseSettings):
     @property
     def CELERY_BROKER_URL(self) -> Optional[str]:
         """Legacy Celery broker URL (not actively used in serverless)."""
-        return self.redis.rest_url
+        return self.redis.url or self.redis.rest_url
 
     @property
     def CORS_ALLOWED_ORIGINS(self) -> List[str]:

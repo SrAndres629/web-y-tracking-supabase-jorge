@@ -12,24 +12,27 @@ from app.config import settings
 logger = logging.getLogger(__name__)
 
 # Check for Redis URL (Upstash or Local)
-# NOTE: Using 'storage_uri' allows slowapi to auto-connect to Redis.
+# NOTE: slowapi requires redis:// or rediss:// scheme — Upstash REST (https://) won't work.
 limiter_storage = "memory://"
 
-# In Vercel, we only use Redis if it's explicitly configured and NOT the default internal one
+# In Vercel serverless, each invocation is stateless so memory is fine.
 is_vercel = os.getenv("VERCEL") or os.getenv("RENDER")
-default_redis = "redis://redis_evolution"
 
-# 🛡️ Defensive Check: Ensure it's a real string (Protects against Test Mocks)
+# 🛡️ Defensive Check: Only use Redis if it has a valid redis:// or rediss:// scheme
 broker_url = settings.CELERY_BROKER_URL
-if not isinstance(broker_url, str):
-    broker_url = None
-
-if broker_url and not (is_vercel and default_redis in broker_url):
-    # Only use Redis for slowapi if it's external (e.g. Upstash)
+if (
+    isinstance(broker_url, str)
+    and broker_url.startswith(("redis://", "rediss://"))
+    and "upstash.io" in broker_url
+):
+    # Only use Redis for slowapi if it's a proper Redis protocol connection
     limiter_storage = broker_url
     logger.info(f"🌀 Rate Limiter using Redis storage: {limiter_storage.split('@')[-1]}")
+elif isinstance(broker_url, str) and broker_url.startswith("https://"):
+    logger.warning("⚠️ Rate Limiter: Upstash REST URL detected. Falling back to MEMORY (REST not supported by slowapi).")
+    limiter_storage = "memory://"
 else:
-    logger.info("⚡ Rate Limiter using MEMORY storage (Optimized for Serverless Cold Start)")
+    logger.info("⚡ Rate Limiter using MEMORY storage (No valid Redis URI or Serverless)")
 
 # Initialize Limiter
 limiter = Limiter(key_func=get_remote_address, storage_uri=limiter_storage)
