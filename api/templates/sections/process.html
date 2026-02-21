@@ -1,131 +1,105 @@
 <!-- ========== PROCESO (SEO) ========== -->
-<section id="proceso" class="py-16 md:py-32 bg-transparent relative overflow-hidden section-optimized intrinsic-process">
+<section id="proceso" class="py-16 md:py-32 bg-transparent relative overflow-hidden"
+    style="content-visibility: auto; contain-intrinsic-size: 800px;">
     <!-- Background element -->
     <div
-        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[800px] aspect-square bg-luxury-gold/[0.02] blur-luxury-xl rounded-full pointer-events-none">
+        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-luxury-gold/[0.02] blur-luxury-xl rounded-full pointer-events-none">
     </div>
 
-  <div class="container relative z-10 mx-auto px-6">
-    <!-- Header: Authority & Vision -->
-    <div class="mb-24 text-center">
-      <div class="inline-flex items-center gap-3 px-4 py-1.5 mb-8 rounded-full border border-luxury-gold/20 bg-luxury-gold/5 backdrop-blur-md">
-        <span class="text-[10px] text-luxury-gold font-bold uppercase tracking-[0.4em]">
-            Ingeniería de Belleza
-        </span>
-      </div>
-      <h2 class="font-serif text-4xl md:text-7xl mb-8 tracking-tight text-white leading-[1.1]">
-        La Arquitectura de tu <br class="hidden md:block"/>
-        <span class="italic text-luxury-gold font-light">Nueva Mirada</span>
-      </h2>
-      <p class="mx-auto max-w-2xl text-gray-400 text-lg font-light leading-relaxed">
-        Un protocolo de 3 pasos diseñado para garantizar la perfección absoluta, <br class="hidden md:block"/>
-        basado en la geometría ósea y el visajismo avanzado.
-      </p>
+    <div class="container mx-auto px-6 text-center relative z-10">
+        <span class="text-luxury-gold/90 text-[10px] font-bold uppercase tracking-[0.6em] mb-8 block">Experiencia
+            VIP</span>
+        <h2 class="font-serif text-4xl md:text-6xl mb-6 tracking-wide text-gradient-gold">Tu Camino a la <span
+                class="italic text-white font-light">Perfección</span></h2>
+
+        <!-- Trust Badge -->
+        <p class="text-gray-300 text-sm mt-4 mb-12 md:mb-16 flex flex-wrap items-center justify-center gap-4">
+            <span class="flex items-center gap-2">
+                <i class="fas fa-clock text-luxury-gold"></i>
+                Tiempo total: ~2.5 horas
+            </span>
+            <span class="hidden md:inline text-luxury-gold/30">|</span>
+            <span class="flex items-center gap-2">
+                <i class="fas fa-shield-alt text-luxury-gold"></i>
+                Garantía de satisfacción
+            </span>
+        </p>
+
+        <div class="grid md:grid-cols-3 gap-8 md:gap-12 relative">
+            <!-- Animated Connector Line (Desktop) -->
+            <div class="hidden md:block absolute top-[60px] left-[16.67%] right-[16.67%] h-[2px] -z-10">
+                <div
+                    class="w-full h-full bg-gradient-to-r from-transparent via-luxury-gold/40 to-transparent rounded-full animate-pulse-gold">
+                </div>
+            </div>
+
+            <!-- Paso 01: Diagnóstico -->
+            <div class="process-step group" data-aos="fade-up" data-aos-delay="0">
+                <!-- Icon -->
+                <div class="process-icon mb-6">
+                    <i class="fas fa-search-plus"></i>
+                </div>
+                <h3 class="text-xl font-serif text-luxury-text mb-3 tracking-wide">Diagnóstico</h3>
+                <p class="text-gray-300 text-sm leading-relaxed font-light mb-4">
+                    Analizamos la geometría de tu rostro para recomendarte la técnica exacta.
+                </p>
+                <!-- Time Estimate -->
+                <span
+                    class="inline-flex items-center gap-1.5 text-xs text-luxury-gold/70 bg-luxury-gold/10 px-3 py-1 rounded-full">
+                    <i class="far fa-clock"></i> 10 min
+                </span>
+            </div>
+
+            <!-- Paso 02: Diseño Previo -->
+            <div class="process-step group" data-aos="fade-up" data-aos-delay="200">
+                <!-- Icon -->
+                <div class="process-icon mb-6">
+                    <i class="fas fa-pen-fancy"></i>
+                </div>
+                <h3 class="text-xl font-serif text-luxury-text mb-3 tracking-wide">Diseño Previo</h3>
+                <p class="text-gray-300 text-sm leading-relaxed font-light mb-4">
+                    Dibujamos con lápiz sobre tu piel. <span class="text-luxury-gold/90">Nada es definitivo
+                        hasta que sonríes.</span>
+                </p>
+                <!-- Time Estimate -->
+                <span
+                    class="inline-flex items-center gap-1.5 text-xs text-luxury-gold/70 bg-luxury-gold/10 px-3 py-1 rounded-full">
+                    <i class="far fa-clock"></i> 15 min
+                </span>
+            </div>
+
+            <!-- Paso 03: Transformación -->
+            <div class="process-step group" data-aos="fade-up" data-aos-delay="400">
+                <!-- Icon -->
+                <div class="process-icon mb-6">
+                    <i class="fas fa-magic"></i>
+                </div>
+                <h3 class="text-xl font-serif text-luxury-text mb-3 tracking-wide">Transformación</h3>
+                <p class="text-gray-300 text-sm leading-relaxed font-light mb-4">
+                    <span class="text-luxury-gold/90">Sin dolor traumático.</span> Sales lista para lucir tu
+                    nueva mirada.
+                </p>
+                <!-- Time Estimate -->
+                <span
+                    class="inline-flex items-center gap-1.5 text-xs text-luxury-gold/70 bg-luxury-gold/10 px-3 py-1 rounded-full">
+                    <i class="far fa-clock"></i> ~2 horas
+                </span>
+            </div>
+        </div>
+
+        <!-- Section CTA -->
+        <div class="mt-12 md:mt-16" data-aos="fade-up" data-aos-delay="600">
+            <a href="{{ contact.whatsapp }}?text={{ contact.cta_assessment|urlencode }}" target="_blank"
+                onclick="handleConversion('Proceso CTA')"
+                class="btn-primary group relative px-8 py-5 font-bold uppercase tracking-widest rounded-lg inline-flex items-center justify-center shadow-glow-gold hover:shadow-glow-gold-lg transition-all duration-500">
+                <span class="flex items-center gap-2 justify-center relative z-10">
+                    <i class="fab fa-whatsapp text-xl"></i> Agendar Tu Diagnóstico Gratis
+                </span>
+            </a>
+            <p class="text-gray-500 text-xs mt-4 flex items-center justify-center gap-2">
+                <span class="text-luxury-gold">✨</span>
+                Proceso 100% personalizado • Sin costo inicial
+            </p>
+        </div>
     </div>
-
-    <!-- The Journey Grid -->
-    <div class="grid md:grid-cols-3 gap-12 relative">
-      <!-- Animated Shimmer Connector (Desktop) -->
-      <div class="hidden md:block absolute top-[40px] left-[15%] right-[15%] h-[1px] bg-white/5 overflow-hidden">
-        <div class="w-1/3 h-full bg-gradient-to-r from-transparent via-luxury-gold to-transparent animate-shimmer-fast"></div>
-      </div>
-
-      <!-- Step 01: Visajismo -->
-      <div class="group relative" data-aos="fade-up" data-aos-delay="0">
-        <div class="relative z-10 flex flex-col items-center">
-          <div class="w-20 h-20 mb-8 rounded-[2rem] bg-luxury-black border border-white/5 flex items-center justify-center text-luxury-gold text-2xl group-hover:border-luxury-gold/40 group-hover:shadow-glow-gold/10 transition-all duration-700">
-            <i class="fas fa-bezier-curve"></i>
-          </div>
-          <span class="absolute -top-6 text-7xl font-serif text-white/5 group-hover:text-luxury-gold/10 transition-colors duration-700">01</span>
-          
-          <h3 class="text-2xl font-serif text-white mb-4 tracking-wide group-hover:text-luxury-gold transition-colors duration-500">
-            Visajismo Avanzado
-          </h3>
-          <p class="text-gray-400 text-sm leading-relaxed font-light text-center px-4 mb-6">
-            Analizamos la estructura ósea y musculatura facial para determinar la <span class="text-white font-medium">proporción áurea</span> exacta que favorece tu mirada.
-          </p>
-          <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-luxury-gold/5 border border-luxury-gold/10">
-            <span class="text-[9px] uppercase font-bold tracking-widest text-luxury-gold line-pulse">Fase Analítica</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Step 02: Simetría -->
-      <div class="group relative" data-aos="fade-up" data-aos-delay="200">
-        <div class="relative z-10 flex flex-col items-center">
-          <div class="w-20 h-20 mb-8 rounded-[2rem] bg-luxury-black border border-white/5 flex items-center justify-center text-luxury-gold text-2xl group-hover:border-luxury-gold/40 group-hover:shadow-glow-gold/10 transition-all duration-700">
-            <i class="fas fa-pencil-ruler"></i>
-          </div>
-          <span class="absolute -top-6 text-7xl font-serif text-white/5 group-hover:text-luxury-gold/10 transition-colors duration-700">02</span>
-          
-          <h3 class="text-2xl font-serif text-white mb-4 tracking-wide group-hover:text-luxury-gold transition-colors duration-500">
-            Diseño de Simetría
-          </h3>
-          <p class="text-gray-400 text-sm leading-relaxed font-light text-center px-4 mb-6">
-            Realizamos un pre-dibujo artístico sobre tu piel. <span class="text-white font-medium">Validamos cada ángulo</span> juntos hasta que la armonía sea perfecta antes de iniciar.
-          </p>
-          <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-luxury-gold/5 border border-luxury-gold/10">
-            <span class="text-[9px] uppercase font-bold tracking-widest text-luxury-gold line-pulse">Fase Artística</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Step 03: Pigmentación -->
-      <div class="group relative" data-aos="fade-up" data-aos-delay="400">
-        <div class="relative z-10 flex flex-col items-center">
-          <div class="w-20 h-20 mb-8 rounded-[2rem] bg-luxury-black border border-white/5 flex items-center justify-center text-luxury-gold text-2xl group-hover:border-luxury-gold/40 group-hover:shadow-glow-gold/10 transition-all duration-700">
-            <i class="fas fa-microchip"></i>
-          </div>
-          <span class="absolute -top-6 text-7xl font-serif text-white/5 group-hover:text-luxury-gold/10 transition-colors duration-700">03</span>
-          
-          <h3 class="text-2xl font-serif text-white mb-4 tracking-wide group-hover:text-luxury-gold transition-colors duration-500">
-            Ejecución Elite
-          </h3>
-          <p class="text-gray-400 text-sm leading-relaxed font-light text-center px-4 mb-6">
-            Aplicación de pigmentos orgánicos de alta fijación con <span class="text-white font-medium">tecnología indolora</span>. Resultados inmediatos con una cicatrización impecable.
-          </p>
-          <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-luxury-gold/5 border border-luxury-gold/10">
-            <span class="text-[9px] uppercase font-bold tracking-widest text-luxury-gold line-pulse">Fase Técnica</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Final Reassurance -->
-    <div class="mt-24 text-center" data-aos="fade-up" data-aos-delay="600">
-      <div class="inline-flex flex-col md:flex-row items-center gap-8 justify-center mb-12">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full border border-luxury-gold/20 flex items-center justify-center">
-            <i class="fas fa-shield-alt text-luxury-gold"></i>
-          </div>
-          <p class="text-left text-xs uppercase tracking-widest font-bold text-gray-500">
-            Garantía de <br/> Satisfacción Total
-          </p>
-        </div>
-        <div class="hidden md:block w-px h-10 bg-white/10"></div>
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full border border-luxury-gold/20 flex items-center justify-center">
-            <i class="fas fa-clock text-luxury-gold"></i>
-          </div>
-          <p class="text-left text-xs uppercase tracking-widest font-bold text-gray-500">
-            Duración de Sesión <br/> Aprox. 2.5 Horas
-          </p>
-        </div>
-      </div>
-
-      <button
-        type="button"
-        onclick="handleConversion('Proceso CTA')"
-        class="btn-gold-liquid px-14 py-6 text-sm"
-      >
-        <span class="flex items-center gap-3 justify-center">
-            <i class="fab fa-whatsapp text-xl"></i> Solicitar Valoración de Visajismo
-        </span>
-      </button>
-      
-      <p class="mt-6 text-[10px] uppercase tracking-[0.4em] font-black text-luxury-gold/40">
-          Sin Compromiso de Compra
-      </p>
-    </div>
-  </div>
 </section>

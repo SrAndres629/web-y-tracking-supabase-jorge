@@ -3,36 +3,15 @@
 <!-- LCP Optimization: Preload Hero Image -->
 <link
   rel="preload"
-  href="{{ url_for('static', path='assets/images/hero/jorge_hero_premium.webp') }}?v={{ system_version }}"
+  href="{{ url_for('static', path='assets/images/hero/jorge_hero_premium.webp') }}"
   as="image"
   fetchpriority="high"
 />
-{% endblock extra_head %} 
-
-{% block content %} 
-  {% include "sections/hero.html" %}
-  {% include "sections/process.html" %} 
-  {% if flags.show_gallery %} 
-    {% include "sections/gallery.html" %} 
-  {% endif %} 
-  {% if flags.show_testimonials %} 
-    {% include "sections/testimonials.html" %} 
-  {% endif %} 
-  {% include "sections/services.html" %} 
-  {% include "sections/faq.html" %} 
-  {% include "sections/cta_final.html" %} 
-{% endblock content %} 
-
-{% block extra_scripts %}
-<script type="module">
-  import { HeroParticles } from "{{ url_for('static', path='engines/motion/hero-particles.js') }}?v={{ system_version }}";
-  
-  document.addEventListener("DOMContentLoaded", () => {
-    // Initialize Particles
-    new HeroParticles('hero-particles');
-    
-    // Setup Reveal Animations
-    HeroParticles.setupRevealAnimations();
-  });
-</script>
+{% endblock extra_head %} {% block content %} {% include "sections/hero.html" %}
+{% include "sections/process.html" %} {% if flags.show_gallery %} {% include
+"sections/gallery.html" %} {% endif %} {% if flags.show_testimonials %} {%
+include "sections/testimonials.html" %} {% endif %} {% include
+"sections/services.html" %} {% include "sections/faq.html" %} {# {% include
+"sections/cta_final.html" %} #} {% endblock content %} {% block extra_scripts %}
+<!-- Page-specific scripts only - GSAP/Lenis loaded in base.html -->
 {% endblock extra_scripts %}

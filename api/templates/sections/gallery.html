@@ -1,209 +1,160 @@
 <!-- ========== GALERÍA ANTES/DESPUÉS ========== -->
-<section id="galeria" class="py-24 bg-transparent relative overflow-hidden section-optimized intrinsic-section">
+<section id="galeria" class="py-24 bg-transparent relative overflow-hidden"
+    style="content-visibility: auto; contain-intrinsic-size: 1000px;">
     <!-- Background Subtle Glow -->
     <div
-        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[800px] aspect-square bg-luxury-gold/[0.03] blur-luxury-xl rounded-full pointer-events-none">
+        class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150vw] max-w-[800px] h-[150vw] max-h-[800px] bg-luxury-gold/[0.03] blur-luxury-xl rounded-full pointer-events-none">
     </div>
 
-  <div class="container mx-auto px-6 relative z-10">
-    <!-- Header: Cinematic Authority -->
-    <div class="text-center mb-24" data-aos="fade-up">
-      <div class="inline-flex items-center gap-3 px-4 py-1.5 mb-8 rounded-full border border-luxury-gold/20 bg-luxury-gold/5 backdrop-blur-md">
-        <span class="text-[10px] text-luxury-gold font-bold uppercase tracking-[0.4em]">
-            Archivo de Excelencia
-        </span>
-      </div>
-      <h2 class="font-serif text-4xl md:text-7xl text-white mb-8 tracking-tight leading-tight">
-        Resultados <span class="italic text-luxury-gold font-light">Sin Filtros</span>
-      </h2>
-      <p class="text-gray-400 font-light mb-12 max-w-2xl mx-auto text-lg leading-relaxed">
-        Transformaciones reales capturadas bajo luz clínica. <br class="hidden md:block"/>
-        Evidencia tangible de un <span class="text-white font-medium">compromiso con la perfección</span>.
-      </p>
+    <div class="container mx-auto px-6 relative z-10">
+        <div class="text-center mb-16">
+            <span class="text-luxury-gold text-xs font-bold uppercase tracking-[0.4em]">Portafolio</span>
+            <h2 class="font-heading-section mt-4 mb-4 tracking-wide">Resultados
+                <span class="italic text-gradient-gold">Reales</span>
+            </h2>
+            <p class="text-gray-300 font-light mb-8">Desliza para ver la transformación</p>
 
-      <button
-        type="button"
-        onclick="handleConversion('Galería Main CTA')"
-        class="btn-gold-liquid px-12 py-5"
-      >
-        <i class="fab fa-whatsapp mr-2 text-lg"></i> Consultar Disponibilidad
-      </button>
+            <a href="{{ contact.whatsapp }}?text=Hola%20Jorge%2C%20vi%20sus%20resultados%20y%20me%20interesa%20una%20valoraci%C3%B3n%20para%20mis%20cejas."
+                target="_blank" onclick="handleConversion('Galería Main CTA')"
+                class="btn-secondary text-sm px-6 py-3 inline-block hover:bg-luxury-gold hover:text-black hover:border-luxury-gold">
+                Agendar Valoración
+            </a>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <!-- Slider 1: Microblading -->
+            <div class="relative slider-container ba-slider" data-service-category="microblading">
+                <div
+                    class="w-full aspect-[3/4] md:aspect-[4/5] relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl bg-black">
+                    <!-- After Image (Background) -->
+                    <img src="/static/assets/images/services/brows/after/microblading_after_v3.webp"
+                        class="absolute inset-0 w-full h-full object-cover object-center" alt="Después" loading="lazy"
+                        width="400" height="500">
+                    <!-- Before Image (Foreground - Clipped) -->
+                    <img src="/static/assets/images/services/brows/before/microblading_before_v3.webp"
+                        class="absolute inset-0 w-full h-full object-cover object-center foreground-img"
+                        style="clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);" alt="Antes">
+
+                    <!-- Handler (Thumb) -->
+                    <div class="absolute inset-y-0 w-0.5 bg-luxury-gold shadow-[0_0_10px_rgba(212,175,55,0.8)] pointer-events-none z-20 slider-thumb"
+                        style="left: 50%;">
+                        <div
+                            class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 bg-black border border-luxury-gold rounded-full flex items-center justify-center shadow-lg">
+                            <i class="fas fa-arrows-alt-h text-luxury-gold text-xs"></i>
+                        </div>
+                    </div>
+
+                    <!-- Range Input -->
+                    <input type="range" min="0" max="100" value="50" aria-label="Deslizar para comparar antes y después"
+                        class="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-30 m-0 p-0 slider-range touch-none">
+
+                    <!-- Labels -->
+                    <span
+                        class="absolute top-4 left-4 bg-black/60 backdrop-blur-sm px-2 py-1 text-xs uppercase font-bold text-white z-10 border border-white/10">Antes</span>
+                    <span
+                        class="absolute top-4 right-4 bg-black/60 backdrop-blur-sm px-2 py-1 text-xs uppercase font-bold text-luxury-gold z-10 border border-luxury-gold/30">Después</span>
+                </div>
+                <h3 class="text-center text-luxury-text font-serif text-lg mt-4 tracking-wide">Microblading 3D
+                </h3>
+            </div>
+
+            <!-- Slider 2: Powder Brows -->
+            <div class="relative slider-container ba-slider" data-service-category="powder_brows">
+                <div
+                    class="w-full aspect-[3/4] md:aspect-[4/5] relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl bg-black">
+                    <img src="/static/assets/images/services/brows/after/brows_after_v3.webp"
+                        class="absolute inset-0 w-full h-full object-cover object-center" alt="Después" loading="lazy"
+                        width="400" height="500">
+                    <img src="/static/assets/images/services/brows/before/brows_before_v3.webp"
+                        class="absolute inset-0 w-full h-full object-cover object-center foreground-img"
+                        style="clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);" alt="Antes">
+
+                    <div class="absolute inset-y-0 w-0.5 bg-luxury-gold shadow-[0_0_10px_rgba(212,175,55,0.8)] pointer-events-none z-20 slider-thumb"
+                        style="left: 50%;">
+                        <div
+                            class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 bg-black border border-luxury-gold rounded-full flex items-center justify-center shadow-lg">
+                            <i class="fas fa-arrows-alt-h text-luxury-gold text-xs"></i>
+                        </div>
+                    </div>
+
+                    <input type="range" min="0" max="100" value="50" aria-label="Deslizar para comparar antes y después"
+                        class="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-30 m-0 p-0 slider-range touch-none">
+
+                    <span
+                        class="absolute top-4 left-4 bg-black/60 backdrop-blur-sm px-2 py-1 text-xs uppercase font-bold text-white z-10 border border-white/10">Antes</span>
+                    <span
+                        class="absolute top-4 right-4 bg-black/60 backdrop-blur-sm px-2 py-1 text-xs uppercase font-bold text-luxury-gold z-10 border border-luxury-gold/30">Después</span>
+                </div>
+                <h3 class="text-center text-luxury-text font-serif text-lg mt-4 tracking-wide">Cejas Efecto
+                    Polvo</h3>
+            </div>
+
+            <!-- Slider 3: Eyes -->
+            <div class="relative slider-container ba-slider" data-service-category="eyeliner">
+                <div
+                    class="w-full aspect-[3/4] md:aspect-[4/5] relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl bg-black">
+                    <img src="/static/assets/images/services/eyes/after/eyes_after.webp"
+                        class="absolute inset-0 w-full h-full object-cover object-center" alt="Después" loading="lazy"
+                        width="400" height="500">
+                    <img src="/static/assets/images/services/eyes/before/eyes_before.webp"
+                        class="absolute inset-0 w-full h-full object-cover object-center foreground-img"
+                        style="clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);" alt="Antes">
+
+                    <div class="absolute inset-y-0 w-0.5 bg-luxury-gold shadow-[0_0_10px_rgba(212,175,55,0.8)] pointer-events-none z-20 slider-thumb"
+                        style="left: 50%;">
+                        <div
+                            class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 bg-black border border-luxury-gold rounded-full flex items-center justify-center shadow-lg">
+                            <i class="fas fa-arrows-alt-h text-luxury-gold text-xs"></i>
+                        </div>
+                    </div>
+
+                    <input type="range" min="0" max="100" value="50" aria-label="Deslizar para comparar antes y después"
+                        class="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-30 m-0 p-0 slider-range touch-none">
+
+                    <span
+                        class="absolute top-4 left-4 bg-black/60 backdrop-blur-sm px-2 py-1 text-xs uppercase font-bold text-white z-10 border border-white/10">Antes</span>
+                    <span
+                        class="absolute top-4 right-4 bg-black/60 backdrop-blur-sm px-2 py-1 text-xs uppercase font-bold text-luxury-gold z-10 border border-luxury-gold/30">Después</span>
+                </div>
+                <h3 class="text-center text-luxury-text font-serif text-lg mt-4 tracking-wide">Delineado Ojos
+                </h3>
+            </div>
+
+            <!-- Slider 4: Lips (Refactored) -->
+            <div class="relative slider-container ba-slider" data-service-category="lips">
+                <div
+                    class="w-full aspect-[3/4] md:aspect-[4/5] relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl bg-black">
+                    <!-- After Image (Background) -->
+                    <img src="/static/assets/images/services/lips/after/lips_after.webp?v={{ system_version }}"
+                        class="absolute inset-0 w-full h-full object-cover object-[center_35%]" alt="Después"
+                        loading="lazy" width="400" height="500">
+                    <!-- Before Image (Foreground - Clipped) -->
+                    <img src="/static/assets/images/services/lips/before/lips_before.webp"
+                        class="absolute inset-0 w-full h-full object-cover object-[center_35%] foreground-img"
+                        style="clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);" alt="Antes" loading="lazy" width="400"
+                        height="500">
+
+                    <!-- Handler (Thumb) -->
+                    <div class="absolute inset-y-0 w-0.5 bg-luxury-gold shadow-[0_0_10px_rgba(212,175,55,0.8)] pointer-events-none z-20 slider-thumb"
+                        style="left: 50%;">
+                        <div
+                            class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 bg-black border border-luxury-gold rounded-full flex items-center justify-center shadow-lg">
+                            <i class="fas fa-arrows-alt-h text-luxury-gold text-xs"></i>
+                        </div>
+                    </div>
+
+                    <!-- Range Input -->
+                    <input type="range" min="0" max="100" value="50" aria-label="Deslizar para comparar antes y después"
+                        class="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-30 m-0 p-0 slider-range touch-none">
+
+                    <!-- Labels -->
+                    <span
+                        class="absolute top-4 left-4 bg-black/60 backdrop-blur-sm px-2 py-1 text-xs uppercase font-bold text-white z-10 border border-white/10">Antes</span>
+                    <span
+                        class="absolute top-4 right-4 bg-black/60 backdrop-blur-sm px-2 py-1 text-xs uppercase font-bold text-luxury-gold z-10 border border-luxury-gold/30">Después</span>
+                </div>
+                <h3 class="text-center text-luxury-text font-serif text-lg mt-4 tracking-wide">Labios Full Color</h3>
+            </div>
+        </div>
     </div>
-
-    <!-- The Portfolio Grid -->
-    <div class="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto">
-      <!-- Item 01: Microblading -->
-      <div class="group relative" data-aos="fade-up">
-        <div class="ba-slider relative overflow-hidden rounded-[2.5rem] border border-white/5 bg-luxury-black aspect-[4/5] md:aspect-[5/6] shadow-2xl transition-all duration-700 hover:border-luxury-gold/20">
-          <!-- After Image -->
-          <img 
-            src="{{ url_for('static', path='assets/images/services/brows/after/microblading_after_v3.webp') }}?v={{ system_version }}"
-            class="absolute inset-0 w-full h-full object-cover" 
-            alt="Cejas Microblading - Resultado Final" 
-            loading="lazy"
-            width="600" 
-            height="720"
-          >
-          <!-- Before Image -->
-          <img 
-            src="{{ url_for('static', path='assets/images/services/brows/before/microblading_before_v3.webp') }}?v={{ system_version }}"
-            class="absolute inset-0 w-full h-full object-cover foreground-img"
-            alt="Cejas Microblading - Estado Inicial"
-            loading="lazy"
-            width="600"
-            height="720"
-          >
-
-          <!-- Slider Controls -->
-          <div class="absolute inset-y-0 w-px bg-white/20 pointer-events-none z-20 slider-thumb">
-            <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-10 h-10 bg-luxury-black/80 backdrop-blur-xl border border-white/10 rounded-full flex items-center justify-center shadow-2xl">
-              <i class="fas fa-arrows-alt-h text-luxury-gold text-sm animate-pulse"></i>
-            </div>
-          </div>
-
-          <input type="range" min="0" max="100" value="50" aria-label="Comparar antes y después"
-            class="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-30 m-0 p-0 slider-range touch-none">
-
-          <!-- Labels -->
-          <div class="absolute bottom-6 left-6 right-6 flex justify-between z-20 pointer-events-none">
-            <span class="px-3 py-1 bg-black/40 backdrop-blur-md rounded-full text-[9px] uppercase font-bold text-white/60 border border-white/5">Antes</span>
-            <span class="px-3 py-1 bg-luxury-gold/20 backdrop-blur-md rounded-full text-[9px] uppercase font-bold text-luxury-gold border border-luxury-gold/10">Después</span>
-          </div>
-        </div>
-        <div class="mt-6 flex justify-between items-center px-4">
-            <h3 class="text-white font-serif text-2xl tracking-tight">Microblading HD</h3>
-            <span class="text-[10px] text-gray-500 uppercase tracking-widest font-black">Brows Specialist</span>
-        </div>
-      </div>
-
-      <!-- Item 02: Powder Brows -->
-      <div class="group relative" data-aos="fade-up" data-aos-delay="100">
-        <div class="ba-slider relative overflow-hidden rounded-[2.5rem] border border-white/5 bg-luxury-black aspect-[4/5] md:aspect-[5/6] shadow-2xl transition-all duration-700 hover:border-luxury-gold/20">
-          <img 
-            src="{{ url_for('static', path='assets/images/services/brows/after/brows_after_v3.webp') }}?v={{ system_version }}"
-            class="absolute inset-0 w-full h-full object-cover" 
-            alt="Cejas Efecto Polvo - Resultado Final" 
-            loading="lazy"
-            width="600" 
-            height="720"
-          >
-          <img 
-            src="{{ url_for('static', path='assets/images/services/brows/before/brows_before_v3.webp') }}?v={{ system_version }}"
-            class="absolute inset-0 w-full h-full object-cover foreground-img"
-            alt="Cejas Efecto Polvo - Estado Inicial"
-            loading="lazy"
-            width="600"
-            height="720"
-          >
-
-          <div class="absolute inset-y-0 w-px bg-white/20 pointer-events-none z-20 slider-thumb">
-            <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-10 h-10 bg-luxury-black/80 backdrop-blur-xl border border-white/10 rounded-full flex items-center justify-center shadow-2xl">
-              <i class="fas fa-arrows-alt-h text-luxury-gold text-sm animate-pulse"></i>
-            </div>
-          </div>
-
-          <input type="range" min="0" max="100" value="50" aria-label="Comparar antes y después"
-            class="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-30 m-0 p-0 slider-range touch-none">
-
-          <div class="absolute bottom-6 left-6 right-6 flex justify-between z-20 pointer-events-none">
-            <span class="px-3 py-1 bg-black/40 backdrop-blur-md rounded-full text-[9px] uppercase font-bold text-white/60 border border-white/5">Antes</span>
-            <span class="px-3 py-1 bg-luxury-gold/20 backdrop-blur-md rounded-full text-[9px] uppercase font-bold text-luxury-gold border border-luxury-gold/10">Después</span>
-          </div>
-        </div>
-        <div class="mt-6 flex justify-between items-center px-4">
-            <h3 class="text-white font-serif text-2xl tracking-tight">Sombreado Dual</h3>
-            <span class="text-[10px] text-gray-500 uppercase tracking-widest font-black">Artistic Finish</span>
-        </div>
-      </div>
-
-      <!-- Item 03: Eyeliner -->
-      <div class="group relative" data-aos="fade-up">
-        <div class="ba-slider relative overflow-hidden rounded-[2.5rem] border border-white/5 bg-luxury-black aspect-[4/5] md:aspect-[5/6] shadow-2xl transition-all duration-700 hover:border-luxury-gold/20">
-          <img 
-            src="{{ url_for('static', path='assets/images/services/eyes/after/eyes_after.webp') }}?v={{ system_version }}"
-            class="absolute inset-0 w-full h-full object-cover" 
-            alt="Delineado de Ojos - Resultado Final" 
-            loading="lazy"
-            width="600" 
-            height="720"
-          >
-          <img 
-            src="{{ url_for('static', path='assets/images/services/eyes/before/eyes_before.webp') }}?v={{ system_version }}"
-            class="absolute inset-0 w-full h-full object-cover foreground-img"
-            alt="Delineado de Ojos - Estado Inicial"
-            loading="lazy"
-            width="600"
-            height="720"
-          >
-
-          <div class="absolute inset-y-0 w-px bg-white/20 pointer-events-none z-20 slider-thumb">
-            <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-10 h-10 bg-luxury-black/80 backdrop-blur-xl border border-white/10 rounded-full flex items-center justify-center shadow-2xl">
-              <i class="fas fa-arrows-alt-h text-luxury-gold text-sm animate-pulse"></i>
-            </div>
-          </div>
-
-          <input type="range" min="0" max="100" value="50" aria-label="Comparar antes y después"
-            class="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-30 m-0 p-0 slider-range touch-none">
-
-          <div class="absolute bottom-6 left-6 right-6 flex justify-between z-20 pointer-events-none">
-            <span class="px-3 py-1 bg-black/40 backdrop-blur-md rounded-full text-[9px] uppercase font-bold text-white/60 border border-white/5">Antes</span>
-            <span class="px-3 py-1 bg-luxury-gold/20 backdrop-blur-md rounded-full text-[9px] uppercase font-bold text-luxury-gold border border-luxury-gold/10">Después</span>
-          </div>
-        </div>
-        <div class="mt-6 flex justify-between items-center px-4">
-            <h3 class="text-white font-serif text-2xl tracking-tight">Ocular Precision</h3>
-            <span class="text-[10px] text-gray-500 uppercase tracking-widest font-black">Defined Elegance</span>
-        </div>
-      </div>
-
-      <!-- Item 04: Lips -->
-      <div class="group relative" data-aos="fade-up" data-aos-delay="100">
-        <div class="ba-slider relative overflow-hidden rounded-[2.5rem] border border-white/5 bg-luxury-black aspect-[4/5] md:aspect-[5/6] shadow-2xl transition-all duration-700 hover:border-luxury-gold/20">
-          <img 
-            src="{{ url_for('static', path='assets/images/services/lips/after/lips_after_aligned.webp') }}?v={{ system_version }}"
-            class="absolute inset-0 w-full h-full object-cover object-[center_35%]" 
-            alt="Labios Full Color - Resultado Final" 
-            loading="lazy"
-            width="600" 
-            height="720"
-          >
-          <img 
-            src="{{ url_for('static', path='assets/images/services/lips/before/lips_before.webp') }}?v={{ system_version }}"
-            class="absolute inset-0 w-full h-full object-cover object-[center_35%] foreground-img"
-            alt="Labios Full Color - Estado Inicial"
-            loading="lazy"
-            width="600"
-            height="720"
-          >
-
-          <div class="absolute inset-y-0 w-px bg-white/20 pointer-events-none z-20 slider-thumb">
-            <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-10 h-10 bg-luxury-black/80 backdrop-blur-xl border border-white/10 rounded-full flex items-center justify-center shadow-2xl">
-              <i class="fas fa-arrows-alt-h text-luxury-gold text-sm animate-pulse"></i>
-            </div>
-          </div>
-
-          <input type="range" min="0" max="100" value="50" aria-label="Comparar antes y después"
-            class="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-30 m-0 p-0 slider-range touch-none">
-
-          <div class="absolute bottom-6 left-6 right-6 flex justify-between z-20 pointer-events-none">
-            <span class="px-3 py-1 bg-black/40 backdrop-blur-md rounded-full text-[9px] uppercase font-bold text-white/60 border border-white/5">Antes</span>
-            <span class="px-3 py-1 bg-luxury-gold/20 backdrop-blur-md rounded-full text-[9px] uppercase font-bold text-luxury-gold border border-luxury-gold/10">Después</span>
-          </div>
-        </div>
-        <div class="mt-6 flex justify-between items-center px-4">
-            <h3 class="text-white font-serif text-2xl tracking-tight">Full Lip Velvet</h3>
-            <span class="text-[10px] text-gray-500 uppercase tracking-widest font-black">Organic Pigments</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Final Trust Metric -->
-    <div class="mt-24 pt-12 border-t border-white/5 text-center">
-        <p class="text-xs uppercase tracking-[0.5em] text-gray-500 font-black mb-4">Integridad Fotográfica</p>
-        <p class="text-gray-400 text-sm font-light italic">
-            "Todas las imágenes son propiedad exclusiva de Jorge Aguirre Flores. <br class="hidden md:block"/>
-            Prohibida su reproducción sin autorización expresa por cumplimiento de LOPD."
-        </p>
-    </div>
-  </div>
 </section>
