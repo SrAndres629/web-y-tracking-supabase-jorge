@@ -1,188 +1,138 @@
-<!-- ========== GALERÍA ANTES/DESPUÉS ========== -->
-<section id="galeria" class="py-24 bg-background-dark relative overflow-hidden section-optimized intrinsic-section">
-    <!-- Background Subtle Glow (Stitch Adapted) -->
-    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[800px] aspect-square bg-luxury-gold/[0.03] blur-[120px] rounded-full pointer-events-none"></div>
+<!-- ========== LUXURY MASONRY GALLERY & TESTIMONIALS ========== -->
+<section id="galeria" class="py-24 lg:py-32 bg-background-dark relative overflow-hidden section-optimized intrinsic-section">
+    <!-- Background Subtle Glow -->
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[1000px] aspect-square bg-luxury-gold/[0.04] blur-[150px] rounded-full pointer-events-none"></div>
 
-  <div class="container mx-auto px-6 relative z-10 max-w-7xl">
-    <!-- Header: Cinematic Authority (Stitch Designed) -->
-    <div class="flex flex-col items-center text-center mb-20 space-y-4" data-aos="fade-up">
-        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-luxury-gold/20 bg-luxury-gold/5 text-luxury-gold text-[10px] font-bold uppercase tracking-[0.2em] mb-2 backdrop-blur-md">
-            <i class="fas fa-check-circle text-sm"></i> Galería Exclusiva
+    <div class="container mx-auto px-6 relative z-10 max-w-[1400px]">
+        <!-- Header: Cinematic Authority (Stitch Designed) -->
+        <div class="max-w-[1200px] mx-auto text-center mb-24 lg:mb-32" data-aos="fade-up">
+            <h2 class="font-serif text-white tracking-tight text-5xl md:text-7xl lg:text-[88px] font-normal leading-tight mb-8">Perfección Refinada</h2>
+            <div class="flex items-center justify-center gap-4 mb-8">
+                <div class="h-[1px] w-12 bg-luxury-gold/40"></div>
+                <p class="text-luxury-gold text-[10px] lg:text-xs font-black tracking-[0.4em] uppercase">El arte de la transformación permanente</p>
+                <div class="h-[1px] w-12 bg-luxury-gold/40"></div>
+            </div>
+            <p class="text-slate-400 text-lg lg:text-xl max-w-2xl mx-auto font-light leading-relaxed">
+                Donde la precisión técnica se encuentra con la visión artística. <br class="hidden md:block"/>
+                Resultados sin filtros. La honestidad visual es el pilar de nuestra excelencia.
+            </p>
         </div>
-        
-        <h2 class="font-serif text-5xl md:text-7xl text-luxury-gold text-shadow-gold-glow leading-tight tracking-tight">
-            Resultados Sin Filtros
-        </h2>
-        
-        <p class="text-slate-400 text-lg md:text-xl font-light max-w-2xl mx-auto leading-relaxed">
-            Transformaciones reales capturadas bajo luz clínica. <br class="hidden md:block"/>
-            La honestidad visual es el pilar de nuestra excelencia.
-        </p>
 
-        <div class="pt-6">
-            <button type="button" onclick="handleConversion('Galería Main CTA')" class="btn-gold-liquid text-black px-10 py-4 rounded-xl text-base font-bold flex items-center gap-3">
-                <i class="fab fa-whatsapp"></i> Consultar Disponibilidad
-            </button>
+        <!-- Luxury Masonry Grid (Stitch Architecture) -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 mb-32">
+            
+            <!-- Column 1 (md:col-span-4) -->
+            <div class="md:col-span-4 flex flex-col gap-8 lg:gap-12">
+                <!-- Item 1: Large Vertical BA Slider -->
+                <div class="group relative aspect-[3/4] overflow-hidden rounded-[2rem] border border-luxury-gold/20 shadow-glow-gold/10" data-aos="fade-up">
+                    <div class="ba-slider absolute inset-0 w-full h-full bg-[#0c0c0c]">
+                        <img src="{{ url_for('static', path='assets/images/services/brows/after/microblading_after_v3.webp') }}?v={{ system_version }}" class="absolute inset-0 w-full h-full object-cover" alt="Cejas Microblading" width="600" height="720" loading="lazy">
+                        <img src="{{ url_for('static', path='assets/images/services/brows/before/microblading_before_v3.webp') }}?v={{ system_version }}" class="absolute inset-0 w-full h-full object-cover foreground-img" alt="Cejas Microblading Antes" width="600" height="720" loading="lazy">
+                        <div class="absolute inset-y-0 w-px bg-white/20 pointer-events-none z-20 slider-thumb">
+                            <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-12 h-12 bg-luxury-black/80 backdrop-blur-xl border border-white/10 rounded-full flex items-center justify-center shadow-2xl"><i class="fas fa-arrows-alt-h text-luxury-gold text-lg animate-pulse"></i></div>
+                        </div>
+                        <input type="range" min="0" max="100" value="50" class="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-30 m-0 p-0 slider-range touch-none">
+                        <div class="absolute inset-x-0 bottom-0 p-8 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-20 pointer-events-none">
+                            <span class="text-luxury-gold text-[10px] font-bold tracking-[0.2em] uppercase mb-2 block">Cejas Hyper-Realistas</span>
+                            <h3 class="text-white text-3xl font-serif">Microblading HD</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Testimonial 1: Glass Card -->
+                <div class="card-glass p-8 lg:p-10 rounded-[2rem] border-t border-luxury-gold/20 hover:-translate-y-2 transition-transform duration-500" data-aos="fade-up" data-aos-delay="100">
+                    <div class="flex gap-1 mb-8 text-luxury-gold text-sm">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                    <p class="font-serif italic text-xl lg:text-2xl text-slate-200 leading-relaxed mb-10 group-hover:text-luxury-gold transition-colors">
+                        "Un cambio de vida. La atención al detalle de Jorge es simplemente incomparable. Es el estándar de oro en la industria."
+                    </p>
+                    <div class="flex items-center gap-5">
+                        <div class="w-10 h-[1px] bg-luxury-gold/40"></div>
+                        <p class="text-xs font-black tracking-widest uppercase text-white">Elena Rodriguez</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column 2 (md:col-span-4) -->
+            <div class="md:col-span-4 flex flex-col gap-8 lg:gap-12 md:pt-24">
+                <!-- Testimonial 2 -->
+                <div class="card-glass p-8 lg:p-10 rounded-[2rem] border-luxury-gold/30 hover:-translate-y-2 transition-transform duration-500" data-aos="fade-up" data-aos-delay="200">
+                    <div class="flex gap-1 mb-6 text-luxury-gold text-sm">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                    <p class="font-serif italic text-2xl lg:text-3xl text-white leading-relaxed mb-8">
+                        "La experiencia más lujosa que he tenido en un estudio de belleza. Resultados que superaron todas mis expectativas."
+                    </p>
+                    <div class="flex items-center gap-5">
+                        <div class="w-10 h-[1px] bg-luxury-gold/40"></div>
+                        <p class="text-xs font-black tracking-widest uppercase text-slate-300">Sofía Valderrama</p>
+                    </div>
+                </div>
+
+                <!-- Item 2: Square BA Slider (Lips) -->
+                <div class="group relative aspect-square overflow-hidden rounded-[2rem] border border-luxury-gold/20 shadow-glow-gold/10" data-aos="fade-up" data-aos-delay="300">
+                    <div class="ba-slider absolute inset-0 w-full h-full bg-[#0c0c0c]">
+                        <img src="{{ url_for('static', path='assets/images/services/lips/after/lips_after_aligned.webp') }}?v={{ system_version }}" class="absolute inset-0 w-full h-full object-cover object-[center_35%]" alt="Labios Aquarela" width="600" height="600" loading="lazy">
+                        <img src="{{ url_for('static', path='assets/images/services/lips/before/lips_before.webp') }}?v={{ system_version }}" class="absolute inset-0 w-full h-full object-cover object-[center_35%] foreground-img" alt="Labios Aquarela Antes" width="600" height="600" loading="lazy">
+                        <div class="absolute inset-y-0 w-px bg-white/20 pointer-events-none z-20 slider-thumb">
+                            <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-12 h-12 bg-luxury-black/80 backdrop-blur-xl border border-white/10 rounded-full flex items-center justify-center shadow-2xl"><i class="fas fa-arrows-alt-h text-luxury-gold text-lg animate-pulse"></i></div>
+                        </div>
+                        <input type="range" min="0" max="100" value="50" class="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-30 m-0 p-0 slider-range touch-none">
+                        <div class="absolute inset-x-0 bottom-0 p-8 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-20 pointer-events-none">
+                            <span class="text-luxury-gold text-[10px] font-bold tracking-[0.2em] uppercase mb-2 block">Labios Aquarela</span>
+                            <h3 class="text-white text-3xl font-serif">Full Lip Velvet</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column 3 (md:col-span-4) -->
+            <div class="md:col-span-4 flex flex-col gap-8 lg:gap-12">
+                <!-- Item 3: Tall Vertical BA Slider (Eyes) -->
+                <div class="group relative aspect-[3/5] overflow-hidden rounded-[2rem] border border-luxury-gold/20 shadow-glow-gold/10" data-aos="fade-up" data-aos-delay="400">
+                    <div class="ba-slider absolute inset-0 w-full h-full bg-[#0c0c0c]">
+                        <img src="{{ url_for('static', path='assets/images/services/eyes/after/eyes_after.webp') }}?v={{ system_version }}" class="absolute inset-0 w-full h-full object-cover" alt="Delineado de Lujo" width="600" height="900" loading="lazy">
+                        <img src="{{ url_for('static', path='assets/images/services/eyes/before/eyes_before.webp') }}?v={{ system_version }}" class="absolute inset-0 w-full h-full object-cover foreground-img" alt="Delineado de Lujo Antes" width="600" height="900" loading="lazy">
+                        <div class="absolute inset-y-0 w-px bg-white/20 pointer-events-none z-20 slider-thumb">
+                            <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-12 h-12 bg-luxury-black/80 backdrop-blur-xl border border-white/10 rounded-full flex items-center justify-center shadow-2xl"><i class="fas fa-arrows-alt-h text-luxury-gold text-lg animate-pulse"></i></div>
+                        </div>
+                        <input type="range" min="0" max="100" value="50" class="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-30 m-0 p-0 slider-range touch-none">
+                        <div class="absolute inset-x-0 bottom-0 p-8 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-20 pointer-events-none">
+                            <span class="text-luxury-gold text-[10px] font-bold tracking-[0.2em] uppercase mb-2 block">Mirada Sofisticada</span>
+                            <h3 class="text-white text-3xl font-serif">Ocular Precision</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Testimonial 3 -->
+                <div class="card-glass p-8 lg:p-10 rounded-[2rem] border-t border-luxury-gold/20 hover:-translate-y-2 transition-transform duration-500" data-aos="fade-up" data-aos-delay="500">
+                    <div class="flex gap-1 mb-8 text-luxury-gold text-sm">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                    <p class="font-serif italic text-xl lg:text-2xl text-slate-200 leading-relaxed mb-10 group-hover:text-luxury-gold transition-colors">
+                        "Perfección absoluta. El nivel de profesionalismo y arte que Jorge maneja es de otro mundo. Vale cada centavo."
+                    </p>
+                    <div class="flex items-center gap-5">
+                        <div class="w-10 h-[1px] bg-luxury-gold/40"></div>
+                        <p class="text-xs font-black tracking-widest uppercase text-white">Isabella Montaner</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Footer Note -->
+        <div class="flex flex-col items-center justify-center pt-8 border-t border-luxury-gold/20" data-aos="fade-in">
+            <div class="flex items-center gap-6 text-slate-500 mb-6">
+                <span class="h-px w-16 bg-luxury-gold/30"></span>
+                <p class="text-sm font-black tracking-[0.3em] uppercase italic text-luxury-gold/80">Integridad Estética</p>
+                <span class="h-px w-16 bg-luxury-gold/30"></span>
+            </div>
+            <p class="text-slate-400 text-sm text-center max-w-2xl leading-relaxed opacity-80">
+                Todas las imágenes presentadas han sido capturadas bajo condiciones de iluminación clínica estandarizada. 
+                Garantizamos la ausencia de retoques digitales. Lo que ves es la estricta realidad de nuestro nivel técnico elite.
+            </p>
         </div>
     </div>
-
-    <!-- The Portfolio Grid (Stitch Structured + Legacy Slider) -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-20">
-      
-      <!-- Item 01: Microblading -->
-      <div class="group relative flex flex-col space-y-4" data-aos="fade-up">
-        <div class="ba-slider relative overflow-hidden rounded-2xl border border-luxury-gold/10 bg-[#0c0c0c] aspect-[4/5] md:aspect-[4/3] shadow-2xl transition-all duration-500 hover:border-luxury-gold/40 hover:shadow-glow-gold/10">
-          
-          <!-- After Image -->
-          <img 
-            src="{{ url_for('static', path='assets/images/services/brows/after/microblading_after_v3.webp') }}?v={{ system_version }}"
-            class="absolute inset-0 w-full h-full object-cover" 
-            alt="Cejas Microblading - Resultado Final" 
-            loading="lazy" width="600" height="720">
-          
-          <!-- Before Image -->
-          <img 
-            src="{{ url_for('static', path='assets/images/services/brows/before/microblading_before_v3.webp') }}?v={{ system_version }}"
-            class="absolute inset-0 w-full h-full object-cover foreground-img"
-            alt="Cejas Microblading - Estado Inicial"
-            loading="lazy" width="600" height="720">
-
-          <!-- Slider Controls -->
-          <div class="absolute inset-y-0 w-px bg-white/20 pointer-events-none z-20 slider-thumb">
-            <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-10 h-10 bg-luxury-black/80 backdrop-blur-xl border border-white/10 rounded-full flex items-center justify-center shadow-2xl">
-              <i class="fas fa-arrows-alt-h text-luxury-gold text-sm animate-pulse"></i>
-            </div>
-          </div>
-          <input type="range" min="0" max="100" value="50" aria-label="Comparar antes y después"
-            class="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-30 m-0 p-0 slider-range touch-none">
-
-          <!-- Glass Labels (Stitch Designed) -->
-          <div class="absolute inset-x-4 bottom-4 flex flex-col sm:flex-row gap-4 justify-between items-end z-20 pointer-events-none">
-            <div class="card-glass px-6 py-4 rounded-xl border border-luxury-gold/20">
-              <span class="block text-[10px] text-luxury-gold font-bold uppercase tracking-widest mb-1">Especialidad</span>
-              <h3 class="text-white text-xl font-serif">Microblading HD</h3>
-            </div>
-            <div class="card-glass px-4 py-2 rounded-lg text-[10px] font-bold text-luxury-gold flex items-center gap-2 border border-luxury-gold/20">
-              ANTES / DESPUÉS
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Item 02: Powder Brows -->
-      <div class="group relative flex flex-col space-y-4" data-aos="fade-up" data-aos-delay="100">
-        <div class="ba-slider relative overflow-hidden rounded-2xl border border-luxury-gold/10 bg-[#0c0c0c] aspect-[4/5] md:aspect-[4/3] shadow-2xl transition-all duration-500 hover:border-luxury-gold/40 hover:shadow-glow-gold/10">
-          <img 
-            src="{{ url_for('static', path='assets/images/services/brows/after/brows_after_v3.webp') }}?v={{ system_version }}"
-            class="absolute inset-0 w-full h-full object-cover" 
-            alt="Cejas Efecto Polvo - Resultado Final" 
-            loading="lazy" width="600" height="720">
-          <img 
-            src="{{ url_for('static', path='assets/images/services/brows/before/brows_before_v3.webp') }}?v={{ system_version }}"
-            class="absolute inset-0 w-full h-full object-cover foreground-img"
-            alt="Cejas Efecto Polvo - Estado Inicial"
-            loading="lazy" width="600" height="720">
-
-          <div class="absolute inset-y-0 w-px bg-white/20 pointer-events-none z-20 slider-thumb">
-            <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-10 h-10 bg-luxury-black/80 backdrop-blur-xl border border-white/10 rounded-full flex items-center justify-center shadow-2xl">
-              <i class="fas fa-arrows-alt-h text-luxury-gold text-sm animate-pulse"></i>
-            </div>
-          </div>
-          <input type="range" min="0" max="100" value="50" aria-label="Comparar antes y después"
-            class="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-30 m-0 p-0 slider-range touch-none">
-
-          <div class="absolute inset-x-4 bottom-4 flex flex-col sm:flex-row gap-4 justify-between items-end z-20 pointer-events-none">
-            <div class="card-glass px-6 py-4 rounded-xl border border-luxury-gold/20">
-              <span class="block text-[10px] text-luxury-gold font-bold uppercase tracking-widest mb-1">Especialidad</span>
-              <h3 class="text-white text-xl font-serif">Sombreado Dual</h3>
-            </div>
-            <div class="card-glass px-4 py-2 rounded-lg text-[10px] font-bold text-luxury-gold flex items-center gap-2 border border-luxury-gold/20">
-              ANTES / DESPUÉS
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Item 03: Eyeliner -->
-      <div class="group relative flex flex-col space-y-4" data-aos="fade-up">
-        <div class="ba-slider relative overflow-hidden rounded-2xl border border-luxury-gold/10 bg-[#0c0c0c] aspect-[4/5] md:aspect-[4/3] shadow-2xl transition-all duration-500 hover:border-luxury-gold/40 hover:shadow-glow-gold/10">
-          <img 
-            src="{{ url_for('static', path='assets/images/services/eyes/after/eyes_after.webp') }}?v={{ system_version }}"
-            class="absolute inset-0 w-full h-full object-cover" 
-            alt="Delineado de Ojos - Resultado Final" 
-            loading="lazy" width="600" height="720">
-          <img 
-            src="{{ url_for('static', path='assets/images/services/eyes/before/eyes_before.webp') }}?v={{ system_version }}"
-            class="absolute inset-0 w-full h-full object-cover foreground-img"
-            alt="Delineado de Ojos - Estado Inicial"
-            loading="lazy" width="600" height="720">
-
-          <div class="absolute inset-y-0 w-px bg-white/20 pointer-events-none z-20 slider-thumb">
-            <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-10 h-10 bg-luxury-black/80 backdrop-blur-xl border border-white/10 rounded-full flex items-center justify-center shadow-2xl">
-              <i class="fas fa-arrows-alt-h text-luxury-gold text-sm animate-pulse"></i>
-            </div>
-          </div>
-          <input type="range" min="0" max="100" value="50" aria-label="Comparar antes y después"
-            class="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-30 m-0 p-0 slider-range touch-none">
-
-          <div class="absolute inset-x-4 bottom-4 flex flex-col sm:flex-row gap-4 justify-between items-end z-20 pointer-events-none">
-            <div class="card-glass px-6 py-4 rounded-xl border border-luxury-gold/20">
-              <span class="block text-[10px] text-luxury-gold font-bold uppercase tracking-widest mb-1">Especialidad</span>
-              <h3 class="text-white text-xl font-serif">Ocular Precision</h3>
-            </div>
-            <div class="card-glass px-4 py-2 rounded-lg text-[10px] font-bold text-luxury-gold flex items-center gap-2 border border-luxury-gold/20">
-              ANTES / DESPUÉS
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Item 04: Lips -->
-      <div class="group relative flex flex-col space-y-4" data-aos="fade-up" data-aos-delay="100">
-        <div class="ba-slider relative overflow-hidden rounded-2xl border border-luxury-gold/10 bg-[#0c0c0c] aspect-[4/5] md:aspect-[4/3] shadow-2xl transition-all duration-500 hover:border-luxury-gold/40 hover:shadow-glow-gold/10">
-          <img 
-            src="{{ url_for('static', path='assets/images/services/lips/after/lips_after_aligned.webp') }}?v={{ system_version }}"
-            class="absolute inset-0 w-full h-full object-cover object-[center_35%]" 
-            alt="Labios Full Color - Resultado Final" 
-            loading="lazy" width="600" height="720">
-          <img 
-            src="{{ url_for('static', path='assets/images/services/lips/before/lips_before.webp') }}?v={{ system_version }}"
-            class="absolute inset-0 w-full h-full object-cover object-[center_35%] foreground-img"
-            alt="Labios Full Color - Estado Inicial"
-            loading="lazy" width="600" height="720">
-
-          <div class="absolute inset-y-0 w-px bg-white/20 pointer-events-none z-20 slider-thumb">
-            <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-10 h-10 bg-luxury-black/80 backdrop-blur-xl border border-white/10 rounded-full flex items-center justify-center shadow-2xl">
-              <i class="fas fa-arrows-alt-h text-luxury-gold text-sm animate-pulse"></i>
-            </div>
-          </div>
-          <input type="range" min="0" max="100" value="50" aria-label="Comparar antes y después"
-            class="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-30 m-0 p-0 slider-range touch-none">
-
-          <div class="absolute inset-x-4 bottom-4 flex flex-col sm:flex-row gap-4 justify-between items-end z-20 pointer-events-none">
-            <div class="card-glass px-6 py-4 rounded-xl border border-luxury-gold/20">
-              <span class="block text-[10px] text-luxury-gold font-bold uppercase tracking-widest mb-1">Especialidad</span>
-              <h3 class="text-white text-xl font-serif">Full Lip Velvet</h3>
-            </div>
-            <div class="card-glass px-4 py-2 rounded-lg text-[10px] font-bold text-luxury-gold flex items-center gap-2 border border-luxury-gold/20">
-              ANTES / DESPUÉS
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Footer Note (Stitch Designed) -->
-    <div class="flex flex-col items-center justify-center pt-8 border-t border-luxury-gold/10">
-        <div class="flex items-center gap-4 text-slate-500 mb-6">
-            <span class="h-px w-12 bg-luxury-gold/20"></span>
-            <p class="text-sm font-medium tracking-[0.2em] uppercase italic text-luxury-gold/60">Integridad Fotográfica</p>
-            <span class="h-px w-12 bg-luxury-gold/20"></span>
-        </div>
-        <p class="text-slate-400 text-xs text-center max-w-xl leading-relaxed opacity-80">
-            Todas las imágenes presentadas en esta galería han sido capturadas bajo condiciones de iluminación clínica estandarizada. 
-            Garantizamos la ausencia total de retoques digitales. Lo que ves es la estricta realidad de nuestro nivel técnico.
-        </p>
-    </div>
-  </div>
 </section>

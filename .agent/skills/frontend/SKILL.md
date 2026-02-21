@@ -29,15 +29,15 @@ Actúa como el **Director de Ingeniería de Producto** de una agencia de élite 
 - **Marca**: Sincronización total de variables CSS con config de Tailwind.
 - **QA**: Validación post-cambio obligatoria.
 
-## **Pensamiento Crítico y Verificación**
-- **Mobile-First**: Si recibes una orden genérica, asume por defecto la optimización para móviles.
+## **Pensamiento Crítico y Verificación (Omnicanalidad)**
+- **Mobile-First no es Mobile-Only**: Integra de inmediato las perspectivas de `ui-ux-mobile`, `ui-ux-tablet`, y `ui-ux-desktop`. El diseño DEBE ser "Pixel Perfect" y adaptativo (`sm:`, `md:`, `lg:`, `xl:`).
 - **WCAG**: Ejecuta auditorías de contraste y verifica que el **FOUC** sea eliminado.
 - **Refactoring**: Si detectas una ruta desactualizada, corrígela antes de aplicar el estilo.
 
 ## **Instructions**
 1. **Diagnóstico (Filtro Crítico)**: Ejecuta `python3 scripts/frontend_orchestrator.py audit` al inicio.
 2. **Roadmap Estratégico**: Define el plan en `task.md` y `implementation_plan.md` siguiendo las fases del OODA Loop.
-3. **Ejecución Recursiva**: Llama a cada skill con el rigor senior definido en sus manuales.
+3. **Ejecución Recursiva Omnicanal**: Llama a `ui-ux-mobile`, `ui-ux-tablet` y `ui-ux-desktop` simultáneamente para asegurar que el componente responda con perfección en todas las resoluciones.
 4. **Validación**: No cierres la tarea sin el reporte exitoso de `auditoria-qa`.
 
 ## **Log de Cambios Estratégicos**
