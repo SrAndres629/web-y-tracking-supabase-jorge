@@ -1,10 +1,10 @@
 <!-- ========== UNIFIED MAIN NAVIGATION ========== -->
 <nav id="mainNav"
-    class="fixed top-0 w-full z-50 transition-all duration-500 backdrop-blur-md bg-luxury-black/80 border-b border-white/5">
-    <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+    class="fixed top-0 w-full z-50 transition-all duration-500 bg-transparent border-b border-transparent">
+    <div class="container mx-auto px-6 py-6 flex justify-between items-center">
         <!-- Logo -->
         <a href="#"
-            class="text-luxury-gold font-serif text-2xl font-bold tracking-wide transition-transform hover:scale-105 flex items-center h-10">
+            class="text-luxury-gold font-serif text-lg md:text-xl font-bold tracking-wide transition-transform hover:scale-105">
             Jorge Aguirre Flores
         </a>
 
@@ -34,14 +34,13 @@
 
         <div class="flex items-center gap-4">
             <!-- CTA Button (Visible on scroll via JS) -->
-            <button id="navCta" type="button" onclick="handleConversion('Nav CTA')"
-                class="hidden md:flex opacity-0 translate-y-[-10px] transition-all duration-500 btn-primary items-center gap-2 shadow-glow-gold">
-                <i class="fab fa-whatsapp text-lg"></i> Agendar
+            <button id="navCta" onclick="handleConversion('Nav CTA')"
+                class="hidden md:flex opacity-0 translate-y-[-10px] transition-all duration-500 px-4 py-2 bg-luxury-gold text-black font-bold text-xs uppercase tracking-wider hover:bg-white items-center gap-2 rounded shadow-lg">
+                <i class="fab fa-whatsapp"></i> Agendar
             </button>
 
             <!-- Mobile Menu Button -->
-            <button id="mobileMenuBtn" type="button" class="md:hidden text-luxury-gold text-2xl focus:outline-none"
-                aria-label="Menu">
+            <button id="mobileMenuBtn" class="md:hidden text-luxury-gold text-2xl focus:outline-none" aria-label="Menu">
                 <i class="fas fa-bars"></i>
             </button>
         </div>
@@ -49,60 +48,20 @@
 
     <!-- Mobile Menu Overlay -->
     <div id="mobileMenu"
-        class="fixed inset-0 bg-luxury-black/98 backdrop-blur-xl z-[60] hidden flex-col items-center justify-center space-y-8 touch-none"
-        onclick="closeMobileMenuOnOutside(event)">
-        <button type="button" class="absolute top-6 right-6 text-white/50 hover:text-white text-4xl"
-            aria-label="Cerrar menú"
-            onclick="closeMobileMenu()">
+        class="fixed inset-0 bg-luxury-black/98 backdrop-blur-xl z-[60] hidden flex-col items-center justify-center space-y-8 touch-none">
+        <button class="absolute top-6 right-6 text-white/50 hover:text-white text-4xl"
+            onclick="document.getElementById('mobileMenuBtn').style.display='block'; document.getElementById('mobileMenu').classList.add('hidden'); document.body.style.overflow='';">
             &times;
         </button>
-        <a href="#galeria" class="text-2xl font-serif text-white hover:text-luxury-gold transition-colors" onclick="closeMobileMenu()">Galería</a>
+        <a href="#galeria" class="text-2xl font-serif text-white hover:text-luxury-gold transition-colors">Galería</a>
         <a href="#servicios"
-            class="text-2xl font-serif text-white hover:text-luxury-gold transition-colors" onclick="closeMobileMenu()">Servicios</a>
-        <a href="#proceso" class="text-2xl font-serif text-white hover:text-luxury-gold transition-colors" onclick="closeMobileMenu()">Proceso</a>
+            class="text-2xl font-serif text-white hover:text-luxury-gold transition-colors">Servicios</a>
+        <a href="#proceso" class="text-2xl font-serif text-white hover:text-luxury-gold transition-colors">Proceso</a>
         <a href="#testimonios"
-            class="text-2xl font-serif text-white hover:text-luxury-gold transition-colors" onclick="closeMobileMenu()">Testimonios</a>
-        <button type="button" onclick="handleConversion('Mobile Menu CTA'); closeMobileMenu();"
-            class="mt-8 px-8 py-4 border border-luxury-gold text-luxury-gold uppercase tracking-widest text-sm rounded-lg hover:bg-luxury-gold hover:text-black transition-all">
+            class="text-2xl font-serif text-white hover:text-luxury-gold transition-colors">Testimonios</a>
+        <button onclick="handleConversion('Mobile Menu CTA')"
+            class="mt-8 px-8 py-3 border border-luxury-gold text-luxury-gold uppercase tracking-widest text-sm hover:bg-luxury-gold hover:text-black transition-all">
             Agendar Cita
         </button>
     </div>
 </nav>
-
-<script>
-    // Mobile menu handlers
-    function closeMobileMenu() {
-        document.getElementById('mobileMenu').classList.add('hidden');
-        document.getElementById('mobileMenuBtn').style.display = 'block';
-        document.body.style.overflow = '';
-    }
-    
-    function closeMobileMenuOnOutside(event) {
-        if (event.target.id === 'mobileMenu') {
-            closeMobileMenu();
-        }
-    }
-    
-    // Close on ESC key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            const menu = document.getElementById('mobileMenu');
-            if (menu && !menu.classList.contains('hidden')) {
-                closeMobileMenu();
-            }
-        }
-    });
-    
-    // Close on scroll (optional UX improvement)
-    let lastScrollY = window.scrollY;
-    window.addEventListener('scroll', function() {
-        const menu = document.getElementById('mobileMenu');
-        if (menu && !menu.classList.contains('hidden')) {
-            // Close if scrolled more than 100px
-            if (Math.abs(window.scrollY - lastScrollY) > 100) {
-                closeMobileMenu();
-            }
-        }
-        lastScrollY = window.scrollY;
-    }, { passive: true });
-</script>

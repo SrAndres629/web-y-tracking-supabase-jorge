@@ -89,12 +89,6 @@ def block_external_calls(request):
         m.setattr("app.tracking.send_event_async", AsyncMock(return_value=True))
         m.setattr("app.tracking.send_event", MagicMock(return_value=True))
 
-        # 4. Block RudderStack
-        m.setattr(
-            "app.infrastructure.external.rudderstack.RudderStackTracker.track",
-            AsyncMock(return_value=True),
-        )
-
         yield
 
 

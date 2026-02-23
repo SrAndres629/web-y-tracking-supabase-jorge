@@ -212,9 +212,7 @@ class ExternalServicesSettings(BaseSettings):
     class Config:
         extra = "ignore"
 
-    # RudderStack
-    rudderstack_write_key: Optional[str] = Field(default=None)
-    rudderstack_data_plane_url: Optional[str] = Field(default=None)
+    # n8n
 
     # n8n
     n8n_webhook_url: Optional[str] = Field(default=None)
@@ -401,18 +399,6 @@ class Settings(BaseSettings):
     @property
     def QSTASH_TOKEN(self) -> Optional[str]:
         return self.external.qstash_token
-
-    @property
-    def RUDDERSTACK_WRITE_KEY(self) -> Optional[str]:
-        return self.external.rudderstack_write_key
-
-    @property
-    def RUDDERSTACK_DATA_PLANE_URL(self) -> Optional[str]:
-        return self.external.rudderstack_data_plane_url
-
-    @property
-    def rudderstack_enabled(self) -> bool:
-        return bool(self.external.rudderstack_write_key)
 
     @property
     def N8N_WEBHOOK_URL(self) -> Optional[str]:

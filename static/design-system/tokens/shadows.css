@@ -7,46 +7,46 @@
   /* -----------------------------------------------------------------
      BOX SHADOWS (Elevation)
      ----------------------------------------------------------------- */
-  --shadow-sm: 0 2px 8px rgb(0 0 0 / 20%);
-  --shadow-md: 0 4px 15px rgb(0 0 0 / 30%);
-  --shadow-lg: 0 10px 40px rgb(0 0 0 / 40%);
-  --shadow-xl: 0 20px 60px rgb(0 0 0 / 50%);
-  --shadow-2xl: 0 25px 80px rgb(0 0 0 / 60%);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 15px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.5);
+  --shadow-2xl: 0 25px 80px rgba(0, 0, 0, 0.6);
   
   /* -----------------------------------------------------------------
      GLOW SHADOWS (Gold accent)
      ----------------------------------------------------------------- */
-  --shadow-gold-sm: 0 0 15px rgb(197 160 89 / 30%);
-  --shadow-gold-md: 0 0 30px rgb(197 160 89 / 40%);
-  --shadow-gold-lg: 0 0 40px rgb(197 160 89 / 50%);
-  --shadow-gold-inset: inset 0 0 30px rgb(197 160 89 / 3%);
+  --shadow-gold-sm: 0 0 15px rgba(197, 160, 89, 0.3);
+  --shadow-gold-md: 0 0 30px rgba(197, 160, 89, 0.4);
+  --shadow-gold-lg: 0 0 40px rgba(197, 160, 89, 0.5);
+  --shadow-gold-inset: inset 0 0 30px rgba(197, 160, 89, 0.03);
   
   /* -----------------------------------------------------------------
      GLASS SHADOWS
      ----------------------------------------------------------------- */
-  --shadow-glass: 0 10px 40px rgb(0 0 0 / 20%), inset 0 1px 0 rgb(255 255 255 / 3%);
-  --shadow-glass-hover: 0 20px 60px rgb(0 0 0 / 50%), 0 0 40px rgb(197 160 89 / 15%), inset 0 0 30px rgb(197 160 89 / 3%);
+  --shadow-glass: 0 10px 40px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  --shadow-glass-hover: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(197, 160, 89, 0.15), inset 0 0 30px rgba(197, 160, 89, 0.03);
   
   /* -----------------------------------------------------------------
      CARD SHADOWS (Semantic)
      ----------------------------------------------------------------- */
-  --shadow-card: 0 10px 30px rgb(0 0 0 / 30%);
-  --shadow-card-hover: 0 20px 50px rgb(0 0 0 / 60%), 0 0 30px rgb(197 160 89 / 20%);
-  --shadow-card-premium: 0 20px 50px rgb(0 0 0 / 60%), 0 10px 30px rgb(197 160 89 / 12%), inset 0 1px 0 rgb(255 255 255 / 5%);
-  --shadow-card-premium-hover: 0 25px 60px rgb(0 0 0 / 70%), 0 15px 40px rgb(197 160 89 / 18%), inset 0 1px 0 rgb(255 255 255 / 8%);
+  --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.3);
+  --shadow-card-hover: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(197, 160, 89, 0.2);
+  --shadow-card-premium: 0 20px 50px rgba(0, 0, 0, 0.6), 0 10px 30px rgba(197, 160, 89, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --shadow-card-premium-hover: 0 25px 60px rgba(0, 0, 0, 0.7), 0 15px 40px rgba(197, 160, 89, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   
   /* -----------------------------------------------------------------
      BUTTON SHADOWS
      ----------------------------------------------------------------- */
-  --shadow-button-gold: 0 4px 20px rgb(197 160 89 / 40%);
-  --shadow-button-gold-hover: 0 8px 30px rgb(197 160 89 / 60%);
-  --shadow-button-gold-active: 0 2px 10px rgb(197 160 89 / 30%);
+  --shadow-button-gold: 0 0 20px rgba(197, 160, 89, 0.5);
+  --shadow-button-gold-hover: 0 10px 40px rgba(197, 160, 89, 0.6);
+  --shadow-button-gold-active: 0 4px 15px rgba(197, 160, 89, 0.4);
   
   /* -----------------------------------------------------------------
      PREMIUM EFFECTS
      ----------------------------------------------------------------- */
-  --glow-cursor: radial-gradient(circle at center, rgb(197 160 89 / 8%) 0%, transparent 70%);
-  --glow-hero: radial-gradient(circle, rgb(197 160 89 / 30%), transparent 70%);
+  --glow-cursor: radial-gradient(circle at center, rgba(197, 160, 89, 0.08) 0%, transparent 70%);
+  --glow-hero: radial-gradient(circle, rgba(197, 160, 89, 0.3), transparent 70%);
   
   /* -----------------------------------------------------------------
      BLUR VALUES

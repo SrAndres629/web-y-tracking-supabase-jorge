@@ -41,8 +41,7 @@ async def health_check(request: Request):
         integrations.append("redis_upstash")
     if settings.CLARITY_PROJECT_ID:
         integrations.append("clarity")
-    if settings.rudderstack_enabled:
-        integrations.append("rudderstack")
+    # Rudderstack removed
 
     # Check Cloudflare
     if request.headers.get("cf-ray"):

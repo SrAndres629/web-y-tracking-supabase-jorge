@@ -95,11 +95,9 @@ def get_trackers() -> List[TrackerPort]:
         return _tracker_cache
 
     from app.infrastructure.external.meta_capi import MetaTracker
-    from app.infrastructure.external.rudderstack import RudderStackTracker
 
     _tracker_cache = [
         MetaTracker(),
-        RudderStackTracker(),
     ]
     return _tracker_cache
 

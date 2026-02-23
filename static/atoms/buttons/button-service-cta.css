@@ -48,7 +48,7 @@
 }
 
 /* Mobile: full width */
-@media (width <= 768px) {
+@media (max-width: 768px) {
   .btn-service-cta {
     width: 100%;
     padding: var(--space-4);

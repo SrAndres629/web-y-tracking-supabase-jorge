@@ -30,18 +30,6 @@
   animation: shimmer 3s ease infinite, glow-pulse 2s ease-in-out infinite;
 }
 
-/* Shimmer effect overlay */
-.btn-gold-liquid::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 50%;
-  height: 100%;
-  background: var(--gradient-gold-shine);
-  transition: left 0.5s ease;
-}
-
 /* Hover state */
 .btn-gold-liquid:hover {
   transform: translateY(-3px) scale(1.02);
@@ -58,6 +46,17 @@
   box-shadow: var(--shadow-button-gold-active);
 }
 
+/* Shimmer effect overlay */
+.btn-gold-liquid::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: var(--gradient-gold-shine);
+  transition: left 0.5s ease;
+}
 
 /* Pause animation when not visible */
 .btn-gold-liquid.paused {

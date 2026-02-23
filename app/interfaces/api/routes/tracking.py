@@ -23,7 +23,6 @@ from app.limiter import limiter
 from app.models import InteractionCreate, InteractionResponse, LeadCreate, TrackResponse
 
 # Direct imports (bypassing Celery)
-from app.rudderstack import rudder_service
 from app.services import normalize_pii, publish_to_qstash, validate_turnstile
 
 # Logger
@@ -149,19 +148,6 @@ def bg_send_webhook(payload):
             logger.info("✅ [BG] n8n Webhook sent")
     except Exception as e:
         logger.exception(f"⚠️ [BG] Webhook failed: {e}")
-
-
-def bg_send_rudderstack_event(user_id, event_name, properties, context):
-    """Sends to RudderStack without blocking"""
-    try:
-        rudder_service.track(
-            user_id=user_id,
-            event_name=event_name,
-            properties=properties,
-            context=context,
-        )
-    except Exception as e:
-        logger.exception(f"❌ [BG] RudderStack failed: {e}")
 
 
 # =================================================================
@@ -324,25 +310,6 @@ def _queue_external_hubs(bt, event, ctx):
         payload = event.model_dump()
         payload["utm_data"] = ctx["utm"]
         bt.add_task(bg_send_webhook, payload)
-
-    # RudderStack
-    props = {
-        "event_id": event.event_id,
-        "url": event.event_source_url,
-        "fbclid": ctx["fb_id"],
-        "fbp": ctx["fbp"],
-        "fbc": ctx["fbc"],
-        **ctx["utm"],
-    }
-    if event.custom_data:
-        props.update(event.custom_data)
-    bt.add_task(
-        bg_send_rudderstack_event,
-        ctx["ext_id"] or "anon",
-        event.event_name,
-        props,
-        {"ip": ctx["ip"], "userAgent": ctx["ua"], "externalId": ctx["ext_id"]},
-    )
 
 
 # =================================================================

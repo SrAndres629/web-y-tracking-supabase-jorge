@@ -1,0 +1,205 @@
+/**
+ * 🎨 TAILWIND INPUT - Entry Point
+ * Compila a: static_new/dist/css/app.min.css
+ * 
+ * Orden de importación:
+ * 1. Tokens (variables CSS)
+ * 2. Tailwind directives
+ * 3. Atoms
+ * 4. Molecules
+ * 5. Organisms
+ * 6. Layouts
+ */
+
+/* ─────────────────────────────────────────────────────────────────
+   1. DESIGN TOKENS (Variables CSS)
+   ───────────────────────────────────────────────────────────────── */
+@import url('../tokens/index.css');
+
+/* ─────────────────────────────────────────────────────────────────
+   2. TAILWIND DIRECTIVES
+   ───────────────────────────────────────────────────────────────── */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─────────────────────────────────────────────────────────────────
+   3. TAILWIND CUSTOM CONFIGURATION
+   ───────────────────────────────────────────────────────────────── */
+
+@layer base {
+  /* HTML base styles */
+  html {
+    -webkit-text-size-adjust: 100%;
+    font-size: 16px;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    letter-spacing: var(--tracking-normal);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+    width: 100%;
+    background-color: var(--luxury-black);
+    color: var(--luxury-text);
+  }
+
+  /* Viewport fix for iOS Safari */
+  .min-h-screen {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  /* Typography enhancements */
+  h1, h2, h3, .font-serif {
+    letter-spacing: var(--tracking-tight);
+    line-height: var(--leading-tight);
+  }
+
+  /* Selection color */
+  ::selection {
+    background-color: var(--luxury-gold);
+    color: var(--luxury-black);
+  }
+}
+
+@layer components {
+  /* Gold Dust Particle Effect */
+  .gold-dust-container {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .gold-dust-particle {
+    position: absolute;
+    background: radial-gradient(circle, var(--luxury-gold-light) 0%, transparent 70%);
+    border-radius: 50%;
+    opacity: 0;
+    animation: gold-particle-float var(--particle-duration, 3s) ease-in-out infinite;
+    animation-delay: var(--particle-delay, 0s);
+  }
+
+  /* Cursor Glow Effect */
+  .cursor-glow-follower {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle at center, rgba(197, 160, 89, 0.08) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+    transform: translate(-50%, -50%);
+    transition: opacity 0.5s ease;
+    mix-blend-mode: soft-light;
+    opacity: 0;
+  }
+
+  body:hover .cursor-glow-follower {
+    opacity: 1;
+  }
+
+  /* Content visibility for performance */
+  section {
+    content-visibility: auto;
+    contain-intrinsic-size: 1000px;
+  }
+
+  img {
+    content-visibility: auto;
+  }
+}
+
+@layer utilities {
+  /* Custom scrollbar */
+  .scrollbar-luxury::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .scrollbar-luxury::-webkit-scrollbar-track {
+    background: var(--luxury-black-deep);
+  }
+
+  .scrollbar-luxury::-webkit-scrollbar-thumb {
+    background: var(--luxury-gold-dark);
+    border-radius: 4px;
+  }
+
+  .scrollbar-luxury::-webkit-scrollbar-thumb:hover {
+    background: var(--luxury-gold);
+  }
+
+  /* GPU acceleration */
+  .gpu-accelerated {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+
+  /* Text balance for headings */
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   4. ATOMS (Component Library)
+   ───────────────────────────────────────────────────────────────── */
+
+/* Buttons */
+@import url('../../atoms/buttons/button-gold-liquid.css');
+@import url('../../atoms/buttons/button-service-cta.css');
+
+/* Cards */
+@import url('../../atoms/cards/card-glass.css');
+@import url('../../atoms/cards/card-service-premium.css');
+
+/* Text */
+@import url('../../atoms/text/text-liquid-gold.css');
+
+/* ─────────────────────────────────────────────────────────────────
+   5. LAYOUTS
+   ───────────────────────────────────────────────────────────────── */
+@import url('../../layouts/navigation/glass-nav.css');
+
+/* ─────────────────────────────────────────────────────────────────
+   6. LEGACY COMPATIBILITY (Mientras se migra)
+   ───────────────────────────────────────────────────────────────── */
+
+/* FAQ Accordion (legacy) */
+details > summary {
+  list-style: none;
+}
+
+details > summary::-webkit-details-marker {
+  display: none;
+}
+
+details[open] summary ~ * {
+  animation: sweep 0.4s ease-in-out;
+}
+
+/* Pause animations */
+.paused {
+  animation-play-state: paused !important;
+  transition: none !important;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

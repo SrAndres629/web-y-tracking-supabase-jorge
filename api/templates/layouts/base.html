@@ -247,59 +247,44 @@
     {% if google_client_id %}
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script>
+      // 🛡️ Defer heavy Google Identity Logic until after main render
       window.addEventListener("load", function () {
-        if (typeof google !== "undefined" && google.accounts) {
-          google.accounts.id.initialize({
-            client_id: "{{ google_client_id }}",
-            use_fedcm_for_prompt: true, // Silicon Valley Compliance: FedCM Migration
-            callback: function (response) {
-              const debug = new URLSearchParams(window.location.search).has(
-                "debug",
-              );
-              if (debug) Logger.debug("🔍 Google Identity Response received");
-              fetch("/api/identity/google", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ credential: response.credential }),
-              })
-                .then(function (r) {
-                  return r.json();
-                })
-                .then(function (data) {
-                  if (debug)
-                    Logger.debug("✅ Identity captured", data.user?.email);
-                  // Silicon Valley Identity Link: Update Pixel Advanced Matching
-                  if (data.user && window.TrackingEngine) {
-                    window.TrackingEngine.PixelBridge.setUserData({
-                      email: data.user.email,
-                      firstName: data.user.given_name,
-                      lastName: data.user.family_name,
-                    });
-                  }
-                })
-                .catch(function (e) {
-                  console.error("❌ Identity capture error:", e);
-                });
-            },
-            auto_select: false,
-            cancel_on_tap_outside: true,
-          });
-
-          // Automatic prompt disabled to avoid intrusion
-          // Identity will be captured silently if possible or via explicit interaction
-          /*
-                google.accounts.id.prompt((notification) => {
-                    if (notification.isNotDisplayed()) {
-                        console.warn('⚠️ Google One Tap not displayed:', notification.getNotDisplayedReason());
-                    } else if (notification.isSkippedMoment()) {
-                        console.warn('⚠️ Google One Tap skipped:', notification.getSkippedReason());
-                    } else if (notification.isDismissedMoment()) {
-                        console.warn('⚠️ Google One Tap dismissed:', notification.getDismissedReason());
-                    }
-                });
-                */
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(initGoogleIdentity);
         } else {
-          console.error("❌ Google GSI library not loaded or configured.");
+            setTimeout(initGoogleIdentity, 500);
+        }
+        
+        function initGoogleIdentity() {
+          if (typeof google !== "undefined" && google.accounts) {
+            google.accounts.id.initialize({
+              client_id: "{{ google_client_id }}",
+              use_fedcm_for_prompt: true, // Silicon Valley Compliance: FedCM Migration
+              callback: function (response) {
+                const debug = new URLSearchParams(window.location.search).has("debug");
+                if (debug) Logger.debug("🔍 Google Identity Response received");
+                fetch("/api/identity/google", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ credential: response.credential }),
+                })
+                  .then(r => r.json())
+                  .then(function (data) {
+                    if (debug) Logger.debug("✅ Identity captured", data.user?.email);
+                    if (data.user && window.TrackingEngine) {
+                      window.TrackingEngine.PixelBridge.setUserData({
+                        email: data.user.email,
+                        firstName: data.user.given_name,
+                        lastName: data.user.family_name,
+                      });
+                    }
+                  })
+                  .catch(e => console.error("❌ Identity capture error:", e));
+              },
+              auto_select: false,
+              cancel_on_tap_outside: true,
+            });
+          }
         }
       });
     </script>
@@ -356,7 +341,7 @@
   </head>
 
   <body
-    class="bg-luxury-black text-luxury-text font-sans antialiased selection:bg-luxury-gold selection:text-black relative"
+    class="relative font-sans antialiased bg-luxury-black text-luxury-text selection:bg-luxury-gold selection:text-black"
   >
     <!-- Anti-Bot Defense Layer -->
     <div
@@ -369,7 +354,7 @@
     <!-- Global Ambient Spotlight -->
     <div
       id="mouse-spotlight"
-      class="fixed inset-0 pointer-events-none z-0 opacity-40 mix-blend-screen transition-opacity duration-1000"
+      class="fixed inset-0 z-0 opacity-40 mix-blend-screen transition-opacity duration-1000 pointer-events-none"
     ></div>
 
     <!-- Skip Link for Accessibility -->
@@ -405,22 +390,31 @@
 
       // Wait for DOM
       if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", initEngines);
+        document.addEventListener("DOMContentLoaded", scheduleEngines);
       } else {
-        initEngines();
+        scheduleEngines();
+      }
+
+      function scheduleEngines() {
+          // 🛡️ Defer heavy JS initialization using requestIdleCallback so UI renders first
+          if ('requestIdleCallback' in window) {
+              requestIdleCallback(initEngines, { timeout: 2000 });
+          } else {
+              setTimeout(initEngines, 100);
+          }
       }
 
       function initEngines() {
-        const debug = new URLSearchParams(window.location.search).has(
-          "debug_pixel",
-        );
+        const debug = new URLSearchParams(window.location.search).has("debug_pixel");
         const isMobile = window.matchMedia("(pointer: coarse)").matches;
 
-        // 1. Lenis Smooth Scroll + GSAP Sync
-        const lenis = LenisSetup.init();
-        if (lenis) {
-          LenisSetup.syncWithGSAP();
-          window.lenis = lenis;
+        // 1. Lenis Smooth Scroll + GSAP Sync (Only desktop by default for perf)
+        if (!isMobile) {
+            const lenis = LenisSetup.init();
+            if (lenis) {
+              LenisSetup.syncWithGSAP();
+              window.lenis = lenis;
+            }
         }
 
         // 2. Tracking Engine (Zaraz + CAPI)
@@ -429,9 +423,8 @@
           window.TrackingEngine = TrackingEngine;
         }
 
-        // 3. Sliders (Before/After) - Enhanced version for mobile
+        // 3. Sliders (Before/After) - Delayed import
         if (isMobile) {
-          // Load enhanced slider with Hammer.js for mobile
           import("/static/engines/ui/slider-manager-enhanced.js?v={{ system_version }}")
             .then((module) => {
               if (module.SliderManagerEnhanced) {
@@ -441,13 +434,9 @@
               }
             })
             .catch(() => {
-              // Fallback to basic slider
-              if (typeof SliderManager !== "undefined") {
-                SliderManager.init();
-              }
+              if (typeof SliderManager !== "undefined") SliderManager.init();
             });
         } else {
-          // Desktop: use basic slider
           if (typeof SliderManager !== "undefined") {
             SliderManager.init();
           }
@@ -461,11 +450,7 @@
         // 5. Theme Bridge initialization
         document.body.classList.add("theme-bridge-loaded");
 
-        if (debug)
-          Logger.debug(
-            "[MainEngine] All engines initialized. Mobile:",
-            isMobile,
-          );
+        if (debug) Logger.debug("[MainEngine] All engines initialized. Mobile:", isMobile);
       }
     </script>
     {% block extra_scripts %}{% endblock %}
