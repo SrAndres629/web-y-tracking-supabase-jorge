@@ -19,9 +19,8 @@ from fastapi import Header, HTTPException
 
 from app.application.commands.create_visitor import CreateVisitorHandler
 from app.application.commands.track_event import TrackEventHandler
-from app.application.interfaces.cache_port import ContentCachePort, DeduplicationPort
+from app.application.interfaces.cache_port import DeduplicationPort
 from app.application.interfaces.tracker_port import TrackerPort
-from app.application.queries.get_content import GetContentHandler
 from app.config import settings
 from app.domain.repositories.event_repo import EventRepository
 from app.domain.repositories.lead_repo import LeadRepository
@@ -43,18 +42,6 @@ def get_deduplicator() -> DeduplicationPort:
     if settings.redis.is_configured:
         return RedisDeduplication()
     return InMemoryDeduplication()
-
-
-@lru_cache()
-def get_content_cache() -> ContentCachePort:
-    """Provee cache de contenido."""
-    from app.infrastructure.cache import InMemoryContentCache, RedisContentCache
-    from app.infrastructure.config import get_settings
-
-    settings = get_settings()
-    if settings.redis.is_configured:
-        return RedisContentCache()
-    return InMemoryContentCache()
 
 
 # ===== Repositories =====
@@ -126,13 +113,6 @@ def get_create_visitor_handler() -> CreateVisitorHandler:
     """Provee handler para crear visitantes."""
     return CreateVisitorHandler(
         visitor_repo=get_visitor_repository(),
-    )
-
-
-def get_get_content_handler() -> GetContentHandler:
-    """Provee handler para obtener contenido."""
-    return GetContentHandler(
-        cache=get_content_cache(),
     )
 
 

@@ -6,14 +6,11 @@ Para desarrollo local y testing.
 
 from __future__ import annotations
 
-import logging
 import time
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
-from app.application.interfaces.cache_port import ContentCachePort, DeduplicationPort
-
-logger = logging.getLogger(__name__)
+from app.application.interfaces.cache_port import DeduplicationPort
 
 
 @dataclass
@@ -62,46 +59,3 @@ class InMemoryDeduplication(DeduplicationPort):
         expired = [key for key, entry in self._store.items() if entry.expires_at <= now]
         for key in expired:
             del self._store[key]
-
-
-class InMemoryContentCache(ContentCachePort):
-    """Cache de contenido en memoria."""
-
-    def __init__(self, max_size: int = 100):
-        self._store: Dict[str, CacheEntry] = {}
-        self._max_size = max_size
-
-    async def get(self, key: str) -> Optional[Any]:
-        """Obtiene valor del cache."""
-        now = time.time()
-        entry = self._store.get(key)
-
-        if entry is None:
-            return None
-
-        if entry.expires_at <= now:
-            del self._store[key]
-            return None
-
-        return entry.value
-
-    async def set(self, key: str, value: Any, ttl: int = 3600) -> None:
-        """Guarda valor en cache."""
-        # Evict if at capacity
-        if len(self._store) >= self._max_size and key not in self._store:
-            # Remove oldest entry
-            oldest_key = min(self._store, key=lambda k: self._store[k].expires_at)
-            del self._store[oldest_key]
-
-        self._store[key] = CacheEntry(
-            value=value,
-            expires_at=time.time() + ttl,
-        )
-
-    async def delete(self, key: str) -> None:
-        """Elimina valor del cache."""
-        self._store.pop(key, None)
-
-    async def clear(self) -> None:
-        """Limpia todo el cache."""
-        self._store.clear()
