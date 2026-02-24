@@ -31,6 +31,7 @@ ignore = [
   "RUF006",  # asyncio.create_task reference not stored
   "TRY",     # Tryceratops (stylistic exception handling)
   "PLW",     # Pylint warnings
+  "B008",    # Do not perform function call `Depends` in argument defaults
 ]
 
 

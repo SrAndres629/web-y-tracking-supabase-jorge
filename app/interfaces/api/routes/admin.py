@@ -1,5 +1,17 @@
-from fastapi import APIRouter, BackgroundTasks, HTTPException, Request
+import secrets
+from typing import Optional
+
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    Header,
+    HTTPException,
+    Request,
+    status,
+)
 from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.templating import Jinja2Templates
 
 from app.application.commands.admin.confirm_sale_command import ConfirmSaleCommand
@@ -13,20 +25,48 @@ templates = Jinja2Templates(directory=settings.TEMPLATES_DIRS)
 legacy = get_legacy_facade()
 
 
+security = HTTPBasic(auto_error=False)
+
+
+async def validate_admin_access(
+    credentials: Optional[HTTPBasicCredentials] = Depends(security),
+    x_admin_key: Optional[str] = Header(None, alias="X-Admin-Key"),
+):
+    """
+    Valida el acceso de administrador mediante:
+    1. Header 'X-Admin-Key'
+    2. HTTP Basic Auth (usando la clave como password)
+    """
+    # 1. Validar por Header (Ideal para APIs)
+    if x_admin_key and secrets.compare_digest(x_admin_key, settings.ADMIN_KEY):
+        return True
+
+    # 2. Validar por Basic Auth (Ideal para navegación en navegador)
+    if credentials and secrets.compare_digest(credentials.password, settings.ADMIN_KEY):
+        return True
+
+    # Si ninguno es válido, lanzar 401 para activar el prompt del navegador
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="🔒 Acceso Denegado",
+        headers={"WWW-Authenticate": "Basic"},
+    )
+
+
 def verify_admin_key(key: str) -> bool:
-    """Verifica la clave de administrador"""
-    return key == settings.ADMIN_KEY
+    """
+    Verifica la clave de administrador (Legacy support)
+    DEPRECATED: Use validate_admin_access dependency instead.
+    """
+    return secrets.compare_digest(key, settings.ADMIN_KEY)
 
 
 @router.get("/dashboard", response_class=HTMLResponse)
-async def admin_dashboard(request: Request, key: str = ""):
+async def admin_dashboard(request: Request, _=Depends(validate_admin_access)):
     """
     Panel de administración protegido por clave
     Muestra los últimos visitantes y permite confirmar ventas
     """
-    if not verify_admin_key(key):
-        return HTMLResponse("<h1>🔒 Acceso Denegado</h1><p>Clave incorrecta.</p>", status_code=403)
-
     get_visitors_query = GetAllVisitorsQuery(list_visitors=legacy.get_all_visitors)
     visitors = await get_visitors_query.execute(limit=50)
 
@@ -37,16 +77,13 @@ async def admin_dashboard(request: Request, key: str = ""):
     return templates.TemplateResponse(
         request=request,
         name="pages/admin/dashboard.html",
-        context={"visitors": visitors, "emq_stats": emq_stats, "admin_key": key},
+        context={"visitors": visitors, "emq_stats": emq_stats},
     )
 
 
 @router.get("/stats")
-async def admin_stats(key: str = ""):
+async def admin_stats(_=Depends(validate_admin_access)):
     """Devuelve JSON con estadísticas para monitoreo externo"""
-    if not verify_admin_key(key):
-        return JSONResponse({"error": "Unauthorized"}, status_code=403)
-
     get_visitors_query = GetAllVisitorsQuery(list_visitors=legacy.get_all_visitors)
     visitors = await get_visitors_query.execute(limit=1000)
     return {"total_visitors": len(visitors), "status": "active", "database": "connected"}
@@ -54,15 +91,14 @@ async def admin_stats(key: str = ""):
 
 @router.post("/confirm/{visitor_id}")
 async def confirm_sale(
-    visitor_id: int, background_tasks: BackgroundTasks, request: Request, key: str = ""
+    visitor_id: int,
+    background_tasks: BackgroundTasks,
+    request: Request,
+    _=Depends(validate_admin_access),
 ):
     """
     Confirma una venta y envía evento Purchase a Meta CAPI
     """
-    # Validar acceso
-    if not verify_admin_key(key):
-        return JSONResponse({"status": "error", "error": "Clave incorrecta"}, status_code=403)
-
     client_ip = request.client.host if request.client else "unknown"
     user_agent = request.headers.get("User-Agent", "unknown")
 
@@ -93,15 +129,12 @@ async def confirm_sale(
 
 
 @router.get("/signals")
-async def audit_signals(key: str = ""):
+async def audit_signals(_=Depends(validate_admin_access)):
     """
     AUDITORÍA DE SEÑALES (Silicon Valley Signal Quality)
     Compara Leads (DB) vs Eventos Enviados (Flag 'sent_to_meta')
     Muestra la discrepancia real.
     """
-    if not verify_admin_key(key):
-        return JSONResponse({"error": "Unauthorized"}, status_code=403)
-
     query = GetSignalAuditQuery(get_cursor=legacy.get_cursor)
     result = await query.execute()
 
