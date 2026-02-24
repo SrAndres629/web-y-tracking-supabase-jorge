@@ -1,36 +1,28 @@
-# Testing Infrastructure - Sectorized
+# Testing Infrastructure - Current Layout
 
 ## Structure
 
-```
+```text
 tests/
-├── backend/
-│   ├── architecture/   # Boot, dependency rules, clean architecture
-│   ├── unit/           # Pure unit tests (domain/app logic)
-│   ├── integration/    # API/application integration
-│   ├── security/       # Security controls
-│   ├── quality/        # Health, coverage, data flow, DB state
-│   └── fuzzing/        # Input fuzzing
-├── frontend/
-│   ├── rendering/      # Browser render + asset delivery checks
-│   ├── templates/      # Jinja/template integrity + tracking template guards
-│   ├── ux/             # UX and motion integrity
-│   └── seo/            # Robots/sitemap/SEO output
-└── platform/
-    ├── cloudflare/     # Zaraz/Cloudflare integration
-    ├── infra/          # Redis/Supabase/Upstash/performance env checks
-    ├── deployment/     # Vercel manifest/contracts
-    ├── observability/  # Live infrastructure audits
-    ├── mutation/       # Mutation scripts
-    └── diagnostics/    # AI/system diagnostics
+├── L1_atoms/          # Unit/property-level deterministic checks
+├── L2_components/     # Component/service contracts
+├── L3_modules/        # Concurrency + integration across modules
+├── L4_integration/    # Frontend/backend integration guards
+├── L4_supervisor/     # Import integrity + supervision checks
+├── L5_system/         # System-level marketing and asset readiness
+├── L6_omni/           # Omni-level end-to-end guards
+├── frontend/          # Rendering, templates, SEO, UX checks
+├── platform/          # Cloudflare, deployment, infra, observability
+├── load/              # Locust performance scripts
+└── cortex_audit/      # Diagnostic and auditing scripts
 ```
 
 ## Run by sector
 
 ```bash
-pytest tests/frontend -v
-pytest tests/backend -v
-pytest tests/platform -v
+pytest tests/L1_atoms tests/L2_components -v
+pytest tests/L3_modules tests/L4_integration tests/L4_supervisor -v
+pytest tests/L5_system tests/frontend tests/platform -v
 ```
 
 ## Critical deploy checks
@@ -45,4 +37,4 @@ pytest tests/platform -v
 ## Notes
 
 - Live external checks auto-skip when runtime blocks outbound sockets.
-- `git_sync.py` gates now execute by sectorized paths.
+- `git_sync.py` deployment gates should prioritize `tests/L*`, `tests/frontend`, and `tests/platform` sectors.
