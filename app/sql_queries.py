@@ -254,6 +254,20 @@ SELECT_META_DATA_BY_REF = """
 
 SELECT_LEAD_ID_BY_PHONE = "SELECT id FROM crm_leads WHERE whatsapp_phone = %s"
 
+SELECT_LEAD_BASE = """
+    SELECT
+        id, whatsapp_phone, full_name, email, meta_lead_id,
+        profile_pic_url, fb_click_id, fb_browser_id, utm_source,
+        utm_medium, utm_campaign, utm_term, utm_content,
+        status, lead_score, pain_point, service_interest,
+        created_at, updated_at, conversion_sent_to_meta
+    FROM crm_leads
+"""
+
+SELECT_LEAD_BY_ID = SELECT_LEAD_BASE + " WHERE id = %s"
+SELECT_LEAD_BY_PHONE = SELECT_LEAD_BASE + " WHERE whatsapp_phone = %s"
+SELECT_LEAD_BY_EXTERNAL_ID = SELECT_LEAD_BASE + " WHERE fb_browser_id = %s"
+
 UPDATE_LEAD_METADATA = """
     UPDATE crm_leads SET
         meta_lead_id = COALESCE(%s, meta_lead_id),
