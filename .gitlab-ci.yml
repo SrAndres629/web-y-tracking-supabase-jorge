@@ -1,0 +1,26 @@
+stages:
+  - test
+  - security
+
+include:
+  - template: Security/SAST.gitlab-ci.yml
+  - template: Security/Secret-Detection.gitlab-ci.yml
+  - template: Security/Dependency-Scanning.gitlab-ci.yml
+
+sast:
+  stage: security
+
+secret_detection:
+  stage: security
+
+dependency_scanning:
+  stage: security
+
+# Ejemplo de job de test para tu proyecto node
+test_job:
+  stage: test
+  image: node:20
+  script:
+    - npm install
+    - npm test || echo "Aún no hay tests configurados o fallaron, pero permitimos continuar para el escaneo de seguridad"
+  allow_failure: true
