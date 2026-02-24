@@ -46,7 +46,6 @@ function testCriticalFiles() {
     'engines/tracking/index.js',
     'engines/ui/index.js',
     'engines/motion/index.js',
-    'engines/legacy-adapter.js',
     'engines/core/dom.js',
     'engines/core/storage.js',
     'design-system/tokens/index.css',
@@ -80,8 +79,6 @@ function testAPICompatibility() {
     { file: 'engines/ui/index.js', mustContain: ['initialized', 'init', 'NavManager', 'SliderManager', 'CROManager'], name: 'UIEngine API' },
     // MotionEngine
     { file: 'engines/motion/index.js', mustContain: ['initialized', 'init'], name: 'MotionEngine API' },
-    // Legacy adapter
-    { file: 'engines/legacy-adapter.js', mustContain: ['window.handleConversion', 'window.TrackingEngine', 'window.onTurnstileSuccess'], name: 'Legacy Adapter Globals' },
   ];
   
   for (const check of checks) {

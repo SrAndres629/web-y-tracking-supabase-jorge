@@ -36,7 +36,7 @@ pytest tests/platform -v
 ## Critical deploy checks
 
 - `tests/frontend/rendering/test_asset_delivery.py`
-  Validates `/static/dist/css/app.min.css` and `/static/engines/legacy-adapter.js` are real assets (not HTML fallback).
+  Validates `/static/dist/css/app.min.css` and `/static/engines/tracking/index.js` are real assets (not HTML fallback).
 - `tests/platform/deployment/test_serverless_packaging.py`
   Enforces `api/templates/**` and `static/**` in `vercel.json`.
 - `tests/platform/cloudflare/test_zaraz.py`

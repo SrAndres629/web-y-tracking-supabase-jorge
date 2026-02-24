@@ -15,7 +15,8 @@ import { TrackingObservers } from './observers.js';
 import { ConversionHandler, handleConversion } from './conversion.js';
 import { UUID } from '../core/uuid.js';
 import { Storage } from '../core/storage.js';
-import { ConsentManager, ConsentConfig } from '../privacy/consent-manager.js';
+import { Logger } from '../core/logger.js';
+import { ConsentManager } from '../privacy/consent-manager.js';
 import { ConsentBanner } from '../privacy/cookie-banner.js';
 
 const TrackingEngine = {

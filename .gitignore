@@ -35,7 +35,6 @@ database/local_fallback.db
 # --- Node / Frontend Bloat ---
 node_modules/
 static/dist/
-package-lock.json
 yarn.lock
 
 # --- Agent Configuration ---
@@ -44,6 +43,13 @@ yarn.lock
 # --- Other ---
 .DS_Store
 Thumbs.db
+.cache/
+
+# --- Runtime / Generated Artifacts ---
+/txt/*.txt
+/server.log
+/local_fallback.db
+/database/local_fallback.db
 
 
 .png

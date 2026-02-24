@@ -27,21 +27,21 @@ const REPLACEMENTS = [
     description: 'BA Slider component CSS'
   },
   
-  // JS - Legacy mode (recommended for gradual migration)
+  // JS - Modern modules
   {
     from: /<script[^>]*src="\/static\/js\/tracking\.js"[^>]*><\/script>/g,
-    to: '<script type="module" src="/static/engines/legacy-adapter.js"></script>',
-    description: 'Tracking/Engines (legacy adapter)'
+    to: '<script type="module" src="/static/engines/tracking/index.js"></script>',
+    description: 'Tracking engine module'
   },
   {
     from: /<script[^>]*src="\/static\/js\/ui\.js"[^>]*><\/script>/g,
     to: '',
-    description: 'UI JS (eliminado - incluido en legacy-adapter)'
+    description: 'UI JS (eliminado - inicializado desde layout base)'
   },
   {
     from: /<script[^>]*src="\/static\/js\/motion\.js"[^>]*><\/script>/g,
     to: '',
-    description: 'Motion JS (eliminado - incluido en legacy-adapter)'
+    description: 'Motion JS (eliminado - inicializado desde layout base)'
   },
   
   // Images

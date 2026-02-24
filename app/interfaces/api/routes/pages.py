@@ -4,7 +4,6 @@ Jorge Aguirre Flores Web
 """
 
 import logging
-import os
 import random
 import time
 from typing import Any, Dict, List, Optional, cast
@@ -176,7 +175,6 @@ async def read_root(
             "pageview_event_id": event_id,
             "external_id": external_id,
             "fbclid": fbclid or "",
-            "zaraz_debug_key": os.getenv("ZARAZ_DEBUG_KEY"),
             "services": services_config,
             "contact": contact_config,
             "google_client_id": settings.GOOGLE_CLIENT_ID,

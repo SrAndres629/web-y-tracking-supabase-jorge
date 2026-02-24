@@ -50,10 +50,9 @@ static_new/
 </script>
 ```
 
-### Option 2: Legacy Bundle (Compatibility)
+### Option 2: Direct Module Entry
 ```html
-<!-- For gradual migration from old static/ -->
-<script type="module" src="/static_new/engines/legacy-adapter.js"></script>
+<script type="module" src="/static_new/engines/tracking/index.js"></script>
 ```
 
 ### Option 3: IIFE Bundle (No modules)
@@ -140,7 +139,7 @@ See [MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md) for detailed instructions.
 
    <!-- After -->
    <link rel="stylesheet" href="/static_new/dist/css/app.min.css">
-   <script type="module" src="/static_new/engines/legacy-adapter.js"></script>
+   <script type="module" src="/static_new/engines/tracking/index.js"></script>
    ```
 
 4. **Test and deploy**

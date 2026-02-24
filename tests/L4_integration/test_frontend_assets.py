@@ -38,7 +38,7 @@ def test_template_selector_sync():
 def test_javascript_bundle_availability():
     """Ensure all engine files are present and accessible."""
     base_js_path = "static/engines"
-    engines = ["tracking/index.js", "motion/index.js", "ui/index.js", "legacy-adapter.js"]
+    engines = ["tracking/index.js", "motion/index.js", "ui/index.js"]
 
     for engine in engines:
         full_path = os.path.join(os.getcwd(), base_js_path, engine)
