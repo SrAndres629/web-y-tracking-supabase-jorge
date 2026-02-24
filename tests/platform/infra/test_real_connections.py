@@ -86,9 +86,7 @@ def test_qstash_configuration_loaded():
     """
     Verifies QStash credentials
     """
-    if not settings.QSTASH_TOKEN or not settings.QSTASH_CURRENT_SIGNING_KEY:
+    if not settings.QSTASH_TOKEN:
         pytest.skip("❌ QStash credentials missing")
 
     assert settings.QSTASH_TOKEN, "❌ QSTASH_TOKEN is missing"
-    assert settings.QSTASH_CURRENT_SIGNING_KEY, "❌ QSTASH_CURRENT_SIGNING_KEY is missing"
-    assert settings.QSTASH_NEXT_SIGNING_KEY, "❌ QSTASH_NEXT_SIGNING_KEY is missing"

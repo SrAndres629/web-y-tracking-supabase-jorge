@@ -42,7 +42,6 @@ from app.interfaces.api.routes import (
     pages,
     seo,
     tracking,
-    vision,
 )
 from app.limiter import limiter
 from app.middleware.auth import APIKeyMiddleware
@@ -255,10 +254,7 @@ app.include_router(identity.router)
 
 app.include_router(seo.router)
 
-# Neuro-Vision Routes (Visual Cortex - NEXUS-7)
 
-app.include_router(vision.router)
-logger.info("🔮 Neuro-Vision routes mounted at /vision")
 
 # Consent Management (GDPR/CCPA/LGPD)
 

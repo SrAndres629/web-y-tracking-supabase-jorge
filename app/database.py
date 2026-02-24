@@ -275,10 +275,6 @@ def _create_core_tables(cf: Dict[str, str]) -> None:
         try:
             cur = conn.cursor()
             cur.execute(queries.CREATE_TABLE_SITE_CONTENT)
-            if _backend == "postgres":
-                cur.execute(
-                    "ALTER TABLE site_content ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
-                )
             conn.commit()
         except DB_ERRORS:
             if conn:
@@ -585,21 +581,10 @@ def save_visitor(
                 phone,
             )
 
-            if _backend == "postgres":
-                stmt = """
-                    INSERT INTO visitors
-                    (external_id, fbclid, ip_address, user_agent, source, utm_source, utm_medium, utm_campaign, utm_term, utm_content, email, phone)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    ON CONFLICT DO NOTHING
-                """
-                cur.execute(stmt, params)
-            else:
-                stmt = """
-                    INSERT OR IGNORE INTO visitors
-                    (external_id, fbclid, ip_address, user_agent, source, utm_source, utm_medium, utm_campaign, utm_term, utm_content, email, phone, created_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
-                """
-                cur.execute(stmt, params)
+            stmt = queries.INSERT_VISITOR
+            if _backend != "postgres":
+                stmt = stmt.replace("INSERT INTO", "INSERT OR IGNORE INTO")
+            cur.execute(stmt, params)
     except DB_ERRORS:
         logger.exception("Failed to save visitor")
 
@@ -818,24 +803,14 @@ def get_all_visitors(limit: int = 50) -> List[Dict[str, Any]]:
     visitors = []
     try:
         with get_cursor() as cur:
-            # SQL Raw para asegurar compatibilidad
-            if _backend == "postgres":
-                sql = "SELECT id, external_id, source, created_at, ip_address FROM visitors ORDER BY created_at DESC LIMIT %s"
-            else:
-                sql = "SELECT id, external_id, source, created_at, ip_address FROM visitors ORDER BY created_at DESC LIMIT ?"
-
-            cur.execute(sql, (limit,))
-            rows = cur.fetchall()
-            for row in rows:
-                visitors.append(
-                    {
-                        "id": row[0],  # Assuming id is 0
-                        "external_id": row[1],
-                        "source": row[2],
-                        "timestamp": row[3],
-                        "ip_address": row[4],
-                    }
-                )
+            query = queries.SELECT_RECENT_VISITORS
+            cur.execute(query, (limit,))
+            # Handle cursor.description potentially being None
+            if cur.description:
+                columns = [col[0] for col in cur.description]
+                rows = cur.fetchall()
+                for row in rows:
+                    visitors.append(dict(zip(columns, row, strict=False)))
     except DB_ERRORS:
         logger.exception("❌ Error obteniendo visitors")
     return visitors
@@ -845,23 +820,14 @@ def get_visitor_by_id(visitor_id: int) -> Optional[Dict[str, Any]]:
     """Obtiene un visitante por ID para confirmar venta"""
     try:
         with get_cursor() as cur:
-            if _backend == "postgres":
-                sql = "SELECT id, external_id, fbclid, source, created_at, email, phone FROM visitors WHERE id = %s"
-            else:
-                sql = "SELECT id, external_id, fbclid, source, created_at, email, phone FROM visitors WHERE id = ?"
-
-            cur.execute(sql, (visitor_id,))
-            row = cur.fetchone()
-            if row:
-                return {
-                    "id": row[0],
-                    "external_id": row[1],
-                    "fbclid": row[2],
-                    "source": row[3],
-                    "timestamp": row[4],
-                    "email": row[5],
-                    "phone": row[6],
-                }
+            query = queries.SELECT_VISITOR_BY_ID
+            cur.execute(query, (visitor_id,))
+            # Handle cursor.description potentially being None
+            if cur.description:
+                columns = [col[0] for col in cur.description]
+                row = cur.fetchone()
+                if row:
+                    return dict(zip(columns, row, strict=False))
     except DB_ERRORS as e:
         logger.exception("❌ Error buscando visitor %s: %s", visitor_id, e)
     return None

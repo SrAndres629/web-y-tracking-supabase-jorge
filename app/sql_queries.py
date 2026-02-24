@@ -223,12 +223,12 @@ SELECT_CHAT_HISTORY = """
     LIMIT %s
 """
 
-SELECT_FBCLID_BY_EXTERNAL_ID = "SELECT fbclid FROM visitors WHERE external_id = %s AND fbclid IS NOT NULL ORDER BY timestamp DESC LIMIT 1"
+SELECT_FBCLID_BY_EXTERNAL_ID = "SELECT fbclid FROM visitors WHERE external_id = %s AND fbclid IS NOT NULL ORDER BY created_at DESC LIMIT 1"
 
-SELECT_RECENT_VISITORS = "SELECT id, external_id, source, timestamp, ip_address FROM visitors ORDER BY timestamp DESC LIMIT %s"
+SELECT_RECENT_VISITORS = "SELECT id, external_id, source, created_at, ip_address FROM visitors ORDER BY created_at DESC LIMIT %s"
 
 SELECT_VISITOR_BY_ID = (
-    "SELECT id, external_id, fbclid, source, timestamp FROM visitors WHERE id = %s"
+    "SELECT id, external_id, fbclid, source, created_at FROM visitors WHERE id = %s"
 )
 
 # --- Operations: Leads (W-003) ---
@@ -249,7 +249,7 @@ SELECT_META_DATA_BY_REF = """
     SELECT fbclid, user_agent, ip_address, utm_source, utm_medium, utm_campaign
     FROM visitors
     WHERE external_id LIKE %s
-    ORDER BY timestamp DESC LIMIT 1
+    ORDER BY created_at DESC LIMIT 1
 """
 
 SELECT_LEAD_ID_BY_PHONE = "SELECT id FROM crm_leads WHERE whatsapp_phone = %s"

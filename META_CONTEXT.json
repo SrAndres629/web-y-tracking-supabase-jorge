@@ -19,11 +19,11 @@
     ]
   },
   "architecture": {
-    "stack": "Python/Flask + Jinja2 + Tailwind CSS + Supabase + Meta CAPI",
+    "stack": "Python/FastAPI + Jinja2 + Tailwind CSS + Supabase + Meta CAPI",
     "hosting": "Vercel (Serverless Python)",
     "cdn": "Cloudflare",
     "pattern": "Clean Architecture (app/domain, app/application, app/infrastructure, app/interfaces)",
-    "entry_point": "api/index.py → main.py"
+    "entry_point": "main.py"
   },
   "templates": {
     "sections": [
@@ -170,15 +170,9 @@
     "file": "tailwind.config.js"
   },
   "env_vars_keys": [
-    "CELERY_BROKER_URL",
-    "CELERY_RESULT_BACKEND",
-    "CLARITY_PROJECT_ID",
     "CLOUDFLARE_ACCOUNT_ID",
     "CLOUDFLARE_API_TOKEN",
-    "CLOUDFLARE_EMAIL",
     "CLOUDFLARE_ZONE_ID",
-    "CLOUDFLARE_ZONE_NAME",
-    "DATABASE_CONNECTION_URI",
     "DATABASE_URL",
     "GOOGLE_API_KEY",
     "GOOGLE_CLIENT_ID",
@@ -192,8 +186,6 @@
     "QSTASH_TOKEN",
     "QSTASH_URL",
     "REDIS_URL",
-    "RUDDERSTACK_DATA_PLANE_URL",
-    "RUDDERSTACK_WRITE_KEY",
     "SENTRY_DSN",
     "SITE_URL",
     "SUPABASE_PROJECT_ID",

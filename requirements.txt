@@ -20,7 +20,6 @@ psycopg2-binary>=2.9.11
 types-psycopg2>=2.9.21
 alembic>=1.18.3
 facebook-business>=18.0.0
-rudder-sdk-python>=2.0.2
 sentry-sdk[fastapi]>=1.40.0
 python-dotenv>=1.0.0
 requests>=2.31.0
@@ -36,4 +35,3 @@ cloudflare>=2.19.0
 beautifulsoup4>=4.12.0
 typing-extensions>=4.12.0
 pyyaml
-groq

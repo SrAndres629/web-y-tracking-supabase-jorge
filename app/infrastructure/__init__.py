@@ -8,7 +8,7 @@ Implementa los contratos (interfaces) definidos en:
 Contiene todo el I/O:
 - Persistencia: PostgreSQL, SQLite
 - Caché: Redis, In-Memory
-- APIs Externas: Meta CAPI, RudderStack, n8n
+- APIs Externas: Meta CAPI, n8n
 - Configuración: Settings, Logging
 
 Esta capa PUEDE cambiar sin afectar el dominio.

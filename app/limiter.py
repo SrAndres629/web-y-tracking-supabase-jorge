@@ -19,7 +19,15 @@ limiter_storage = "memory://"
 is_vercel = os.getenv("VERCEL") or os.getenv("RENDER")
 
 # 🛡️ Defensive Check: Only use Redis if it has a valid redis:// or rediss:// scheme
-broker_url = settings.CELERY_BROKER_URL
+# Compatibility chain:
+# 1) Legacy CELERY_BROKER_URL (if still present)
+# 2) Flat REDIS_URL from new settings
+# 3) Nested redis.url from new settings
+broker_url = (
+    getattr(settings, "CELERY_BROKER_URL", None)
+    or getattr(settings, "REDIS_URL", None)
+    or getattr(getattr(settings, "redis", None), "url", None)
+)
 if (
     isinstance(broker_url, str)
     and broker_url.startswith(("redis://", "rediss://"))

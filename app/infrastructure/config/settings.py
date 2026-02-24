@@ -247,10 +247,6 @@ class ExternalServicesSettings(BaseSettings):
     # n8n
     n8n_webhook_url: Optional[str] = Field(default=None)
 
-    # AI Service Keys
-    groq_api_key: Optional[str] = Field(default=None, alias="GROQ_API_KEY")
-    openai_api_key: Optional[str] = Field(default=None, alias="OPENAI_API_KEY")
-    anthropic_api_key: Optional[str] = Field(default=None, alias="ANTHROPIC_API_KEY")
 
     # QStash
     qstash_token: Optional[str] = Field(default=None)
@@ -317,9 +313,6 @@ class Settings(BaseSettings):
     META_SANDBOX_MODE: bool = Field(default=False, validation_alias="META_SANDBOX_MODE")
     QSTASH_TOKEN: Optional[str] = Field(default=None, validation_alias="QSTASH_TOKEN")
     TEST_EVENT_CODE: Optional[str] = Field(default=None, validation_alias="TEST_EVENT_CODE")
-    GROQ_API_KEY: Optional[str] = Field(default=None, validation_alias="GROQ_API_KEY")
-    OPENAI_API_KEY: Optional[str] = Field(default=None, validation_alias="OPENAI_API_KEY")
-    ANTHROPIC_API_KEY: Optional[str] = Field(default=None, validation_alias="ANTHROPIC_API_KEY")
     GOOGLE_API_KEY: Optional[str] = Field(default=None, validation_alias="GOOGLE_API_KEY")
     CLOUDFLARE_ACCOUNT_ID: Optional[str] = Field(default=None, validation_alias="CLOUDFLARE_ACCOUNT_ID")
     CLOUDFLARE_ZONE_ID: Optional[str] = Field(default=None, validation_alias="CLOUDFLARE_ZONE_ID")
@@ -490,10 +483,6 @@ class Settings(BaseSettings):
     def WHATSAPP_NUMBER(self) -> str:
         return "59164714751"
 
-    @property
-    def CELERY_BROKER_URL(self) -> Optional[str]:
-        """Legacy Celery broker URL (not actively used in serverless)."""
-        return self.redis.url or self.redis.rest_url
 
     @property
     def CORS_ALLOWED_ORIGINS(self) -> List[str]:

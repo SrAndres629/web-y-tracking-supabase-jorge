@@ -81,7 +81,7 @@ def get_trackers() -> List[TrackerPort]:
     if _tracker_cache is not None:
         return _tracker_cache
 
-    from app.infrastructure.external.meta_capi import MetaTracker
+    from app.tracking import MetaTracker
 
     _tracker_cache = [
         MetaTracker(),
@@ -127,11 +127,11 @@ class LegacyFacade:
 
     def __init__(self) -> None:
         from app import database as database_module
-        from app import meta_capi as meta_capi_module
+        from app import tracking as tracking_module
         from app.infrastructure.config import get_settings
 
         self._database = database_module
-        self._meta_capi = meta_capi_module
+        self._tracking = tracking_module
         self._settings = get_settings()
         self._visitor_cache: Dict[str, Dict[str, Any]] = {}
 
@@ -217,7 +217,7 @@ class LegacyFacade:
 
     # Meta CAPI helper
     async def send_elite_event(self, **kwargs: Any):
-        return await self._meta_capi.send_elite_event(**kwargs)
+        return await self._tracking.send_elite_event(**kwargs)
 
 
 @lru_cache()

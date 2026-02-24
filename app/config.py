@@ -9,7 +9,6 @@ META_PIXEL_ID = settings.meta.pixel_id
 META_ACCESS_TOKEN = settings.meta.access_token
 TEMPLATES_DIR = settings.templates_dir
 STATIC_DIR = settings.static_dir
-GROQ_API_KEY = settings.external.google_api_key
 
 # Methods
 resolve_tenant = settings.resolve_tenant

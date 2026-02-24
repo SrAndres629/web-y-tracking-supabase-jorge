@@ -10,9 +10,10 @@ def test_diagnostic_endpoint():
     response = client.get("/health/diagnostics")
     assert response.status_code == 200
     data = response.json()
-    assert "status" in data
-    assert "checks" in data
-    assert "version" in data
+    assert "database" in data
+    assert "redis" in data
+    assert data["database"]["status"] == "ok"
+    assert data["redis"]["status"] == "ok"
 
 
 def test_root_access():

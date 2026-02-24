@@ -1,7 +1,7 @@
 {% extends "layouts/service_base.html" %}
 
 {% block service_gallery %}
-    {% include "sections/gallery.html" %}
+{% include "sections/gallery.html" %}
 {% endblock %}
 
 {% block service_content %}
@@ -9,15 +9,18 @@
     <div class="container mx-auto px-6">
         <div class="grid md:grid-cols-2 gap-20 items-center">
             <div data-aos="fade-right">
-                <h2 class="font-serif text-4xl text-white mb-8">La Ciencia Detrás de la <span class="text-luxury-gold italic">Perfección</span></h2>
+                <h2 class="font-serif text-4xl text-white mb-8">La Ciencia Detrás de la <span
+                        class="text-luxury-gold italic">Perfección</span></h2>
                 <div class="space-y-8">
                     <div class="flex gap-6">
                         <div class="w-12 h-12 rounded-full bg-luxury-gold/10 flex items-center justify-center shrink-0">
                             <i class="fas fa-microscope text-luxury-gold"></i>
                         </div>
                         <div>
-                            <h4 class="text-white font-bold mb-2 uppercase tracking-widest text-xs">Visajismo Avanzado</h4>
-                            <p class="text-gray-400 font-light text-sm">Calculamos la proporción áurea de tu rostro para determinar el arco y grosor exacto que rejuvenece tu mirada.</p>
+                            <h4 class="text-white font-bold mb-2 uppercase tracking-widest text-xs">Visajismo Avanzado
+                            </h4>
+                            <p class="text-gray-400 font-light text-sm">Calculamos la proporción áurea de tu rostro para
+                                determinar el arco y grosor exacto que rejuvenece tu mirada.</p>
                         </div>
                     </div>
                     <div class="flex gap-6">
@@ -25,8 +28,10 @@
                             <i class="fas fa-vial text-luxury-gold"></i>
                         </div>
                         <div>
-                            <h4 class="text-white font-bold mb-2 uppercase tracking-widest text-xs">Pigmentos Biocompatibles</h4>
-                            <p class="text-gray-400 font-light text-sm">Utilizamos pigmentos de grado médico que no cambian a tonos rojizos o grisáceos con el tiempo.</p>
+                            <h4 class="text-white font-bold mb-2 uppercase tracking-widest text-xs">Pigmentos
+                                Biocompatibles</h4>
+                            <p class="text-gray-400 font-light text-sm">Utilizamos pigmentos de grado médico que no
+                                cambian a tonos rojizos o grisáceos con el tiempo.</p>
                         </div>
                     </div>
                 </div>
@@ -34,7 +39,8 @@
             <div class="relative" data-aos="fade-left">
                 <div class="absolute -inset-4 bg-luxury-gold/10 blur-3xl rounded-full"></div>
                 <div class="relative border border-white/10 rounded-[3rem] overflow-hidden aspect-square">
-                    <img src="{{ url_for('static', path='assets/images/services/brows/after/microblading_after_v3.webp') }}" class="w-full h-full object-cover" alt="Detalle Microblading" width="800" height="800">
+                    <img src="{{ url_for('static', path='assets/images/services/brows/after/microblading_after.webp') }}"
+                        class="w-full h-full object-cover" alt="Detalle Microblading" width="800" height="800">
                 </div>
             </div>
         </div>

@@ -108,7 +108,7 @@ async def process_retry_queue(batch_size: int = 20):
     logger.info(f"🔄 [DLQ] Processing {len(items)} events from Redis...")
 
     # We need to import here to avoid circular dependencies
-    from app.meta_capi import EnhancedCustomData, EnhancedUserData, elite_capi
+    from app.tracking import EnhancedCustomData, EnhancedUserData, elite_capi
 
     requeued_count: int = 0
     success_count: int = 0

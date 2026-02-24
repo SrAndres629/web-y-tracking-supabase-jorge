@@ -3,7 +3,6 @@
 
 Implementaciones:
 - MetaTracker (Meta CAPI)
-- RudderStackTracker
 - WebhookTracker (n8n)
 """
 

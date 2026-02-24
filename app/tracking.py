@@ -3,11 +3,15 @@
 # Jorge Aguirre Flores Web
 # =================================================================
 import hashlib
+import json
 import logging
 import os
 import random
+import re # Added for phone normalization
 import time
-from typing import Any, Dict, Optional
+from dataclasses import dataclass, field # Added for Elite classes
+from enum import Enum # Added for Elite classes
+from typing import Any, Dict, List, Optional # Added List
 
 import httpx
 from tenacity import (
@@ -585,3 +589,215 @@ def track_scroll_depth(
         external_id=external_id,
         custom_data=custom_data,
     )
+# =================================================================
+# ELITE INTERFACES (Merged from legacy meta_capi.py)
+# =================================================================
+
+
+class MetaEventType(str, Enum):
+    Lead = "Lead"
+    Contact = "Contact"
+    Purchase = "Purchase"
+    PageView = "PageView"
+    ViewContent = "ViewContent"
+    CustomizeProduct = "CustomizeProduct"
+
+
+@dataclass
+class EnhancedUserData:
+    """Consolidated User Data for Elite Matching"""
+
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    city: Optional[str] = None
+    country: Optional[str] = None
+    state: Optional[str] = None
+    zip_code: Optional[str] = None
+    external_id: Optional[str] = None
+
+
+@dataclass
+class EnhancedCustomData:
+    """Consolidated Custom Data for Elite Matching"""
+
+    data: Dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return dict(self.data or {})
+
+
+class EliteMetaCAPIService:
+    """Orquestador Elite para envío a Meta CAPI."""
+
+    def __init__(self):
+        self.sandbox_mode = settings.META_SANDBOX_MODE
+
+    def _deduplicate(self, event_id: str, event_name: str) -> bool:
+        try:
+            # We use the existing try_consume_event from this module
+            return try_consume_event(event_id, event_name)
+        except Exception:
+            return True
+
+    async def send_event(
+        self,
+        event_name: str,
+        event_id: str,
+        event_source_url: str,
+        user_data: EnhancedUserData,
+        custom_data: Optional[EnhancedCustomData] = None,
+        client_ip: Optional[str] = None,
+        user_agent: Optional[str] = None,
+        fbp: Optional[str] = None,
+        fbc: Optional[str] = None,
+        **kwargs: Any,
+    ) -> Dict[str, Any]:
+        """Send event via Elite high-performance engine."""
+        if not self._deduplicate(event_id, event_name):
+            return {"status": "duplicate", "event_id": event_id}
+
+        if self.sandbox_mode or settings.META_SANDBOX_MODE:
+            return {"status": "sandbox", "event_id": event_id}
+
+        ok = await send_event_async(
+            event_name=event_name,
+            event_id=event_id,
+            event_source_url=event_source_url,
+            client_ip=client_ip or "0.0.0.0",  # nosec B104
+            user_agent=user_agent or "unknown",
+            external_id=user_data.external_id,
+            fbp=fbp,
+            fbc=fbc,
+            email=user_data.email,
+            phone=user_data.phone,
+            first_name=user_data.first_name,
+            last_name=user_data.last_name,
+            city=user_data.city,
+            country=user_data.country,
+            custom_data=(custom_data.to_dict() if custom_data else None),
+            access_token=kwargs.get("access_token"),
+            pixel_id=kwargs.get("pixel_id"),
+        )
+        return {
+            "status": "success" if ok else "error",
+            "event_id": event_id,
+            "engine": "EliteConsolidated",
+        }
+
+
+elite_capi = EliteMetaCAPIService()
+
+
+async def send_elite_event(
+    event_name: str,
+    event_id: str,
+    url: str,
+    client_ip: str,
+    user_agent: str,
+    external_id: Optional[str] = None,
+    fbc: Optional[str] = None,
+    fbp: Optional[str] = None,
+    phone: Optional[str] = None,
+    email: Optional[str] = None,
+    first_name: Optional[str] = None,
+    last_name: Optional[str] = None,
+    city: Optional[str] = None,
+    state: Optional[str] = None,
+    zip_code: Optional[str] = None,
+    country: Optional[str] = None,
+    custom_data: Optional[Dict[str, Any]] = None,
+    access_token: Optional[str] = None,
+    pixel_id: Optional[str] = None,
+) -> Dict[str, Any]:
+    """
+    Elite Compatibility Wrapper.
+    Uses high-performance send_event_async internally.
+    """
+    ok = await send_event_async(
+        event_name=event_name,
+        event_id=event_id,
+        event_source_url=url,
+        client_ip=client_ip,
+        user_agent=user_agent,
+        external_id=external_id,
+        phone=phone,
+        email=email,
+        fbc=fbc,
+        fbp=fbp,
+        first_name=first_name,
+        last_name=last_name,
+        city=city,
+        state=state,
+        zip_code=zip_code,
+        country=country,
+        custom_data=custom_data,
+        access_token=access_token,
+        pixel_id=pixel_id,
+    )
+    return {
+        "status": "success" if ok else "error",
+        "event_id": event_id,
+        "engine": "EliteConsolidated",
+    }
+
+
+# =================================================================
+# TRACKER ADAPTERS (Infrastructure → Domain Interface)
+# =================================================================
+from app.application.interfaces.tracker_port import TrackerPort
+from app.domain.models.events import TrackingEvent
+from app.domain.models.visitor import Visitor
+
+
+class MetaTracker(TrackerPort):
+    """
+    Port implementation for Meta Conversions API.
+    Used by Domain Application Layer (TrackEventHandler).
+    """
+
+    def __init__(self, http_client: Optional[httpx.AsyncClient] = None):
+        self._client = http_client
+        self._enabled = settings.meta.is_configured and not settings.meta.sandbox_mode
+
+    @property
+    def name(self) -> str:
+        return "meta_capi"
+
+    async def track(self, event: TrackingEvent, visitor: Visitor) -> bool:
+        """Proxies tracking call to high-performance send_event_async."""
+        if not self._enabled:
+            return True
+
+        # Map Domain models to high-performance function arguments
+        return await send_event_async(
+            event_name=event.event_name.value,
+            event_id=event.event_id.value,
+            event_source_url=event.source_url,
+            client_ip=visitor.ip_address or "0.0.0.0",
+            user_agent=visitor.user_agent or "unknown",
+            external_id=visitor.external_id,
+            email=visitor.email,
+            phone=visitor.phone,
+            first_name=visitor.first_name,
+            last_name=visitor.last_name,
+            city=visitor.city,
+            country=visitor.country,
+            custom_data=event.custom_data,
+        )
+
+    async def health_check(self) -> bool:
+        """Verifies Meta connectivity."""
+        if not self._enabled:
+            return False
+        try:
+            # Quick status check using the existing pool
+            engine_client = async_client or httpx.AsyncClient(timeout=5.0)
+            response = await engine_client.get(
+                "https://graph.facebook.com/v21.0/me",
+                params={"access_token": settings.META_ACCESS_TOKEN},
+            )
+            return response.status_code == 200
+        except Exception:
+            return False

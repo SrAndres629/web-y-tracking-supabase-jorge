@@ -121,29 +121,20 @@ async def test_cloudflare_access_integrity():
     if not _cloudflare_egress_reachable():
         pytest.skip("Cloudflare API unreachable in current runtime.")
 
-    # Resolve credentials from environment/settings only
-    api_key = str(settings.CLOUDFLARE_API_KEY) if settings.CLOUDFLARE_API_KEY else ""
-    email = str(settings.CLOUDFLARE_EMAIL) if settings.CLOUDFLARE_EMAIL else ""
-    zone_id = str(settings.CLOUDFLARE_ZONE_ID) if settings.CLOUDFLARE_ZONE_ID else ""
+    # Resolve credentials from the settings object
+    api_token = settings.CLOUDFLARE_API_TOKEN
+    zone_id = settings.CLOUDFLARE_ZONE_ID
 
-    api_token = os.getenv("CLOUDFLARE_API_TOKEN", "")
-    if api_token:
-        headers = {
-            "Authorization": f"Bearer {api_token}",
-            "Content-Type": "application/json",
-        }
-    else:
-        headers = {
-            "X-Auth-Email": email,
-            "X-Auth-Key": api_key,
-            "Content-Type": "application/json",
-        }
-
-    if (not api_token) and (not api_key or not email):
+    if not api_token:
         if os.getenv("CLOUDFLARE_STRICT_AUDIT") == "1":
             pytest.fail("🔥 Cloudflare Audit: Missing credentials.")
         logger.warning("🌑 Cloudflare Audit: Missing credentials. Skipping check.")
         return
+
+    headers = {
+        "Authorization": f"Bearer {api_token}",
+        "Content-Type": "application/json",
+    }
     if not re.fullmatch(r"[0-9a-fA-F]{32}", zone_id):
         if os.getenv("CLOUDFLARE_STRICT_AUDIT") == "1":
             pytest.fail("🔥 Cloudflare Audit: Invalid CLOUDFLARE_ZONE_ID format.")
