@@ -612,10 +612,17 @@ def upsert_contact_advanced(contact_data: Dict[str, Any]) -> None:
                 cur.execute(
                     queries.UPSERT_CONTACT_SQLITE,
                     (
+                        contact_data.get("id"),
                         contact_data.get("phone"),
                         contact_data.get("name"),
+                        contact_data.get("email"),
+                        contact_data.get("fbclid"),
+                        contact_data.get("fbp"),  # Maps to fb_browser_id
                         contact_data.get("utm_source"),
                         contact_data.get("status", "new"),
+                        contact_data.get("lead_score", 50),
+                        contact_data.get("pain_point"),
+                        contact_data.get("service_interest"),
                     ),
                 )
         except sqlite3.Error:

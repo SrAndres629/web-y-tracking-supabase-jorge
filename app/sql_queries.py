@@ -179,11 +179,20 @@ INSERT_VISITOR = """
 """
 
 UPSERT_CONTACT_SQLITE = """
-    INSERT INTO crm_leads (whatsapp_phone, full_name, utm_source, status)
-    VALUES (%s, %s, %s, %s)
+    INSERT INTO crm_leads (
+        id, whatsapp_phone, full_name, email, fb_click_id, fb_browser_id, 
+        utm_source, status, lead_score, pain_point, service_interest
+    )
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     ON CONFLICT(whatsapp_phone) DO UPDATE SET
         full_name = EXCLUDED.full_name,
-        utm_source = COALESCE(EXCLUDED.utm_source, crm_leads.utm_source),
+        email = COALESCE(EXCLUDED.email, crm_leads.email),
+        fb_click_id = COALESCE(EXCLUDED.fb_click_id, crm_leads.fb_click_id),
+        fb_browser_id = COALESCE(EXCLUDED.fb_browser_id, crm_leads.fb_browser_id),
+        status = EXCLUDED.status,
+        lead_score = EXCLUDED.lead_score,
+        pain_point = COALESCE(EXCLUDED.pain_point, crm_leads.pain_point),
+        service_interest = COALESCE(EXCLUDED.service_interest, crm_leads.service_interest),
         last_interaction = CURRENT_TIMESTAMP
 """
 

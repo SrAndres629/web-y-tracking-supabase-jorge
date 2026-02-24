@@ -66,6 +66,7 @@ class SQLLeadRepository(LeadRepository):
             # Reutilizamos la lógica de database.py por ahora o implementamos SQL aquí
             database.upsert_contact_advanced(
                 {
+                    "id": lead.id,
                     "phone": str(lead.phone),
                     "name": lead.name,
                     "email": str(lead.email) if lead.email else None,
@@ -73,6 +74,7 @@ class SQLLeadRepository(LeadRepository):
                     "fbp": str(lead.external_id) if lead.external_id else None,
                     "status": lead.status.value,
                     "lead_score": lead.score,
+                    "pain_point": lead.pain_point,
                     "service_interest": lead.service_interest,
                 }
             )

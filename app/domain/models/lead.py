@@ -40,8 +40,9 @@ class LeadStatus(Enum):
 
     NEW = "new"  # Recién capturado
     INTERESTED = "interested"  # Mostró interés inicial
+    QUALIFIED = "qualified"  # Calificado (listo para agendar)
     NURTURING = "nurturing"  # En seguimiento activo
-    GHOST = "ghost"  # No respond
+    GHOST = "ghost"  # No responde
     BOOKED = "booked"  # Agendó cita
     CLIENT_ACTIVE = "client_active"  # Cliente actual (tratamiento)
     CLIENT_LOYAL = "client_loyal"  # Cliente recurrente
