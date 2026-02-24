@@ -1,3 +1,5 @@
+import secrets
+
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
@@ -15,7 +17,7 @@ legacy = get_legacy_facade()
 
 def verify_admin_key(key: str) -> bool:
     """Verifica la clave de administrador"""
-    return key == settings.ADMIN_KEY
+    return secrets.compare_digest(key, settings.ADMIN_KEY)
 
 
 @router.get("/dashboard", response_class=HTMLResponse)
