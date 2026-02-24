@@ -18,13 +18,21 @@ def test_vercel_include_files_physical_contract():
     with open(vercel_json_path, "r") as f:
         config = json.load(f)
 
-    # Check both ways it might be defined (old vs new schema we fixed)
+    # Check both ways it might be defined
     include_files = config.get("functions", {}).get("api/index.py", {}).get("includeFiles")
+
+    if not include_files:
+        # Check builds
+        for build in config.get("builds", []):
+            if build.get("src") == "api/index.py":
+                include_files = build.get("config", {}).get("includeFiles")
+                break
+
     if not include_files:
         # Fallback check for alternate structures
         include_files = config.get("includeFiles")
 
-    assert include_files, "🔥 No includeFiles defined in vercel.json!"
+    assert include_files, f"🔥 No includeFiles defined in vercel.json (looked in functions and builds)! Config: {config}"
 
     if isinstance(include_files, list):
         raw_patterns = include_files

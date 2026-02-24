@@ -17,10 +17,14 @@ from functools import lru_cache
 from pathlib import Path
 from typing import List, Literal, Optional
 
-from pydantic import Field, validator
-from pydantic_settings import BaseSettings
+from dotenv import load_dotenv
+from pydantic import BaseModel, Field, model_validator, validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 logger = logging.getLogger(__name__)
+
+# Manual load to guarantee availability for Pydantic v2
+load_dotenv(str(Path(__file__).parent.parent.parent.parent / ".env"))
 
 
 def _resolve_templates_dirs() -> List[str]:
@@ -59,17 +63,15 @@ def _resolve_static_dir() -> str:
     return str(project_root / "static")
 
 
-class DatabaseSettings(BaseSettings):
+class DatabaseSettings(BaseModel):
     """Configuración de base de datos."""
-
-    class Config:
-        env_prefix = "DB_"
-        extra = "ignore"
+    model_config = SettingsConfigDict(extra="ignore")
 
     url: Optional[str] = Field(
         default=None,
         description="PostgreSQL connection URL (Supabase)",
         alias="DATABASE_URL",
+        validation_alias="DATABASE_URL",
     )
     pool_size: int = Field(default=5, ge=1, le=20)
     max_overflow: int = Field(default=10, ge=0)
@@ -96,27 +98,23 @@ class DatabaseSettings(BaseSettings):
         return v
 
 
-class RedisSettings(BaseSettings):
+class RedisSettings(BaseModel):
     """Configuración de Redis (Upstash)."""
+    model_config = SettingsConfigDict(extra="ignore")
 
-    class Config:
-        env_prefix = "UPSTASH_REDIS_"
-        extra = "ignore"
-
-    rest_url: Optional[str] = Field(default=None, alias="UPSTASH_REDIS_REST_URL")
-    rest_token: Optional[str] = Field(default=None, alias="UPSTASH_REDIS_REST_TOKEN")
-    url: Optional[str] = Field(default=None, alias="REDIS_URL")
+    rest_url: Optional[str] = Field(default=None, alias="UPSTASH_REDIS_REST_URL", validation_alias="UPSTASH_REDIS_REST_URL")
+    rest_token: Optional[str] = Field(default=None, alias="UPSTASH_REDIS_REST_TOKEN", validation_alias="UPSTASH_REDIS_REST_TOKEN")
+    url: Optional[str] = Field(default=None, alias="REDIS_URL", validation_alias="REDIS_URL")
 
     @property
     def is_configured(self) -> bool:
         return bool(self.url or (self.rest_url and self.rest_token))
 
 
-class MetaSettings(BaseSettings):
+class MetaSettings(BaseModel):
     """Configuración de Meta (Facebook) Ads."""
 
     class Config:
-        env_prefix = "META_"
         extra = "ignore"
 
     pixel_id: str = Field(default="")
@@ -213,9 +211,12 @@ class ExternalServicesSettings(BaseSettings):
         extra = "ignore"
 
     # n8n
-
-    # n8n
     n8n_webhook_url: Optional[str] = Field(default=None)
+
+    # AI Service Keys
+    groq_api_key: Optional[str] = Field(default=None, alias="GROQ_API_KEY")
+    openai_api_key: Optional[str] = Field(default=None, alias="OPENAI_API_KEY")
+    anthropic_api_key: Optional[str] = Field(default=None, alias="ANTHROPIC_API_KEY")
 
     # QStash
     qstash_token: Optional[str] = Field(default=None)
@@ -246,24 +247,14 @@ class ServerSettings(BaseSettings):
 class Settings(BaseSettings):
     """
     🎛️ Configuración centralizada de la aplicación.
-
-    Todas las configuraciones se cargan desde:
-    1. Variables de entorno (prioridad alta)
-    2. Archivo .env (solo desarrollo local)
-    3. Valores por defecto (prioridad baja)
-
-    Usage:
-        >>> from app.infrastructure.config import get_settings
-        >>> settings = get_settings()
-        >>> if settings.meta.is_configured:
-        ...     print(f"Pixel ID: {settings.meta.pixel_id}")
     """
-
-    class Config:
-        env_file = ".env" if not os.getenv("VERCEL") else None
-        env_file_encoding = "utf-8"
-        extra = "ignore"
-        case_sensitive = False
+    model_config = SettingsConfigDict(
+        env_file=str(Path(__file__).parent.parent.parent.parent / ".env") if not os.getenv("VERCEL") else None,
+        env_file_encoding="utf-8",
+        extra="ignore",
+        case_sensitive=False,
+        env_nested_delimiter="__",
+    )
 
     # Sub-configuraciones organizadas por dominio
     db: DatabaseSettings = Field(default_factory=DatabaseSettings)
@@ -280,82 +271,73 @@ class Settings(BaseSettings):
     app_version: str = Field(default="3.0.0")
     debug: bool = Field(default=False)
 
+    # Core Env Vars (Flattened for reliability)
+    DATABASE_URL: Optional[str] = Field(default=None, validation_alias="DATABASE_URL")
+    UPSTASH_REDIS_REST_URL: Optional[str] = Field(default=None, validation_alias="UPSTASH_REDIS_REST_URL")
+    UPSTASH_REDIS_REST_TOKEN: Optional[str] = Field(default=None, validation_alias="UPSTASH_REDIS_REST_TOKEN")
+    REDIS_URL: Optional[str] = Field(default=None, validation_alias="REDIS_URL")
+    META_PIXEL_ID: str = Field(default="", validation_alias="META_PIXEL_ID")
+    META_ACCESS_TOKEN: Optional[str] = Field(default=None, validation_alias="META_ACCESS_TOKEN")
+    META_API_VERSION: str = Field(default="v21.0", validation_alias="META_API_VERSION")
+    META_SANDBOX_MODE: bool = Field(default=False, validation_alias="META_SANDBOX_MODE")
+    QSTASH_TOKEN: Optional[str] = Field(default=None, validation_alias="QSTASH_TOKEN")
+    TEST_EVENT_CODE: Optional[str] = Field(default=None, validation_alias="TEST_EVENT_CODE")
+    GROQ_API_KEY: Optional[str] = Field(default=None, validation_alias="GROQ_API_KEY")
+    OPENAI_API_KEY: Optional[str] = Field(default=None, validation_alias="OPENAI_API_KEY")
+    ANTHROPIC_API_KEY: Optional[str] = Field(default=None, validation_alias="ANTHROPIC_API_KEY")
+    GOOGLE_API_KEY: Optional[str] = Field(default=None, validation_alias="GOOGLE_API_KEY")
+
     @property
     def system_version(self) -> str:
-        """Alias for Neuro-Vision compatibility."""
         return self.app_version
 
     def resolve_tenant(self, tenant_id: Optional[str]) -> str:
-        """Resolve tenant ID to a valid tenant string."""
         return tenant_id or "default"
 
     def is_tenant_allowed(self, tenant_id: str) -> bool:
-        """Check if tenant is allowed to perform operations."""
         return True
 
     @property
     def whatsapp_url(self) -> str:
-        """URL de WhatsApp con número configurado."""
         return "https://wa.me/59164714751"
 
     @property
     def templates_dir(self) -> str:
-        """Single source of truth for templates."""
         dirs = _resolve_templates_dirs()
         return dirs[0] if dirs else ""
 
     @property
     def static_dir(self) -> str:
-        """Single source of truth for static files."""
         return _resolve_static_dir()
+
+    @model_validator(mode="after")
+    def sync_nested_settings(self) -> Settings:
+        """Sync flattened env vars to nested models for backward compatibility."""
+        if self.DATABASE_URL:
+            self.db.url = self.DATABASE_URL
+        if self.UPSTASH_REDIS_REST_URL:
+            self.redis.rest_url = self.UPSTASH_REDIS_REST_URL
+        if self.UPSTASH_REDIS_REST_TOKEN:
+            self.redis.rest_token = self.UPSTASH_REDIS_REST_TOKEN
+        if self.REDIS_URL:
+            self.redis.url = self.REDIS_URL
+        if self.META_PIXEL_ID:
+            self.meta.pixel_id = self.META_PIXEL_ID
+        if self.META_ACCESS_TOKEN:
+            self.meta.access_token = self.META_ACCESS_TOKEN
+        if self.META_API_VERSION:
+            self.meta.api_version = self.META_API_VERSION
+        if self.META_SANDBOX_MODE is not None:
+            self.meta.sandbox_mode = self.META_SANDBOX_MODE
+        if self.QSTASH_TOKEN:
+            self.external.qstash_token = self.QSTASH_TOKEN
+        if self.GOOGLE_API_KEY:
+            self.external.google_api_key = self.GOOGLE_API_KEY
+        return self
 
     # =================================================================
     # 🏛️ Legacy Compatibility Aliases (Flat access)
     # =================================================================
-    @property
-    def DATABASE_URL(self) -> Optional[str]:
-        return self.db.url
-
-    @DATABASE_URL.setter
-    def DATABASE_URL(self, value: Optional[str]):
-        self.db.url = value
-
-    @property
-    def UPSTASH_REDIS_REST_URL(self) -> Optional[str]:
-        return self.redis.rest_url
-
-    @UPSTASH_REDIS_REST_URL.setter
-    def UPSTASH_REDIS_REST_URL(self, value: Optional[str]):
-        self.redis.rest_url = value
-
-    @property
-    def UPSTASH_REDIS_REST_TOKEN(self) -> Optional[str]:
-        return self.redis.rest_token
-
-    @property
-    def META_PIXEL_ID(self) -> str:
-        return self.meta.pixel_id
-
-    @META_PIXEL_ID.setter
-    def META_PIXEL_ID(self, value: str):
-        self.meta.pixel_id = value
-
-    @property
-    def META_ACCESS_TOKEN(self) -> Optional[str]:
-        return self.meta.access_token
-
-    @META_ACCESS_TOKEN.setter
-    def META_ACCESS_TOKEN(self, value: Optional[str]):
-        self.meta.access_token = value
-
-    @property
-    def TEST_EVENT_CODE(self) -> Optional[str]:
-        return self.meta.test_event_code
-
-    @property
-    def META_SANDBOX_MODE(self) -> bool:
-        return self.meta.sandbox_mode
-
     @property
     def meta_api_url(self) -> str:
         return self.meta.api_url
@@ -395,18 +377,6 @@ class Settings(BaseSettings):
     @property
     def FLAG_SHOW_TESTIMONIALS(self) -> bool:
         return self.features.show_testimonials
-
-    @property
-    def QSTASH_TOKEN(self) -> Optional[str]:
-        return self.external.qstash_token
-
-    @property
-    def N8N_WEBHOOK_URL(self) -> Optional[str]:
-        return self.external.n8n_webhook_url
-
-    @property
-    def GROQ_API_KEY(self) -> Optional[str]:
-        return self.external.google_api_key
 
     @property
     def vercel_url(self) -> Optional[str]:

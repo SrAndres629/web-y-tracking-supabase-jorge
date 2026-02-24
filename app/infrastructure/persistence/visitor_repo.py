@@ -12,7 +12,10 @@ from typing import List, Optional
 
 from app.domain.models.values import ExternalId, GeoLocation, UTMParams
 from app.domain.models.visitor import Visitor, VisitorSource
-from app.domain.repositories.visitor_repo import DuplicateVisitorError, VisitorRepository
+from app.domain.repositories.visitor_repo import (
+    DuplicateVisitorError,
+    VisitorRepository,
+)
 from app.infrastructure.persistence.database import db
 
 logger = logging.getLogger(__name__)
