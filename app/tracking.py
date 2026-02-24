@@ -7,11 +7,10 @@ import json
 import logging
 import os
 import random
-import re # Added for phone normalization
 import time
-from dataclasses import dataclass, field # Added for Elite classes
-from enum import Enum # Added for Elite classes
-from typing import Any, Dict, List, Optional # Added List
+from dataclasses import dataclass, field  # Added for Elite classes
+from enum import Enum  # Added for Elite classes
+from typing import Any, Dict, Optional
 
 import httpx
 from tenacity import (
@@ -21,8 +20,11 @@ from tenacity import (
     wait_exponential,
 )
 
+from app.application.interfaces.tracker_port import TrackerPort
 from app.config import settings
 from app.database import save_emq_score
+from app.domain.models.events import TrackingEvent
+from app.domain.models.visitor import Visitor
 from app.domain.services.emq_monitor import emq_monitor
 from app.domain.validation.event_validator import event_validator
 
@@ -160,8 +162,6 @@ def _log_emq(event_name: str, payload: Dict[str, Any], client_id: Optional[str] 
             logger.info("📊 [EMQ] %s: %s/10 (%s)", event_name, score, level)
 
         # 🚀 Persist for Dashboard
-        import json
-
         payload_size = len(json.dumps(payload))
         has_pii = any(k in user_data for k in ["em", "ph", "fn", "ln"])
 
@@ -746,9 +746,6 @@ async def send_elite_event(
 # =================================================================
 # TRACKER ADAPTERS (Infrastructure → Domain Interface)
 # =================================================================
-from app.application.interfaces.tracker_port import TrackerPort
-from app.domain.models.events import TrackingEvent
-from app.domain.models.visitor import Visitor
 
 
 class MetaTracker(TrackerPort):
