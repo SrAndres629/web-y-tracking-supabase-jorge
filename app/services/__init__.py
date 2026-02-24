@@ -23,8 +23,6 @@ from app.config import settings
 # Configure Logging
 logger = logging.getLogger("uvicorn.error")
 
-# from app.services.seo_engine import SEOEngine  # Imported but unused
-
 turnstile_warned = False
 
 

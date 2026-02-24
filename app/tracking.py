@@ -2,6 +2,7 @@
 # TRACKING.PY - Meta Conversions API (CAPI) - High Performance
 # Jorge Aguirre Flores Web
 # =================================================================
+import asyncio
 import hashlib
 import json
 import logging
@@ -37,6 +38,10 @@ try:
         """Attempt to consume event ID using Redis."""
         return dedup_service.try_consume_event(event_id, event_name)
 
+    async def try_consume_event_async(event_id: str, event_name: str = "event") -> bool:
+        """Attempt to consume event ID using Redis (Async)."""
+        return await dedup_service.try_consume_event_async(event_id, event_name)
+
     def cache_visitor_data(_external_id: str, _data: Dict[str, Any], _ttl_hours: int = 24) -> None:
         """Cache visitor data in Redis."""
         try:
@@ -44,10 +49,24 @@ try:
         except AttributeError:
             pass  # Fallback if method missing in mock
 
+    async def cache_visitor_data_async(_external_id: str, _data: Dict[str, Any], _ttl_hours: int = 24) -> None:
+        """Cache visitor data in Redis (Async)."""
+        try:
+            await dedup_service.cache_visitor_async(_external_id, _data, ttl=_ttl_hours * 3600)
+        except AttributeError:
+            pass
+
     def get_cached_visitor(_external_id: str) -> Optional[Dict[str, Any]]:
         """Get cached visitor data from Redis."""
         try:
             return dedup_service.get_visitor(_external_id)
+        except AttributeError:
+            return None
+
+    async def get_cached_visitor_async(_external_id: str) -> Optional[Dict[str, Any]]:
+        """Get cached visitor data from Redis (Async)."""
+        try:
+            return await dedup_service.get_visitor_async(_external_id)
         except AttributeError:
             return None
 
@@ -65,10 +84,19 @@ except ImportError as e:
         _memory_dedup[event_id] = time.time()
         return True
 
+    async def try_consume_event_async(event_id: str, event_name: str = "event") -> bool:
+        return try_consume_event(event_id, event_name)
+
     def cache_visitor_data(_external_id: str, _data: Dict[str, Any], _ttl_hours: int = 24) -> None:
         pass
 
+    async def cache_visitor_data_async(_external_id: str, _data: Dict[str, Any], _ttl_hours: int = 24) -> None:
+        pass
+
     def get_cached_visitor(_external_id: str) -> Optional[Dict[str, Any]]:
+        return None
+
+    async def get_cached_visitor_async(_external_id: str) -> Optional[Dict[str, Any]]:
         return None
 
 
@@ -141,8 +169,8 @@ def get_prioritized_fbclid(url_fbclid: Optional[str], cookie_fbc: Optional[str])
 # =================================================================
 
 
-def _log_emq(event_name: str, payload: Dict[str, Any], client_id: Optional[str] = None):
-    """Calculates, logs, and persists Event Match Quality Score."""
+def _log_emq_sync(event_name: str, payload: Dict[str, Any], client_id: Optional[str] = None):
+    """Calculates, logs, and persists Event Match Quality Score (Sync)."""
     try:
         data_block = payload.get("data", [{}])[0]
         user_data = data_block.get("user_data", {})
@@ -170,6 +198,11 @@ def _log_emq(event_name: str, payload: Dict[str, Any], client_id: Optional[str] 
     except (TypeError, ValueError, json.JSONDecodeError, AttributeError) as e:
         logger.warning("⚠️ EMQ Calc Error: %s", str(e))
         return 0.0
+
+
+async def _log_emq(event_name: str, payload: Dict[str, Any], client_id: Optional[str] = None):
+    """Calculates, logs, and persists Event Match Quality Score (Async Wrapper)."""
+    return await asyncio.to_thread(_log_emq_sync, event_name, payload, client_id)
 
 
 def _build_payload(
@@ -330,7 +363,7 @@ def send_event(
     if pixel_id:
         api_url = f"https://graph.facebook.com/v21.0/{pixel_id}/events"
 
-    _log_emq(event_name, payload, client_id=client_id)
+    _log_emq_sync(event_name, payload, client_id=client_id)
 
     if not event_validator.validate_payload(payload):
         logger.error("❌ [VALIDATION FAILED] Payload rejected for %s", event_name)
@@ -383,7 +416,7 @@ async def send_event_async(
 ) -> bool:
     """Asynchronous Sender (For FastAPI Routes)"""
 
-    if not try_consume_event(event_id, event_name):
+    if not await try_consume_event_async(event_id, event_name):
         logger.info("🔄 [DEDUP ASYNC] Skipped duplicate %s", event_name)
         return True
 
@@ -417,7 +450,7 @@ async def send_event_async(
     if pixel_id:
         api_url = f"https://graph.facebook.com/v21.0/{pixel_id}/events"
 
-    _log_emq(event_name, payload, client_id=client_id)
+    await _log_emq(event_name, payload, client_id=client_id)
 
     if not event_validator.validate_payload(payload):
         logger.error("❌ [VALIDATION FAILED] Payload rejected for %s", event_name)
@@ -641,6 +674,12 @@ class EliteMetaCAPIService:
         except Exception:
             return True
 
+    async def _deduplicate_async(self, event_id: str, event_name: str) -> bool:
+        try:
+            return await try_consume_event_async(event_id, event_name)
+        except Exception:
+            return True
+
     async def send_event(
         self,
         event_name: str,
@@ -655,7 +694,7 @@ class EliteMetaCAPIService:
         **kwargs: Any,
     ) -> Dict[str, Any]:
         """Send event via Elite high-performance engine."""
-        if not self._deduplicate(event_id, event_name):
+        if not await self._deduplicate_async(event_id, event_name):
             return {"status": "duplicate", "event_id": event_id}
 
         if self.sandbox_mode or settings.META_SANDBOX_MODE:

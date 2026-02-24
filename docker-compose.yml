@@ -1,0 +1,16 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - db-data:/app/database
+    environment:
+      - DATABASE_URL=sqlite:///database/app.db
+      - HOST=0.0.0.0
+      - PORT=8000
+    restart: always
+
+volumes:
+  db-data:
