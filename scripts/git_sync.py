@@ -4,14 +4,12 @@
 ==============================================
 Herramienta integral para:
 - Auditoría de seguridad y tests
-- Caza de bugs automatizada
 - Detección de archivos relacionados
 - Despliegue con verificaciones
 
 Uso:
     python git_sync.py                    # Ejecutar auditoría completa
     python git_sync.py --security         # Solo auditoría de seguridad
-    python git_sync.py --bug-hunt         # Solo caza de bugs
     python git_sync.py --find-related     # Encontrar archivos relacionados
     python git_sync.py "commit message"   # Desplegar con mensaje
     python git_sync.py --force            # Forzar despliegue (¡peligro!)
@@ -61,7 +59,7 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 SUPABASE_PROJECT_ID = os.getenv("SUPABASE_PROJECT_ID", "eycumxvxyqzznjkwaumx")
 
-REPO_PATH = os.path.dirname(os.path.abspath(__file__))
+REPO_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 # =================================================================
@@ -283,182 +281,6 @@ class SecurityAuditor:
             return True
 
         return False
-
-
-# =================================================================
-# BUG HUNTER
-# =================================================================
-class BugHunter:
-    """Automated bug hunter - OPTIMIZED VERSION"""
-
-    # Patterns for modern CI/CD standards
-    PATTERNS: ClassVar[Dict[str, List[Tuple[str, str]]]] = {
-        "Security Issues": [
-            (r"(?<!_)eval\s*\(", "Dangerous eval() usage"),
-            (r"(?<!_)exec\s*\(", "Dangerous exec() usage"),
-        ],
-        "Debug Code": [
-            (r"^\s*print\s*\(", "Raw print() detected (use logging instead)"),
-            (
-                r"(?<!Logger\.)(?<!console\.)console\.log\(",
-                "Raw console.log() detected (use Logger.debug instead)",
-            ),
-        ],
-    }
-
-    def __init__(self, repo_path: str):
-        self.repo_path = repo_path
-        self.findings: List[Dict[str, Any]] = []
-
-    def scan_file(self, file_path: str) -> List[Dict[str, Any]]:
-        """Scans a file for patterns - OPTIMIZED"""
-        findings: List[Dict[str, Any]] = []
-
-        try:
-            # Skip large files (>500KB)
-            file_size = os.path.getsize(file_path)
-            if file_size > 500_000:
-                return findings
-
-            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-                lines: List[str] = f.readlines()
-        except OSError:
-            return findings
-
-        # Pre-compile patterns for efficiency
-        compiled_patterns = []
-        for category, patterns in self.PATTERNS.items():
-            for pattern, description in patterns:
-                try:
-                    compiled_patterns.append(
-                        (re.compile(pattern, re.IGNORECASE), category, description)
-                    )
-                except re.error:
-                    continue
-
-        # Scan line by line with compiled patterns
-        for line_num, line in enumerate(lines, 1):
-            # Skip comment lines quickly
-            stripped = line.strip()
-            if (
-                not stripped
-                or stripped[0] in "#*-"
-                or stripped[:2] in ("//", "--", "/*", "* ")
-            ):
-                continue
-
-            for compiled_re, category, description in compiled_patterns:
-                if compiled_re.search(line):
-                    findings.append(
-                        {
-                            "file": file_path,
-                            "line": line_num,
-                            "category": category,
-                            "description": description,
-                            "code": line.strip()[:80],
-                        }
-                    )
-                    break  # One finding per line is enough
-
-        return findings
-
-    def hunt(self) -> List[Dict[str, Any]]:
-        """Scans the repository for potential issues - OPTIMIZED WITH TIMEOUT"""
-        import time
-
-        start_time: float = time.time()
-        max_duration: int = 30  # Max 30 seconds
-
-        Console.section("🐛 BUG HUNT INITIATED (Max 30s)")
-
-        extensions: set[str] = {".py", ".js", ".html", ".css", ".sql"}
-        exclude_dirs: set[str] = {
-            "venv",
-            "__pycache__",
-            ".git",
-            "node_modules",
-            ".pytest_cache",
-            "dist",
-            ".venv",
-            ".ai",
-            "refactor_backup",
-            "tests",
-            "scripts",
-            "tools",
-        }
-        exclude_files: set[str] = {
-            "git_sync.py",
-            "antigravity.py",
-            "synapse.py",
-            "setup_env.py",
-            "logger.js",
-        }
-
-        files_scanned: int = 0
-
-        for root, dirs, files in os.walk(self.repo_path):
-            # Check timeout
-            if time.time() - start_time > max_duration:
-                Console.warning("Bug hunt timeout reached (30s). Stopping scan.")
-                break
-
-            filtered_dirs = [d for d in dirs if d not in exclude_dirs]
-            dirs.clear()
-            dirs.extend(filtered_dirs)
-
-            for file in files:
-                # Check timeout per file
-                if time.time() - start_time > max_duration:
-                    break
-
-                # Skip infrastructure/logger files
-                if file in exclude_files:
-                    continue
-
-                if any(file.endswith(ext) for ext in extensions):
-                    file_path = os.path.join(root, file)
-                    findings = self.scan_file(file_path)
-                    self.findings.extend(findings)
-                    files_scanned += 1  # type: ignore
-
-                    # Show progress every 50 files
-                    if files_scanned % 50 == 0:
-                        elapsed = time.time() - start_time
-                        Console.log(
-                            f"Scanned {files_scanned} files... ({elapsed:.1f}s)"
-                        )
-
-        elapsed = time.time() - start_time
-        Console.log(f"Scan complete: {files_scanned} files scanned in {elapsed:.1f}s")
-
-        # Group by category
-        by_category: Dict[str, List[Dict[str, Any]]] = {}
-        for finding in self.findings:
-            cat = str(finding["category"])
-            by_category.setdefault(cat, []).append(finding)
-
-        # Show results
-        if not self.findings:
-            Console.success("No critical bugs found! Code is clean.")
-            return []
-
-        Console.warning(f"Found {len(self.findings)} potential issues:")
-
-        for category, cat_findings in by_category.items():
-            Console.write(f"\n{Console.BOLD}{category}:{Console.ENDC}")
-            # Ensure it is a concrete list for slicing
-            display_list: List[Dict[str, Any]] = list(cat_findings)
-            for i in range(min(3, len(display_list))):
-                finding = display_list[i]
-                rel_path = os.path.relpath(str(finding["file"]), self.repo_path)
-                Console.write(
-                    f"  {Console.WARNING}{rel_path}:{finding['line']}{Console.ENDC}"
-                )
-                Console.write(f"    {finding['description']}")
-            if len(cat_findings) > 3:
-                Console.write(f"  ... and {len(cat_findings) - 3} more")
-
-        return self.findings
 
 
 # =================================================================
@@ -1042,7 +864,7 @@ def main():
     parser.add_argument(
         "--security", action="store_true", help="🔒 Run security audit only"
     )
-    parser.add_argument("--bug-hunt", action="store_true", help="🐛 Run bug hunt only")
+
     parser.add_argument(
         "--find-related", metavar="FILE", help="🔍 Find files related to FILE"
     )
@@ -1050,11 +872,7 @@ def main():
         "--pattern", metavar="PATTERN", help="🔍 Find files matching pattern"
     )
     parser.add_argument("message", nargs="?", default=None, help="Commit message")
-    parser.add_argument(
-        "--yes-to-deploy",
-        action="store_true",
-        help="Bypass confirmation for deployment after bug hunt",
-    )
+
     parser.add_argument(
         "--self-heal",
         action="store_true",
@@ -1083,11 +901,7 @@ def main():
         finder.find_by_pattern(args.pattern)
         return
 
-    # Modo: Bug Hunt
-    if args.bug_hunt:
-        hunter = BugHunter(REPO_PATH)
-        hunter.hunt()
-        return
+
 
     # Modo: Security Audit
     if args.security:
@@ -1107,16 +921,7 @@ def main():
         Console.info("Run: python git_sync.py --security")
         sys.exit(1)
 
-    # Ejecutar caza de bugs
-    hunter = BugHunter(REPO_PATH)
-    findings = hunter.hunt()
-    if findings and not args.force and not args.yes_to_deploy:
-        Console.warning(f"Found {len(findings)} potential issues.")
-        Console.info("Run: python git_sync.py --bug-hunt")
-        response = input("Continue with deployment? (yes/no): ")
-        if response.lower() != "yes":
-            Console.info("Deployment cancelled.")
-            sys.exit(0)
+
 
     # Phase 1: Audit gates
     auditor = SystemAuditor(REPO_PATH)
