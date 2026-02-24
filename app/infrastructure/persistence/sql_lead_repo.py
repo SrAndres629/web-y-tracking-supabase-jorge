@@ -25,10 +25,10 @@ class SQLLeadRepository(LeadRepository):
     async def get_by_id(self, lead_id: str) -> Optional[Lead]:
         try:
             with database.get_cursor() as cur:
-                cur.execute("SELECT * FROM crm_leads WHERE id = %s", (lead_id,))
+                cur.execute(queries.SELECT_LEAD_BY_ID, (lead_id,))
                 row = cur.fetchone()
                 if row:
-                    return self._map_row_to_lead(row)
+                    return self._map_row_to_lead(row, cur.description)
         except Exception as e:
             logger.exception(f"Error getting lead by id: {e}")
         return None
@@ -36,11 +36,10 @@ class SQLLeadRepository(LeadRepository):
     async def get_by_phone(self, phone: Phone) -> Optional[Lead]:
         try:
             with database.get_cursor() as cur:
-                cur.execute(queries.SELECT_LEAD_ID_BY_PHONE, (str(phone),))
+                cur.execute(queries.SELECT_LEAD_BY_PHONE, (str(phone),))
                 row = cur.fetchone()
                 if row:
-                    # TODO: Mejorar mapeo para obtener el objeto completo
-                    return await self.get_by_id(str(row[0]))
+                    return self._map_row_to_lead(row, cur.description)
         except Exception as e:
             logger.exception(f"Error getting lead by phone: {e}")
         return None
@@ -48,10 +47,10 @@ class SQLLeadRepository(LeadRepository):
     async def get_by_external_id(self, external_id: ExternalId) -> Optional[Lead]:
         try:
             with database.get_cursor() as cur:
-                cur.execute("SELECT * FROM crm_leads WHERE fb_browser_id = %s", (str(external_id),))
+                cur.execute(queries.SELECT_LEAD_BY_EXTERNAL_ID, (str(external_id),))
                 row = cur.fetchone()
                 if row:
-                    return self._map_row_to_lead(row)
+                    return self._map_row_to_lead(row, cur.description)
         except Exception as e:
             logger.exception(f"Error getting lead by external_id: {e}")
         return None
@@ -102,23 +101,60 @@ class SQLLeadRepository(LeadRepository):
     async def phone_exists(self, phone: Phone) -> bool:
         return await self.get_by_phone(phone) is not None
 
-    def _map_row_to_lead(self, row) -> Lead:
-        # Mapeo básico asumiendo orden de columnas de sql_queries.py
-        # ID, whatsapp_phone, full_name, email, meta_lead_id, profile_pic_url, fb_click_id, fb_browser_id, utm_data...
-        # Esto es fragil, preferible usar dict cursor
+    def _map_row_to_lead(self, row: tuple, description: Optional[tuple]) -> Lead:
+        """
+        Mapea una fila de la base de datos a la entidad Lead de forma robusta.
+        Usa la descripción del cursor para mapear por nombre de columna.
+        """
+        if not description:
+            # Fallback a mapeo por índice si no hay descripción (no debería ocurrir)
+            return Lead(
+                id=str(row[0]),
+                phone=Phone.parse(row[1]).unwrap(),
+                name=row[2] if len(row) > 2 else None,
+                status=LeadStatus.NEW,
+            )
+
+        columns = [col[0] for col in description]
+        data = dict(zip(columns, row, strict=False))
+
+        # Parse Contact info
+        phone_res = Phone.parse(data.get("whatsapp_phone"))
+        phone = phone_res.unwrap() if phone_res.is_ok else Phone(number=data.get("whatsapp_phone", ""))
+
+        email = None
+        if data.get("email"):
+            email_res = Email.parse(data.get("email"))
+            if email_res.is_ok:
+                email = email_res.unwrap()
+
+        # Parse External ID
+        external_id = None
+        if data.get("fb_browser_id"):
+            ext_res = ExternalId.from_string(data.get("fb_browser_id"))
+            if ext_res.is_ok:
+                external_id = ext_res.unwrap()
+
+        # Parse Status
+        status_val = data.get("status", "new")
+        try:
+            status = LeadStatus(status_val)
+        except (ValueError, KeyError):
+            status = LeadStatus.NEW
+
         return Lead(
-            id=str(row[0]),
-            phone=Phone.parse(row[1]).unwrap(),
-            name=row[2],
-            email=(Email.parse(row[3]).unwrap() if row[3] and Email.parse(row[3]).is_ok else None),
-            meta_lead_id=row[4],
-            fbclid=row[6],
-            external_id=(
-                ExternalId.from_string(row[7]).unwrap()
-                if row[7] and ExternalId.from_string(row[7]).is_ok
-                else None
-            ),
-            status=LeadStatus(row[13] if len(row) > 13 else "new"),
-            score=row[14] if len(row) > 14 else 50,
-            service_interest=row[16] if len(row) > 16 else None,
+            id=str(data.get("id")),
+            phone=phone,
+            name=data.get("full_name"),
+            email=email,
+            external_id=external_id,
+            meta_lead_id=data.get("meta_lead_id"),
+            fbclid=data.get("fb_click_id"),
+            status=status,
+            score=data.get("lead_score", 50),
+            pain_point=data.get("pain_point"),
+            service_interest=data.get("service_interest"),
+            utm_source=data.get("utm_source"),
+            utm_campaign=data.get("utm_campaign"),
+            sent_to_meta=bool(data.get("conversion_sent_to_meta")),
         )
