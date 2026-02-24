@@ -271,106 +271,127 @@ def _get_db_config() -> Dict[str, str]:
 
 def _create_core_tables(cf: Dict[str, str]) -> None:
     with get_db_connection() as conn:
-        # Site Content (CMS)
-        try:
-            cur = conn.cursor()
-            cur.execute(queries.CREATE_TABLE_SITE_CONTENT)
-            conn.commit()
-        except DB_ERRORS:
-            if conn:
-                conn.rollback()
+        _create_cms_tables(conn)
 
-        # Create PostGIS (Postgres only)
         if _backend == "postgres":
-            try:
-                cur = conn.cursor()
-                cur.execute("CREATE EXTENSION IF NOT EXISTS postgis")
-                conn.commit()
-            except psycopg2.Error:
-                if conn:
-                    conn.rollback()
+            _setup_postgres_extensions(conn)
 
-            # Type guards
-            try:
-                cur = conn.cursor()
-                cur.execute("""
-                    DO $$ BEGIN
-                        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'lead_status') THEN
-                            CREATE TYPE lead_status AS ENUM (
-                                'new', 'contacted', 'qualified', 'converted', 'lost'
-                            );
-                        END IF;
-                    END $$;
-                """)
-                conn.commit()
-            except psycopg2.Error:
-                if conn:
-                    conn.rollback()
+        _create_tenant_tables(conn, cf)
+        _run_client_migrations(conn)
+        _create_business_tables(conn, cf)
+        _create_visitor_tables(conn, cf)
 
-        # Multi-tenant tables
-        for q_name, q_sql in [
-            ("clients", queries.CREATE_TABLE_CLIENTS),
-            ("api_keys", queries.CREATE_TABLE_API_KEYS),
-            ("emq_stats", queries.CREATE_TABLE_EMQ_STATS),
-        ]:
-            try:
-                cur = conn.cursor()
-                cur.execute(
-                    q_sql.format(
-                        id_type_pk=cf["id_type_pk"],
-                        id_type_serial=cf["id_type_serial"],
-                        lead_id_type=cf["lead_id_type"],
-                        timestamp_default=cf["timestamp_default"],
-                    )
-                )
-                conn.commit()
-            except (sqlite3.Error, psycopg2.Error) as e:
-                if conn:
-                    conn.rollback()
-                logger.warning("⚠️ Table creation skip/error (%s): %s", q_name, e)
 
-        # Migration for new columns in clients
-        try:
-            cur = conn.cursor()
-            cur.execute("ALTER TABLE clients ADD COLUMN IF NOT EXISTS email TEXT UNIQUE")
-            cur.execute("ALTER TABLE clients ADD COLUMN IF NOT EXISTS company TEXT")
-            conn.commit()
-        except DB_ERRORS as e:
-            if conn:
-                conn.rollback()
-            logger.warning("⚠️ Clients migration skip/error: %s", e)
+def _create_cms_tables(conn: DBConnection) -> None:
+    # Site Content (CMS)
+    try:
+        cur = conn.cursor()
+        cur.execute(queries.CREATE_TABLE_SITE_CONTENT)
+        conn.commit()
+    except DB_ERRORS:
+        if conn:
+            conn.rollback()
 
-        # Business Knowledge
+
+def _setup_postgres_extensions(conn: DBConnection) -> None:
+    # Create PostGIS
+    try:
+        cur = conn.cursor()
+        cur.execute("CREATE EXTENSION IF NOT EXISTS postgis")
+        conn.commit()
+    except psycopg2.Error:
+        if conn:
+            conn.rollback()
+
+    # Type guards
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            DO $$ BEGIN
+                IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'lead_status') THEN
+                    CREATE TYPE lead_status AS ENUM (
+                        'new', 'contacted', 'qualified', 'converted', 'lost'
+                    );
+                END IF;
+            END $$;
+        """)
+        conn.commit()
+    except psycopg2.Error:
+        if conn:
+            conn.rollback()
+
+
+def _create_tenant_tables(conn: DBConnection, cf: Dict[str, str]) -> None:
+    # Multi-tenant tables
+    for q_name, q_sql in [
+        ("clients", queries.CREATE_TABLE_CLIENTS),
+        ("api_keys", queries.CREATE_TABLE_API_KEYS),
+        ("emq_stats", queries.CREATE_TABLE_EMQ_STATS),
+    ]:
         try:
             cur = conn.cursor()
             cur.execute(
-                queries.CREATE_TABLE_BUSINESS_KNOWLEDGE.format(
+                q_sql.format(
+                    id_type_pk=cf["id_type_pk"],
                     id_type_serial=cf["id_type_serial"],
+                    lead_id_type=cf["lead_id_type"],
                     timestamp_default=cf["timestamp_default"],
                 )
             )
-            cur.execute(queries.CREATE_INDEX_KNOWLEDGE_SLUG)
             conn.commit()
-        except DB_ERRORS as e:
+        except (sqlite3.Error, psycopg2.Error) as e:
             if conn:
                 conn.rollback()
-            logger.warning("⚠️ Business knowledge skip/error: %s", e)
+            logger.warning("⚠️ Table creation skip/error (%s): %s", q_name, e)
 
-        # Visitors
-        try:
-            cur = conn.cursor()
-            cur.execute(
-                queries.CREATE_TABLE_VISITORS.format(
-                    id_type_serial=cf["id_type_serial"],
-                    timestamp_default=cf["timestamp_default"],
-                )
+
+def _run_client_migrations(conn: DBConnection) -> None:
+    # Migration for new columns in clients
+    try:
+        cur = conn.cursor()
+        cur.execute("ALTER TABLE clients ADD COLUMN IF NOT EXISTS email TEXT UNIQUE")
+        cur.execute("ALTER TABLE clients ADD COLUMN IF NOT EXISTS company TEXT")
+        conn.commit()
+    except DB_ERRORS as e:
+        if conn:
+            conn.rollback()
+        logger.warning("⚠️ Clients migration skip/error: %s", e)
+
+
+def _create_business_tables(conn: DBConnection, cf: Dict[str, str]) -> None:
+    # Business Knowledge
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            queries.CREATE_TABLE_BUSINESS_KNOWLEDGE.format(
+                id_type_serial=cf["id_type_serial"],
+                timestamp_default=cf["timestamp_default"],
             )
-            cur.execute(queries.CREATE_INDEX_VISITORS_EXTERNAL_ID)
-            conn.commit()
-        except DB_ERRORS as e:
-            if conn:
-                conn.rollback()
-            logger.warning("⚠️ Visitors table creation skip/error: %s", e)
+        )
+        cur.execute(queries.CREATE_INDEX_KNOWLEDGE_SLUG)
+        conn.commit()
+    except DB_ERRORS as e:
+        if conn:
+            conn.rollback()
+        logger.warning("⚠️ Business knowledge skip/error: %s", e)
+
+
+def _create_visitor_tables(conn: DBConnection, cf: Dict[str, str]) -> None:
+    # Visitors
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            queries.CREATE_TABLE_VISITORS.format(
+                id_type_serial=cf["id_type_serial"],
+                timestamp_default=cf["timestamp_default"],
+            )
+        )
+        cur.execute(queries.CREATE_INDEX_VISITORS_EXTERNAL_ID)
+        conn.commit()
+    except DB_ERRORS as e:
+        if conn:
+            conn.rollback()
+        logger.warning("⚠️ Visitors table creation skip/error: %s", e)
 
 
 def save_emq_score(
