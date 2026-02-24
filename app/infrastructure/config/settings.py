@@ -111,6 +111,40 @@ class RedisSettings(BaseModel):
         return bool(self.url or (self.rest_url and self.rest_token))
 
 
+class CloudflareSettings(BaseModel):
+    """Configuración de Cloudflare / Zaraz."""
+    model_config = SettingsConfigDict(extra="ignore")
+
+    account_id: Optional[str] = Field(
+        default=None,
+        alias="CLOUDFLARE_ACCOUNT_ID",
+        validation_alias="CLOUDFLARE_ACCOUNT_ID",
+    )
+    zone_id: Optional[str] = Field(
+        default=None,
+        alias="CLOUDFLARE_ZONE_ID",
+        validation_alias="CLOUDFLARE_ZONE_ID",
+    )
+    api_token: Optional[str] = Field(
+        default=None,
+        alias="CLOUDFLARE_API_TOKEN",
+        validation_alias="CLOUDFLARE_API_TOKEN",
+    )
+    zaraz_enabled: bool = Field(
+        default=True,
+        alias="ZARAZ_ENABLED",
+        validation_alias="ZARAZ_ENABLED",
+    )
+
+    @property
+    def is_configured(self) -> bool:
+        return bool(self.account_id and self.zone_id)
+
+    @property
+    def can_manage_zone(self) -> bool:
+        return bool(self.is_configured and self.api_token)
+
+
 class MetaSettings(BaseModel):
     """Configuración de Meta (Facebook) Ads."""
 
@@ -259,6 +293,7 @@ class Settings(BaseSettings):
     # Sub-configuraciones organizadas por dominio
     db: DatabaseSettings = Field(default_factory=DatabaseSettings)
     redis: RedisSettings = Field(default_factory=RedisSettings)
+    cloudflare: CloudflareSettings = Field(default_factory=CloudflareSettings)
     meta: MetaSettings = Field(default_factory=MetaSettings)
     security: SecuritySettings = Field(default_factory=SecuritySettings)
     features: FeatureFlags = Field(default_factory=FeatureFlags)
@@ -286,6 +321,11 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: Optional[str] = Field(default=None, validation_alias="OPENAI_API_KEY")
     ANTHROPIC_API_KEY: Optional[str] = Field(default=None, validation_alias="ANTHROPIC_API_KEY")
     GOOGLE_API_KEY: Optional[str] = Field(default=None, validation_alias="GOOGLE_API_KEY")
+    CLOUDFLARE_ACCOUNT_ID: Optional[str] = Field(default=None, validation_alias="CLOUDFLARE_ACCOUNT_ID")
+    CLOUDFLARE_ZONE_ID: Optional[str] = Field(default=None, validation_alias="CLOUDFLARE_ZONE_ID")
+    CLOUDFLARE_API_TOKEN: Optional[str] = Field(default=None, validation_alias="CLOUDFLARE_API_TOKEN")
+    ZARAZ_ENABLED: bool = Field(default=True, validation_alias="ZARAZ_ENABLED")
+    CONFIG_STRICT_STARTUP: bool = Field(default=False, validation_alias="CONFIG_STRICT_STARTUP")
 
     @property
     def system_version(self) -> str:
@@ -321,6 +361,13 @@ class Settings(BaseSettings):
             self.redis.rest_token = self.UPSTASH_REDIS_REST_TOKEN
         if self.REDIS_URL:
             self.redis.url = self.REDIS_URL
+        if self.CLOUDFLARE_ACCOUNT_ID:
+            self.cloudflare.account_id = self.CLOUDFLARE_ACCOUNT_ID
+        if self.CLOUDFLARE_ZONE_ID:
+            self.cloudflare.zone_id = self.CLOUDFLARE_ZONE_ID
+        if self.CLOUDFLARE_API_TOKEN:
+            self.cloudflare.api_token = self.CLOUDFLARE_API_TOKEN
+        self.cloudflare.zaraz_enabled = bool(self.ZARAZ_ENABLED)
         if self.META_PIXEL_ID:
             self.meta.pixel_id = self.META_PIXEL_ID
         if self.META_ACCESS_TOKEN:
@@ -453,6 +500,37 @@ class Settings(BaseSettings):
         return self.security.cors_origins
 
     # =================================================================
+    # 🔒 Integration Contract
+    # =================================================================
+
+    def integration_contract(self) -> dict[str, dict[str, str | bool]]:
+        """Estado de integraciones críticas para operación y observabilidad."""
+        return {
+            "supabase_db": {
+                "configured": self.db.is_configured,
+                "mode": "postgres" if self.db.is_configured else "fallback",
+            },
+            "redis_upstash": {
+                "configured": self.redis.is_configured,
+                "mode": "redis" if self.redis.is_configured else "memory",
+            },
+            "qstash": {
+                "configured": bool(self.external.qstash_token),
+                "mode": "enabled" if self.external.qstash_token else "disabled",
+            },
+            "cloudflare_core": {
+                "configured": self.cloudflare.is_configured,
+                "mode": "managed" if self.cloudflare.is_configured else "unmanaged",
+            },
+            "cloudflare_api": {
+                "configured": self.cloudflare.can_manage_zone,
+                "mode": "rw" if self.cloudflare.can_manage_zone else "readonly",
+            },
+            "zaraz": {
+                "configured": self.cloudflare.zaraz_enabled,
+                "mode": "realtime_expected" if self.cloudflare.zaraz_enabled else "disabled",
+            },
+        }
 
     def validate_critical(self) -> list[str]:
         """
@@ -474,8 +552,37 @@ class Settings(BaseSettings):
 
         if not self.redis.is_configured:
             warnings.append("Redis no configurado - usando in-memory cache")
+        if not self.cloudflare.is_configured:
+            warnings.append("Cloudflare no configurado completamente (zone/account)")
+        if not self.cloudflare.can_manage_zone:
+            warnings.append("Cloudflare API token ausente - purge/zaraz API deshabilitado")
+        if not self.cloudflare.zaraz_enabled:
+            warnings.append("Zaraz deshabilitado por configuración")
 
         return warnings
+
+    def enforce_contract(self) -> None:
+        """
+        En modo estricto, aborta boot si faltan integraciones core.
+        """
+        if not self.CONFIG_STRICT_STARTUP:
+            return
+
+        missing: list[str] = []
+        if not self.db.is_configured:
+            missing.append("supabase_db")
+        if not self.redis.is_configured:
+            missing.append("redis_upstash")
+        if not self.cloudflare.is_configured:
+            missing.append("cloudflare_core")
+        if not self.cloudflare.zaraz_enabled:
+            missing.append("zaraz")
+
+        if missing:
+            raise RuntimeError(
+                "CONFIG_STRICT_STARTUP=1 but integration contract is incomplete: "
+                + ", ".join(missing)
+            )
 
     def log_status(self) -> None:
         """Loguea el estado de la configuración al startup."""
@@ -483,6 +590,8 @@ class Settings(BaseSettings):
         logger.info(f"📊 Meta Pixel: {'✅' if self.meta.is_configured else '❌'}")
         logger.info(f"🗄️  Database: {'✅' if self.db.is_configured else '⚠️ SQLite'}")
         logger.info(f"⚡ Redis: {'✅' if self.redis.is_configured else '⚠️ Memory'}")
+        logger.info(f"☁️ Cloudflare: {'✅' if self.cloudflare.is_configured else '⚠️ Partial'}")
+        logger.info(f"🧩 Zaraz: {'✅' if self.cloudflare.zaraz_enabled else '❌'}")
         logger.info(f"🛡️ Sentry: {'✅' if self.observability.sentry_enabled else '❌'}")
 
         for warning in self.validate_critical():

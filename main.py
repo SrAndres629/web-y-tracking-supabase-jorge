@@ -93,6 +93,14 @@ async def lifespan(app: FastAPI):
         except Exception as e:
             logger.exception(f"⚠️ Sentry init failed: {e}")
 
+        # 1.5. Configuration contract visibility/guard
+        try:
+            settings.log_status()
+            settings.enforce_contract()
+        except Exception as e:
+            logger.critical(f"🚨 CONFIG CONTRACT FAILURE: {e}")
+            raise
+
         is_test_mode = (
             os.getenv("PYTEST_CURRENT_TEST") is not None
             or os.getenv("AUDIT_MODE") == "1"
@@ -206,6 +214,14 @@ mimetypes.add_type("image/webp", ".webp")
 # Get absolute path to static folder (fixes Docker/Render path issues)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 static_dir = os.path.join(BASE_DIR, "static")
+legacy_static_images_dir = os.path.join(static_dir, "assets", "images")
+
+# Backward compatibility for legacy URLs like /static/images/service_eyes.webp
+app.mount(
+    "/static/images",
+    StaticFiles(directory=legacy_static_images_dir),
+    name="static_images_legacy",
+)
 
 # Mount static files with absolute path
 app.mount("/static", StaticFiles(directory=static_dir), name="static")

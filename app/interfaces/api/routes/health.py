@@ -55,6 +55,8 @@ async def health_check(request: Request):
             "status": "healthy",
             "database": db_status,
             "integrations": integrations,
+            "integration_contract": settings.integration_contract(),
+            "strict_startup": settings.CONFIG_STRICT_STARTUP,
             "timestamp": datetime.now().isoformat(),
             "service": "Jorge Aguirre Flores Web",
         }
@@ -72,6 +74,19 @@ async def health_diagnostics_full(request: Request):
     return JSONResponse(report)
 
 
+@router.get("/health/config")
+async def health_config_contract():
+    """Expose integration contract status for ops automation."""
+    return JSONResponse(
+        {
+            "status": "ok",
+            "strict_startup": settings.CONFIG_STRICT_STARTUP,
+            "contract": settings.integration_contract(),
+            "warnings": settings.validate_critical(),
+        }
+    )
+
+
 @router.get("/health/assets")
 async def health_assets():
     """
@@ -84,7 +99,7 @@ async def health_assets():
 
     required = [
         static_root / "dist" / "css" / "app.min.css",
-        static_root / "engines" / "legacy-adapter.js",
+        static_root / "engines" / "tracking" / "index.js",
         static_root / "assets" / "images" / "branding" / "luxury_logo.svg",
     ]
     status = {
