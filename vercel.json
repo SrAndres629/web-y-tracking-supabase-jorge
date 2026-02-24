@@ -36,6 +36,10 @@
             "destination": "/static/assets/images/branding/luxury_logo.svg"
         },
         {
+            "source": "/static/images/(.*)",
+            "destination": "/static/assets/images/$1"
+        },
+        {
             "source": "/static/(.*)",
             "destination": "/static/$1"
         },

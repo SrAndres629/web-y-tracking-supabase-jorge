@@ -22,7 +22,7 @@ class SEOEngine:
             "@type": "BeautySalon",
             "name": "Jorge Aguirre Flores - Arte Facial & Microblading",
             "image": [
-                f"{SEOEngine.BASE_URL}/static/assets/images/hero/jorge_hero_premium.webp",
+                f"{SEOEngine.BASE_URL}/static/assets/images/hero/jorge_hero_new.webp",
                 f"{SEOEngine.BASE_URL}/static/assets/images/meta/og-image.webp",
             ],
             "@id": f"{SEOEngine.BASE_URL}/#organization",
@@ -62,7 +62,7 @@ class SEOEngine:
                 "@type": "Person",
                 "name": "Jorge Aguirre Flores",
                 "jobTitle": "Especialista en Micropigmentación",
-                "image": f"{SEOEngine.BASE_URL}/static/assets/images/hero/jorge_hero_premium.webp",
+                "image": f"{SEOEngine.BASE_URL}/static/assets/images/hero/jorge_hero_new.webp",
             },
             "aggregateRating": {
                 "@type": "AggregateRating",

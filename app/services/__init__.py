@@ -28,6 +28,25 @@ logger = logging.getLogger("uvicorn.error")
 turnstile_warned = False
 
 
+def _normalize_service_image_path(image_path: Any) -> Any:
+    """Normaliza rutas legacy de imágenes para evitar 404 en producción."""
+    if not isinstance(image_path, str):
+        return image_path
+
+    normalized = image_path.strip()
+    if not normalized:
+        return normalized
+
+    # Legacy content in DB still points to /static/images/*
+    if normalized.startswith("/static/images/"):
+        return normalized.replace("/static/images/", "/static/assets/images/", 1)
+
+    if normalized.startswith("static/images/"):
+        return "/" + normalized.replace("static/images/", "static/assets/images/", 1)
+
+    return normalized
+
+
 # Environment variables centrally managed via app.config.settings
 
 
@@ -254,6 +273,11 @@ class ContentManager:
 
             if "benefits" not in item or not isinstance(item["benefits"], list):
                 item["benefits"] = base_fallback["benefits"]
+
+            if "image" in item:
+                item["image"] = _normalize_service_image_path(item["image"])
+            else:
+                item["image"] = base_fallback["image"]
 
             valid_items.append(item)
         return valid_items

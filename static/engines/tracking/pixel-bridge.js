@@ -69,7 +69,7 @@ export const PixelBridge = {
    */
   track(eventName, data = {}, options = {}) {
     const eventId = options.eventId || this._generateEventId();
-    const payload = { ...data, eventID: eventId };
+    const payload = { ...data, event_id: eventId };
 
     if (this._isZarazReady()) {
       window.zaraz.track(eventName, payload);
@@ -78,7 +78,7 @@ export const PixelBridge = {
     }
 
     // Fallback: Encolar para cuando Zaraz cargue
-    this._queueEvent('track', eventName, data, { eventID: eventId });
+    this._queueEvent('track', eventName, data, { event_id: eventId });
     return { success: false, channel: 'queued', eventId };
   },
 
@@ -89,12 +89,12 @@ export const PixelBridge = {
     const eventId = options.eventId || this._generateEventId();
 
     if (this._isZarazReady()) {
-      window.zaraz.track(eventName, { ...data, eventID: eventId });
-      this._log(`✅ Zaraz Custom Edge Event: ${eventName}`, { ...data, eventID: eventId });
+      window.zaraz.track(eventName, { ...data, event_id: eventId });
+      this._log(`✅ Zaraz Custom Edge Event: ${eventName}`, { ...data, event_id: eventId });
       return { success: true, channel: 'zaraz', eventId };
     }
 
-    this._queueEvent('trackCustom', eventName, data, { eventID: eventId });
+    this._queueEvent('trackCustom', eventName, data, { event_id: eventId });
     return { success: false, channel: 'queued', eventId };
   },
 
