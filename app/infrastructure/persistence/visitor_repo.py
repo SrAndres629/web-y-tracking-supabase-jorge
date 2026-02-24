@@ -6,6 +6,7 @@ PostgreSQL implementation con SQLite fallback.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from datetime import datetime
 from typing import List, Optional
@@ -56,7 +57,8 @@ class PostgreSQLVisitorRepository(VisitorRepository):
 
     async def get_by_external_id(self, external_id: ExternalId) -> Optional[Visitor]:
         """Busca visitante por external_id."""
-        async with self._db.connection() as conn:
+
+        def _get(conn):
             cursor = conn.cursor()
             cursor.execute(
                 """
@@ -68,7 +70,16 @@ class PostgreSQLVisitorRepository(VisitorRepository):
                 """,
                 (external_id.value,),
             )
-            row = cursor.fetchone()
+            return cursor.fetchone()
+
+        async with self._db.connection() as conn:
+            # SQLite objects created in a thread can only be used in that same thread.
+            # So we only offload to thread if NOT using sqlite (i.e. Postgres).
+            if self._db.backend == "sqlite":
+                row = _get(conn)
+            else:
+                row = await asyncio.to_thread(_get, conn)
+
             return self._row_to_entity(row) if row else None
 
     async def get_by_fbclid(self, fbclid: str) -> Optional[Visitor]:
