@@ -64,12 +64,16 @@ export const ConsentManager = {
     },
 
     _save() {
-        const payload = {
-            version: ConsentConfig.VERSION,
-            timestamp: new Date().toISOString(),
-            preferences: this.preferences
-        };
-        localStorage.setItem(ConsentConfig.COOKIE_NAME, JSON.stringify(payload));
+        try {
+            const payload = {
+                version: ConsentConfig.VERSION,
+                timestamp: new Date().toISOString(),
+                preferences: this.preferences
+            };
+            localStorage.setItem(ConsentConfig.COOKIE_NAME, JSON.stringify(payload));
+        } catch (e) {
+            console.warn('[ConsentManager] Storage write error', e);
+        }
     },
 
     /**
@@ -77,16 +81,20 @@ export const ConsentManager = {
      */
     _applyConsent() {
         // GTM / Meta Pixel Consent Mode
-        if (window.fbq) {
-            const consentAction = this.preferences.marketing ? 'grant' : 'revoke';
-            window.fbq('consent', consentAction);
-        }
+        try {
+            if (window.fbq) {
+                const consentAction = this.preferences.marketing ? 'grant' : 'revoke';
+                window.fbq('consent', consentAction);
+            }
 
-        if (window.gtag) {
-            window.gtag('consent', 'update', {
-                'analytics_storage': this.preferences.analytics ? 'granted' : 'denied',
-                'ad_storage': this.preferences.marketing ? 'granted' : 'denied'
-            });
+            if (window.gtag) {
+                window.gtag('consent', 'update', {
+                    'analytics_storage': this.preferences.analytics ? 'granted' : 'denied',
+                    'ad_storage': this.preferences.marketing ? 'granted' : 'denied'
+                });
+            }
+        } catch (e) {
+             console.warn('[ConsentManager] Consent application error', e);
         }
 
         // Reload page if strictly necessary (usually avoided for UX)
@@ -101,6 +109,10 @@ export const ConsentManager = {
     },
 
     hasUserDecided() {
-        return !!localStorage.getItem(ConsentConfig.COOKIE_NAME);
+        try {
+            return !!localStorage.getItem(ConsentConfig.COOKIE_NAME);
+        } catch (e) {
+            return false;
+        }
     }
 };

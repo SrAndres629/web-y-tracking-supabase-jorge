@@ -390,10 +390,8 @@ def save_emq_score(
     VALUES (%s, %s, %s, %s, %s)
     """
     try:
-        with get_db_connection() as conn:
-            cursor = conn.cursor()
+        with get_cursor() as cursor:
             cursor.execute(query, (client_id, event_name, score, payload_size, has_pii))
-            cursor.close()
     except DB_ERRORS:
         logger.exception("❌ Error saving EMQ score")
 
@@ -512,6 +510,7 @@ def _run_column_migrations(cur: DBCursor, status_type: str) -> None:
         ("utm_content", "TEXT"),
         ("status", status_type),
         ("lead_score", "INTEGER DEFAULT 50"),
+        ("phone", "TEXT"),
         ("pain_point", "TEXT"),
         ("service_interest", "TEXT"),
         ("service_booked_date", "TIMESTAMP"),

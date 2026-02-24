@@ -1,7 +1,20 @@
 import json
+import re
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
+
+
+def _parse_glob(pattern_str: str) -> list[str]:
+    # Handle string glob (e.g. "{app,api/templates,static}/**")
+    if not isinstance(pattern_str, str):
+        return []
+    match = re.match(r"^\{(.*)\}(.*)$", pattern_str)
+    if match:
+        base_paths = [p.strip() for p in match.group(1).split(",")]
+        suffix = match.group(2)
+        return [f"{p}{suffix}" for p in base_paths]
+    return [pattern_str]
 
 
 def test_vercel_includes_required_paths():
@@ -13,20 +26,19 @@ def test_vercel_includes_required_paths():
     # Collect from builds array
     for build in config.get("builds", []):
         build_config = build.get("config", {})
-        include_files = build_config.get("includeFiles", [])
-        if isinstance(include_files, list):
-            include_paths.extend(include_files)
-
-    # Collect from functions object
-    for fn_config in config.get("functions", {}).values():
-        include_files = fn_config.get("includeFiles", [])
+        include_files = build_config.get("includeFiles")
         if isinstance(include_files, list):
             include_paths.extend(include_files)
         elif isinstance(include_files, str):
-            # Handle string glob (e.g. "path/a/**,path/b/**")
-            # Strip braces if present
-            clean_str = include_files.strip("{}")
-            include_paths.extend([p.strip() for p in clean_str.split(",")])
+            include_paths.extend(_parse_glob(include_files))
+
+    # Collect from functions object
+    for fn_config in config.get("functions", {}).values():
+        include_files = fn_config.get("includeFiles")
+        if isinstance(include_files, list):
+            include_paths.extend(include_files)
+        elif isinstance(include_files, str):
+            include_paths.extend(_parse_glob(include_files))
 
     assert "api/templates/**" in include_paths, f"api/templates/** not found in {include_paths}"
     assert "static/**" in include_paths, f"static/** not found in {include_paths}"

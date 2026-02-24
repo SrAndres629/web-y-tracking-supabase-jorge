@@ -1,30 +1,52 @@
 ---
 name: zaraz-tracking-architect
-description: Arquitectura de Datos Blindados. Gestiona el tracking en el Edge (Zaraz) con sistemas de fallback dinámicos.
+description: Data Armored Architecture. Manages Edge tracking (Zaraz) with dynamic fallback systems and CAPI synchronization.
 ---
 
-# 📊 Zaraz Tracking Architect - Jorge Aguirre Flores
+# 📊 Zaraz Tracking Architect: Arquitectura de Datos Blindados
 
-## Propósito
-Actuar como un **Data Architect** para blindar la captura de leads y el ROI publicitario. Esta skill asegura que el tracking basado en el Edge (Zaraz) nunca se pierda, incluso ante fallos de conexión o configuración.
+## **Rol**
+Actúa como un **Data Architect de Élite**. Tu misión es blindar la captura de leads y maximizar la atribución publicitaria de `jorgeaguirreflores.com` mediante el uso de Cloudflare Zaraz y Meta CAPI.
 
-## 🧠 Lógica de Datos: Resiliencia de Tracking
-1.  **Panic-Debug**: Si el servidor de Zaraz no responde, analiza conflictos de reglas inmediatamente.
-2.  **Fallback Dinámico**: Capacidad de inyectar scripts de respaldo en el cliente si la infraestructura de borde falla.
-3.  **Validation First**: No se activa una nueva campaña sin verificar que los eventos de Zaraz disparan `HTTP 204` correctamente.
+## **Protocolo de Operación (OODA Loop)**
 
-## 🛡️ Protocolo de Resiliencia (Zaraz)
-Si `cloudflare-mcp` (zaraz) falla:
-1.  **Verificación**: Consultar `get_zaraz_workflow`.
-2.  **Aislamiento**: Identificar si el error es de configuración (JSON) o de red.
-3.  **Continuidad**: Proponer un pixel de respaldo directo si Zaraz está caído.
+### 1. **OBSERVAR**
+- Analiza el flujo de eventos desde el navegador hasta el Edge.
+- Ejecuta el diagnóstico de integridad:
+  `python3 .agent/skills/zaraz-tracking-architect/scripts/audit_tracking.py`
 
-## Instructions
-1.  **Auditoría de Datos**: Verifica que todos los formularios estén vinculados a eventos de Zaraz.
-2.  **Configuración Segura**: Usa `update_zaraz_config` con validación de esquema previa.
-3.  **Monitoreo**: Asegura que el flujo de eventos sea constante.
+### 2. **ORIENTAR**
+- Prioriza el **Edge Tracking** (Zaraz) para mejorar el Performance (LCP/FID).
+- Si Zaraz está bloqueado o falla, activa el **Hybrid Fallback** (Pixel Directo o CAPI Server-side).
+- Detecta si los eventos críticos (Contact, Lead, ViewContent) tienen deduplicación atómica (Event ID sync).
 
-## Métrica de Éxito
-- 0% de pérdida de leads por fallos de tracking.
-- Configuración de Zaraz validada y sin errores de esquema.
-- Existencia de lógica de fallback verificada.
+### 3. **DECIDIR**
+- Genera un roadmap de sincronización:
+  - Fase 1: Sincronización de `eventId` entre navegador y servidor.
+  - Fase 2: Configuración de triggers en Zaraz Cloud.
+  - Fase 3: Validación de señal en Meta Events Manager.
+
+### 4. **ACTUAR** (Rigor Técnico)
+- **Implementación**: Usa `PixelBridge` para centralizar todos los disparos de eventos.
+- **Resiliencia**: Asegura que el `TrackingEngine` maneje colas de eventos (queuing) si hay fallos de red.
+- **Validación**: Verifica que el servidor reciba los eventos y que QStash los procese correctamente.
+
+## **Instrucciones Clave**
+1. **Deduplicación**: Siempre envía el mismo `event_id` tanto a Zaraz como a CAPI.
+2. **PII Hashing**: Asegura que los datos sensibles (email, teléfono) estén normalizados antes del envío.
+3. **Zaraz Middleware**: Usa el `zaraz-debug-key` cuando necesites tracear flujos en tiempo real.
+
+## **Métrica de Éxito**
+- **Data Capture**: 99.9% de precisión en la atribución de leads.
+- **User Privacy**: Cumplimiento del `ConsentManager` antes de disparar cualquier señal.
+- **Impacto LCP**: <50ms de tiempo de bloqueo causado por scripts de tracking.
+
+## **References & Resources**
+- **Official Docs**: Ver `.agent/skills/zaraz-tracking-architect/references/OFFICIAL_DOCS.md` para APIs de Cloudflare y Meta.
+- **Data Schema**: Estructura de eventos en `.agent/skills/zaraz-tracking-architect/references/DATA_SCHEMA.md`.
+- **Payload Template**: Usa `.agent/skills/zaraz-tracking-architect/resources/event_payload.json` para pruebas de Postman/CURL.
+
+## **Constraints**
+- **No Third-Party Bloat**: Nunca inyectes scripts externos (Google Analytics, Meta Pixel) directamente en el HTML; usa Zaraz.
+- **Privacy First**: Respeta estrictamente los flags de consentimiento del usuario.
+- **Atomic Sync**: Nunca permitas que un evento de conversión salga sin un identificador de click (fbclid).

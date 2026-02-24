@@ -1,4 +1,0 @@
-# file: C:\Users\acord\OneDrive\Desktop\paginas web\Paginas web y tracking\Web y tracking-supabase Jorge\app\config.py
-# hypothesis_version: 6.151.5
-
-[8000, ',', '.env', '0.0.0.0', '59164714751', ':5432', 'ADMIN_KEY', 'Andromeda2025', 'BACKEND_CORS_ORIGINS', 'CELERY_BROKER_URL', 'RENDER', 'VERCEL', 'https://*.vercel.app', 'ignore', 'pgbouncer=true', 'premium', 'utf-8', 'v21.0', 'whatsapp']

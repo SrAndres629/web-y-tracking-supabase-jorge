@@ -1,4 +1,0 @@
-# file: C:\Users\acord\OneDrive\Desktop\paginas web\Paginas web y tracking\Web y tracking-supabase Jorge\app\routes\health.py
-# hypothesis_version: 6.151.5
-
-['/health', '/health/diagnostics', '/ping', 'Health', 'cf-ray', 'clarity', 'cloudflare_proxy', 'connected', 'database', 'healthy', 'integrations', 'not configured', 'pong', 'redis_upstash', 'rudderstack', 'sentry', 'service', 'status', 'timestamp']

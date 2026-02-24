@@ -1,314 +1,407 @@
 <!doctype html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/svg+xml" href="/static/assets/images/branding/luxury_logo.svg?v={{ system_version }}" />
+
+  <!-- 🛡️ GLOBAL CACHE INVALIDATION (Diamond Standard) -->
+  <!-- 🛡️ OPTIMIZED CACHE POLICY (Smart Revalidation) -->
+  <!-- HTML: Cache for 1h, revalidate after -->
+  <meta http-equiv="Cache-Control" content="public, max-age=3600, stale-while-revalidate=86400" />
+
+  <!-- Component-specific styles loaded on demand -->
+
+  <!-- Theme Bridge: Unificación Luxury ↔ Neuro-Vision (Async) -->
+  <link rel="preload" href="/static/design-system/tokens/theme-bridge.css?v={{ system_version }}" as="style"
+    onload="this.onload=null;this.rel='stylesheet'" />
+  <noscript>
+    <link rel="stylesheet" href="/static/design-system/tokens/theme-bridge.css?v={{ system_version }}" />
+  </noscript>
+
+  <!-- Global selection style -->
+  <style>
+    ::selection {
+      background-color: #c5a059;
+      color: #000;
+    }
+
+    #mouse-spotlight {
+      background: radial-gradient(600px circle at var(--x, 50%) var(--y, 50%), rgba(197, 160, 89, 0.08), transparent 40%);
+      pointer-events: none;
+    }
+
+    .text-8xl {
+      font-size: 6rem;
+      line-height: 1;
+    }
+
+    @media(max-width:768px) {
+      .text-8xl {
+        font-size: 3rem;
+      }
+    }
+  </style>
+
+  <!-- SEO Core Tags (Dynamic Silicon Valley Hub) -->
+  <title>
+    {% block title %}{{ seo.title if seo and seo.title else "Jorge Aguirre
+    Flores | Maquillaje Permanente en Santa Cruz" }}{% endblock %}
+  </title>
+  {% block meta_tags %}
+  <meta name="description"
+    content="{{ seo.description if seo and seo.description else 'Especialista en Microblading, Delineado Permanente y Labios. 30 años de experiencia en Santa Cruz de la Sierra.' }}" />
+  <meta name="author" content="Jorge Aguirre Flores" />
+  <meta name="robots" content="{{ seo.robots if seo and seo.robots else 'index, follow' }}" />
+  <link rel="canonical" href="{{ seo.canonical if seo and seo.canonical else 'https://jorgeaguirreflores.com/' }}" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title"
+    content="{{ seo.og_title if seo and seo.og_title else 'Jorge Aguirre Flores | Maquillaje Permanente Premium' }}" />
+  <meta property="og:description"
+    content="{{ seo.description if seo and seo.description else '30 años transformando miradas en Santa Cruz. Microblading, Delineado y Labios.' }}" />
+  <meta property="og:url"
+    content="{{ seo.canonical if seo and seo.canonical else 'https://jorgeaguirreflores.com/' }}" />
+  <meta property="og:image"
+    content="{{ seo.og_image if seo and seo.og_image else 'https://jorgeaguirreflores.com/static/assets/images/meta/og-image.webp' }}" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:locale" content="es_BO" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title"
+    content="{{ seo.og_title if seo and seo.og_title else 'Jorge Aguirre Flores | Maquillaje Permanente Premium' }}" />
+  <meta name="twitter:description"
+    content="{{ seo.description if seo and seo.description else '30 años transformando miradas en Santa Cruz. Microblading, Delineado y Labios.' }}" />
+  <meta name="twitter:image"
+    content="{{ seo.og_image if seo and seo.og_image else 'https://jorgeaguirreflores.com/static/assets/images/meta/og-image.webp' }}" />
+  {% endblock %}
+
+  <!-- Semantic Data (JSON-LD) -->
+  {% if seo and seo.json_ld %} {{ seo.json_ld | safe }} {% endif %} {% block
+  extra_schema %}{% endblock %}
+
+  <!-- Cloudflare Zaraz handles Meta Pixel (Auto-Injected) -->
+  <!-- End Meta Pixel -->
+
+  <!-- Critical CSS: Solo above-the-fold esencial -->
+  <style>
+    :root {
+      --bg: #050505;
+      --text: #f5f5f7;
+      --gold: #c5a059;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      font-family: Inter, system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* NAV — prevents unstyled nav links */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      padding: 1rem 2rem;
+      background: rgba(5, 5, 5, 0.8);
+      backdrop-filter: blur(10px);
+    }
+
+    nav .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    nav ul {
+      display: none;
+    }
+
+    @media(min-width:768px) {
+      nav ul {
+        display: flex;
+        gap: 2rem;
+      }
+    }
+
+    #mobileMenu {
+      display: none;
+    }
+
+    /* HERO — prevents unstyled hero */
+    header {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    header .container {
+      display: grid;
+      gap: 3rem;
+      align-items: center;
+    }
+
+    @media(min-width:768px) {
+      header .container {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .text-8xl {
+      font-size: 6rem;
+      line-height: 1;
+    }
+
+    @media(max-width:768px) {
+      .text-8xl {
+        font-size: 3rem;
+      }
+    }
+
+    .text-gradient-gold {
+      background: linear-gradient(135deg, var(--gold) 0%, #e5c585 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem 2rem;
+      font-weight: 700;
+      text-decoration: none;
+      border-radius: 9999px;
+      background: linear-gradient(135deg, var(--gold) 0%, #e5c585 100%);
+      color: var(--bg);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 0.875rem;
+    }
+
+    /* SECTION GRID — prevents stacked cards on desktop */
+    .grid {
+      display: grid;
+      gap: 2rem;
+    }
+
+    @media(min-width:768px) {
+      .md\:grid-cols-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .md\:grid-cols-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    /* CARD-GLASS — prevents transparent unstyled cards */
+    .card-glass {
+      position: relative;
+      padding: 2rem;
+      border-radius: 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.05);
+      overflow: hidden;
+    }
+
+    /* HIDDEN utility — prevents elements that should be hidden on mobile from showing */
+    .hidden {
+      display: none !important;
+    }
+
+    @media(min-width:768px) {
+      .md\:hidden {
+        display: none !important;
+      }
+
+      .md\:flex {
+        display: flex;
+      }
+
+      .md\:block {
+        display: block;
+      }
+    }
+
+    /* TEXT BASE — prevent blue links */
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: var(--gold);
+      color: var(--bg);
+      padding: 8px;
+      z-index: 100;
+    }
+
+    .skip-link:focus {
+      top: 0;
+    }
+
+    @media (max-width: 768px) {
+
+      a,
+      button {
+        min-height: 44px;
+        min-width: 44px;
+      }
+    }
+  </style>
+
+  <!-- Main CSS: render-blocking (47KB minified — acceptable for anti-FOUC) -->
+  <link rel="stylesheet" href="/static/dist/css/app.min.css?v={{ system_version }}" />
+
+  <!-- Google Fonts + Icons (Async - Anti-FOUC) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+  <link rel="preload"
+    href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap"
+    as="style" onload="this.onload=null;this.rel='stylesheet'" />
+  <noscript>
     <link
-      rel="icon"
-      type="image/svg+xml"
-      href="/static/assets/images/branding/luxury_logo.svg?v={{ system_version }}"
-    />
-
-    <!-- 🛡️ GLOBAL CACHE INVALIDATION (Diamond Standard) -->
-    <!-- 🛡️ OPTIMIZED CACHE POLICY (Smart Revalidation) -->
-    <!-- HTML: Cache for 1h, revalidate after -->
-    <meta
-      http-equiv="Cache-Control"
-      content="public, max-age=3600, stale-while-revalidate=86400"
-    />
-
-    <!-- Component-specific styles loaded on demand -->
-
-    <!-- Theme Bridge: Unificación Luxury ↔ Neuro-Vision (Async) -->
-    <link
-      rel="preload"
-      href="/static/design-system/tokens/theme-bridge.css?v={{ system_version }}"
-      as="style"
-      onload="this.onload=null;this.rel='stylesheet'"
-    />
-    <noscript>
-      <link
-        rel="stylesheet"
-        href="/static/design-system/tokens/theme-bridge.css?v={{ system_version }}"
-      />
-    </noscript>
-
-    <!-- Global selection style -->
-    <style>
-      ::selection {
-        background-color: #c5a059;
-        color: #000;
-      }
-    </style>
-
-    <!-- SEO Core Tags (Dynamic Silicon Valley Hub) -->
-    <title>
-      {% block title %}{{ seo.title if seo and seo.title else "Jorge Aguirre
-      Flores | Maquillaje Permanente en Santa Cruz" }}{% endblock %}
-    </title>
-    {% block meta_tags %}
-    <meta
-      name="description"
-      content="{{ seo.description if seo and seo.description else 'Especialista en Microblading, Delineado Permanente y Labios. 30 años de experiencia en Santa Cruz de la Sierra.' }}"
-    />
-    <meta name="author" content="Jorge Aguirre Flores" />
-    <meta
-      name="robots"
-      content="{{ seo.robots if seo and seo.robots else 'index, follow' }}"
-    />
-    <link
-      rel="canonical"
-      href="{{ seo.canonical if seo and seo.canonical else 'https://jorgeaguirreflores.com/' }}"
-    />
-
-    <!-- Open Graph -->
-    <meta property="og:type" content="website" />
-    <meta
-      property="og:title"
-      content="{{ seo.og_title if seo and seo.og_title else 'Jorge Aguirre Flores | Maquillaje Permanente Premium' }}"
-    />
-    <meta
-      property="og:description"
-      content="{{ seo.description if seo and seo.description else '30 años transformando miradas en Santa Cruz. Microblading, Delineado y Labios.' }}"
-    />
-    <meta
-      property="og:url"
-      content="{{ seo.canonical if seo and seo.canonical else 'https://jorgeaguirreflores.com/' }}"
-    />
-    <meta
-      property="og:image"
-      content="{{ seo.og_image if seo and seo.og_image else 'https://jorgeaguirreflores.com/static/assets/images/meta/og-image.webp' }}"
-    />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:locale" content="es_BO" />
-
-    <!-- Twitter -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta
-      name="twitter:title"
-      content="{{ seo.og_title if seo and seo.og_title else 'Jorge Aguirre Flores | Maquillaje Permanente Premium' }}"
-    />
-    <meta
-      name="twitter:description"
-      content="{{ seo.description if seo and seo.description else '30 años transformando miradas en Santa Cruz. Microblading, Delineado y Labios.' }}"
-    />
-    <meta
-      name="twitter:image"
-      content="{{ seo.og_image if seo and seo.og_image else 'https://jorgeaguirreflores.com/static/assets/images/meta/og-image.webp' }}"
-    />
-    {% endblock %}
-
-    <!-- Semantic Data (JSON-LD) -->
-    {% if seo and seo.json_ld %} {{ seo.json_ld | safe }} {% endif %} {% block
-    extra_schema %}{% endblock %}
-
-    <!-- Cloudflare Zaraz handles Meta Pixel (Auto-Injected) -->
-    <!-- End Meta Pixel -->
-
-    <!-- Critical CSS: Solo above-the-fold esencial -->
-    <style>
-      :root {
-        --bg: #050505;
-        --text: #f5f5f7;
-        --gold: #c5a059;
-      }
-      *,
-      *::before,
-      *::after {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
-      html {
-        font-family: Inter, system-ui, sans-serif;
-        -webkit-font-smoothing: antialiased;
-      }
-      body {
-        background: var(--bg);
-        color: var(--text);
-        line-height: 1.5;
-        min-height: 100vh;
-        overflow-x: hidden;
-      }
-      /* NAV — prevents unstyled nav links */
-      nav { position:fixed; top:0; left:0; right:0; z-index:50; padding:1rem 2rem; background:rgba(5,5,5,0.8); backdrop-filter:blur(10px); }
-      nav .container { display:flex; justify-content:space-between; align-items:center; }
-      nav ul { display:none; }
-      @media(min-width:768px){ nav ul { display:flex; gap:2rem; } }
-      #mobileMenu { display:none; }
-      /* HERO — prevents unstyled hero */
-      header { min-height:100vh; display:flex; align-items:center; justify-content:center; position:relative; }
-      header .container { display:grid; gap:3rem; align-items:center; }
-      @media(min-width:768px){ header .container { grid-template-columns:1fr 1fr; } }
-      .text-gradient-gold {
-        background: linear-gradient(135deg, var(--gold) 0%, #e5c585 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-      }
-      .btn-primary {
-        display:inline-flex; align-items:center; justify-content:center; gap:0.5rem;
-        padding:0.75rem 2rem; font-weight:700; text-decoration:none; border-radius:9999px;
-        background:linear-gradient(135deg,var(--gold) 0%,#e5c585 100%); color:var(--bg);
-        text-transform:uppercase; letter-spacing:0.05em; font-size:0.875rem;
-      }
-      /* SECTION GRID — prevents stacked cards on desktop */
-      .grid { display:grid; gap:2rem; }
-      @media(min-width:768px){ .md\:grid-cols-2 { grid-template-columns:repeat(2,minmax(0,1fr)); } .md\:grid-cols-3 { grid-template-columns:repeat(3,minmax(0,1fr)); } }
-      /* CARD-GLASS — prevents transparent unstyled cards */
-      .card-glass { position:relative; padding:2rem; border-radius:1rem; border:1px solid rgba(255,255,255,0.05); background:rgba(255,255,255,0.05); overflow:hidden; }
-      /* HIDDEN utility — prevents elements that should be hidden on mobile from showing */
-      .hidden { display:none !important; }
-      @media(min-width:768px){ .md\:hidden { display:none !important; } .md\:flex { display:flex; } .md\:block { display:block; } }
-      /* TEXT BASE — prevent blue links */
-      a { color: inherit; text-decoration: none; }
-      img { max-width:100%; height:auto; }
-      .skip-link { position:absolute; top:-40px; left:0; background:var(--gold); color:var(--bg); padding:8px; z-index:100; }
-      .skip-link:focus { top:0; }
-      @media (max-width: 768px) {
-        a, button { min-height: 44px; min-width: 44px; }
-      }
-    </style>
-
-    <!-- Main CSS: render-blocking (47KB minified — acceptable for anti-FOUC) -->
-    <link
-      rel="stylesheet"
-      href="/static/dist/css/app.min.css?v={{ system_version }}"
-    />
-
-    <!-- Google Fonts + Icons (Async - Anti-FOUC) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
-    <link
-      rel="preload"
       href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap"
-      as="style"
-      onload="this.onload=null;this.rel='stylesheet'"
-    />
-    <noscript>
-      <link
-        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap"
-        rel="stylesheet"
-      />
-    </noscript>
-    <!-- Async Font Awesome -->
-    <link
-      rel="preload"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      as="style"
-      onload="
+      rel="stylesheet" />
+  </noscript>
+  <!-- Async Font Awesome -->
+  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style"
+    onload="
         this.onload = null;
         this.rel = 'stylesheet';
-      "
-    />
-    <noscript>
-      <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      />
-    </noscript>
-    <!-- Cloudflare Turnstile (Anti-Bot Protection) -->
-    <script
-      src="https://challenges.cloudflare.com/turnstile/v0/api.js"
-      async
-      defer
-      data-cfasync="false"
-    ></script>
+      " />
+  <noscript>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  </noscript>
+  <!-- Cloudflare Turnstile (Anti-Bot Protection) -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer data-cfasync="false"></script>
 
-    <!-- GSAP (Core Animation Engine) without SRI to prevent CDN mismatch blocks -->
-    <script
-      defer
-      src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"
-      crossorigin="anonymous"
-    ></script>
-    <script
-      defer
-      src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"
-      crossorigin="anonymous"
-    ></script>
+  <!-- GSAP (Core Animation Engine) without SRI to prevent CDN mismatch blocks -->
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"
+    crossorigin="anonymous"></script>
 
-    <!-- Lenis Smooth Scroll -->
-    <script
-      defer
-      src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"
-      crossorigin="anonymous"
-    ></script>
+  <!-- Lenis Smooth Scroll -->
+  <script defer src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js" crossorigin="anonymous"></script>
 
-    <!-- 🛡️ SENTRY (Frontend Error Monitoring) - Configured via Zaraz/backend -->
+  <!-- 🛡️ SENTRY (Frontend Error Monitoring) - Configured via Zaraz/backend -->
 
-    <!-- 🚀 MICROSOFT CLARITY (Managed via Cloudflare Zaraz Dashboard) -->
-    <!-- To add Clarity as a Zaraz tool: Cloudflare Dashboard > Zaraz > Tools > Add Tool > Microsoft Clarity -->
-    <!-- This removes inline scripts for better consent management and performance -->
+  <!-- 🚀 MICROSOFT CLARITY (Managed via Cloudflare Zaraz Dashboard) -->
+  <!-- To add Clarity as a Zaraz tool: Cloudflare Dashboard > Zaraz > Tools > Add Tool > Microsoft Clarity -->
+  <!-- This removes inline scripts for better consent management and performance -->
 
-    <!-- Google One Tap (Identity Resolution) -->
-    {% if google_client_id %}
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script>
-      // 🛡️ Defer heavy Google Identity Logic until after main render
-      window.addEventListener("load", function () {
-        if ('requestIdleCallback' in window) {
-            requestIdleCallback(initGoogleIdentity);
-        } else {
-            setTimeout(initGoogleIdentity, 500);
-        }
-        
-        function initGoogleIdentity() {
-          if (typeof google !== "undefined" && google.accounts) {
-            google.accounts.id.initialize({
-              client_id: "{{ google_client_id }}",
-              use_fedcm_for_prompt: true, // Silicon Valley Compliance: FedCM Migration
-              callback: function (response) {
-                const debug = new URLSearchParams(window.location.search).has("debug");
-                if (debug) Logger.debug("🔍 Google Identity Response received");
-                fetch("/api/identity/google", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ credential: response.credential }),
+  <!-- Google One Tap (Identity Resolution) -->
+  {% if google_client_id %}
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script>
+    // 🛡️ Defer heavy Google Identity Logic until after main render
+    window.addEventListener("load", function () {
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(initGoogleIdentity);
+      } else {
+        setTimeout(initGoogleIdentity, 500);
+      }
+
+      function initGoogleIdentity() {
+        if (typeof google !== "undefined" && google.accounts) {
+          google.accounts.id.initialize({
+            client_id: "{{ google_client_id }}",
+            use_fedcm_for_prompt: true, // Silicon Valley Compliance: FedCM Migration
+            callback: function (response) {
+              const debug = new URLSearchParams(window.location.search).has("debug");
+              if (debug) Logger.debug("🔍 Google Identity Response received");
+              fetch("/api/identity/google", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ credential: response.credential }),
+              })
+                .then(r => r.json())
+                .then(function (data) {
+                  if (debug) Logger.debug("✅ Identity captured", data.user?.email);
+                  if (data.user && window.TrackingEngine) {
+                    window.TrackingEngine.PixelBridge.setUserData({
+                      email: data.user.email,
+                      firstName: data.user.given_name,
+                      lastName: data.user.family_name,
+                    });
+                  }
                 })
-                  .then(r => r.json())
-                  .then(function (data) {
-                    if (debug) Logger.debug("✅ Identity captured", data.user?.email);
-                    if (data.user && window.TrackingEngine) {
-                      window.TrackingEngine.PixelBridge.setUserData({
-                        email: data.user.email,
-                        firstName: data.user.given_name,
-                        lastName: data.user.family_name,
-                      });
-                    }
-                  })
-                  .catch(e => console.error("❌ Identity capture error:", e));
-              },
-              auto_select: false,
-              cancel_on_tap_outside: true,
-            });
-          }
+                .catch(e => console.error("❌ Identity capture error:", e));
+            },
+            auto_select: false,
+            cancel_on_tap_outside: true,
+          });
         }
-      });
-    </script>
-    {% endif %}
-    <!-- End Google One Tap -->
+      }
+    });
+  </script>
+  {% endif %}
+  <!-- End Google One Tap -->
 
-    {% block extra_head %}{% endblock %}
+  {% block extra_head %}{% endblock %}
 
-    <!-- Dynamic Configuration (Server-side rendered data) -->
-    {# Transform services list to dict indexed by id for frontend tracking #}
-    {%- set services_dict = {} -%} {%- for svc in services -%} {%- set _ =
-    services_dict.update({svc.id: { "name": svc.title, "category": svc.subtitle
-    | default('Servicio'), "price": 0, "image": svc.image | default('') }}) -%}
-    {%- endfor -%} {# Add powder_brows as alias for microblading for tracking
-    consistency #} {%- if 'microblading' in services_dict and 'powder_brows' not
-    in services_dict -%} {%- set _ = services_dict.update({"powder_brows":
-    services_dict.microblading}) -%} {%- endif -%}
-    <!-- 🛡️ SILICON VALLEY CORE: Logger & Config -->
-    <script type="module">
-      import { Logger } from "/static/engines/core/logger.js?v={{ system_version }}";
-      window.Logger = Logger;
-    </script>
+  <!-- Dynamic Configuration (Server-side rendered data) -->
+  {# Transform services list to dict indexed by id for frontend tracking #}
+  {%- set services_dict = {} -%} {%- for svc in services -%} {%- set _ =
+  services_dict.update({svc.id: { "name": svc.title, "category": svc.subtitle
+  | default('Servicio'), "price": 0, "image": svc.image | default('') }}) -%}
+  {%- endfor -%} {# Add powder_brows as alias for microblading for tracking
+  consistency #} {%- if 'microblading' in services_dict and 'powder_brows' not
+  in services_dict -%} {%- set _ = services_dict.update({"powder_brows":
+  services_dict.microblading}) -%} {%- endif -%}
+  <!-- 🛡️ SILICON VALLEY CORE: Logger & Config -->
+  <script type="module">
+    import { Logger } from "/static/engines/core/logger.js?v={{ system_version }}";
+    window.Logger = Logger;
 
-    <script type="application/json" id="app-config">
+    // Turnstile Callback (Required for Anti-Bot protection)
+    window.onTurnstileSuccess = function (token) {
+      if (window.TrackingEngine) {
+        window.TrackingEngine.turnstileToken = token;
+        window.TrackingEngine.isHuman = true;
+      }
+      window._turnstileToken = token;
+      if (window.Logger) window.Logger.debug("🤖 [Turnstile] Verified: Human signal captured.");
+    };
+  </script>
+
+  <script type="application/json" id="app-config">
       {
           "META_PIXEL_ID": "{{ pixel_id }}",
           "META_EVENT_ID": "{{ pageview_event_id }}",
@@ -318,112 +411,131 @@
       }
     </script>
 
-    <!-- Initialize config from JSON (lint-safe) -->
-    <script>
-      (function () {
-        try {
-          const configElement = document.getElementById("app-config");
-          if (configElement) {
-            const config = JSON.parse(configElement.textContent);
-            window.META_PIXEL_ID = config.META_PIXEL_ID;
-            window.META_EVENT_ID = config.META_EVENT_ID;
-            window.EXTERNAL_ID = config.EXTERNAL_ID;
-            window.SERVICES_CONFIG = config.SERVICES_CONFIG;
-            window.CONTACT_CONFIG = config.CONTACT_CONFIG;
-          }
-        } catch (e) {
-          console.error("Error loading app-config", e);
+  <!-- Initialize config from JSON (lint-safe) -->
+  <script>
+    (function () {
+      try {
+        const configElement = document.getElementById("app-config");
+        if (configElement) {
+          const config = JSON.parse(configElement.textContent);
+          window.META_PIXEL_ID = config.META_PIXEL_ID;
+          window.META_EVENT_ID = config.META_EVENT_ID;
+          window.EXTERNAL_ID = config.EXTERNAL_ID;
+          window.SERVICES_CONFIG = config.SERVICES_CONFIG;
+          window.CONTACT_CONFIG = config.CONTACT_CONFIG;
         }
-      })();
-    </script>
+      } catch (e) {
+        console.error("Error loading app-config", e);
+      }
+    })();
+  </script>
 
-    {% block schema %}{% endblock %}
-  </head>
+  {% block schema %}{% endblock %}
+</head>
 
-  <body
-    class="relative font-sans antialiased bg-luxury-black text-luxury-text selection:bg-luxury-gold selection:text-black"
-  >
-    <!-- Anti-Bot Defense Layer -->
-    <div
-      class="cf-turnstile"
-      data-sitekey="{{ turnstile_site_key }}"
-      data-callback="onTurnstileSuccess"
-      data-size="invisible"
-    ></div>
+<body
+  class="relative font-sans antialiased bg-luxury-black text-luxury-text selection:bg-luxury-gold selection:text-black">
+  <!-- Anti-Bot Defense Layer -->
+  <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}" data-callback="onTurnstileSuccess"
+    data-size="invisible"></div>
 
-    <!-- Global Ambient Spotlight -->
-    <div
-      id="mouse-spotlight"
-      class="fixed inset-0 z-0 opacity-40 mix-blend-screen transition-opacity duration-1000 pointer-events-none"
-    ></div>
+  <!-- Global Ambient Spotlight -->
+  <div id="mouse-spotlight"
+    class="fixed inset-0 z-0 opacity-40 mix-blend-screen transition-opacity duration-1000 pointer-events-none"></div>
 
-    <!-- Skip Link for Accessibility -->
-    <a href="#main-content" class="skip-link">Saltar al contenido principal</a>
+  <!-- Skip Link for Accessibility -->
+  <a href="#main-content" class="skip-link">Saltar al contenido principal</a>
 
-    <!-- Cloudflare Zaraz (Noscript Fallback) -->
-    <noscript>
-      <img
-        height="1"
-        width="1"
-        style="display: none"
-        alt=""
-        src="https://www.facebook.com/tr?id={{ pixel_id }}&ev=PageView&noscript=1"
-      />
-    </noscript>
+  <!-- Cloudflare Zaraz (Noscript Fallback) -->
+  <noscript>
+    <img height="1" width="1" style="display: none" alt=""
+      src="https://www.facebook.com/tr?id={{ pixel_id }}&ev=PageView&noscript=1" />
+  </noscript>
 
-    <!-- Navigation -->
-    {% include 'components/navbar.html' ignore missing %}
+  <!-- Navigation -->
+  {% include 'components/navbar.html' ignore missing %}
 
-    <!-- Main Content -->
-    <main id="main-content" role="main">{% block content %}{% endblock %}</main>
+  <!-- Main Content -->
+  <main id="main-content" role="main">{% block content %}{% endblock %}</main>
 
-    <!-- Footer -->
-    {% include 'components/footer.html' ignore missing %}
+  <!-- Footer -->
+  {% include 'components/footer.html' ignore missing %}
 
-    <!-- Global Scripts (Atomic Architecture v4.0 - ES Modules) -->
-    <!-- ✅ ES Modules para siempre tener código actualizado -->
-    <script type="module" id="scroll-init">
-      import { TrackingEngine } from "/static/engines/tracking/index.js?v={{ system_version }}";
-      import { SliderManager } from "/static/engines/ui/slider-manager.js?v={{ system_version }}";
-      import { AOSReplacement } from "/static/engines/motion/aos-replacement.js?v={{ system_version }}";
-      import { LenisSetup } from "/static/engines/motion/lenis-setup.js?v={{ system_version }}";
+  <!-- Global Scripts (Atomic Architecture v4.0 - ES Modules) -->
+  <!-- ✅ ES Modules para siempre tener código actualizado -->
+  <script type="module" id="scroll-init">
+    import { TrackingEngine } from "/static/engines/tracking/index.js?v={{ system_version }}";
+    import { SliderManager } from "/static/engines/ui/slider-manager.js?v={{ system_version }}";
+    import { AOSReplacement } from "/static/engines/motion/aos-replacement.js?v={{ system_version }}";
+    import { LenisSetup } from "/static/engines/motion/lenis-setup.js?v={{ system_version }}";
 
-      // Wait for DOM
-      if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", scheduleEngines);
+    // 🛡️ Interactive Spotlight
+    document.addEventListener("mousemove", (e) => {
+      const spotlight = document.getElementById("mouse-spotlight");
+      if (spotlight) {
+        spotlight.style.setProperty("--x", `${e.clientX}px`);
+        spotlight.style.setProperty("--y", `${e.clientY}px`);
+      }
+    });
+
+    // Wait for DOM
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", scheduleEngines);
+    } else {
+      scheduleEngines();
+    }
+
+    function scheduleEngines() {
+      // 🛡️ Defer heavy JS initialization
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(initEngines, { timeout: 1500 });
       } else {
-        scheduleEngines();
+        setTimeout(initEngines, 150);
       }
 
-      function scheduleEngines() {
-          // 🛡️ Defer heavy JS initialization using requestIdleCallback so UI renders first
-          if ('requestIdleCallback' in window) {
-              requestIdleCallback(initEngines, { timeout: 2000 });
-          } else {
-              setTimeout(initEngines, 100);
+      // 🚑 EMERGENCY FALLBACK: Ensure visibility on all devices
+      // If animations don't trigger within 3.5s, force show everything to preserve prestige.
+      setTimeout(() => {
+        document.querySelectorAll('[data-aos]').forEach(el => {
+          if (getComputedStyle(el).opacity === "0" || el.style.opacity === "0") {
+            el.style.opacity = "1";
+            el.style.transform = "none";
+            el.style.visibility = "visible";
+            console.warn("[Emergency] Force showing element due to animation timeout:", el);
           }
-      }
+        });
+      }, 3500);
+    }
 
-      function initEngines() {
-        const debug = new URLSearchParams(window.location.search).has("debug_pixel");
-        const isMobile = window.matchMedia("(pointer: coarse)").matches;
+    function initEngines() {
+      const debug = new URLSearchParams(window.location.search).has("debug_pixel");
+      const isMobile = window.matchMedia("(pointer: coarse)").matches;
 
-        // 1. Lenis Smooth Scroll + GSAP Sync (Only desktop by default for perf)
-        if (!isMobile) {
-            const lenis = LenisSetup.init();
-            if (lenis) {
-              LenisSetup.syncWithGSAP();
-              window.lenis = lenis;
-            }
-        }
-
-        // 2. Tracking Engine (Zaraz + CAPI)
+      // 1. Tracking Engine (Zaraz + CAPI) - Protected
+      try {
         if (typeof TrackingEngine !== "undefined") {
           TrackingEngine.init({ debug: debug });
           window.TrackingEngine = TrackingEngine;
         }
+      } catch (e) {
+        console.error("❌ TrackingEngine init failed:", e);
+      }
 
-        // 3. Sliders (Before/After) - Delayed import
+      // 2. Lenis Smooth Scroll + GSAP Sync (Only desktop)
+      try {
+        if (!isMobile && typeof LenisSetup !== "undefined") {
+          const lenis = LenisSetup.init();
+          if (lenis) {
+            LenisSetup.syncWithGSAP();
+            window.lenis = lenis;
+          }
+        }
+      } catch (e) {
+        console.error("❌ Lenis init failed:", e);
+      }
+
+      // 3. Sliders (Before/After) - Delayed import for mobile
+      try {
         if (isMobile) {
           import("/static/engines/ui/slider-manager-enhanced.js?v={{ system_version }}")
             .then((module) => {
@@ -436,35 +548,43 @@
             .catch(() => {
               if (typeof SliderManager !== "undefined") SliderManager.init();
             });
-        } else {
-          if (typeof SliderManager !== "undefined") {
-            SliderManager.init();
-          }
+        } else if (typeof SliderManager !== "undefined") {
+          SliderManager.init();
         }
+      } catch (e) {
+        console.error("❌ SliderManager init failed:", e);
+      }
 
-        // 4. Animaciones (AOS Replacement)
+      // 4. Animaciones (AOS Replacement) - Critical for Visibility
+      try {
         if (typeof AOSReplacement !== "undefined") {
           AOSReplacement.init();
         }
-
-        // 5. Theme Bridge initialization
-        document.body.classList.add("theme-bridge-loaded");
-
-        if (debug) Logger.debug("[MainEngine] All engines initialized. Mobile:", isMobile);
+      } catch (e) {
+        console.error("❌ AOS init failed:", e);
+        // Fallback manual si GSAP falla
+        document.querySelectorAll('[data-aos]').forEach(el => el.style.opacity = '1');
       }
-    </script>
-    {% block extra_scripts %}{% endblock %}
-    <!-- Vercel Services (Updated) -->
-    <script>
-      window.va =
-        window.va ||
-        function () {
-          (window.vaq = window.vaq || []).push(arguments);
-        };
-    </script>
-    <script defer src="/_vercel/insights/script.js"></script>
-    <script defer src="/_vercel/speed-insights/script.js"></script>
 
-    <!-- 🌀 MASTER UX ENGINE: Managed via MotionEngine in legacy-adapter.js -->
-  </body>
+      // 5. Theme Bridge initialization
+      document.body.classList.add("theme-bridge-loaded");
+
+      if (debug) Logger.debug("[MainEngine] All engines attempted. Mobile:", isMobile);
+    }
+  </script>
+  {% block extra_scripts %}{% endblock %}
+  <!-- Vercel Services (Updated) -->
+  <script>
+    window.va =
+      window.va ||
+      function () {
+        (window.vaq = window.vaq || []).push(arguments);
+      };
+  </script>
+  <script defer src="/_vercel/insights/script.js"></script>
+  <script defer src="/_vercel/speed-insights/script.js"></script>
+
+  <!-- 🌀 MASTER UX ENGINE: Managed via MotionEngine in legacy-adapter.js -->
+</body>
+
 </html>

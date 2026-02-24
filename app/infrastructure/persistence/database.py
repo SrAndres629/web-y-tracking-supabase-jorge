@@ -71,10 +71,10 @@ class Database:
 
         conn = None
         try:
-            # Clean URL (remove pgbouncer params)
+            # Clean URL (strip all query params for psycopg2 compatibility)
             url = self._settings.db.url
-            if url:
-                url = url.replace("?pgbouncer=true", "").replace("&pgbouncer=true", "")
+            if url and "?" in url:
+                url = url.split("?")[0]
 
             conn = psycopg2.connect(
                 url,

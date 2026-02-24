@@ -33,6 +33,10 @@ Esta skill se activa automáticamente después de cualquier cambio en `diseño`,
    - `python3 scripts/auditoria_manager.py validate`
 3. **Reporte de Fallos**: Si detectas un error, bloquea la finalización de la tarea y reporta el error específico.
 
+## **References & Resources**
+- **Standards**: Consulta `.agent/skills/auditoria-qa/resources/QA_CHECKLIST.md` para la lista de verificación obligatoria.
+- **Accesibilidad**: Basado en las pautas WCAG 2.1 (Nivel AA).
+
 ## Examples
 - **Input**: Cambio en el padding del service card.
 - **QA Action**: "Detecto que el padding actual es de 20px. Para cumplir con el 8px grid, sugiero ajustarlo a 16px (2rem) o 24px (3rem)."

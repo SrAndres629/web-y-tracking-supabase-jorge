@@ -1,4 +1,0 @@
-# file: C:\Users\acord\OneDrive\Desktop\paginas web\Paginas web y tracking\Web y tracking-supabase Jorge\app\tracking.py
-# hypothesis_version: 6.151.5
-
-[5.0, 10.0, 200, 1000000000, 9999999999, '.', '591', 'BOB', 'Contact', 'CustomizeProduct', 'Lead', 'ViewContent', 'access_token', 'action_source', 'bo', 'client_ip_address', 'client_user_agent', 'consultation_request', 'contact_method', 'content_category', 'content_ids', 'content_name', 'content_type', 'country', 'ct', 'currency', 'custom_data', 'data', 'em', 'engagement_level', 'event', 'event_id', 'event_name', 'event_source_url', 'event_time', 'external_id', 'fb.1.', 'fb_browser_id', 'fbc', 'fbp', 'high', 'id', 'intent', 'lead', 'lead_source', 'low', 'medium', 'name', 'ph', 'product', 'scroll_depth', 'service', 'test_event_code', 'time_on_page', 'trigger_location', 'user_data', 'utf-8', 'website', 'whatsapp']

@@ -111,6 +111,14 @@
         btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Generando Credenciales...';
 
         try {
+            const turnstileToken = window._turnstileToken;
+            if (!turnstileToken) {
+              alert('Por favor, completa la verificación anti-bot.');
+              btn.disabled = false;
+              btn.innerText = 'Generar mi API Key de Acceso';
+              return;
+            }
+
             const response = await fetch('/onboarding', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -118,6 +126,7 @@
                     name: data.name,
                     email: data.email,
                     company: data.company,
+                    turnstile_token: turnstileToken,
                     config: {
                         meta_pixel_id: data.pixel_id,
                         meta_access_token: data.access_token

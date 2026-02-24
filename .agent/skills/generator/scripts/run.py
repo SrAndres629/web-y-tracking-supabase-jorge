@@ -18,10 +18,12 @@ def main():
     command = sys.argv[1]
 
     # 2. Ejecutar el comando del sistema
-    # Usamos shell=True para simplicidad, pero en producción usaríamos rutas absolutas y validación estricta.
+    # Usamos shell=True para simplicidad, pero en producción usaríamos otras rutas.
     try:
         # Ejecutamos el comando y capturamos la salida
-        result = subprocess.run(command, shell=True, capture_output=True, text=True, check=True)
+        result = subprocess.run(
+            command, shell=True, capture_output=True, text=True, check=True
+        )
 
         # 3. Devolver el resultado en formato JSON (stdout)
         # El agente leerá esto y lo mostrará al usuario.

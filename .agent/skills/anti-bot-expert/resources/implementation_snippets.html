@@ -1,0 +1,18 @@
+<!-- Turnstile Script -->
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer data-cfasync="false"></script>
+
+<!-- Turnstile Invisible Widget -->
+<div 
+  class="cf-turnstile" 
+  data-sitekey="{{ turnstile_site_key }}" 
+  data-callback="onTurnstileSuccess"
+  data-size="invisible"
+></div>
+
+<!-- JavaScript Callback Template -->
+<script>
+window.onTurnstileSuccess = function(token) {
+    console.debug("Human verification signal captured.");
+    // Integration logic here
+};
+</script>

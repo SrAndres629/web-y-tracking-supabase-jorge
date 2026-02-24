@@ -165,7 +165,7 @@ export const PixelBridge = {
    */
   _log(message, data) {
     if (this._debugMode) {
-      window.Logger ? window.Logger.debug(message, data || '') : console.log(message, data || '');
+      window.Logger ? window.Logger.debug(message, data || '') : console.debug(message, data || '');
     }
   }
 };

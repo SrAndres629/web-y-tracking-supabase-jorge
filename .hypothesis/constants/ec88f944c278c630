@@ -1,4 +1,0 @@
-# file: C:\Users\acord\OneDrive\Desktop\paginas web\Paginas web y tracking\Web y tracking-supabase Jorge\app\routes\identity_routes.py
-# hypothesis_version: 6.151.5
-
-[302, 400, 500, 3600, ',', '.', '/api/identity', '/google', '/whatsapp/redirect', '=', 'Contact', 'Identity', 'Identity captured', 'Internal error', 'Invalid JWT format', 'Invalid credential', 'Lead', 'Service interest', 'Traffic source', 'cf-connecting-ip', 'cf-ipcity', 'cf-ipcountry', 'content_category', 'content_name', 'email', 'expires_at', 'family_name', 'general_inquiry', 'given_name', 'google_one_tap', 'identity', 'lead_source', 'message', 'name', 'picture', 'referer', 'status', 'success', 'user', 'user-agent', 'website', 'whatsapp_click', 'x-forwarded-for']

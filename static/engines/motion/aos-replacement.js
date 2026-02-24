@@ -39,6 +39,7 @@ export const AOSReplacement = {
    */
   _setupAnimations() {
     const elements = document.querySelectorAll('[data-aos]');
+    const isMobile = window.matchMedia("(pointer: coarse)").matches;
     
     elements.forEach(el => {
       const animationType = el.dataset.aos || 'fade-up';
@@ -49,22 +50,26 @@ export const AOSReplacement = {
       // Configuración inicial (oculto)
       gsap.set(el, this._getInitialState(animationType));
       
+      // Verificar si ya está en viewport para disparar inmediatamente (evitar parpadeo/bloqueo)
+      const rect = el.getBoundingClientRect();
+      const inViewport = (rect.top <= (window.innerHeight || document.documentElement.clientHeight) * 0.9);
+      
       // Animación al entrar en viewport
       gsap.to(el, {
         ...this._getFinalState(animationType),
         duration: duration,
-        delay: delay / 1000, // Convertir ms a segundos
+        delay: inViewport ? (delay / 2000) : (delay / 1000), // Disparo más rápido si ya está visible
         ease: easing,
         scrollTrigger: {
           trigger: el,
-          start: 'top 85%',
+          start: isMobile ? 'top 95%' : 'top 85%', // Más agresivo en mobile
           toggleActions: 'play none none none',
           once: true
         }
       });
     });
 
-    Logger.debug(`[AOSReplacement] ${elements.length} elementos animados`);
+    Logger.debug(`[AOSReplacement] ${elements.length} elementos animados. Mobile: ${isMobile}`);
   },
 
   /**

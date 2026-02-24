@@ -437,6 +437,12 @@ async def client_onboarding(
     """Registers a new client and generates an API key."""
     from app.domain.services.client_service import ClientService
 
+    # 🛡️ Bot Protection (Turnstile)
+    token = data.get("turnstile_token")
+    if not await validate_turnstile(str(token or "")):
+        logger.warning("🛡️ Blocked bot attempt on /onboarding")
+        raise HTTPException(status_code=403, detail="Bot protection validation failed")
+
     name = data.get("name")
     email = data.get("email")
     company = data.get("company")

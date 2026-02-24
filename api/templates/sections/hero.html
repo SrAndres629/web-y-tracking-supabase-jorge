@@ -12,45 +12,22 @@
         class="absolute top-0 right-0 w-[500px] h-[500px] bg-luxury-gold/5 blur-luxury-lg rounded-full pointer-events-none">
     </div>
 
-    <!-- Doctoral Gold Dust (CSS Particles) -->
-    <div class="gold-dust-container opacity-20">
-        <div class="gold-dust-particle"
-            style="--particle-x: 10vw; --particle-y: -30vh; --particle-duration: 8s; --particle-delay: 0s; left: 20%; top: 80%; width: 2px; height: 2px;">
-        </div>
-        <div class="gold-dust-particle"
-            style="--particle-x: -15vw; --particle-y: -40vh; --particle-duration: 12s; --particle-delay: 2s; left: 70%; top: 90%; width: 3px; height: 3px;">
-        </div>
-        <div class="gold-dust-particle"
-            style="--particle-x: 5vw; --particle-y: -25vh; --particle-duration: 10s; --particle-delay: 5s; left: 40%; top: 85%; width: 2px; height: 2px;">
-        </div>
-        <div class="gold-dust-particle"
-            style="--particle-x: -8vw; --particle-y: -35vh; --particle-duration: 15s; --particle-delay: 1s; left: 10%; top: 95%; width: 2px; height: 2px;">
-        </div>
-        <div class="gold-dust-particle"
-            style="--particle-x: 12vw; --particle-y: -45vh; --particle-duration: 9s; --particle-delay: 4s; left: 85%; top: 75%; width: 3px; height: 3px;">
-        </div>
-    </div>
-
     <div class="container mx-auto px-6 relative z-10 text-center md:text-left grid md:grid-cols-2 gap-12 items-center">
-        <div class="space-y-8 animate-fade-in-up">
-            <div class="inline-block border border-luxury-gold/30 px-6 py-2 rounded-full mb-4 backdrop-blur-sm">
-                <span class="text-luxury-gold text-xs font-bold uppercase tracking-[0.4em]">Arte Facial • 30
-                    Años</span>
+        <div class="space-y-10" data-aos="fade-right">
+            <div class="inline-block border border-luxury-gold/30 px-6 py-2 rounded-full mb-4 backdrop-blur-sm" data-aos="fade-down" data-aos-delay="200">
+                <span class="text-luxury-gold text-xs font-bold uppercase tracking-[0.4em]">Arte Facial • 30 Años</span>
             </div>
-            <h1
-                class="font-serif text-4xl md:text-6xl lg:text-7xl leading-[1.1] text-luxury-text mb-8 tracking-tighter">
+            <h1 class="font-serif text-5xl md:text-7xl lg:text-8xl leading-[0.9] text-luxury-text mb-8 tracking-tighter" data-aos="fade-up" data-aos-delay="400">
                 {{ hero_content.title|safe }}<br>
-                <span class="text-xl md:text-3xl font-light tracking-[0.3em] opacity-90 uppercase">
+                <span class="text-xl md:text-4xl font-light tracking-[0.5em] opacity-90 uppercase block mt-4">
                     {{ hero_content.subtitle }}
                 </span>
             </h1>
-            <p
-                class="text-luxury-gray text-lg md:text-xl font-light max-w-xl leading-relaxed mb-10 tracking-wide border-l border-luxury-gold/20 pl-6 mx-auto md:mx-0">
+            <p class="text-luxury-gray text-lg md:text-2xl font-light max-w-xl leading-relaxed mb-10 tracking-wide border-l border-luxury-gold/20 pl-6 mx-auto md:mx-0" data-aos="fade-up" data-aos-delay="600">
                 Maquillaje permanente de alta precisión. <br>
-                <span class="text-luxury-text font-medium">30 años liderando el estándar de belleza natural en
-                    Bolivia.</span>
+                <span class="text-luxury-text font-medium">30 años liderando el estándar de belleza natural en Bolivia.</span>
             </p>
-            <div class="flex flex-col sm:flex-row gap-8 pt-6 justify-center md:justify-start">
+            <div class="flex flex-col sm:flex-row gap-8 pt-6 justify-center md:justify-start" data-aos="fade-up" data-aos-delay="800">
                 <a href="{{ contact.whatsapp }}?text={{ contact.cta_text|urlencode }}" target="_blank"
                     onclick="handleConversion('Hero CTA')"
                     class="btn-gold-liquid group relative px-10 py-6 font-bold uppercase tracking-[0.2em] rounded-lg w-full md:w-auto shadow-2xl hover:shadow-orange-500/20 inline-flex items-center justify-center">
@@ -58,11 +35,9 @@
                         <i class="fab fa-whatsapp text-lg"></i> Iniciar Diagnóstico
                     </span>
                 </a>
-                <div
-                    class="flex flex-col gap-1 justify-center text-left opacity-80 hover:opacity-100 transition-opacity">
+                <div class="flex flex-col gap-1 justify-center text-left opacity-80 hover:opacity-100 transition-opacity">
                     <div class="flex items-center gap-2 text-luxury-gold text-xs">
-                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
-                            class="fas fa-star"></i><i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
                     </div>
                     <p class="text-gray-400 text-[10px] uppercase tracking-widest font-medium">
                         1,500+ Clientas Felices
@@ -71,33 +46,27 @@
             </div>
         </div>
 
-        <div class="relative animate-fade-in-up flex justify-center" style="animation-delay: 0.2s;">
+        <div class="relative flex justify-center" data-aos="zoom-in-left" data-aos-duration="1500">
             <div class="relative w-full max-w-lg group hero-image-container">
-                <!-- Subtle Glow behind image (animated on scroll) -->
-                <div
-                    class="hero-glow absolute -inset-4 bg-luxury-gold/10 blur-2xl rounded-full opacity-0 transition-opacity duration-1000">
-                </div>
-
-                <!-- Premium Reveal Border -->
-                <div
-                    class="hero-border absolute -inset-1 bg-gradient-to-br from-luxury-gold/20 via-transparent to-luxury-gold/10 rounded-2xl opacity-0">
-                </div>
-
+                <div class="hero-glow absolute -inset-4 bg-luxury-gold/15 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
+                <div class="hero-border absolute -inset-1 bg-gradient-to-br from-luxury-gold/30 via-transparent to-luxury-gold/20 rounded-2xl"></div>
+                
                 <picture>
                     <source srcset="/static/assets/images/hero/jorge_hero_new.webp" type="image/webp">
-                    <img srcset="/static/assets/images/hero/jorge_hero_new.webp 800w, /static/images/jorge_hero_premium.webp 1200w"
-                        sizes="(max-width: 600px) 480px, 100vw"
+                    <img src="/static/assets/images/hero/jorge_hero_new.webp"
                         alt="Jorge Aguirre Flores - Especialista en Microblading"
-                        class="relative rounded-2xl shadow-2xl border border-luxury-gold/20 w-full max-w-md mx-auto aspect-[4/5] object-cover animate-fade-in-right z-10"
-                        width="800" height="800" loading="eager" fetchpriority="high" />
+                        class="relative rounded-2xl shadow-2xl border border-luxury-gold/20 w-full max-w-md mx-auto aspect-[4/5] object-cover z-10"
+                        width="800" height="1000" loading="eager" fetchpriority="high" />
                 </picture>
             </div>
         </div>
     </div>
 
-    <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-        <a href="#proceso" aria-label="Desplazarse hacia abajo">
-            <i class="fas fa-chevron-down text-luxury-gold text-2xl"></i>
-        </a>
+    <div class="absolute bottom-12 left-1/2 transform -translate-x-1/2" data-aos="fade-up" data-aos-anchor-placement="top-bottom" data-aos-delay="1200">
+        <div class="animate-bounce">
+            <a href="#proceso" aria-label="Desplazarse hacia abajo">
+                <i class="fas fa-chevron-down text-luxury-gold/60 text-2xl hover:text-luxury-gold transition-colors"></i>
+            </a>
+        </div>
     </div>
 </header>

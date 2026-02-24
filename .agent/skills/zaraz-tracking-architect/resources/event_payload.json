@@ -1,0 +1,18 @@
+{
+  "event_name": "{{ event_name }}",
+  "event_time": "{{ timestamp }}",
+  "event_id": "{{ event_id }}",
+  "event_source_url": "{{ url }}",
+  "action_source": "website",
+  "user_data": {
+    "client_ip_address": "{{ ip }}",
+    "client_user_agent": "{{ ua }}",
+    "external_id": "{{ external_id }}",
+    "fbc": "{{ fbc }}",
+    "fbp": "{{ fbp }}"
+  },
+  "custom_data": {
+    "currency": "BOB",
+    "value": 0.00
+  }
+}
