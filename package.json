@@ -16,7 +16,9 @@
     "author": "Antigravity",
     "license": "UNLICENSED",
     "devDependencies": {
+        "@anthropic-ai/claude-code": "^2.1.52",
         "@axe-core/playwright": "^4.11.1",
+        "@google/jules": "^0.1.42",
         "autoprefixer": "^10.4.17",
         "eslint": "^10.0.0",
         "eslint-plugin-html": "^8.1.4",
