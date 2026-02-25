@@ -252,6 +252,12 @@ SELECT_META_DATA_BY_REF = """
     ORDER BY created_at DESC LIMIT 1
 """
 
+SELECT_LEAD_COLS = "id, whatsapp_phone, full_name, email, meta_lead_id, profile_pic_url, fb_click_id, fb_browser_id, utm_source, utm_medium, utm_campaign, utm_term, utm_content, web_visit_count, conversion_sent_to_meta, status, lead_score, pain_point, service_interest, created_at, updated_at"
+
+SELECT_LEAD_BY_ID = f"SELECT {SELECT_LEAD_COLS} FROM crm_leads WHERE id = %s"
+
+SELECT_LEAD_BY_PHONE = f"SELECT {SELECT_LEAD_COLS} FROM crm_leads WHERE whatsapp_phone = %s"
+
 SELECT_LEAD_ID_BY_PHONE = "SELECT id FROM crm_leads WHERE whatsapp_phone = %s"
 
 UPDATE_LEAD_METADATA = """
