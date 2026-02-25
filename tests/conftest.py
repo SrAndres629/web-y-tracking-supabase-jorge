@@ -69,7 +69,10 @@ def block_external_calls(request):
     # Block Meta CAPI & Facebook SDK
     with pytest.MonkeyPatch.context() as m:
         # 1. Block SDK Init (Prevents OAuthException)
-        m.setattr("facebook_business.api.FacebookAdsApi.init", MagicMock())
+        try:
+            m.setattr("facebook_business.api.FacebookAdsApi.init", MagicMock())
+        except (ImportError, ModuleNotFoundError, AttributeError):
+            pass
 
         # 2. Block Modern Tracker (app.infrastructure.external.meta_capi.tracker.MetaTracker)
         # Note: We must mock the class method or the instance method depending on how it's used.
