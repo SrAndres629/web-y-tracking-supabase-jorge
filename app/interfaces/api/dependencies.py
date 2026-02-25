@@ -17,14 +17,15 @@ from typing import Any, Dict, List, Optional
 
 from fastapi import Header, HTTPException
 
+from app.application.commands.create_lead import CreateLeadHandler
 from app.application.commands.create_visitor import CreateVisitorHandler
 from app.application.commands.track_event import TrackEventHandler
 from app.application.interfaces.cache_port import DeduplicationPort
 from app.application.interfaces.tracker_port import TrackerPort
-from app.config import settings
 from app.domain.repositories.event_repo import EventRepository
 from app.domain.repositories.lead_repo import LeadRepository
 from app.domain.repositories.visitor_repo import VisitorRepository
+from app.infrastructure.config.settings import settings
 
 logger = logging.getLogger(__name__)
 
@@ -50,14 +51,19 @@ def get_deduplicator() -> DeduplicationPort:
 @lru_cache()
 def get_visitor_repository() -> VisitorRepository:
     """Provee repositorio de visitantes."""
-    from app.infrastructure.persistence.visitor_repo import PostgreSQLVisitorRepository
+    from app.infrastructure.persistence.repositories.visitor_repository import (
+        VisitorRepository as NativeVisitorRepo,
+    )
 
-    return PostgreSQLVisitorRepository()
+    return NativeVisitorRepo()
 
 
+@lru_cache()
 def get_event_repository() -> EventRepository:
     """Provee repositorio de eventos."""
-    from app.infrastructure.persistence.event_repo import PostgreSQLEventRepository
+    from app.infrastructure.persistence.repositories.event_repository import (
+        PostgreSQLEventRepository,
+    )
 
     return PostgreSQLEventRepository()
 
@@ -65,9 +71,11 @@ def get_event_repository() -> EventRepository:
 @lru_cache()
 def get_lead_repository() -> LeadRepository:
     """Provee repositorio de leads."""
-    from app.infrastructure.persistence.sql_lead_repo import SQLLeadRepository
+    from app.infrastructure.persistence.repositories.lead_repository import (
+        LeadRepository as NativeLeadRepo,
+    )
 
-    return SQLLeadRepository()
+    return NativeLeadRepo()
 
 
 # ===== Trackers =====
@@ -81,10 +89,11 @@ def get_trackers() -> List[TrackerPort]:
     if _tracker_cache is not None:
         return _tracker_cache
 
-    from app.tracking import MetaTracker
+    from app.tracking import MetaTracker, TinybirdTracker
 
     _tracker_cache = [
         MetaTracker(),
+        TinybirdTracker(),
     ]
     return _tracker_cache
 
@@ -109,6 +118,14 @@ def get_track_event_handler(
     return handler
 
 
+def get_create_lead_handler() -> CreateLeadHandler:
+    """Provee handler para crear leads."""
+    return CreateLeadHandler(
+        lead_repo=get_lead_repository(),
+        visitor_repo=get_visitor_repository(),
+    )
+
+
 def get_create_visitor_handler() -> CreateVisitorHandler:
     """Provee handler para crear visitantes."""
     return CreateVisitorHandler(
@@ -116,111 +133,4 @@ def get_create_visitor_handler() -> CreateVisitorHandler:
     )
 
 
-# ===== Legacy Compatibility Facade =====
-
-
-class LegacyFacade:
-    """
-    Transitional facade that centralizes access to legacy modules.
-    Keeps legacy dependencies out of route modules while migration continues.
-    """
-
-    def __init__(self) -> None:
-        from app import database as database_module
-        from app import tracking as tracking_module
-        from app.infrastructure.config import get_settings
-
-        self._database = database_module
-        self._tracking = tracking_module
-        self._settings = get_settings()
-        self._visitor_cache: Dict[str, Dict[str, Any]] = {}
-
-    # Database helpers
-    def check_connection(self) -> bool:
-        return self._database.check_connection()
-
-    def save_visitor(self, *args: Any, **kwargs: Any) -> None:
-        self._database.save_visitor(*args, **kwargs)
-
-    def get_or_create_lead(self, *args: Any, **kwargs: Any):
-        return self._database.get_or_create_lead(*args, **kwargs)
-
-    def upsert_contact_advanced(self, *args: Any, **kwargs: Any) -> None:
-        self._database.upsert_contact_advanced(*args, **kwargs)
-
-    def log_interaction(self, *args: Any, **kwargs: Any) -> bool:
-        return self._database.log_interaction(*args, **kwargs)
-
-    def get_visitor_by_id(self, visitor_id: int):
-        return self._database.get_visitor_by_id(visitor_id)
-
-    def get_all_visitors(self, limit: int = 50):
-        return self._database.get_all_visitors(limit=limit)
-
-    def get_cursor(self):
-        return self._database.get_cursor()
-
-    # Tracking helpers
-    def generate_external_id(self, client_ip: str, user_agent: str) -> str:
-        combined = f"{client_ip}_{user_agent}"
-        return hashlib.sha256(combined.encode("utf-8")).hexdigest()[:32]
-
-    def send_n8n_webhook(self, payload: Dict[str, Any]) -> bool:
-        webhook_url = self._settings.external.n8n_webhook_url
-        if not webhook_url:
-            return False
-        try:
-            import httpx
-
-            response = httpx.post(webhook_url, json=payload, timeout=10.0)
-            return response.status_code == 200
-        except Exception as exc:
-            logger.warning(f"n8n webhook send failed: {exc}")
-            return False
-
-    # Cache helpers
-    def cache_visitor_data(self, external_id: str, data: Dict[str, Any]) -> None:
-        self._visitor_cache[external_id] = {
-            "data": data,
-            "expires": time.time() + 24 * 3600,
-        }
-
-    def get_cached_visitor(self, external_id: str):
-        item = self._visitor_cache.get(external_id)
-        if not item:
-            return None
-        if item["expires"] < time.time():
-            self._visitor_cache.pop(external_id, None)
-            return None
-        return item["data"]
-
-    def redis_health_check(self):
-        if not self._settings.redis.is_configured:
-            return {"status": "disabled"}
-        try:
-            from upstash_redis import Redis
-
-            url = self._settings.redis.rest_url
-            token = self._settings.redis.rest_token
-
-            if not url or not token:
-                return {"status": "error", "message": "Redis credentials missing"}
-
-            client = Redis(
-                url=url,
-                token=token,
-            )
-            client.ping()
-            return {"status": "ok"}
-        except Exception as exc:
-            return {"status": "error", "message": str(exc)}
-
-    # Meta CAPI helper
-    async def send_elite_event(self, **kwargs: Any):
-        return await self._tracking.send_elite_event(**kwargs)
-
-
-@lru_cache()
-def get_legacy_facade() -> LegacyFacade:
-    """Provide singleton legacy facade during migration period."""
-    return LegacyFacade()
+# Handlers and other factories remain as is.

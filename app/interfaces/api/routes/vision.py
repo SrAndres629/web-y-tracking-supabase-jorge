@@ -58,7 +58,7 @@ async def neuro_vision_root(request: Request):
         content = template_path.read_text(encoding="utf-8")
 
         # Inject cache-busting version
-        from app.config import settings
+        from app.infrastructure.config.settings import settings
 
         content = content.replace("{{ system_version }}", settings.system_version)
 

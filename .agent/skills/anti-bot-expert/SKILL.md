@@ -41,8 +41,12 @@ Actúa como un **Estratega de Seguridad y Conversión**. Tu misión es blindar `
 - **Conversion Friction**: 0% de impacto negativo en velocidad de carga y experiencia humana.
 - **Audit Status**: Puntuación perfecta en el script de auditoría.
 
-## **References & Resources**
+## **Sincronización de Integridad Global**
+- **Infra Sync**: Verifica la configuración de Turnstile vía `cloudflare_infrastructure`.
+- **UX Sync**: Asegura que el widget de Turnstile no rompa el CLS (Cumulative Layout Shift) auditado por `auditoria-qa`.
+- **Security Sync**: Reporta intentos de bot masivos a `arize-phoenix-tracer` para análisis de patrones.
 - **Best Practices**: Ver `.agent/skills/anti-bot-expert/references/BEST_PRACTICES.md` para UX y Accesibilidad.
+- **Cloudflare MCP**: Usa `cloudflare_infrastructure` (action: get_zaraz_config) para verificar la configuración de Turnstile.
 - **Code Snippets**: Usa `.agent/skills/anti-bot-expert/resources/implementation_snippets.html` para la implementación rápida en templates.
 
 ## **Constraints**

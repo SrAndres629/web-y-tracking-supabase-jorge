@@ -1,19 +1,23 @@
+"""
+🔍 System Diagnostics Module.
+
+Diagnostics using the DDD infrastructure layer (db singleton, settings).
+No legacy imports.
+"""
 import logging
 import os
 import sys
 from typing import Any, Dict
 
-logger = logging.getLogger(__name__)
+from app.infrastructure.config.settings import settings
+from app.infrastructure.persistence.database import db
 
-# No top-level imports that might crash if dependencies are missing
-# Import lazily inside functions
+logger = logging.getLogger(__name__)
 
 
 def check_environment() -> Dict[str, Any]:
-    """Audit environment variables and system info"""
-    from app.config import settings
+    """Audit environment variables and system info."""
 
-    # Mask secrets
     def mask(val):
         return f"{val[:4]}...{val[-4:]}" if val and len(val) > 8 else ("SET" if val else "MISSING")
 
@@ -36,30 +40,27 @@ def check_environment() -> Dict[str, Any]:
 
 
 def check_database() -> Dict[str, Any]:
-    """Verify Supabase connection"""
+    """Verify database connection using the db singleton."""
     status = {"status": "unknown", "backend": "none", "details": ""}
     try:
-        from app import database as legacy_database
-        from app.config import settings
-
-        # Check if URL is invalid stub
         if settings.DATABASE_URL == "STUB_FOR_VERCEL":
             return {"status": "skipped", "details": "INVALID_DATABASE_URL_STUB"}
 
         if not settings.DATABASE_URL:
             return {"status": "failed", "details": "DATABASE_URL not set"}
 
-        if legacy_database.check_connection():
-            status["backend"] = legacy_database.BACKEND
-            with legacy_database.get_cursor() as cur:
+        # Use the db singleton for health check
+        with db.connection() as conn:
+            cur = conn.cursor()
+            if db.backend == "sqlite":
+                cur.execute("SELECT sqlite_version();")
+            else:
                 cur.execute("SELECT version();")
-                row = cur.fetchone()
-                v = row[0] if row else "Unknown"
-                status["status"] = "ok"
-                status["details"] = v
-        else:
-            status["status"] = "failed"
-            status["details"] = "Could not initialize pool"
+            row = cur.fetchone()
+            v = row[0] if row else "Unknown"
+            status["status"] = "ok"
+            status["backend"] = db.backend
+            status["details"] = v
 
     except Exception as e:
         status["status"] = "error"
@@ -69,20 +70,13 @@ def check_database() -> Dict[str, Any]:
 
 
 def check_redis() -> Dict[str, Any]:
-    """Verify Redis connection"""
-    status = {"status": "unknown"}
-    try:
-        from app.interfaces.api.dependencies import get_legacy_facade
-
-        status = get_legacy_facade().redis_health_check()
-    except Exception as e:
-        status["status"] = "error"
-        status["message"] = str(e)
-    return status
+    """Verify Redis/Upstash connection via shared RedisProvider."""
+    from app.infrastructure.cache.redis_provider import redis_provider
+    return redis_provider.health_check()
 
 
 def run_full_diagnostics() -> Dict[str, Any]:
-    """Run all checks and return report"""
+    """Run all checks and return report."""
     return {
         "timestamp": os.getenv("VERCEL_DEPLOYMENT_ID", "local"),
         "environment": check_environment(),
@@ -92,7 +86,7 @@ def run_full_diagnostics() -> Dict[str, Any]:
 
 
 def log_startup_report():
-    """Print diagnostics to stdout for Vercel Logs"""
+    """Print diagnostics to stdout for Vercel Logs."""
     try:
         report = run_full_diagnostics()
         logger.info(f"🔍 [DIAGNOSTICS] REPORT: {report}")

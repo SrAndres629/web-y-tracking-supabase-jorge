@@ -28,6 +28,7 @@ Esta skill cuenta con el script `scripts/brand_manager.py` para automatizar la a
 - **Usuario**: "Cambia el color de oro a uno más brillante."
 - **Agente**: Utiliza la sub-skill de Colores para ejecutar el script de actualización y sincronización.
 
-## Constraints
-- Mantener siempre la coherencia visual. Nunca aplicar cambios que rompan el estilo de "Lujo Silencioso".
-- Toda modificación en la configuración global debe seguir el flujo de sub-skills para evitar errores técnicos.
+## **Sincronización de Integridad Global**
+- **Frontend Sync**: Provee los tokens de diseño y assets a `estructura` y `diseño`.
+- **AI Sync**: Establece el "Tone of Voice" para los flujos de `genkit-orchestrator`.
+- **QA Sync**: Verifica que los colores y logos mantengan el contraste reglamentario auditado por `auditoria-qa`.

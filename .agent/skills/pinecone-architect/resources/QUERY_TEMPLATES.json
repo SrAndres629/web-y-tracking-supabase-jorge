@@ -1,0 +1,48 @@
+{
+    "semantic_search": {
+        "query": {
+            "topK": 10,
+            "inputs": {
+                "text": "{{query_text}}"
+            }
+        },
+        "namespace": "{{namespace}}",
+        "rerank": {
+            "model": "pinecone-rerank-v0",
+            "rankFields": [
+                "text"
+            ],
+            "topN": 5
+        }
+    },
+    "hybrid_search": {
+        "query": {
+            "topK": 20,
+            "inputs": {
+                "text": "{{query_text}}"
+            },
+            "filter": {
+                "{{metadata_key}}": {
+                    "$eq": "{{metadata_value}}"
+                }
+            }
+        },
+        "namespace": "{{namespace}}",
+        "rerank": {
+            "model": "cohere-rerank-3.5",
+            "rankFields": [
+                "text"
+            ],
+            "topN": 5
+        }
+    },
+    "upsert_record": {
+        "id": "{{unique_id}}",
+        "text": "{{content_to_embed}}",
+        "metadata": {
+            "source": "{{source_name}}",
+            "timestamp": "{{iso_timestamp}}",
+            "type": "{{content_type}}"
+        }
+    }
+}

@@ -119,10 +119,10 @@ async def lifespan(app: FastAPI):
 
             # Database initialization (Trigger in background to prevent boot block)
             try:
-                from app.database import init_tables
+                from app.infrastructure.persistence.database import db
 
                 # No esperamos a que termine si tarda mucho, permitimos lazy init
-                asyncio.create_task(asyncio.to_thread(init_tables))
+                asyncio.create_task(asyncio.to_thread(db.init_tables))
                 logger.info("⚡ Background DB init triggered")
             except Exception as e:
                 logger.exception(f"❌ DB init trigger failed: {e}")

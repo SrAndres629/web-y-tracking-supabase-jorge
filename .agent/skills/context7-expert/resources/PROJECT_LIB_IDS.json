@@ -1,0 +1,39 @@
+{
+    "project_libraries": [
+        {
+            "name": "Pinecone Python",
+            "id": "/pinecone-io/pinecone-python-client",
+            "usage": "Vector DB management & long-term memory"
+        },
+        {
+            "name": "FastAPI",
+            "id": "/tiangolo/fastapi",
+            "usage": "Core backend API framework"
+        },
+        {
+            "name": "Supabase JS",
+            "id": "/supabase/supabase-js",
+            "usage": "Frontend data management & Auth"
+        },
+        {
+            "name": "Pydantic v2",
+            "id": "/pydantic/pydantic",
+            "usage": "Data validation & schemas"
+        },
+        {
+            "name": "OpenTelemetry Python",
+            "id": "/open-telemetry/opentelemetry-python",
+            "usage": "Arize Phoenix tracing & metrics"
+        },
+        {
+            "name": "Genkit Core",
+            "id": "/firebase/genkit",
+            "usage": "AI workflow orchestration"
+        },
+        {
+            "name": "Tailwind CSS",
+            "id": "/tailwindlabs/tailwindcss",
+            "usage": "UI Styling and design system"
+        }
+    ]
+}

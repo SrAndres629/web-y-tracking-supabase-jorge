@@ -7,9 +7,8 @@ import logging
 import time
 from typing import Any, Dict, Optional
 
-from upstash_redis import Redis
-
-from app.config import settings
+from app.infrastructure.cache.redis_provider import redis_provider
+from app.infrastructure.config.settings import settings
 
 logger = logging.getLogger("DistQueue")
 
@@ -20,22 +19,11 @@ RETRY_BACKOFF_BASE = 300  # 5 minutes
 
 
 class RedisDLQ:
-    def __init__(self):
-        self._redis: Optional[Redis] = None
-        self._connect()
+    """Dead Letter Queue backed by the shared RedisProvider."""
 
-    def _connect(self):
-        try:
-            if settings.UPSTASH_REDIS_REST_URL and settings.UPSTASH_REDIS_REST_TOKEN:
-                self._redis = Redis(
-                    url=settings.UPSTASH_REDIS_REST_URL,
-                    token=settings.UPSTASH_REDIS_REST_TOKEN,
-                )
-                logger.debug("✅ RedisDLQ: Connected to Upstash")
-            else:
-                logger.warning("⚠️ RedisDLQ: Credentials missing. DLQ disabled.")
-        except Exception as e:
-            logger.exception(f"❌ RedisDLQ: Connection failed: {e}")
+    @property
+    def _redis(self):
+        return redis_provider.sync_client
 
     def push(self, event_name: str, payload: Dict[str, Any], attempt: int = 1):
         """Push a failed event to the Redis DLQ"""
@@ -52,7 +40,6 @@ class RedisDLQ:
         }
 
         try:
-            # RPUSH to append to the end of the queue
             self._redis.rpush(DLQ_KEY, json.dumps(item))
             logger.info(
                 f"📥 [DLQ] Saved '{event_name}' for retry #{attempt} (Next: +{item['next_retry'] - int(time.time())}s)"
@@ -67,14 +54,10 @@ class RedisDLQ:
 
         items = []
         try:
-            # We fetch up to batch_size items
-            # Since upstash-redis REST doesn't support blocking POP or complex transactions easily,
-            # we LPOP one by one. LPOP is atomic.
             for _ in range(batch_size):
                 raw = self._redis.lpop(DLQ_KEY)
                 if not raw:
                     break
-                # Handle both string and list responses (some Redis clients might return a list)
                 content = raw[0] if isinstance(raw, list) else raw
                 items.append(json.loads(content))
         except Exception as e:
@@ -117,16 +100,11 @@ async def process_retry_queue(batch_size: int = 20):
     now: int = int(time.time())
 
     for item in items:
-        # 1. check timing
         if item["next_retry"] > now:
-            # Not ready yet, push back (re-queue)
-            # In a perfect world we'd use a ZSET for scheduled jobs,
-            # but a List is simpler for MVP. We just push it back.
             dlq.push(item["event_name"], item["payload"], item["attempt"])
             requeued_count += 1
             continue
 
-        # 2. Attempt Retry
         event_name = item["event_name"]
         payload = item["payload"]
         attempt = item["attempt"]
@@ -134,18 +112,8 @@ async def process_retry_queue(batch_size: int = 20):
         logger.info(f"✨ [DLQ] Retrying '{event_name}' (Attempt {attempt}/{MAX_RETRIES})...")
 
         try:
-            # Reconstruct Data Objects
-            # The payload structure depends on how it was saved.
-            # Usually users pass what goes into `send_event`.
-            # Let's assume payload matches `elite_capi.send_event` kwargs,
-            # OR raw dictionary.
-
-            # Helper to safely get nested dicts
             user_data_raw = payload.get("user_data", {})
             custom_data_raw = payload.get("custom_data", {})
-
-            # Fix: If user_data is already a dict, great.
-            # If it's a Pydantic model serialized, it's a dict.
 
             user_data = EnhancedUserData(**user_data_raw)
             custom_data = EnhancedCustomData(**custom_data_raw) if custom_data_raw else None
@@ -158,8 +126,6 @@ async def process_retry_queue(batch_size: int = 20):
                 custom_data=custom_data,
                 client_ip=payload.get("client_ip"),
                 user_agent=payload.get("user_agent"),
-                # Pass explicit 'fbp'/'fbc' if they were raw in payload,
-                # though usually they are inside user_data.
             )
 
             status = result.get("status")

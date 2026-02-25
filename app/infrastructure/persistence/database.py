@@ -112,6 +112,134 @@ class Database:
         finally:
             conn.close()
 
+    def init_tables(self):
+        """Inicializa las tablas si no existen (Sincrónico para arranque)."""
+        logger.info(f"🛠️ Initializing tables for backend: {self._backend}")
+
+        queries = [
+            """
+            CREATE TABLE IF NOT EXISTS visitors (
+                external_id TEXT PRIMARY KEY,
+                fbclid TEXT,
+                client_ip TEXT,
+                user_agent TEXT,
+                source TEXT,
+                email TEXT,
+                phone TEXT,
+                first_name TEXT,
+                last_name TEXT,
+                city TEXT,
+                state TEXT,
+                zip_code TEXT,
+                country TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS leads (
+                id SERIAL PRIMARY KEY,
+                phone TEXT UNIQUE NOT NULL,
+                name TEXT,
+                email TEXT,
+                external_id TEXT,
+                fbclid TEXT,
+                service_interest TEXT,
+                status TEXT DEFAULT 'new',
+                score FLOAT DEFAULT 0,
+                utm_source TEXT,
+                utm_campaign TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS events (
+                event_id TEXT PRIMARY KEY,
+                event_name TEXT NOT NULL,
+                external_id TEXT,
+                source_url TEXT,
+                custom_data TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS clients (
+                id SERIAL PRIMARY KEY,
+                name TEXT NOT NULL,
+                email TEXT,
+                company TEXT,
+                meta_pixel_id TEXT,
+                meta_access_token TEXT,
+                plan TEXT DEFAULT 'starter',
+                status TEXT DEFAULT 'active',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS api_keys (
+                id SERIAL PRIMARY KEY,
+                client_id INTEGER REFERENCES clients(id),
+                key_hash TEXT UNIQUE NOT NULL,
+                name TEXT,
+                status TEXT DEFAULT 'active',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS emq_scores (
+                id SERIAL PRIMARY KEY,
+                client_id TEXT,
+                event_name TEXT NOT NULL,
+                score FLOAT NOT NULL,
+                payload_size INTEGER,
+                has_pii BOOLEAN,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """,
+        ]
+
+        if self._backend == "sqlite":
+            # Adjust PostgreSQL syntax to SQLite
+            queries = [
+                q.replace("SERIAL PRIMARY KEY", "INTEGER PRIMARY KEY AUTOINCREMENT")
+                .replace("TIMESTAMP DEFAULT CURRENT_TIMESTAMP", "DATETIME DEFAULT CURRENT_TIMESTAMP")
+                .replace("ON CONFLICT", "-- ON CONFLICT")  # Simple fix for init
+                for q in queries
+            ]
+
+        try:
+            if self._backend == "postgres":
+                import psycopg2
+
+                url = self._settings.db.url
+                if url and "?" in url:
+                    url = url.split("?")[0]
+
+                conn = psycopg2.connect(url, sslmode="require")
+                cur = conn.cursor()
+                for q in queries:
+                    cur.execute(q)
+                conn.commit()
+                cur.close()
+                conn.close()
+            else:
+                import sqlite3
+
+                db_path = os.path.join(
+                    os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+                    "database",
+                    "local.db",
+                )
+                conn = sqlite3.connect(db_path)
+                for q in queries:
+                    conn.execute(q)
+                conn.commit()
+                conn.close()
+            logger.info("✅ Database tables initialized successfully")
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize database tables: {e}")
+
 
 # Singleton
 db = Database()

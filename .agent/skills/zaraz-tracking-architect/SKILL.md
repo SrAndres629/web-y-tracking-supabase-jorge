@@ -36,7 +36,10 @@ Actúa como un **Data Architect de Élite**. Tu misión es blindar la captura de
 2. **PII Hashing**: Asegura que los datos sensibles (email, teléfono) estén normalizados antes del envío.
 3. **Zaraz Middleware**: Usa el `zaraz-debug-key` cuando necesites tracear flujos en tiempo real.
 
-## **Métrica de Éxito**
+## **Sincronización de Integridad Global**
+- **Infra Sync**: Configura y valida Zaraz vía `cloudflare_infrastructure`.
+- **CAPI Sync**: Coordina con el servidor backend para el envío de conversiones directas a Meta/Google.
+- **UX Sync**: Monitorea el impacto de los scripts en LCP/FID auditados por `auditoria-qa`.
 - **Data Capture**: 99.9% de precisión en la atribución de leads.
 - **User Privacy**: Cumplimiento del `ConsentManager` antes de disparar cualquier señal.
 - **Impacto LCP**: <50ms de tiempo de bloqueo causado por scripts de tracking.
@@ -44,6 +47,7 @@ Actúa como un **Data Architect de Élite**. Tu misión es blindar la captura de
 ## **References & Resources**
 - **Official Docs**: Ver `.agent/skills/zaraz-tracking-architect/references/OFFICIAL_DOCS.md` para APIs de Cloudflare y Meta.
 - **Data Schema**: Estructura de eventos en `.agent/skills/zaraz-tracking-architect/references/DATA_SCHEMA.md`.
+- **Cloudflare MCP**: Usa `cloudflare_infrastructure` (action: get_zaraz_config) para verificar la salud del Edge tracking.
 - **Payload Template**: Usa `.agent/skills/zaraz-tracking-architect/resources/event_payload.json` para pruebas de Postman/CURL.
 
 ## **Constraints**

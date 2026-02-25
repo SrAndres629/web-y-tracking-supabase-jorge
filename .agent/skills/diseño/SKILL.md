@@ -17,10 +17,10 @@ Gobernar la consistencia visual y la implementación técnica de los componentes
    - El archivo principal de acción es [`input.css`](file:///home/jorand/antigravityobuntu/static/src/input.css).
    - Utiliza `scripts/design_manager.py` para analizar el estado actual de los componentes.
 
-## Constraints
-- Siempre debe haber coherencia absoluta con la skill `marca`.
-- Los componentes deben ser responsivos y accesibles.
-- Cualquier cambio estético significativo debe ser verificado visualmente (si el entorno lo permite).
+## **Sincronización de Integridad Global**
+- **Brand Sync**: Recibe los tokens actualizados de `marca` para la generación de componentes.
+- **Structural Sync**: Coordina con `estructura` para asegurar que las clases CSS se apliquen correctamente a los templates.
+- **QA Sync**: Valida la responsividad (8px grid) y el diseño visual con `auditoria-qa`.
 
 ## Examples
 - **Usuario**: "¿Cómo es el diseño del botón principal?"

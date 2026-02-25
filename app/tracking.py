@@ -22,8 +22,8 @@ from tenacity import (
 )
 
 from app.application.interfaces.tracker_port import TrackerPort
-from app.config import settings
-from app.database import save_emq_score
+from app.infrastructure.config.settings import settings
+from app.interfaces.api.dependencies import get_event_repository
 from app.domain.models.events import TrackingEvent
 from app.domain.models.visitor import Visitor
 from app.domain.services.emq_monitor import emq_monitor
@@ -193,7 +193,11 @@ def _log_emq_sync(event_name: str, payload: Dict[str, Any], client_id: Optional[
         payload_size = len(json.dumps(payload))
         has_pii = any(k in user_data for k in ["em", "ph", "fn", "ln"])
 
-        save_emq_score(client_id, event_name, score, payload_size, has_pii)
+        repo = get_event_repository()
+        import asyncio
+        asyncio.create_task(
+            repo.save_emq_score(client_id, event_name, score, payload_size, has_pii)
+        )
         return score
     except (TypeError, ValueError, json.JSONDecodeError, AttributeError) as e:
         logger.warning("⚠️ EMQ Calc Error: %s", str(e))
@@ -834,6 +838,71 @@ class MetaTracker(TrackerPort):
                 "https://graph.facebook.com/v21.0/me",
                 params={"access_token": settings.META_ACCESS_TOKEN},
             )
+            return response.status_code == 200
+        except Exception:
+            return False
+
+
+class TinybirdTracker(TrackerPort):
+    """
+    Port implementation for Tinybird Real-time Analytics.
+    Sends event data to a Tinybird DataSource via the Events API.
+    """
+
+    def __init__(self, http_client: Optional[httpx.AsyncClient] = None):
+        self._client = http_client or async_client
+        self._token = os.getenv("TINYBIRD_ADMIN_TOKEN")
+        self._api_url = os.getenv("TINYBIRD_API_URL", "https://api.northamerica-northeast2.gcp.tinybird.co")
+        self._enabled = bool(self._token)
+
+    @property
+    def name(self) -> str:
+        return "tinybird"
+
+    async def track(self, event: TrackingEvent, visitor: Visitor) -> bool:
+        """Sends JSON event to Tinybird Events API."""
+        if not self._enabled:
+            return True
+
+        url = f"{self._api_url}/v0/events?name=events_main_stream"
+        headers = {"Authorization": f"Bearer {self._token}"}
+        
+        # Flatten event and visitor data for Tinybird (Easy to query in SQL)
+        payload = {
+            "timestamp": int(time.time()),
+            "event_name": event.event_name.value,
+            "event_id": event.event_id.value,
+            "source_url": event.source_url,
+            "client_ip": visitor.ip_address,
+            "user_agent": visitor.user_agent,
+            "external_id": visitor.external_id.value,
+            "city": visitor.geo.city if visitor.geo else None,
+            "country": visitor.geo.country if visitor.geo else None,
+            **event.custom_data
+        }
+
+        try:
+            client = self._client or httpx.AsyncClient(timeout=10.0)
+            response = await client.post(url, json=payload, headers=headers)
+            if response.status_code in (200, 202):
+                logger.info("[TINYBIRD] ✅ Event %s streamed successfully", event.event_name.value)
+                return True
+            else:
+                logger.warning("[TINYBIRD] ⚠️ Failed (%d): %s", response.status_code, response.text)
+                return False
+        except Exception as e:
+            logger.error("[TINYBIRD] ❌ Error streaming event: %s", str(e))
+            return False
+
+    async def health_check(self) -> bool:
+        """Verifies Tinybird connectivity."""
+        if not self._enabled:
+            return False
+        try:
+            url = f"{self._api_url}/v0/datasources"
+            headers = {"Authorization": f"Bearer {self._token}"}
+            client = self._client or httpx.AsyncClient(timeout=5.0)
+            response = await client.get(url, headers=headers)
             return response.status_code == 200
         except Exception:
             return False

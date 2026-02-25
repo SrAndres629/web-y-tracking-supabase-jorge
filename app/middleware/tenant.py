@@ -6,7 +6,7 @@ from starlette.datastructures import State
 from starlette.responses import JSONResponse
 from starlette.types import ASGIApp, Receive, Scope, Send
 
-from app.config import settings
+from app.infrastructure.config.settings import settings
 
 
 class TenantMiddleware:

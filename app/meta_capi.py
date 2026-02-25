@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, Optional
 
-from app.config import settings
+from app.infrastructure.config.settings import settings
 from app.tracking import send_event_async
 
 logger = logging.getLogger(__name__)

@@ -1,8 +1,7 @@
 """
-🧠 Legacy Cache Utilities (Compat Layer).
+🧠 Cache Utilities — shared Redis wrapper for CMS and general caching.
 
-This module keeps legacy call sites working while the
-Clean/DDD cache implementations live in app.infrastructure.cache.
+Uses the shared RedisProvider singleton. No direct Upstash connections.
 """
 
 from __future__ import annotations
@@ -12,43 +11,21 @@ import logging
 import time
 from typing import Any, Dict, Optional
 
-from app.config import settings
+from app.infrastructure.cache.redis_provider import redis_provider
+from app.infrastructure.config.settings import settings
 
 logger = logging.getLogger(__name__)
 
 
-class LegacyRedisCache:
-    """Simple JSON cache wrapper for legacy services."""
-
-    def __init__(self):
-        self._client = None
-
-    @property
-    def _redis(self):
-        if self._client is None:
-            try:
-                from upstash_redis import Redis
-
-                if settings.UPSTASH_REDIS_REST_URL and settings.UPSTASH_REDIS_REST_TOKEN:
-                    self._client = Redis(
-                        url=settings.UPSTASH_REDIS_REST_URL,
-                        token=settings.UPSTASH_REDIS_REST_TOKEN,
-                    )
-            except ImportError as e:
-                logger.debug("Redis not available: %s", e)
-        return self._client
-
-    @property
-    def client(self) -> Any:
-        return self._client
+class RedisCache:
+    """JSON cache wrapper using the shared RedisProvider."""
 
     async def get_json(self, key: str) -> Optional[Any]:
-        if not self._redis:
-            return None
-        if self._redis is None:
+        redis = redis_provider.sync_client
+        if not redis:
             return None
         try:
-            data = self._redis.get(key)
+            data = redis.get(key)
             if data:
                 return json.loads(data)
         except Exception as e:
@@ -56,74 +33,29 @@ class LegacyRedisCache:
         return None
 
     async def set_json(self, key: str, value: Any, expire: int = 3600) -> None:
-        if self._redis is None:
+        redis = redis_provider.sync_client
+        if not redis:
             return
         try:
-            self._redis.set(key, json.dumps(value), ex=expire)
+            redis.set(key, json.dumps(value), ex=expire)
         except Exception as e:
             logger.debug("Redis set error: %s", e)
 
     async def delete(self, key: str) -> None:
-        if self._redis is None:
+        redis = redis_provider.sync_client
+        if not redis:
             return
         try:
-            self._redis.delete(key)
+            redis.delete(key)
         except Exception as e:
             logger.debug("Redis delete error: %s", e)
 
 
-redis_cache = LegacyRedisCache()
+redis_cache = RedisCache()
 
 REDIS_ENABLED = bool(settings.UPSTASH_REDIS_REST_URL and settings.UPSTASH_REDIS_REST_TOKEN)
 
 
-# In-memory fallback for dedup & visitor cache
-_memory_cache: Dict[str, float] = {}
-_visitor_cache: Dict[str, Dict[str, Any]] = {}
-
-
-def deduplicate_event(event_id: str, event_name: str = "event", ttl_hours: int = 24) -> bool:
-    """
-    Returns True if event is unique (not seen), False if duplicate.
-    """
-    key = f"evt:{event_id}"
-    now = time.time()
-    expires = _memory_cache.get(key)
-    if expires and expires > now:
-        return False
-    _memory_cache[key] = now + ttl_hours * 3600
-    return True
-
-
-def cache_visitor_data(external_id: str, data: Dict[str, Any], ttl_hours: int = 24) -> None:
-    """Cache visitor data for quick identity resolution."""
-    _visitor_cache[external_id] = {
-        "data": data,
-        "expires": time.time() + ttl_hours * 3600,
-    }
-
-
-def get_cached_visitor(external_id: str) -> Optional[Dict[str, Any]]:
-    """Retrieve cached visitor data if still valid."""
-    item = _visitor_cache.get(external_id)
-    if not item:
-        return None
-    if item["expires"] < time.time():
-        _visitor_cache.pop(external_id, None)
-        return None
-    return item["data"]
-
-
 def redis_health_check() -> Dict[str, Any]:
     """Check if Redis is configured and reachable."""
-    if not (settings.UPSTASH_REDIS_REST_URL and settings.UPSTASH_REDIS_REST_TOKEN):
-        return {"status": "disabled"}
-    try:
-        # best-effort ping
-        if redis_cache.client:
-            redis_cache.client.ping()
-            return {"status": "ok"}
-    except Exception as e:
-        logger.exception("Redis health check failed: %s", e)
-        return {"status": "error", "message": str(e)}
-    return {"status": "unknown"}
+    return redis_provider.health_check()

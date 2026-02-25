@@ -33,7 +33,10 @@ Esta skill se activa automáticamente después de cualquier cambio en `diseño`,
    - `python3 scripts/auditoria_manager.py validate`
 3. **Reporte de Fallos**: Si detectas un error, bloquea la finalización de la tarea y reporta el error específico.
 
-## **References & Resources**
+## **Sincronización de Integridad Global**
+- **Frontend Sync**: Bloquea despliegues si el score de accesibilidad o performance baja del estándar.
+- **Tracking Sync**: Verifica que los scripts de `zaraz-tracking-architect` no generen bloqueos de hilo principal.
+- **Master Sync**: Reporta el "Visual Integrity Score" al `master-architect`.
 - **Standards**: Consulta `.agent/skills/auditoria-qa/resources/QA_CHECKLIST.md` para la lista de verificación obligatoria.
 - **Accesibilidad**: Basado en las pautas WCAG 2.1 (Nivel AA).
 

@@ -62,7 +62,7 @@ async def log_consent(request: Request):
         }
 
         # Guardar en archivo (producción: usar DB)
-        from app.config import settings
+        from app.infrastructure.config.settings import settings
 
         log_file = Path(settings.BASE_DIR) / ".logs" / "consent_audit.log"
         log_file.parent.mkdir(parents=True, exist_ok=True)

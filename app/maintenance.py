@@ -6,8 +6,8 @@ import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 
-from app import database as legacy_database
-from app.config import settings
+from app.infrastructure.persistence.database import db
+from app.infrastructure.config.settings import settings
 
 router = APIRouter(prefix="/maintenance", tags=["System"])
 logger = logging.getLogger(__name__)
@@ -33,20 +33,22 @@ async def clean_garbage_data(_authorized: bool = Depends(verify_cron_secret)):
     """
     try:
         deleted_count = 0
-        with legacy_database.get_cursor() as cur:
+        async with db.connection() as conn:
+            cur = conn.cursor()
             # PostgreSQL logic for date arithmetic
-            # visitors table usually has 'timestamp' or 'created_at' column
-            # We assume 'timestamp' based on previous analysis
-
             query = """
                 DELETE FROM visitors
-                WHERE timestamp < NOW() - INTERVAL '90 days'
-                AND external_id NOT IN (SELECT fb_browser_id FROM crm_leads WHERE fb_browser_id IS NOT NULL)
+                WHERE created_at < NOW() - INTERVAL '90 days'
+                AND external_id NOT IN (SELECT external_id FROM leads WHERE external_id IS NOT NULL)
             """
 
             # Adjust for SQLite if running locally (fallback)
-            if settings.DATABASE_URL is None or "sqlite" in settings.DATABASE_URL:
-                query = "DELETE FROM visitors WHERE timestamp < date('now', '-90 days')"
+            if db.backend == "sqlite":
+                query = """
+                    DELETE FROM visitors 
+                    WHERE created_at < date('now', '-90 days')
+                    AND external_id NOT IN (SELECT external_id FROM leads WHERE external_id IS NOT NULL)
+                """
 
             cur.execute(query)
             deleted_count = cur.rowcount

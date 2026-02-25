@@ -16,9 +16,9 @@ from tenacity import (
     wait_exponential,
 )
 
-from app import database as legacy_database
+from app.infrastructure.persistence.database import db
 from app.cache import redis_cache
-from app.config import settings
+from app.infrastructure.config.settings import settings
 
 # Configure Logging
 logger = logging.getLogger("uvicorn.error")
@@ -284,8 +284,12 @@ class ContentManager:
     def _fetch_from_db(cls, key: str) -> Optional[Any]:
         """Synchronous DB fetch (Used for cold starts or refresh)"""
         try:
-            with legacy_database.get_cursor() as cur:
-                cur.execute("SELECT value FROM site_content WHERE key = %s", (key,))
+            with db.connection() as conn:
+                cur = conn.cursor()
+                query = "SELECT value FROM site_content WHERE key = %s"
+                if db.backend == "sqlite":
+                    query = query.replace("%s", "?")
+                cur.execute(query, (key,))
                 row = cur.fetchone()
                 if row and row[0]:
                     val = row[0]
@@ -349,6 +353,7 @@ async def publish_to_qstash(event_data: Dict[str, Any]) -> bool:
         logger.warning("⚠️ QStash Token missing!")
         return False
     url = f"{settings.vercel_url}/hooks/process-event"
+    qstash_base = getattr(settings.external, "qstash_url", None) or "https://qstash.upstash.io"
     headers = {
         "Authorization": f"Bearer {settings.QSTASH_TOKEN}",
         "Content-Type": "application/json",
@@ -357,7 +362,7 @@ async def publish_to_qstash(event_data: Dict[str, Any]) -> bool:
     try:
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                f"https://qstash.upstash.io/v2/publish/{url}",
+                f"{qstash_base}/v2/publish/{url}",
                 headers=headers,
                 json=event_data,
                 timeout=5.0,

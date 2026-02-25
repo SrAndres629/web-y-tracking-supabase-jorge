@@ -9,7 +9,7 @@ from pathlib import Path
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse, PlainTextResponse
 
-from app.config import settings
+from app.infrastructure.config.settings import settings
 from app.interfaces.api.dependencies import get_legacy_facade
 
 router = APIRouter(tags=["Health"])

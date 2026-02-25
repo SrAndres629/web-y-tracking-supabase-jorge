@@ -12,7 +12,7 @@ from fastapi import APIRouter, BackgroundTasks, Cookie, Request, Response
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
-from app.config import settings
+from app.infrastructure.config.settings import settings
 from app.interfaces.api.dependencies import get_legacy_facade
 from app.services import get_contact_config, get_services_config
 from app.services.seo_engine import SEOEngine

@@ -2,14 +2,14 @@ import hashlib
 import logging
 from typing import Any, Dict, Optional
 
-from app.database import BACKEND, get_cursor
+from app.infrastructure.persistence.database import db
 
 logger = logging.getLogger(__name__)
 
 
 class ClientService:
     @staticmethod
-    def get_client_by_api_key(api_key: str) -> Optional[Dict[str, Any]]:
+    async def get_client_by_api_key(api_key: str) -> Optional[Dict[str, Any]]:
         """Look up client by hashed API key."""
         if not api_key:
             return None
@@ -17,27 +17,28 @@ class ClientService:
         key_hash = hashlib.sha256(api_key.encode()).hexdigest()
 
         try:
-            with get_cursor() as cur:
+            async with db.connection() as conn:
+                cur = conn.cursor()
                 query = """
                     SELECT c.id, c.name, c.meta_pixel_id, c.meta_access_token, c.plan
                     FROM clients c
                     JOIN api_keys ak ON c.id = ak.client_id
                     WHERE ak.key_hash = %s AND ak.status = 'active' AND c.status = 'active'
                 """
-                if BACKEND != "postgres":
+                if db.backend == "sqlite":
                     query = query.replace("%s", "?")
 
                 cur.execute(query, (key_hash,))
                 row = cur.fetchone()
                 if row:
                     # Map row to dict
-                    if cur.description:
+                    if hasattr(cur, "description") and cur.description:
                         cols = [col[0] for col in cur.description]
-                        return dict(zip(cols, row, strict=True))
+                        return dict(zip(cols, row, strict=False))
                     return {"id": row[0]}  # Fallback
             return None
         except Exception as e:
-            logger.exception(f"Error looking up client by API key: {e}")
+            logger.error(f"Error looking up client by API key: {e}")
             return None
 
     @staticmethod
@@ -56,32 +57,33 @@ class ClientService:
         key_hash = hashlib.sha256(api_key.encode()).hexdigest()
 
         try:
-            with get_cursor() as cur:
+            async with db.connection() as conn:
+                cur = conn.cursor()
                 # 1. Insert Client
-                query_client = """
-                    INSERT INTO clients (name, email, company, meta_pixel_id, meta_access_token, plan)
-                    VALUES (%s, %s, %s, %s, %s, %s)
-                    RETURNING id
-                """
-                if BACKEND != "postgres":
-                    query_client = "INSERT INTO clients (name, email, company, meta_pixel_id, meta_access_token, plan) VALUES (?, ?, ?, ?, ?, ?)"
-                    cur.execute(
-                        query_client, (name, email, company, meta_pixel_id, meta_access_token, plan)
-                    )
-                    client_id = cur.lastrowid
-                else:
+                if db.backend == "postgres":
+                    query_client = """
+                        INSERT INTO clients (name, email, company, meta_pixel_id, meta_access_token, plan)
+                        VALUES (%s, %s, %s, %s, %s, %s)
+                        RETURNING id
+                    """
                     cur.execute(
                         query_client, (name, email, company, meta_pixel_id, meta_access_token, plan)
                     )
                     row = cur.fetchone()
                     client_id = row[0] if row else None
+                else:
+                    query_client = "INSERT INTO clients (name, email, company, meta_pixel_id, meta_access_token, plan) VALUES (?, ?, ?, ?, ?, ?)"
+                    cur.execute(
+                        query_client, (name, email, company, meta_pixel_id, meta_access_token, plan)
+                    )
+                    client_id = cur.lastrowid
 
                 if not client_id:
                     return None
 
                 # 2. Insert API Key
                 query_key = "INSERT INTO api_keys (client_id, key_hash, name) VALUES (%s, %s, %s)"
-                if BACKEND != "postgres":
+                if db.backend == "sqlite":
                     query_key = query_key.replace("%s", "?")
 
                 cur.execute(query_key, (client_id, key_hash, "Default Key"))

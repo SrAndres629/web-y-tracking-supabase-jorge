@@ -15,9 +15,10 @@ Garantizar una arquitectura de plantillas sólida, escalable y optimizada para e
    - Para crear nuevas páginas o componentes: Usa [Templates](file:///home/jorand/antigravityobuntu/.agent/skills/estructura/templates/SKILL.md).
 3. **Verificación**: Utiliza `scripts/structure_manager.py` para analizar la jerarquía de bloques y asegurar que la herencia sea correcta.
 
-## Constraints
-- Es mandatorio mantener la coherencia con las skills de `marca` (estética) y `diseño` (componentes).
-- No se deben alterar las etiquetas críticas de tracking y SEO integradas en el layout base.
+## **Sincronización de Integridad Global**
+- **Design Sync**: Integra los componentes atómicos creados por `diseño` en los layouts de Jinja2.
+- **Track Sync**: Protege los scripts de tracking definidos por `zaraz-tracking-architect`.
+- **QA Sync**: Asegura que el árbol de accesibilidad (A11y) sea óptimo para las auditorías de `auditoria-qa`.
 
 ## Examples
 - **Usuario**: "¿Qué bloques puedo usar en la página de inicio?"

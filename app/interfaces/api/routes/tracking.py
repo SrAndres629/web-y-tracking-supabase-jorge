@@ -17,12 +17,20 @@ from fastapi import APIRouter, BackgroundTasks, Cookie, HTTPException, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from app.config import settings
-from app.interfaces.api.dependencies import get_legacy_facade
+from app.application.dto.tracking_dto import TrackEventRequest as TrackingEvent
+from app.infrastructure.config.settings import settings
+from app.interfaces.api.dependencies import (
+    get_create_lead_handler,
+    get_legacy_facade,
+    get_track_event_handler,
+)
+from app.interfaces.api.schemas import (
+    InteractionCreate,
+    InteractionResponse,
+    LeadCreate,
+    TrackResponse,
+)
 from app.limiter import limiter
-from app.models import InteractionCreate, InteractionResponse, LeadCreate, TrackResponse
-
-# Direct imports (bypassing Celery)
 from app.services import normalize_pii, publish_to_qstash, validate_turnstile
 
 # Logger
@@ -155,14 +163,7 @@ def bg_send_webhook(payload):
 # =================================================================
 
 
-class TrackingEvent(BaseModel):
-    event_name: str
-    event_time: int
-    event_id: str
-    user_data: Dict[str, Any]
-    custom_data: Optional[Dict[str, Any]] = None
-    event_source_url: str
-    action_source: str = "website"
+from fastapi import Depends
 
 
 @router.post("/track/event")
@@ -171,39 +172,33 @@ async def track_event(
     event: TrackingEvent,
     request: Request,
     background_tasks: BackgroundTasks,
+    handler: Any = Depends(get_track_event_handler),
     fbp: Optional[str] = Cookie(default=None, alias="_fbp"),
     fbc: Optional[str] = Cookie(default=None, alias="_fbc"),
 ):
     """Event ingestion with instant response and background processing."""
     # 1. Context & Identity
-    ctx = _get_tracking_context(request, event, fbp, fbc)
+    from app.application.commands.track_event import TrackEventCommand
+    from app.application.dto.tracking_dto import TrackingContext
 
-    # 2. Basic Persistence (Background)
-    background_tasks.add_task(
-        bg_save_visitor,
-        external_id=ctx["ext_id"] or "anon",
-        fbclid=ctx["fb_id"],
-        client_ip=ctx["ip"],
-        user_agent=ctx["ua"],
-        source=event.event_name,
-        utm_data=ctx["utm"],
-        email=ctx["email"],
-        phone=ctx["phone"],
+    # Extract context
+    ctx_data = _get_tracking_context(request, event, fbp, fbc)
+    context = TrackingContext(
+        ip_address=ctx_data["ip"],
+        user_agent=ctx_data["ua"],
     )
 
-    # 3. Lead Sync (Background)
-    if event.event_name == "Lead" and ctx["phone"]:
-        _queue_lead_sync(background_tasks, event, ctx)
+    # 2. Execute via Command Handler (Background)
+    # Note: For strict DDD, we should await or use a specialized background handler
+    # Since we want instant response, we use background_tasks
+    cmd = TrackEventCommand(request=event, context=context)
+    background_tasks.add_task(handler.handle, cmd)
 
-    # 4. Meta CAPI (QStash / Local)
-    if await _validate_human(event, ctx):
-        client = getattr(request.state, "client", None)
-        await _dispatch_to_capi(background_tasks, event, ctx, client=client)
-    else:
-        return {"status": "success", "message": "Signal filtered"}
+    # 3. Handle specific side effects (External Hubs)
+    if event.event_name == "Lead" and ctx_data["phone"]:
+        _queue_lead_sync(background_tasks, event, ctx_data)
 
-    # 5. External Hubs (Background)
-    _queue_external_hubs(background_tasks, event, ctx)
+    _queue_external_hubs(background_tasks, event, ctx_data)
 
     return JSONResponse(
         content={"status": "queued", "event_id": event.event_id},
@@ -318,27 +313,33 @@ def _queue_external_hubs(bt, event, ctx):
 
 
 @router.post("/track/lead", response_model=TrackResponse)
-async def track_lead_context(request: LeadCreate):
+async def track_lead_context(
+    request: LeadCreate, handler: Any = Depends(get_create_lead_handler)
+):
     """
     Endpoint for n8n/webhook.
     Creates or updates a Lead linked to WhatsApp and Meta.
     """
     try:
-        data = {
-            "meta_lead_id": request.meta_lead_id,
-            "click_id": request.click_id,
-            "email": request.email,
-            "name": request.name,
-        }
-        if request.extra_data:
-            data.update(request.extra_data)
+        from app.application.commands.create_lead import CreateLeadCommand
 
-        lead_id = legacy.get_or_create_lead(request.whatsapp_phone, data)
+        cmd = CreateLeadCommand(
+            phone=request.whatsapp_phone,
+            name=request.name,
+            email=request.email,
+            fbclid=request.click_id,
+            utm_source="n8n_webhook",
+        )
 
-        if lead_id:
-            return TrackResponse(status="success", event_id=str(lead_id), category="lead_generated")
+        result = await handler.handle(cmd)
+
+        if result.is_ok:
+            lead = result.unwrap()
+            return TrackResponse(
+                status="success", event_id=str(lead.id), category="lead_generated"
+            )
         else:
-            raise HTTPException(status_code=500, detail="Database Error creating Lead")
+            raise HTTPException(status_code=500, detail=f"Error: {result.unwrap_err()}")
 
     except Exception as err:
         logger.exception("❌ Error in /track/lead: %s", err)

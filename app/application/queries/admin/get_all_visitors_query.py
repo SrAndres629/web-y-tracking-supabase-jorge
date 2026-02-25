@@ -9,4 +9,4 @@ class GetAllVisitorsQuery:
         """
         Executes the query to retrieve all visitors.
         """
-        return self._list_visitors(limit=limit)
+        return await self._list_visitors(limit=limit)

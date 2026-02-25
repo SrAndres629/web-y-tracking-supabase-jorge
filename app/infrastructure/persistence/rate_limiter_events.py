@@ -77,7 +77,8 @@ class EventRateLimiter:
     }
 
     def __init__(self, redis_client=None):
-        self.redis = redis_client
+        from app.infrastructure.cache.redis_provider import redis_provider
+        self.redis = redis_client or redis_provider.sync_client
         self.memory_cache: Dict[str, Dict[str, Any]] = {}  # Fallback si no hay Redis
         self.blocked_ips: Dict[str, float] = {}  # IPs temporalmente bloqueadas
 
@@ -174,29 +175,23 @@ class EventRateLimiter:
     def _get_count(self, key: str, window: int) -> int:
         """Obtiene contador actual"""
         if self.redis:
-            # Usar Redis con expiración
             count = self.redis.get(key)
             return int(count) if count else 0
         else:
-            # Memoria local
             entry = self.memory_cache.get(key)
             if not entry:
                 return 0
-
-            # Verificar si expiró
             if entry.get("expires", 0) < time.time():
                 self.memory_cache.pop(key, None)
                 return 0
-
             return entry.get("count", 0)
 
     def _increment_count(self, key: str, window: int):
-        """Incrementa contador"""
+        """Incrementa contador — Upstash REST compatible (no pipeline)."""
         if self.redis:
-            pipe = self.redis.pipeline()
-            pipe.incr(key)
-            pipe.expire(key, window)
-            pipe.execute()
+            # Individual calls instead of pipeline() for Upstash REST compatibility
+            self.redis.incr(key)
+            self.redis.expire(key, window)
         else:
             entry = self.memory_cache.get(key)
             if not entry or entry.get("expires", 0) < time.time():
@@ -251,7 +246,6 @@ class EventRateLimiter:
         }
 
         if user_id:
-            # Estadísticas específicas del usuario
             user_events = {
                 k: v for k, v in self.memory_cache.items() if k.startswith(f"rate_limit:{user_id}:")
             }
@@ -273,5 +267,5 @@ class EventRateLimiter:
         logger.info(f"Rate limits reset for user {user_id}")
 
 
-# Singleton
+# Singleton — now auto-injected with redis_provider
 rate_limiter = EventRateLimiter()

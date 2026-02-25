@@ -3,7 +3,7 @@ import time
 from dataclasses import dataclass
 from typing import Any, Awaitable, Callable, Dict, Optional
 
-from app.config import settings
+from app.infrastructure.config.settings import settings
 
 logger = logging.getLogger(__name__)
 

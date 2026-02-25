@@ -1,0 +1,2270 @@
+# MANIFEST.yaml — Single Source of Truth
+# Generated: 2026-02-25T16:10:14.142159+00:00
+# DO NOT EDIT MANUALLY — Run: python scripts/generate_manifest.py
+
+version: 1.0.0
+generated_at: "2026-02-25T16:10:14.142159+00:00"
+project_root: /home/jorand/antigravityobuntu
+stats:
+  total_files: 383
+  total_dirs: 8
+routes:
+  vercel:
+    -
+      source: /favicon.ico
+      destination: /static/assets/images/branding/luxury_logo.svg
+      type: rewrite
+    -
+      source: "/static/images/(.*)"
+      destination: /static/assets/images/$1
+      type: rewrite
+    -
+      source: "/static/(.*)"
+      destination: /static/$1
+      type: rewrite
+    -
+      source: "/(.*)"
+      destination: /api/index.py
+      type: rewrite
+    -
+      source: api/index.py
+      destination: "@vercel/python"
+      type: build
+  fastapi:
+    -
+      file: admin.py
+      prefix: /admin
+    -
+      file: consent.py
+      prefix: /consent
+    -
+      file: identity.py
+      prefix: /api/identity
+    -
+      file: vision.py
+      prefix: /vision
+tree:
+  .agent:
+    _type: directory
+    _children:
+      feedback_sessions:
+        _type: directory
+        _children:
+          2026-02-23_14-56_tracking_cleanup_and_mobile_perf.md:
+            _type: file
+            _size: 5302
+            _hash: 7658c23320d4355a
+          2026-02-23_19-25_consolidation-of-elite-agentic-architecture.md:
+            _type: file
+            _size: 4314
+            _hash: aaff04fcb5547537
+        _files: 2
+      prompt:
+        _type: directory
+        _children:
+          DIRECTIVA DE SANEAMIENTO: PURGA RECURSIVA POR CAPAS v5.0.md:
+            _type: file
+            _size: 6355
+            _hash: b0614b84f12df009
+        _files: 1
+      skills:
+        _type: directory
+        _children:
+          anti-bot-expert:
+            _type: directory
+            _children:
+              SKILL.md:
+                _type: file
+                _size: 3152
+                _hash: 1f7a1131a39eb463
+              references:
+                _type: directory
+                _children:
+                  BEST_PRACTICES.md:
+                    _type: file
+                    _size: 1056
+                    _hash: 1c6dc1e4b7aba8ee
+                  OFFICIAL_DOCS.md:
+                    _type: file
+                    _size: 789
+                    _hash: 9daad212af9c0a6f
+                _files: 2
+              resources:
+                _type: directory
+                _children:
+                  implementation_snippets.html:
+                    _type: file
+                    _size: 511
+                    _hash: 4ef7b9e80e94c7e1
+                _files: 1
+              scripts:
+                _type: directory
+                _children:
+                  audit_anti_bot.py:
+                    _type: file
+                    _size: 1861
+                    _hash: 7a701eea5ffb887c
+                _files: 1
+            _files: 5
+          arize-phoenix-tracer:
+            _type: directory
+            _children:
+              SKILL.md:
+                _type: file
+                _size: 3859
+                _hash: 3048113bba8d603d
+              references:
+                _type: directory
+                _children:
+                  INSTRUMENTATION_STRATEGY.md:
+                    _type: file
+                    _size: 1404
+                    _hash: 1a938c0c45466a47
+                _files: 1
+              resources:
+                _type: directory
+                _children:
+                  EVALUATION_CRITERIA.json:
+                    _type: file
+                    _size: 1279
+                    _hash: f3d6413d899168c1
+                _files: 1
+              scripts:
+                _type: directory
+                _children:
+                  start_phoenix.py:
+                    _type: file
+                    _size: 422
+                    _hash: 3ff2596058b992b5
+                _files: 1
+            _files: 4
+          auditor-planes:
+            _type: directory
+            _children:
+              SKILL.md:
+                _type: file
+                _size: 2401
+                _hash: f503bd4e9b2e35b0
+              references:
+                _type: directory
+                _children:
+                  AUDIT_PRINCIPLES.md:
+                    _type: file
+                    _size: 904
+                    _hash: ad5b66f1a44f3e6e
+                _files: 1
+            _files: 2
+          auditoria-qa:
+            _type: directory
+            _children:
+              SKILL.md:
+                _type: file
+                _size: 2476
+                _hash: cde3f77dcbe0786d
+              assets:
+                _type: directory
+                _children:
+                  README.md:
+                    _type: file
+                    _size: 58
+                    _hash: 9eb271fc066b1058
+                _files: 1
+              references:
+                _type: directory
+                _children:
+                  CHECKLIST.md:
+                    _type: file
+                    _size: 1187
+                    _hash: ea188f0f93518fa4
+                _files: 1
+              resources:
+                _type: directory
+                _children:
+                  QA_CHECKLIST.md:
+                    _type: file
+                    _size: 826
+                    _hash: c24eaeadc1b11309
+                _files: 1
+              scripts:
+                _type: directory
+                _children:
+                  auditoria_manager.py:
+                    _type: file
+                    _size: 2498
+                    _hash: a89c284fa8c8af99
+                _files: 1
+            _files: 5
+          context7-expert:
+            _type: directory
+            _children:
+              SKILL.md:
+                _type: file
+                _size: 3352
+                _hash: e5334df72790cdcf
+              references:
+                _type: directory
+                _children:
+                  DISCOVERY_GUIDE.md:
+                    _type: file
+                    _size: 1435
+                    _hash: 71adf7f53f6ff955
+                _files: 1
+              resources:
+                _type: directory
+                _children:
+                  PROJECT_LIB_IDS.json:
+                    _type: file
+                    _size: 1132
+                    _hash: 0f6b7ea573ffb554
+                _files: 1
+              scripts:
+                _type: directory
+                _children:
+                  verify_registry.py:
+                    _type: file
+                    _size: 695
+                    _hash: 95958a379e8233b9
+                _files: 1
+            _files: 4
+          diseño:
+            _type: directory
+            _children:
+              SKILL.md:
+                _type: file
+                _size: 1863
+                _hash: 976d499002ac59c5
+              componentes:
+                _type: directory
+                _children:
+                  SKILL.md:
+                    _type: file
+                    _size: 948
+                    _hash: 25d81cf6fa288471
+                _files: 1
+              estilos:
+                _type: directory
+                _children:
+                  SKILL.md:
+                    _type: file
+                    _size: 804
+                    _hash: 015d0d8582fd6454
+                _files: 1
+              references:
+                _type: directory
+                _children:
+                  DESIGN_GUIDE.md:
+                    _type: file
+                    _size: 961
+                    _hash: b7b226f0bce2ca52
+                  OFFICIAL_DOCS.md:
+                    _type: file
+                    _size: 689
+                    _hash: 057e9d5103fbf937
+                _files: 2
+              scripts:
+                _type: directory
+                _children:
+                  design_manager.py:
+                    _type: file
+                    _size: 1797
+                    _hash: 811501fe07b00894
+                _files: 1
+            _files: 6
+          estructura:
+            _type: directory
+            _children:
+              SKILL.md:
+                _type: file
+                _size: 1752
+                _hash: c9793dae5abb8e25
+              layouts:
+                _type: directory
+                _children:
+                  SKILL.md:
+                    _type: file
+                    _size: 1094
+                    _hash: bd53663ea84cda57
+                _files: 1
+              references:
+                _type: directory
+                _children:
+                  ARCHITECTURE.md:
+                    _type: file
+                    _size: 1203
+                    _hash: 54e5de26f84a0af7
+                  OFFICIAL_DOCS.md:
+                    _type: file
+                    _size: 788
+                    _hash: 85ecc17e0064a725
+                _files: 2
+              scripts:
+                _type: directory
+                _children:
+                  structure_manager.py:
+                    _type: file
+                    _size: 1813
+                    _hash: 25e3dd2fb33685ea
+                _files: 1
+              templates:
+                _type: directory
+                _children:
+                  SKILL.md:
+                    _type: file
+                    _size: 912
+                    _hash: a9b7fed07480fa88
+                _files: 1
+            _files: 6
+          frontend:
+            _type: directory
+            _children:
+              SKILL.md:
+                _type: file
+                _size: 3100
+                _hash: 101160e4e7adcb91
+              references:
+                _type: directory
+                _children:
+                  ARCHITECT_GUIDE.md:
+                    _type: file
+                    _size: 2156
+                    _hash: cb29c458fa5e210d
+                  FRONTEND_GUIDELINES.md:
+                    _type: file
+                    _size: 859
+                    _hash: ac69f5b0cd72daf3
+                  ROADMAP_TEMPLATE.md:
+                    _type: file
+                    _size: 959
+                    _hash: bee4f1618a1658d1
+                _files: 3
+              scripts:
+                _type: directory
+                _children:
+                  frontend_orchestrator.py:
+                    _type: file
+                    _size: 6819
+                    _hash: aa381687a1cc5b12
+                _files: 1
+            _files: 5
+          generator:
+            _type: directory
+            _children:
+              SKILL.md:
+                _type: file
+                _size: 2083
+                _hash: 179d00a15117a283
+              references:
+                _type: directory
+                _children:
+                  CONCEPTS.md:
+                    _type: file
+                    _size: 2045
+                    _hash: ed0b5a2c6c89b99d
+                  OFFICIAL_STRUCTURE.md:
+                    _type: file
+                    _size: 1074
+                    _hash: b2df48e219704a46
+                  api-docs.md:
+                    _type: file
+                    _size: 14
+                    _hash: 6352d305a2e9ea16
+                _files: 3
+              resources:
+                _type: directory
+                _children:
+                  SKILL_TEMPLATE.md:
+                    _type: file
+                    _size: 330
+                    _hash: bfa9431b60338b73
+                _files: 1
+              scripts:
+                _type: directory
+                _children:
+                  audit_skills.py:
+                    _type: file
+                    _size: 1195
+                    _hash: 4d43759fb65a64e6
+                  patch_skills.py:
+                    _type: file
+                    _size: 1904
+                    _hash: 219cec98700b21ef
+                  run.py:
+                    _type: file
+                    _size: 1586
+                    _hash: 64345aa8f10b38ed
+                  scaffold_skill.py:
+                    _type: file
+                    _size: 3114
+                    _hash: c1c086bdefeb77de
+                  util.sh:
+                    _type: file
+                    _size: 867
+                    _hash: d4ffdda78ee794c0
+                _files: 5
+            _files: 10
+          genkit-orchestrator:
+            _type: directory
+            _children:
+              SKILL.md:
+                _type: file
+                _size: 3193
+                _hash: c3364ffc4c1a7ab3
+              references:
+                _type: directory
+                _children:
+                  ARCHITECTURE_PATTERNS.md:
+                    _type: file
+                    _size: 1574
+                    _hash: e2259a2b8b26e3c5
+                _files: 1
+              resources:
+                _type: directory
+                _children:
+                  COMMON_SCHEMAS.ts:
+                    _type: file
+                    _size: 1109
+                    _hash: aa19164c81f29183
+                _files: 1
+              scripts:
+                _type: directory
+                _children:
+                  run_flow.ts:
+                    _type: file
+                    _size: 951
+                    _hash: 633f78d34e71caa9
+                _files: 1
+            _files: 4
+          gitlab-orchestrator:
+            _type: directory
+            _children:
+              SKILL.md:
+                _type: file
+                _size: 2014
+                _hash: 5c56b45496fcc674
+            _files: 1
+          marca:
+            _type: directory
+            _children:
+              SKILL.md:
+                _type: file
+                _size: 2362
+                _hash: 2a11de3775f79249
+              colores:
+                _type: directory
+                _children:
+                  SKILL.md:
+                    _type: file
+                    _size: 1196
+                    _hash: abd26749c5aa5cd8
+                _files: 1
+              config:
+                _type: directory
+                _children:
+                  SKILL.md:
+                    _type: file
+                    _size: 881
+                    _hash: ce0a06a24e14bf0e
+                _files: 1
+              fuentes:
+                _type: directory
+                _children:
+                  SKILL.md:
+                    _type: file
+                    _size: 808
+                    _hash: 79cc80dd0feba08f
+                _files: 1
+              references:
+                _type: directory
+                _children:
+                  BRAND_GUIDE.md:
+                    _type: file
+                    _size: 1035
+                    _hash: 67987ef76f38ce3f
+                _files: 1
+              scripts:
+                _type: directory
+                _children:
+                  brand_manager.py:
+                    _type: file
+                    _size: 2033
+                    _hash: 46f515f216e48dbf
+                _files: 1
+            _files: 6
+          master-architect:
+            _type: directory
+            _children:
+              SKILL.md:
+                _type: file
+                _size: 2526
+                _hash: 72b4a2f02a22f4ba
+              references:
+                _type: directory
+                _children:
+                  SOC_GUIDELINES.md:
+                    _type: file
+                    _size: 1404
+                    _hash: da4c428178cf5f92
+                _files: 1
+              resources:
+                _type: directory
+                _children:
+                  SOC_AUDIT_REPORT.md:
+                    _type: file
+                    _size: 1743
+                    _hash: 30b0fa8ad43855d5
+                  TOOL_CATALOG.json:
+                    _type: file
+                    _size: 2080
+                    _hash: 74c317a9452b6833
+                _files: 2
+              scripts:
+                _type: directory
+                _children:
+                  soc_analyzer.py:
+                    _type: file
+                    _size: 2583
+                    _hash: 97994f256eaa50a6
+                _files: 1
+            _files: 5
+          pinecone-architect:
+            _type: directory
+            _children:
+              SKILL.md:
+                _type: file
+                _size: 3829
+                _hash: eb99b04dfc9c34a9
+              references:
+                _type: directory
+                _children:
+                  BEST_PRACTICES.md:
+                    _type: file
+                    _size: 1568
+                    _hash: 687367a32bcc5db5
+                _files: 1
+              resources:
+                _type: directory
+                _children:
+                  QUERY_TEMPLATES.json:
+                    _type: file
+                    _size: 1129
+                    _hash: 70ae0c4def8797d1
+                _files: 1
+              scripts:
+                _type: directory
+                _children:
+                  sync_metadata.py:
+                    _type: file
+                    _size: 365
+                    _hash: 1c062e4d793d98f4
+                _files: 1
+            _files: 4
+          session-reporter:
+            _type: directory
+            _children:
+              SKILL.md:
+                _type: file
+                _size: 2684
+                _hash: 84ee380b1e5a7957
+              references:
+                _type: directory
+                _children:
+                  REPORTING_GUIDELINES.md:
+                    _type: file
+                    _size: 1132
+                    _hash: cb9e211d084130b4
+                _files: 1
+              resources:
+                _type: directory
+                _children:
+                  SESSION_TEMPLATE.md:
+                    _type: file
+                    _size: 1744
+                    _hash: 234d12ba9c3970ba
+                _files: 1
+              scripts:
+                _type: directory
+                _children:
+                  report_manager.py:
+                    _type: file
+                    _size: 1498
+                    _hash: 4b281b98fc2fab4d
+                _files: 1
+            _files: 4
+          sonatype-auditor:
+            _type: directory
+            _children:
+              SKILL.md:
+                _type: file
+                _size: 3175
+                _hash: ce148c15257b5179
+              references:
+                _type: directory
+                _children:
+                  SECURITY_SHIELDS.md:
+                    _type: file
+                    _size: 1468
+                    _hash: 6bfe3b7705885f89
+                _files: 1
+              resources:
+                _type: directory
+                _children:
+                  AUDIT_WORKFLOW.md:
+                    _type: file
+                    _size: 1311
+                    _hash: bee939352b86af0f
+                _files: 1
+              scripts:
+                _type: directory
+                _children:
+                  audit_project.py:
+                    _type: file
+                    _size: 902
+                    _hash: 41239497a1c0e453
+                _files: 1
+            _files: 4
+          zaraz-tracking-architect:
+            _type: directory
+            _children:
+              SKILL.md:
+                _type: file
+                _size: 3322
+                _hash: 2e8f24e3a1396343
+              references:
+                _type: directory
+                _children:
+                  DATA_SCHEMA.md:
+                    _type: file
+                    _size: 773
+                    _hash: cb8af7df03c95b08
+                  OFFICIAL_DOCS.md:
+                    _type: file
+                    _size: 797
+                    _hash: feab50912e833ce6
+                _files: 2
+              resources:
+                _type: directory
+                _children:
+                  event_payload.json:
+                    _type: file
+                    _size: 419
+                    _hash: 591557b767e2113a
+                _files: 1
+              scripts:
+                _type: directory
+                _children:
+                  audit_tracking.py:
+                    _type: file
+                    _size: 1747
+                    _hash: 44a2d68c58b8cc23
+                _files: 1
+            _files: 5
+        _files: 80
+    _files: 83
+  .agentignore:
+    _type: file
+    _size: 758
+    _hash: e28914c2982f8018
+  .djlintrc:
+    _type: file
+    _size: 25
+    _hash: f6b0dc08572ae2f8
+  .dockerignore:
+    _type: file
+    _size: 48
+    _hash: 7f2c324b15c9e17e
+  .eslintrc.json:
+    _type: file
+    _size: 313
+    _hash: 44139a3ea4e71da4
+  .gitignore:
+    _type: file
+    _size: 725
+    _hash: c666a3b0c9906353
+  .gitlab-ci.yml:
+    _type: file
+    _size: 557
+    _hash: 5e18fe2666e9d186
+  .prettierrc:
+    _type: file
+    _size: 138
+    _hash: 22dd8fbc07eb1906
+  .stylelintignore:
+    _type: file
+    _size: 20
+    _hash: 76fa6d7b427aa75a
+  .stylelintrc.json:
+    _type: file
+    _size: 970
+    _hash: 0c41c82e1fbf1cb8
+  .vercelignore:
+    _type: file
+    _size: 287
+    _hash: e244b798afe0d631
+  Dockerfile:
+    _type: file
+    _size: 1114
+    _hash: 86be46ba7733c278
+  MANIFEST.yaml:
+    _type: file
+    _size: 65018
+    _hash: 259740fd0113991c
+  README.md:
+    _type: file
+    _size: 5191
+    _hash: 725756d12074c4c4
+  alembic.ini:
+    _type: file
+    _size: 5011
+    _hash: 0f2ce09203f8b1db
+  api:
+    _type: directory
+    _children:
+      index.py:
+        _type: file
+        _size: 295
+        _hash: 83886c595f1e1685
+      templates:
+        _type: directory
+        _children:
+          components:
+            _type: directory
+            _children:
+              footer.html:
+                _type: file
+                _size: 6510
+                _hash: b2b2c5aa0d377a60
+              navbar.html:
+                _type: file
+                _size: 3998
+                _hash: 2216d9fa4a42eb9c
+              whatsapp-button.html:
+                _type: file
+                _size: 2745
+                _hash: 99bc48bae38a3a82
+            _files: 3
+          errors:
+            _type: directory
+            _children:
+              404.html:
+                _type: file
+                _size: 1149
+                _hash: 779bb8ff99c17906
+              500.html:
+                _type: file
+                _size: 1154
+                _hash: 9019e43790f3444c
+            _files: 2
+          layouts:
+            _type: directory
+            _children:
+              base.html:
+                _type: file
+                _size: 19664
+                _hash: 60fa188b2fbcc70d
+              base_admin.html:
+                _type: file
+                _size: 2822
+                _hash: 8db9df30a241c7b8
+              service_base.html:
+                _type: file
+                _size: 2111
+                _hash: 191a56214e5c6888
+            _files: 3
+          pages:
+            _type: directory
+            _children:
+              admin:
+                _type: directory
+                _children:
+                  dashboard.html:
+                    _type: file
+                    _size: 9350
+                    _hash: 03529b9f2fb5e1ad
+                _files: 1
+              site:
+                _type: directory
+                _children:
+                  brows.html:
+                    _type: file
+                    _size: 2239
+                    _hash: 011d359e52676217
+                  eyeliner.html:
+                    _type: file
+                    _size: 2074
+                    _hash: 58ed03128733bddc
+                  home.html:
+                    _type: file
+                    _size: 755
+                    _hash: 8b2b3ad7b2e0803e
+                  legal.html:
+                    _type: file
+                    _size: 4573
+                    _hash: e29574be4961c090
+                  lips.html:
+                    _type: file
+                    _size: 1813
+                    _hash: bf2c47f8bc08fb08
+                  microblading.html:
+                    _type: file
+                    _size: 2662
+                    _hash: 311e5bccc8e70285
+                  onboarding.html:
+                    _type: file
+                    _size: 7791
+                    _hash: 87b77b9c4f4a0922
+                  tracking_motor.html:
+                    _type: file
+                    _size: 6943
+                    _hash: 3a43a24c58b03ca8
+                _files: 8
+            _files: 9
+          sections:
+            _type: directory
+            _children:
+              cta_final.html:
+                _type: file
+                _size: 1612
+                _hash: b88c649c9cee8e2a
+              faq.html:
+                _type: file
+                _size: 3938
+                _hash: df4a651c41957465
+              gallery.html:
+                _type: file
+                _size: 10984
+                _hash: 06de113820401591
+              hero.html:
+                _type: file
+                _size: 4847
+                _hash: 7fa646eb6224f591
+              pricing_tracking.html:
+                _type: file
+                _size: 7014
+                _hash: 51d482bc13e685b3
+              process.html:
+                _type: file
+                _size: 5599
+                _hash: 199d0599435f53bf
+              services.html:
+                _type: file
+                _size: 7182
+                _hash: 4a81770d0bfeeac7
+              testimonials.html:
+                _type: file
+                _size: 5047
+                _hash: c3ef4b75769d9445
+            _files: 8
+        _files: 25
+    _files: 26
+  app:
+    _type: directory
+    _children:
+      __init__.py:
+        _type: file
+        _size: 71
+        _hash: bb40a7ed1a61942e
+      application:
+        _type: directory
+        _children:
+          __init__.py:
+            _type: file
+            _size: 448
+            _hash: cce333cb310fa308
+          commands:
+            _type: directory
+            _children:
+              __init__.py:
+                _type: file
+                _size: 640
+                _hash: 27e71c847181d4d4
+              admin:
+                _type: directory
+                _children:
+                  confirm_sale_command.py:
+                    _type: file
+                    _size: 2722
+                    _hash: a984ef8d30dd24ec
+                _files: 1
+              create_lead.py:
+                _type: file
+                _size: 4205
+                _hash: faf90a5a0bbbfcab
+              create_visitor.py:
+                _type: file
+                _size: 3017
+                _hash: 0d0f0024512c6be3
+              identity:
+                _type: directory
+                _children:
+                  process_google_onetap_command.py:
+                    _type: file
+                    _size: 3084
+                    _hash: 78758b74458c994b
+                  track_whatsapp_redirect_command.py:
+                    _type: file
+                    _size: 2075
+                    _hash: e9702c33a108e45d
+                _files: 2
+              track_event.py:
+                _type: file
+                _size: 6473
+                _hash: 73386525ab1d32ad
+            _files: 7
+          dto:
+            _type: directory
+            _children:
+              __init__.py:
+                _type: file
+                _size: 629
+                _hash: 3df06fb53114b07f
+              lead_dto.py:
+                _type: file
+                _size: 1702
+                _hash: 938dd2ff4a52f631
+              tracking_dto.py:
+                _type: file
+                _size: 4091
+                _hash: c6307e6d13f17fd7
+              visitor_dto.py:
+                _type: file
+                _size: 1047
+                _hash: 10241efd85bd4de3
+            _files: 4
+          interfaces:
+            _type: directory
+            _children:
+              __init__.py:
+                _type: file
+                _size: 493
+                _hash: 16ca1d3042c80a1b
+              cache_port.py:
+                _type: file
+                _size: 1152
+                _hash: eb558fb68b7bf9fa
+              tracker_port.py:
+                _type: file
+                _size: 1377
+                _hash: 660fea248536d184
+            _files: 3
+          queries:
+            _type: directory
+            _children:
+              __init__.py:
+                _type: file
+                _size: 444
+                _hash: be15a3c54fdbd4f8
+              admin:
+                _type: directory
+                _children:
+                  get_all_visitors_query.py:
+                    _type: file
+                    _size: 396
+                    _hash: b1cfe8946638f044
+                  get_signal_audit_query.py:
+                    _type: file
+                    _size: 1509
+                    _hash: 35f74ebcef8422df
+                _files: 2
+              get_visitor.py:
+                _type: file
+                _size: 1757
+                _hash: 0280409099eb3fdd
+              list_visitors.py:
+                _type: file
+                _size: 1826
+                _hash: 3d6698f93edc19e1
+              seo:
+                _type: directory
+                _children:
+                  get_page_seo_data_query.py:
+                    _type: file
+                    _size: 1182
+                    _hash: b597b9150e16cd4b
+                _files: 1
+            _files: 6
+        _files: 21
+      cache.py:
+        _type: file
+        _size: 1710
+        _hash: 5dbd61d341dcd33a
+      core:
+        _type: directory
+        _children:
+          __init__.py:
+            _type: file
+            _size: 529
+            _hash: cfead1e0fc0d238f
+          decorators.py:
+            _type: file
+            _size: 11030
+            _hash: b4823f3bb583a056
+          result.py:
+            _type: file
+            _size: 7465
+            _hash: 1f901bea891c907f
+          validators.py:
+            _type: file
+            _size: 6376
+            _hash: 9a5741fb84708fb4
+        _files: 4
+      diagnostics.py:
+        _type: file
+        _size: 3076
+        _hash: 0d22f25ec5d69906
+      domain:
+        _type: directory
+        _children:
+          __init__.py:
+            _type: file
+            _size: 478
+            _hash: 9b501f85ce1f2e13
+          exceptions.py:
+            _type: file
+            _size: 2502
+            _hash: d42299907f611157
+          models:
+            _type: directory
+            _children:
+              __init__.py:
+                _type: file
+                _size: 644
+                _hash: 616fb3c7c76eb363
+              events.py:
+                _type: file
+                _size: 5015
+                _hash: 480932a484d1989a
+              lead.py:
+                _type: file
+                _size: 6469
+                _hash: c2b631f4bcbc3bfb
+              values.py:
+                _type: file
+                _size: 7433
+                _hash: b9244805ad1a7003
+              visitor.py:
+                _type: file
+                _size: 6787
+                _hash: 089cd2f1e3cee1e4
+            _files: 5
+          repositories:
+            _type: directory
+            _children:
+              __init__.py:
+                _type: file
+                _size: 596
+                _hash: 5c70a18db4db2f1f
+              event_repo.py:
+                _type: file
+                _size: 2862
+                _hash: 66563d89636d4e5f
+              lead_repo.py:
+                _type: file
+                _size: 2949
+                _hash: d3e5d733634f0ce0
+              visitor_repo.py:
+                _type: file
+                _size: 2653
+                _hash: 20ebc93bd18e90a0
+            _files: 4
+          services:
+            _type: directory
+            _children:
+              client_service.py:
+                _type: file
+                _size: 3590
+                _hash: f4e6542f0192c7fa
+              emq_monitor.py:
+                _type: file
+                _size: 1875
+                _hash: 8422cd693613bb01
+            _files: 2
+          validation:
+            _type: directory
+            _children:
+              event_validator.py:
+                _type: file
+                _size: 3033
+                _hash: f1fc107c66f1a0ad
+            _files: 1
+        _files: 14
+      infrastructure:
+        _type: directory
+        _children:
+          __init__.py:
+            _type: file
+            _size: 367
+            _hash: 4ff118ea08c53546
+          cache:
+            _type: directory
+            _children:
+              __init__.py:
+                _type: file
+                _size: 256
+                _hash: 44176ccfd971d608
+              memory_cache.py:
+                _type: file
+                _size: 1640
+                _hash: 707eff820ed9cce6
+              redis_cache.py:
+                _type: file
+                _size: 1655
+                _hash: 1b90ef9e4e7b9a94
+              redis_provider.py:
+                _type: file
+                _size: 3765
+                _hash: c3ed792d92f4d3e3
+            _files: 4
+          config:
+            _type: directory
+            _children:
+              __init__.py:
+                _type: file
+                _size: 264
+                _hash: cae6c538cdd808f7
+              settings.py:
+                _type: file
+                _size: 20760
+                _hash: 11869f12e5f17d9b
+            _files: 2
+          external:
+            _type: directory
+            _children:
+              meta_capi:
+                _type: directory
+                _children:
+                  __init__.py:
+                    _type: file
+                    _size: 134
+                    _hash: 1737fea01e806db3
+                  emq_validator.py:
+                    _type: file
+                    _size: 11884
+                    _hash: d3feaf0aa36a2699
+                  tracker.py:
+                    _type: file
+                    _size: 3631
+                    _hash: 7d9ed5a5775020d0
+                _files: 3
+            _files: 3
+          persistence:
+            _type: directory
+            _children:
+              __init__.py:
+                _type: file
+                _size: 547
+                _hash: 9e42a356a92c7c1d
+              database.py:
+                _type: file
+                _size: 7754
+                _hash: ab6fb6cc2f9f2996
+              deduplication_service.py:
+                _type: file
+                _size: 4318
+                _hash: 248144afdf34a8d6
+              rate_limiter_events.py:
+                _type: file
+                _size: 9762
+                _hash: 6566e107d74d88b5
+              repositories:
+                _type: directory
+                _children:
+                  event_repository.py:
+                    _type: file
+                    _size: 6458
+                    _hash: 1f15f24abd834442
+                  lead_repository.py:
+                    _type: file
+                    _size: 6054
+                    _hash: f9f27aef30a18275
+                  visitor_repository.py:
+                    _type: file
+                    _size: 7401
+                    _hash: f0f3fcad7e700764
+                _files: 3
+            _files: 7
+        _files: 17
+      interfaces:
+        _type: directory
+        _children:
+          __init__.py:
+            _type: file
+            _size: 407
+            _hash: 454acd1caca8c1e8
+          api:
+            _type: directory
+            _children:
+              dependencies.py:
+                _type: file
+                _size: 3810
+                _hash: 23a8dfabb17f6ccb
+              routes:
+                _type: directory
+                _children:
+                  __init__.py:
+                    _type: file
+                    _size: 265
+                    _hash: 9c862793efd113b4
+                  admin.py:
+                    _type: file
+                    _size: 4419
+                    _hash: b3de607be0e0ef32
+                  consent.py:
+                    _type: file
+                    _size: 4512
+                    _hash: b7ddab82c060ada8
+                  health.py:
+                    _type: file
+                    _size: 5744
+                    _hash: 26808cf12caec95f
+                  identity.py:
+                    _type: file
+                    _size: 5189
+                    _hash: 7f7ba80ff3459f4b
+                  pages.py:
+                    _type: file
+                    _size: 21774
+                    _hash: b405ff6a4d0d71b8
+                  seo.py:
+                    _type: file
+                    _size: 2169
+                    _hash: 71eed13b6fae22eb
+                  tracking.py:
+                    _type: file
+                    _size: 16797
+                    _hash: acfefcaca274de2a
+                  vision.py:
+                    _type: file
+                    _size: 5498
+                    _hash: e705e735da8fcf50
+                _files: 9
+              schemas:
+                _type: directory
+                _children:
+                  __init__.py:
+                    _type: file
+                    _size: 0
+                    _hash: e3b0c44298fc1c14
+                _files: 1
+              schemas.py:
+                _type: file
+                _size: 3499
+                _hash: 282a095467ff2508
+            _files: 12
+        _files: 13
+      limiter.py:
+        _type: file
+        _size: 1854
+        _hash: 4edadf471aab21f8
+      maintenance.py:
+        _type: file
+        _size: 2435
+        _hash: 12b0849235fbcaae
+      meta_capi.py:
+        _type: file
+        _size: 8362
+        _hash: dc072f3dbe36ae72
+      middleware:
+        _type: directory
+        _children:
+          auth.py:
+            _type: file
+            _size: 2017
+            _hash: 1f47f27a32736537
+          cache.py:
+            _type: file
+            _size: 1265
+            _hash: abd2c81bd285f82a
+          early_hints.py:
+            _type: file
+            _size: 1882
+            _hash: 8a099f54373400cd
+          error_handler.py:
+            _type: file
+            _size: 7620
+            _hash: 0aa6de47c3679dce
+          identity.py:
+            _type: file
+            _size: 2722
+            _hash: 839b2c8b847934af
+          security.py:
+            _type: file
+            _size: 5381
+            _hash: cc024024f47ebcb0
+          tenant.py:
+            _type: file
+            _size: 1290
+            _hash: 05e305512a4c895b
+        _files: 7
+      retry_queue.py:
+        _type: file
+        _size: 5026
+        _hash: fbf36979096e829a
+      services:
+        _type: directory
+        _children:
+          __init__.py:
+            _type: file
+            _size: 16658
+            _hash: 9869da88db1e01b9
+          seo_engine.py:
+            _type: file
+            _size: 5591
+            _hash: e4526a86916ffd42
+        _files: 2
+      tracking.py:
+        _type: file
+        _size: 29224
+        _hash: 6ff4a9f5e833dcb2
+      version.py:
+        _type: file
+        _size: 454
+        _hash: ee43870745f8d913
+    _files: 87
+  docker-compose.yml:
+    _type: file
+    _size: 279
+    _hash: aaf1b7ca478ad4fe
+  docs:
+    _type: directory
+    _children:
+      ATOMIC_COMPONENTS.md:
+        _type: file
+        _size: 1709
+        _hash: 6b8b651ba6ed7695
+      META_CONTEXT.json:
+        _type: file
+        _size: 8736
+        _hash: 288a84064d321aeb
+      architecture:
+        _type: directory
+        _children:
+          CLEAN_ARCHITECTURE_AGENT_PLAYBOOK.md:
+            _type: file
+            _size: 2462
+            _hash: 13b47b5818e96aba
+        _files: 1
+      archive:
+        _type: directory
+        _children:
+          ANTIGRAVITY_EXTENSION_COMPLETE.md:
+            _type: file
+            _size: 6627
+            _hash: b37161f0ca35a87e
+          PageSpeed Insights.md:
+            _type: file
+            _size: 28474
+            _hash: 3ba985e59a953346
+          frontend.md:
+            _type: file
+            _size: 18280
+            _hash: 10339736d28c796e
+          pasos mvp.md:
+            _type: file
+            _size: 3002
+            _hash: f7986e106b0be5f6
+          vulnerabilidades:
+            _type: file
+            _size: 231887
+            _hash: debc00d44ab2e146
+        _files: 5
+      audit:
+        _type: directory
+        _children:
+          imports_legacy_report.md:
+            _type: file
+            _size: 3305
+            _hash: 7f2bc3f4021b0f9e
+          legacy_compat_inventory.md:
+            _type: file
+            _size: 5587
+            _hash: cb700010c757e681
+        _files: 2
+      ops:
+        _type: directory
+        _children:
+          deploy_smoke_local_2026-02-11.md:
+            _type: file
+            _size: 1071
+            _hash: 6a3dd86b1598041e
+          sanitation_purge_report_2026-02-24.md:
+            _type: file
+            _size: 1249
+            _hash: a92258f55b2dbb34
+        _files: 2
+    _files: 12
+  eslint.config.mjs:
+    _type: file
+    _size: 805
+    _hash: 87417cf23af26dd6
+  local_fallback.db:
+    _type: file
+    _size: 0
+    _hash: e3b0c44298fc1c14
+  main.py:
+    _type: file
+    _size: 8760
+    _hash: 31caf82151a01d84
+  package-lock.json:
+    _type: file
+    _size: 671933
+    _hash: d288eb0626364a4e
+  package.json:
+    _type: file
+    _size: 2228
+    _hash: b14f59cd4cf31c05
+  postcss.config.js:
+    _type: file
+    _size: 100
+    _hash: a1227454ab4fee8a
+  pyproject.toml:
+    _type: file
+    _size: 1942
+    _hash: bf42f4314568059d
+  pyrightconfig.json:
+    _type: file
+    _size: 692
+    _hash: acfc47c1452cfe04
+  pytest.ini:
+    _type: file
+    _size: 492
+    _hash: 17d4e47ba219d391
+  requirements:
+    _type: directory
+    _children:
+      00-core.txt:
+        _type: file
+        _size: 313
+        _hash: 74ee51176bf6bb8e
+      01-persistence.txt:
+        _type: file
+        _size: 391
+        _hash: 44fa19e37d613b08
+      02-tracking.txt:
+        _type: file
+        _size: 68
+        _hash: cb40fa044f2d07b9
+      03-platform.txt:
+        _type: file
+        _size: 251
+        _hash: 38e86380f4b586bd
+      04-identity.txt:
+        _type: file
+        _size: 138
+        _hash: 786ca4a77293bd27
+      05-stability.txt:
+        _type: file
+        _size: 422
+        _hash: 56bceb7456892705
+      dev.txt:
+        _type: file
+        _size: 514
+        _hash: 98b7abf84cbf9701
+    _files: 7
+  requirements.txt:
+    _type: file
+    _size: 4236
+    _hash: 44e7971b891a3b91
+  ruff.toml:
+    _type: file
+    _size: 1314
+    _hash: 00373c668616e057
+  scripts:
+    _type: directory
+    _children:
+      generate_manifest.py:
+        _type: file
+        _size: 8585
+        _hash: 122c4541b28c1570
+      git_sync.py:
+        _type: file
+        _size: 32864
+        _hash: 98adf708ab4e8cc8
+      test_tinybird.py:
+        _type: file
+        _size: 1325
+        _hash: 3a2654777c3b8508
+      validate_manifest.py:
+        _type: file
+        _size: 7027
+        _hash: c992fdc02cd80f98
+      verify_tinybird_tracker.py:
+        _type: file
+        _size: 3979
+        _hash: ff4eb185b9d439db
+    _files: 5
+  static:
+    _type: directory
+    _children:
+      .gitignore:
+        _type: file
+        _size: 348
+        _hash: 7ad453085ccc07f4
+      INDEX.md:
+        _type: file
+        _size: 7884
+        _hash: bd634bc3364937b4
+      MIGRATION_GUIDE.md:
+        _type: file
+        _size: 7129
+        _hash: 592fe2db99210c68
+      README.md:
+        _type: file
+        _size: 1358
+        _hash: 1da501a97c6287e0
+      assets:
+        _type: directory
+        _children:
+          images:
+            _type: directory
+            _children:
+              branding:
+                _type: directory
+                _children:
+                  luxury_logo.svg:
+                    _type: file
+                    _size: 248
+                    _hash: 6e20de8d5bd571e7
+                _files: 1
+              hero:
+                _type: directory
+                _children:
+                  jorge_hero_neuro.png:
+                    _type: file
+                    _size: 552498
+                    _hash: 5c46d6b3714fa802
+                  jorge_hero_neuro.webp:
+                    _type: file
+                    _size: 27768
+                    _hash: 71428f58ebb641c8
+                  jorge_hero_new.webp:
+                    _type: file
+                    _size: 49496
+                    _hash: 01bc3350dc072092
+                  jorge_hero_premium.png:
+                    _type: file
+                    _size: 591579
+                    _hash: 4a3bcd057779d801
+                  jorge_hero_premium.webp:
+                    _type: file
+                    _size: 68762
+                    _hash: 255d6423f23c1a35
+                _files: 5
+              meta:
+                _type: directory
+                _children:
+                  og-image.webp:
+                    _type: file
+                    _size: 49496
+                    _hash: 01bc3350dc072092
+                _files: 1
+              service_brows.webp:
+                _type: file
+                _size: 89830
+                _hash: 4af37873e83bc124
+              service_eyes.webp:
+                _type: file
+                _size: 210284
+                _hash: 4be88ecb59c5369d
+              service_lips.webp:
+                _type: file
+                _size: 102622
+                _hash: a8bff54f6ff1524d
+              services:
+                _type: directory
+                _children:
+                  brows:
+                    _type: directory
+                    _children:
+                      after:
+                        _type: directory
+                        _children:
+                          brows_after.webp:
+                            _type: file
+                            _size: 174546
+                            _hash: df037166d0d1845d
+                          brows_powder_after.webp:
+                            _type: file
+                            _size: 92232
+                            _hash: 3550ebf222c26bf3
+                          microblading_after.webp:
+                            _type: file
+                            _size: 118226
+                            _hash: 432cdd8cbbbf57c3
+                        _files: 3
+                      before:
+                        _type: directory
+                        _children:
+                          brows_before.webp:
+                            _type: file
+                            _size: 173556
+                            _hash: 3c0d9770388fcecb
+                        _files: 1
+                    _files: 4
+                  eyes:
+                    _type: directory
+                    _children:
+                      after:
+                        _type: directory
+                        _children:
+                          eyes_after.webp:
+                            _type: file
+                            _size: 91050
+                            _hash: 318da7a71a937268
+                        _files: 1
+                      before:
+                        _type: directory
+                        _children:
+                          eyes_before.webp:
+                            _type: file
+                            _size: 100400
+                            _hash: 8c81674c657e5e4e
+                        _files: 1
+                    _files: 2
+                  lips:
+                    _type: directory
+                    _children:
+                      after:
+                        _type: directory
+                        _children:
+                          lips_after_aligned.webp:
+                            _type: file
+                            _size: 45654
+                            _hash: 37bdd19bd7ebff86
+                        _files: 1
+                      before:
+                        _type: directory
+                        _children:
+                          lips_before.webp:
+                            _type: file
+                            _size: 103038
+                            _hash: e0e52d2ad67a6a40
+                        _files: 1
+                    _files: 2
+                _files: 8
+              testimonials:
+                _type: directory
+                _children:
+                  testimonial_1.webp:
+                    _type: file
+                    _size: 26450
+                    _hash: 9ca66ed4f4279097
+                  testimonial_2.webp:
+                    _type: file
+                    _size: 35738
+                    _hash: d3033d0a40f98d37
+                  testimonial_3.webp:
+                    _type: file
+                    _size: 16406
+                    _hash: f8d08396ff51c55a
+                _files: 3
+            _files: 21
+        _files: 21
+      atoms:
+        _type: directory
+        _children:
+          buttons:
+            _type: directory
+            _children:
+              btn-outline-gold.css:
+                _type: file
+                _size: 1322
+                _hash: 2f2bd8b2e39edfad
+              button-gold-liquid.css:
+                _type: file
+                _size: 1549
+                _hash: 953078afb4feb765
+              button-service-cta.css:
+                _type: file
+                _size: 1227
+                _hash: c2016e1d46ef93b4
+              whatsapp-premium.css:
+                _type: file
+                _size: 3213
+                _hash: 0825052a0ed41ed8
+            _files: 4
+          cards:
+            _type: directory
+            _children:
+              card-glass.css:
+                _type: file
+                _size: 1148
+                _hash: 4601f665da81ce69
+              card-service-premium.css:
+                _type: file
+                _size: 2655
+                _hash: b3a87a2fdff9aef9
+            _files: 2
+          text:
+            _type: directory
+            _children:
+              text-liquid-gold.css:
+                _type: file
+                _size: 965
+                _hash: 8d2eced047c66efd
+            _files: 1
+        _files: 7
+      design-system:
+        _type: directory
+        _children:
+          tailwind:
+            _type: directory
+            _children:
+              input.css:
+                _type: file
+                _size: 6735
+                _hash: 07893f46a1e45d59
+            _files: 1
+          tokens:
+            _type: directory
+            _children:
+              animations.css:
+                _type: file
+                _size: 3808
+                _hash: c253a053f0b6d133
+              colors.css:
+                _type: file
+                _size: 2802
+                _hash: ca9d2eadb8c9040d
+              index.css:
+                _type: file
+                _size: 352
+                _hash: 285878216960639c
+              performance.css:
+                _type: file
+                _size: 382
+                _hash: b7e5105a5c34265e
+              shadows.css:
+                _type: file
+                _size: 2916
+                _hash: 514e705186d2af05
+              spacing.css:
+                _type: file
+                _size: 2445
+                _hash: 61a37688d55c3fd9
+              theme-bridge.css:
+                _type: file
+                _size: 11038
+                _hash: a6520569986de63e
+              typography.css:
+                _type: file
+                _size: 3415
+                _hash: f6d8a9d7deac731f
+            _files: 8
+        _files: 9
+      engines:
+        _type: directory
+        _children:
+          core:
+            _type: directory
+            _children:
+              dom.js:
+                _type: file
+                _size: 1827
+                _hash: 3ae0594c92e469d0
+              events.js:
+                _type: file
+                _size: 1383
+                _hash: 46f25b4c91d506fb
+              logger.js:
+                _type: file
+                _size: 1153
+                _hash: 8fda0e5afa6fbd3e
+              storage.js:
+                _type: file
+                _size: 2387
+                _hash: 9585f1461bfe1340
+              uuid.js:
+                _type: file
+                _size: 610
+                _hash: f7e8f84a3cdc8730
+            _files: 5
+          index.js:
+            _type: file
+            _size: 1321
+            _hash: 0e1265967675edc1
+          main.js:
+            _type: file
+            _size: 1840
+            _hash: e9b5f399d538f47f
+          motion:
+            _type: directory
+            _children:
+              aos-replacement.js:
+                _type: file
+                _size: 3986
+                _hash: d930174931d03ef3
+              hero-animation.js:
+                _type: file
+                _size: 1428
+                _hash: a9490ed773a53e7f
+              hero-particles.js:
+                _type: file
+                _size: 2374
+                _hash: b2cb92088e7eb3bd
+              index.js:
+                _type: file
+                _size: 1868
+                _hash: c52547e463e5a7a5
+              lenis-setup.js:
+                _type: file
+                _size: 953
+                _hash: 5cad768afcf595ca
+              magnetic.js:
+                _type: file
+                _size: 1153
+                _hash: 3db36484be255afa
+              parallax.js:
+                _type: file
+                _size: 1635
+                _hash: 6928eb53c25e40ca
+              spotlight.js:
+                _type: file
+                _size: 1193
+                _hash: 867e62894f96636f
+            _files: 8
+          privacy:
+            _type: directory
+            _children:
+              consent-manager.js:
+                _type: file
+                _size: 3414
+                _hash: 7d0d495747da299f
+              cookie-banner.js:
+                _type: file
+                _size: 2804
+                _hash: ccf9c3c0f2542a29
+            _files: 2
+          tracking:
+            _type: directory
+            _children:
+              capi.js:
+                _type: file
+                _size: 2923
+                _hash: fdd8e16d42800636
+              config.js:
+                _type: file
+                _size: 2163
+                _hash: a44581bc04934bde
+              conversion.js:
+                _type: file
+                _size: 2981
+                _hash: aedc9cb7ba76a7c0
+              identity.js:
+                _type: file
+                _size: 2926
+                _hash: ced1ae4d44352702
+              index.js:
+                _type: file
+                _size: 4704
+                _hash: f3d0641c82c40f60
+              observers.js:
+                _type: file
+                _size: 4179
+                _hash: a3fb5feb5145d0fe
+              pixel-bridge.js:
+                _type: file
+                _size: 5285
+                _hash: beda4bbb5ea0856d
+              utm.js:
+                _type: file
+                _size: 1798
+                _hash: 212e5f4a2650d1bc
+            _files: 8
+          ui:
+            _type: directory
+            _children:
+              cro-manager.js:
+                _type: file
+                _size: 1419
+                _hash: 87aafb8f61d6f20d
+              index.js:
+                _type: file
+                _size: 1072
+                _hash: 6d1c84c886d4c273
+              nav-manager.js:
+                _type: file
+                _size: 1130
+                _hash: d1b734fcdcfbe71e
+              slider-manager-enhanced.js:
+                _type: file
+                _size: 9233
+                _hash: 999299153cda67e6
+              slider-manager.js:
+                _type: file
+                _size: 2182
+                _hash: 34553baae3c1c2d1
+            _files: 5
+        _files: 30
+      layouts:
+        _type: directory
+        _children:
+          navigation:
+            _type: directory
+            _children:
+              glass-nav.css:
+                _type: file
+                _size: 1611
+                _hash: d2f09edda1ec3c97
+            _files: 1
+        _files: 1
+      molecules:
+        _type: directory
+        _children:
+          accordion.css:
+            _type: file
+            _size: 1683
+            _hash: e2d5e08a95a87479
+        _files: 1
+      scripts:
+        _type: directory
+        _children:
+          migrate-templates.js:
+            _type: file
+            _size: 6795
+            _hash: dab1820011523319
+          validate-system.js:
+            _type: file
+            _size: 8991
+            _hash: 9217a3ce5e671183
+          verify-build.js:
+            _type: file
+            _size: 3421
+            _hash: 8cd7d7c724fa766a
+        _files: 3
+      src:
+        _type: directory
+        _children:
+          input.css:
+            _type: file
+            _size: 286
+            _hash: 272e16dd3a9d386f
+        _files: 1
+    _files: 77
+  tailwind.config.js:
+    _type: file
+    _size: 1373
+    _hash: 30b5c62fe67ae72a
+  tests:
+    _type: directory
+    _children:
+      .coveragerc:
+        _type: file
+        _size: 1397
+        _hash: 41157491e089d831
+      COMPLETE_TESTING_STRATEGY.md:
+        _type: file
+        _size: 7544
+        _hash: b72ca2e48be0b6f8
+      L1_atoms:
+        _type: directory
+        _children:
+          __init__.py:
+            _type: file
+            _size: 21
+            _hash: 2e3e825de16dd2ce
+          test_dto_snapshots.py:
+            _type: file
+            _size: 12305
+            _hash: d0031bf78dab9c42
+          test_lead_state_machine.py:
+            _type: file
+            _size: 10229
+            _hash: b55efc9547e4c02f
+          test_tracking_math.py:
+            _type: file
+            _size: 5990
+            _hash: 6f51299693e4e40b
+          test_validators.py:
+            _type: file
+            _size: 2589
+            _hash: 91fb9a54e93cf3c8
+          test_values_properties.py:
+            _type: file
+            _size: 7169
+            _hash: a75d32b80d02f75c
+        _files: 6
+      L2_components:
+        _type: directory
+        _children:
+          __init__.py:
+            _type: file
+            _size: 26
+            _hash: b00fb215bb355983
+          test_database_mock.py:
+            _type: file
+            _size: 1016
+            _hash: 3e942c8a4b61ea08
+          test_meta_capi.py:
+            _type: file
+            _size: 3543
+            _hash: e1585d2d821cb8f7
+          test_service_image_path_normalization.py:
+            _type: file
+            _size: 650
+            _hash: 43fc9e4d507a78d2
+          test_services.py:
+            _type: file
+            _size: 1673
+            _hash: ee6cca13816dd2fe
+          test_tracking.py:
+            _type: file
+            _size: 1773
+            _hash: f8daed6c8989e01d
+        _files: 6
+      L3_modules:
+        _type: directory
+        _children:
+          __init__.py:
+            _type: file
+            _size: 23
+            _hash: 3a86de60ab531857
+          test_concurrent_operations.py:
+            _type: file
+            _size: 13175
+            _hash: 2e9d842296197cde
+          test_integration.py:
+            _type: file
+            _size: 2307
+            _hash: f70c2ac36beb0c47
+          test_sql_lead_repo.py:
+            _type: file
+            _size: 2881
+            _hash: a65a190359fdf315
+          test_strict_turnstile.py:
+            _type: file
+            _size: 2916
+            _hash: e6419bd55257ffc6
+          test_synchronicity.py:
+            _type: file
+            _size: 1781
+            _hash: ebd8ff794edfa538
+          test_traceability.py:
+            _type: file
+            _size: 4767
+            _hash: b384d34fb45a4b1d
+        _files: 7
+      L4_integration:
+        _type: directory
+        _children:
+          test_frontend_assets.py:
+            _type: file
+            _size: 1912
+            _hash: b82bb3ba6c38926d
+        _files: 1
+      L4_supervisor:
+        _type: directory
+        _children:
+          __init__.py:
+            _type: file
+            _size: 26
+            _hash: d0cdc64502ad36aa
+          test_import_integrity.py:
+            _type: file
+            _size: 3555
+            _hash: 5edd3f21840caf8d
+        _files: 2
+      L5_system:
+        _type: directory
+        _children:
+          __init__.py:
+            _type: file
+            _size: 22
+            _hash: 2aac1ee139ec7afc
+          test_assets_integrity.py:
+            _type: file
+            _size: 2047
+            _hash: e529f0449e89a7f1
+          test_marketing_readiness.py:
+            _type: file
+            _size: 2568
+            _hash: 14eb1f3db6c29d65
+          test_real_connection.py:
+            _type: file
+            _size: 2866
+            _hash: 89d0fc2076458610
+        _files: 4
+      L6_omni:
+        _type: directory
+        _children:
+          __init__.py:
+            _type: file
+            _size: 20
+            _hash: 7f31b2fa63867dd4
+        _files: 1
+      README.md:
+        _type: file
+        _size: 1651
+        _hash: c074b0276977e549
+      __init__.py:
+        _type: file
+        _size: 459
+        _hash: d756dd5a6cc19999
+      anti_crash_test.py:
+        _type: file
+        _size: 782
+        _hash: 692c637b13496b87
+      conftest.py:
+        _type: file
+        _size: 3682
+        _hash: 670893f4b59d46e5
+      cortex_audit:
+        _type: directory
+        _children:
+          audit_system.py:
+            _type: file
+            _size: 6956
+            _hash: 106811f6984e4140
+        _files: 1
+      frontend:
+        _type: directory
+        _children:
+          rendering:
+            _type: directory
+            _children:
+              test_asset_delivery.py:
+                _type: file
+                _size: 1033
+                _hash: a888f7b13b43d80f
+              test_browser_render.py:
+                _type: file
+                _size: 3242
+                _hash: 4c72193cfe2b26dc
+              test_playwright_smoke.py:
+                _type: file
+                _size: 2180
+                _hash: c4d617b56fb35de6
+            _files: 3
+          seo:
+            _type: directory
+            _children:
+              test_seo.py:
+                _type: file
+                _size: 912
+                _hash: fcdc985d600847dc
+            _files: 1
+          templates:
+            _type: directory
+            _children:
+              test_template_integrity.py:
+                _type: file
+                _size: 1475
+                _hash: 1295b736656ce6ff
+              test_zaraz_templates.py:
+                _type: file
+                _size: 10208
+                _hash: d58fd23a613580d5
+            _files: 2
+          ux:
+            _type: directory
+            _children:
+              test_ux_fluidity.py:
+                _type: file
+                _size: 2153
+                _hash: 912eabca3e4c3164
+            _files: 1
+        _files: 7
+      load:
+        _type: directory
+        _children:
+          debug_locust.py:
+            _type: file
+            _size: 163
+            _hash: ded4a8e99c9132bc
+          locustfile.py:
+            _type: file
+            _size: 1637
+            _hash: bae82d67dc74cacf
+        _files: 2
+      platform:
+        _type: directory
+        _children:
+          cloudflare:
+            _type: directory
+            _children:
+              test_zaraz.py:
+                _type: file
+                _size: 13158
+                _hash: dc29f4d803fad383
+            _files: 1
+          deployment:
+            _type: directory
+            _children:
+              test_assets_runtime.py:
+                _type: file
+                _size: 524
+                _hash: 60e33941d6d2343f
+              test_environment_contracts.py:
+                _type: file
+                _size: 2138
+                _hash: fd425df71b73d3e1
+              test_serverless_packaging.py:
+                _type: file
+                _size: 1903
+                _hash: f363a5fb264b7348
+              test_vercel_manifest.py:
+                _type: file
+                _size: 3318
+                _hash: 2ea6f78eb51cb90d
+            _files: 4
+          diagnostics:
+            _type: directory
+            _children:
+              smart_debt_detector.py:
+                _type: file
+                _size: 3371
+                _hash: 4af243f1427a7118
+            _files: 1
+          infra:
+            _type: directory
+            _children:
+              test_infrastructure.py:
+                _type: file
+                _size: 4946
+                _hash: 8b1f2c22f2dfecba
+              test_performance.py:
+                _type: file
+                _size: 3492
+                _hash: 010ab71673ffe7cc
+              test_real_connections.py:
+                _type: file
+                _size: 3082
+                _hash: 02793e96e6b815a4
+            _files: 3
+          mutation:
+            _type: directory
+            _children:
+              run_mutation_audit.py:
+                _type: file
+                _size: 1300
+                _hash: 7395bb766563b8cd
+            _files: 1
+          observability:
+            _type: directory
+            _children:
+              test_live_infrastructure.py:
+                _type: file
+                _size: 7652
+                _hash: 201c830e061fc390
+            _files: 1
+        _files: 11
+      pytest.ini:
+        _type: file
+        _size: 2208
+        _hash: eb6111a22665dcfa
+      test_async_tracking.py:
+        _type: file
+        _size: 3331
+        _hash: 0bd2b840c9989e3f
+      test_tracking_integration.py:
+        _type: file
+        _size: 2937
+        _hash: 2732447463e31bec
+    _files: 57
+  tsconfig.json:
+    _type: file
+    _size: 655
+    _hash: 3bea88419b1415f0
+  vercel.json:
+    _type: file
+    _size: 2113
+    _hash: 90b280a02337191d

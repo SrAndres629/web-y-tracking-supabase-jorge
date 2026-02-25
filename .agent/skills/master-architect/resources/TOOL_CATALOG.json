@@ -1,0 +1,72 @@
+{
+    "categories": [
+        {
+            "name": "Observability & Tracing",
+            "best_choice": "arize-phoenix-tracer",
+            "mcp": "arize-tracing-assistant",
+            "tools": [
+                "arize_support",
+                "get_arize_tracing_docs"
+            ]
+        },
+        {
+            "name": "Dependency Management",
+            "best_choice": "sonatype-auditor",
+            "mcp": "sonatype-guide",
+            "tools": [
+                "getComponentVersion",
+                "getLatestComponentVersion",
+                "getRecommendedComponentVersions"
+            ]
+        },
+        {
+            "name": "Agentic Orchestration",
+            "best_choice": "genkit-orchestrator",
+            "mcp": "genkit-mcp-server",
+            "tools": [
+                "genkit_registry",
+                "genkit_runtime",
+                "genkit_execution"
+            ]
+        },
+        {
+            "name": "Real-time Documentation",
+            "best_choice": "context7-expert",
+            "mcp": "context7",
+            "tools": [
+                "query-docs",
+                "resolve-library-id"
+            ]
+        },
+        {
+            "name": "Long-term Memory & RAG",
+            "best_choice": "pinecone-architect",
+            "mcp": "pinecone-mcp-server",
+            "tools": [
+                "pinecone_lifecycle",
+                "pinecone_data",
+                "pinecone_intelligence"
+            ]
+        },
+        {
+            "name": "Code Architecture & Git",
+            "best_choice": "gitlab-architect",
+            "mcp": "GitKraken",
+            "tools": [
+                "git_exploration",
+                "git_operations",
+                "git_intelligence"
+            ]
+        },
+        {
+            "name": "Infra & Edge Tracking",
+            "best_choice": "zaraz-tracking-architect",
+            "mcp": "cloudflare-mcp",
+            "tools": [
+                "cloudflare_infrastructure",
+                "cloudflare_compute",
+                "cloudflare_storage"
+            ]
+        }
+    ]
+}
