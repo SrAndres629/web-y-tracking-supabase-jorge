@@ -284,18 +284,36 @@ class ContentManager:
     def _fetch_from_db(cls, key: str) -> Optional[Any]:
         """Synchronous DB fetch (Used for cold starts or refresh)"""
         try:
-            with db.connection() as conn:
+            import sqlite3
+            import os
+            
+            # Use standardized path for sync fallback
+            db_path = os.path.join(
+                os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+                "database",
+                "local.db"
+            )
+            
+            if not os.path.exists(db_path):
+                return None
+                
+            conn = sqlite3.connect(db_path)
+            try:
                 cur = conn.cursor()
-                query = "SELECT value FROM site_content WHERE key = %s"
-                if db.backend == "sqlite":
-                    query = query.replace("%s", "?")
-                cur.execute(query, (key,))
+                # Check for table existence first
+                cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='site_content'")
+                if not cur.fetchone():
+                    return None
+                    
+                cur.execute("SELECT value FROM site_content WHERE key = ?", (key,))
                 row = cur.fetchone()
                 if row and row[0]:
                     val = row[0]
                     return json.loads(val) if isinstance(val, str) else val
-        except (ConnectionError, RuntimeError, ValueError):
-            logger.exception("❌ CMS DB Fetch Error (%s)", key)
+            finally:
+                conn.close()
+        except (sqlite3.Error, ValueError) as e:
+            logger.debug("CMS DB Fetch (Sync Fallback) Failed: %s", e)
         return None
 
     @classmethod

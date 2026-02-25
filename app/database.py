@@ -91,7 +91,8 @@ def get_cursor():
         db_path = os.path.join(
             os.path.dirname(os.path.dirname(__file__)), "database", "local.db"
         )
-        os.makedirs(os.path.dirname(db_path), exist_ok=True)
+        if not os.path.exists(os.path.dirname(db_path)):
+            os.makedirs(os.path.dirname(db_path), exist_ok=True)
         conn = sqlite3.connect(db_path)
         cur = conn.cursor()
         try:

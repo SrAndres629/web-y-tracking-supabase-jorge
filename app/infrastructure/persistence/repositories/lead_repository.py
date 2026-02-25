@@ -24,7 +24,7 @@ class LeadRepository(ILeadRepository):
 
     async def get_by_id(self, lead_id: str) -> Optional[Lead]:
         """Recupera lead por ID."""
-        query = "SELECT * FROM leads WHERE id = %s"
+        query = "SELECT * FROM crm_leads WHERE id = %s"
         if db.backend == "sqlite":
             query = query.replace("%s", "?")
         
@@ -40,7 +40,7 @@ class LeadRepository(ILeadRepository):
 
     async def get_by_phone(self, phone: Phone) -> Optional[Lead]:
         """Recupera lead por teléfono."""
-        query = "SELECT * FROM leads WHERE phone = %s"
+        query = "SELECT * FROM crm_leads WHERE phone = %s"
         if db.backend == "sqlite":
             query = query.replace("%s", "?")
         
@@ -56,7 +56,7 @@ class LeadRepository(ILeadRepository):
 
     async def get_by_external_id(self, external_id: ExternalId) -> Optional[Lead]:
         """Recupera lead por ID de visitante."""
-        query = "SELECT * FROM leads WHERE external_id = %s"
+        query = "SELECT * FROM crm_leads WHERE external_id = %s"
         if db.backend == "sqlite":
             query = query.replace("%s", "?")
         
@@ -73,28 +73,29 @@ class LeadRepository(ILeadRepository):
         """Persiste lead (upsert)."""
         if db.backend == "postgres":
             query = """
-                INSERT INTO leads (
+                INSERT INTO crm_leads (
                     id, phone, name, email,
                     fbclid, external_id, meta_lead_id,
-                    status, score, service_interest,
+                    status, score, service_interest, pain_point,
                     utm_source, utm_campaign, created_at, updated_at
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
                 ON CONFLICT (id) DO UPDATE SET
                     phone = EXCLUDED.phone,
-                    name = COALESCE(EXCLUDED.name, leads.name),
-                    email = COALESCE(EXCLUDED.email, leads.email),
+                    name = COALESCE(EXCLUDED.name, crm_leads.name),
+                    email = COALESCE(EXCLUDED.email, crm_leads.email),
                     status = EXCLUDED.status,
                     score = EXCLUDED.score,
+                    pain_point = EXCLUDED.pain_point,
                     updated_at = NOW();
             """
         else:
             query = """
-                INSERT OR REPLACE INTO leads (
+                INSERT OR REPLACE INTO crm_leads (
                     id, phone, name, email,
                     fbclid, external_id, meta_lead_id,
-                    status, score, service_interest,
+                    status, score, service_interest, pain_point,
                     utm_source, utm_campaign, created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """
         
         params = (
@@ -103,15 +104,16 @@ class LeadRepository(ILeadRepository):
             lead.name,
             str(lead.email) if lead.email else None,
             lead.fbclid,
-            lead.external_id,
+            str(lead.external_id) if lead.external_id else None,
             lead.meta_lead_id,
             lead.status.value,
             lead.score,
             lead.service_interest,
+            lead.pain_point,
             lead.utm_source,
             lead.utm_campaign,
-            lead.created_at,
-            lead.updated_at if db.backend == "sqlite" else None
+            lead.created_at.isoformat() if hasattr(lead.created_at, "isoformat") else str(lead.created_at),
+            lead.updated_at.isoformat() if hasattr(lead.updated_at, "isoformat") else str(lead.updated_at),
         )
         if db.backend == "postgres":
             params = params[:-1]
@@ -152,16 +154,17 @@ class LeadRepository(ILeadRepository):
         
         return Lead(
             id=data["id"],
-            phone=Phone(data["phone"]),
+            phone=Phone.parse(data["phone"]).unwrap() if data["phone"] else None,
             name=data["name"],
-            email=Email(data["email"]) if data["email"] else None,
+            email=Email.parse(data["email"]).unwrap() if data["email"] else None,
             meta_lead_id=data.get("meta_lead_id"),
             fbclid=data.get("fbclid"),
-            external_id=data.get("external_id"),
+            external_id=ExternalId.from_string(data["external_id"]).unwrap() if data.get("external_id") else None,
             utm_source=data.get("utm_source"),
             status=LeadStatus(data.get("status", "new")),
             score=data.get("score", 50),
             service_interest=data.get("service_interest"),
+            pain_point=data.get("pain_point"),
             created_at=data.get("created_at"),
             updated_at=data.get("updated_at")
         )

@@ -137,8 +137,14 @@ def get_create_visitor_handler() -> CreateVisitorHandler:
 
 
 class _LegacyFacade:
-    """Thin wrapper providing backwards-compatible API for health checks."""
+    """
+    Backwards-compatible facade providing legacy API for routes.
 
+    All routes reference `legacy.*` methods. This facade delegates
+    to the actual implementations in tracking.py / meta_capi.py.
+    """
+
+    # ── Health Check ──────────────────────────────────────────────
     @staticmethod
     def check_connection() -> bool:
         try:
@@ -147,12 +153,79 @@ class _LegacyFacade:
         except Exception:
             return False
 
+    # ── Identity ──────────────────────────────────────────────────
     @staticmethod
     def generate_external_id(ip: str, user_agent: str) -> str:
         from app.core.validators import generate_external_id
         return generate_external_id(ip, user_agent)
 
+    # ── Visitor Persistence ───────────────────────────────────────
+    @staticmethod
+    def save_visitor(
+        external_id: str,
+        fbclid: str,
+        client_ip: str,
+        user_agent: str,
+        source: str,
+        utm_data=None,
+        email=None,
+        phone=None,
+    ) -> None:
+        """Persists visitor data — delegates to cache + DB (best-effort)."""
+        import logging
+        logger = logging.getLogger(__name__)
+        try:
+            from app.tracking import cache_visitor_data
+            data = {
+                "fbclid": fbclid,
+                "client_ip": client_ip,
+                "user_agent": user_agent,
+                "source": source,
+                "utm_data": utm_data or {},
+            }
+            if email:
+                data["email"] = email
+            if phone:
+                data["phone"] = phone
+            cache_visitor_data(external_id, data)
+        except Exception as e:
+            logger.warning("⚠️ save_visitor fallback: %s", e)
+
+    # ── Meta CAPI (Elite Event Sender) ────────────────────────────
+    @staticmethod
+    async def send_elite_event(**kwargs):
+        """Delegates to tracking.send_elite_event."""
+        from app.tracking import send_elite_event
+        return await send_elite_event(**kwargs)
+
+    # ── Webhook ───────────────────────────────────────────────────
+    @staticmethod
+    def send_n8n_webhook(event_data) -> bool:
+        """Delegates to tracking.send_n8n_webhook."""
+        from app.tracking import send_n8n_webhook
+        return send_n8n_webhook(event_data)
+
+    # ── CRM Contact Sync ─────────────────────────────────────────
+    @staticmethod
+    def upsert_contact_advanced(payload) -> None:
+        """CRM contact sync — safe no-op (legacy function removed in DDD refactor)."""
+        import logging
+        logging.getLogger(__name__).debug("upsert_contact_advanced: no-op (DDD)")
+
+    # ── Visitor Cache ─────────────────────────────────────────────
+    @staticmethod
+    def get_cached_visitor(external_id: str):
+        """Retrieves cached visitor data."""
+        from app.tracking import get_cached_visitor
+        return get_cached_visitor(external_id)
+
+    @staticmethod
+    def cache_visitor_data(external_id: str, data, ttl_hours: int = 24) -> None:
+        """Caches visitor data in Redis."""
+        from app.tracking import cache_visitor_data
+        cache_visitor_data(external_id, data, ttl_hours)
+
 
 def get_legacy_facade() -> _LegacyFacade:
-    """Provee facade legacy para health checks."""
+    """Provee facade legacy para health checks y routes."""
     return _LegacyFacade()

@@ -150,6 +150,7 @@ class TestTrackingDtoSnapshots:
         """
         request = TrackEventRequest(
             event_name="PageView",
+            event_id="test_snapshot_id_123",
             external_id="abc123abc123abc123abc123abc123ab",  # 32 chars
             source_url="https://example.com/page",
             fbclid="fbclidabc123",  # Sin underscore (sanitizado)
@@ -164,6 +165,7 @@ class TestTrackingDtoSnapshots:
 
         data = {
             "event_name": request.event_name,
+            "event_id": request.event_id,
             "external_id": request.external_id,
             "source_url": request.source_url,
             "fbclid": request.fbclid,
@@ -178,6 +180,7 @@ class TestTrackingDtoSnapshots:
 
         expected = {
             "event_name": "PageView",
+            "event_id": "test_snapshot_id_123",
             "external_id": "abc123abc123abc123abc123abc123ab",  # 32 chars
             "source_url": "https://example.com/page",
             "fbclid": "fbclidabc123",

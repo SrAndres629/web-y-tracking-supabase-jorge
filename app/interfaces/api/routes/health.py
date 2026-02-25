@@ -70,7 +70,7 @@ async def health_diagnostics_full(request: Request):
     """
     from app.diagnostics import run_full_diagnostics
 
-    report = run_full_diagnostics()
+    report = await run_full_diagnostics()
     return JSONResponse(report)
 
 

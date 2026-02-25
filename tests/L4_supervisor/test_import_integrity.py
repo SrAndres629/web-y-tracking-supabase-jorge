@@ -95,6 +95,43 @@ def test_api_entrypoint_latency():
         print("✅ FAST COLD START confirmed.")
 
 
+@pytest.mark.asyncio
+async def test_lead_repository_integrity_audit():
+    """
+    INTEGRITY AUDIT: Ensures LeadRepository correctly bridges Domain to JSON/Strings.
+    Verifies that the "datatype mismatch" fixes are structural, not hacks.
+    """
+    from app.infrastructure.persistence.repositories.lead_repository import LeadRepository
+    from app.domain.models.lead import Lead
+    from app.domain.models.values import Phone, Email, ExternalId
+    from app.infrastructure.persistence.database import db
+    
+    # Force SQLite test environment
+    db._backend = "sqlite"
+    db.init_tables()
+    
+    repo = LeadRepository()
+    
+    # 1. Test with complex Value Objects (Ensures stringification works)
+    lead = Lead.create(
+        phone=Phone.parse("+59170010010").unwrap(),
+        name="Integrity Doc",
+        email=Email.parse("integrity@doc.com").unwrap(),
+        external_id=ExternalId.from_string("b" * 32).unwrap()
+    )
+    
+    # This should pass without InterfaceError
+    await repo.save(lead)
+    
+    # 2. Verify round-trip preserves types and values
+    retrieved = await repo.get_by_id(lead.id)
+    assert retrieved is not None
+    assert isinstance(retrieved.phone, Phone)
+    assert isinstance(retrieved.email, Email)
+    assert isinstance(retrieved.external_id, ExternalId)
+    assert retrieved.external_id.value == "b" * 32
+    assert str(retrieved.phone) == "+59170010010"
+
 if __name__ == "__main__":
     try:
         test_no_circular_imports()

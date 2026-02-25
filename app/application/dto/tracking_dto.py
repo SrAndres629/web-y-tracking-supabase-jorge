@@ -47,6 +47,7 @@ class TrackEventRequest(BaseModel):
     """
 
     event_name: str = Field(..., description="Nombre del evento")
+    event_id: str = Field(..., description="ID único para deduplicación")
     external_id: str = Field(..., description="ID del visitante", min_length=8, max_length=64)
     source_url: str = Field(..., description="URL donde ocurrió el evento")
 

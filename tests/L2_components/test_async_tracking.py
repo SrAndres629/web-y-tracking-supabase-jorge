@@ -30,10 +30,13 @@ async def test_send_event_async_non_blocking():
             return True
         mock_async_redis.set.side_effect = blocking_set_async
 
-        # Mock DB save (via save_emq_score)
-        def blocking_save(*args, **kwargs):
-            time.sleep(0.1)
-        
+        # Mock DB save (via EventRepository)
+        mock_repo = MagicMock()
+        mock_repo.save_emq_score = AsyncMock()
+        async def blocking_save_async(*args, **kwargs):
+            await asyncio.sleep(0.1)
+        mock_repo.save_emq_score.side_effect = blocking_save_async
+
         # Mock Async Client
         mock_client = MagicMock()
         mock_client.post = AsyncMock()
@@ -44,7 +47,7 @@ async def test_send_event_async_non_blocking():
         # Patch dependencies — redis_provider properties can't be directly patched,
         # so we mock at the consumer level
         with patch("app.infrastructure.cache.redis_provider.RedisProvider.sync_client", new_callable=lambda: property(lambda self: mock_async_redis)), \
-             patch("app.tracking.save_emq_score", side_effect=blocking_save), \
+             patch("app.tracking.get_event_repository", return_value=mock_repo), \
              patch("app.tracking.async_client", mock_client):
             
             # Measure execution time of the loop while send_event_async runs

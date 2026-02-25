@@ -11,15 +11,8 @@ def event_loop():
     yield loop
     loop.close()
 
-@pytest.fixture(autouse=True)
-def setup_db():
-    # Force SQLite for tests and ensure tables exist
-    database._backend = "sqlite"
-    database.init_tables()
-    # Clear table before each test
-    with database.get_cursor() as cur:
-        cur.execute("DELETE FROM crm_leads")
-    yield
+# 🛡️ Note: setup_db is now handled globally by conftest.py:clean_db and db_sqlite
+
 
 @pytest.mark.asyncio
 async def test_save_and_get_lead():

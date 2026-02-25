@@ -183,6 +183,14 @@ async def track_event(
 
     # Extract context
     ctx_data = _get_tracking_context(request, event, fbp, fbc)
+
+    # 🛡️ Zero Tolerance Policy: Validate Human
+    if not await _validate_human(event, ctx_data):
+        return JSONResponse(
+            status_code=200,
+            content={"status": "filtered", "message": "Signal filtered by Zero-Tolerance Policy"},
+        )
+
     context = TrackingContext(
         ip_address=ctx_data["ip"],
         user_agent=ctx_data["ua"],
@@ -226,11 +234,11 @@ def _get_tracking_context(request, event, fbp, fbc):
         "ip": ip,
         "ua": request.headers.get("user-agent", "unknown"),
         "fb_id": fb_id,
-        "ext_id": event.user_data.get("external_id"),
-        "fbp": fbp or custom.get("fbp"),
-        "fbc": fbc or custom.get("fbc"),
-        "phone": normalize_pii(custom.get("phone") or event.user_data.get("phone"), "phone"),
-        "email": normalize_pii(custom.get("email") or event.user_data.get("email"), "email"),
+        "ext_id": event.external_id,
+        "fbp": fbp or event.fbp or custom.get("fbp"),
+        "fbc": fbc or event.fbclid or custom.get("fbc"),
+        "phone": normalize_pii(custom.get("phone"), "phone"),
+        "email": normalize_pii(custom.get("email"), "email"),
         "utm": {
             "utm_source": custom.get("utm_source"),
             "utm_medium": custom.get("utm_medium"),
@@ -255,7 +263,7 @@ def _queue_lead_sync(bt, event, ctx):
         "fbclid": ctx["fb_id"],
         "fbp": ctx["fbp"],
         "status": "interested",
-        "name": (event.custom_data or {}).get("name") or event.user_data.get("name"),
+        "name": (event.custom_data or {}).get("name"),
         "service_interest": (event.custom_data or {}).get("service_type")
         or ctx["utm"].get("utm_campaign"),
         **ctx["utm"],
@@ -278,12 +286,12 @@ async def _dispatch_to_capi(bt, event, ctx, client=None):
         "fbp": ctx["fbp"],
         "phone": ctx["phone"],
         "email": ctx["email"],
-        "first_name": event.user_data.get("fn") or event.user_data.get("first_name"),
-        "last_name": event.user_data.get("ln") or event.user_data.get("last_name"),
-        "city": event.user_data.get("ct") or event.user_data.get("city"),
-        "state": event.user_data.get("st") or event.user_data.get("state"),
-        "zip_code": event.user_data.get("zp") or event.user_data.get("zip_code"),
-        "country": event.user_data.get("country"),
+        "first_name": event.custom_data.get("first_name") or event.custom_data.get("fn"),
+        "last_name": event.custom_data.get("last_name") or event.custom_data.get("ln"),
+        "city": event.custom_data.get("city") or event.custom_data.get("ct"),
+        "state": event.custom_data.get("state") or event.custom_data.get("st"),
+        "zip_code": event.custom_data.get("zip_code") or event.custom_data.get("zp"),
+        "country": event.custom_data.get("country"),
         "custom_data": event.custom_data,
         "utm_data": ctx["utm"],
         "access_token": access_token,

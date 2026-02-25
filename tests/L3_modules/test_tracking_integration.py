@@ -27,7 +27,8 @@ def test_build_payload_validation():
 
 @patch("app.tracking.sync_client.post")
 @patch("app.tracking.dedup_service.try_consume_event")
-def test_send_event_success(mock_dedup, mock_post):
+@patch("app.tracking._log_emq")
+def test_send_event_success(mock_log, mock_dedup, mock_post):
     """Test successful event sending with validation pass."""
     mock_dedup.return_value = True  # New event
     mock_post.return_value.status_code = 200

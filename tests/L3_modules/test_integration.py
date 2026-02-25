@@ -38,20 +38,17 @@ def test_tracking_flow_simulated(client):
     """Simula un evento de PageView completo"""
     payload = {
         "event_name": "PageView",
-        "event_time": 1698263728,
-        "event_id": "evt_1234567890",
-        "event_source_url": "https://test.com",
-        "user_data": {
-            "fbp": "fb.1.1698263728.1234567890",
-            "fbc": "fb.1.1698263728.IwAR0...",
+        "event_id": "test_event_123",
+        "external_id": "ext_123456789",
+        "source_url": "https://test.com",
+        "turnstile_token": "dummy_token_for_test",
+        "fbclid": "fbclid_123",
+        "fbp": "fbp_123",
+        "custom_data": {
             "ip_address": "127.0.0.1",
             "user_agent": "TestBot",
         },
-        "custom_data": {
-            "turnstile_token": "dummy_token_for_test"  # Mocked in test env
-        },
     }
-
     # Send to actual endpoint
     response = client.post("/track/event", json=payload)
 

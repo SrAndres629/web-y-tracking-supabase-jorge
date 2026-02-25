@@ -56,12 +56,20 @@ def test_real_database_connection():
     if not db_url or "supabase.com" not in db_url:
         pytest.skip("❌ DATABASE_URL missing or not Supabase")
 
+    # Ensure database is initialized if in SQLite mode
+    if "sqlite" in settings.DATABASE_URL or (not settings.DATABASE_URL):
+        from app.database import init_tables
+        init_tables()
+
     try:
         with get_db_connection() as conn:
-            with conn.cursor() as cur:
+            cur = conn.cursor()
+            try:
                 cur.execute("SELECT 1")
                 result = cur.fetchone()
                 assert result[0] == 1, "❌ Database SELECT 1 returned unexpected result"
+            finally:
+                cur.close()
     except Exception as e:
         if _is_network_blocked(e):
             pytest.skip(f"Database egress blocked in current runtime: {e}")

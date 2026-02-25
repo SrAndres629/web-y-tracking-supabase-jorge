@@ -1,12 +1,45 @@
 stages:
   - test
   - security
+  - deploy
 
 include:
   - template: Security/SAST.gitlab-ci.yml
   - template: Security/Secret-Detection.gitlab-ci.yml
   - template: Security/Dependency-Scanning.gitlab-ci.yml
 
+variables:
+  # Python configurations
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  PYTHON_VERSION: "3.12"
+  # Vercel deployment settings (requires VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID in CI/CD settings)
+  VERCEL_ORG_ID: $VERCEL_ORG_ID
+  VERCEL_PROJECT_ID: $VERCEL_PROJECT_ID
+
+cache:
+  paths:
+    - .cache/pip
+    - venv/
+
+# ==========================================
+# 1. TEST STAGE
+# ==========================================
+pytest_suite:
+  stage: test
+  image: python:$PYTHON_VERSION
+  script:
+    - python -m venv venv
+    - source venv/bin/activate
+    - pip install --upgrade pip
+    - pip install -e .[dev]
+    - pytest tests/ --maxfail=1 --disable-warnings -q
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+# ==========================================
+# 2. SECURITY STAGE
+# ==========================================
 sast:
   stage: security
 
@@ -16,11 +49,39 @@ secret_detection:
 dependency_scanning:
   stage: security
 
-# Ejemplo de job de test para tu proyecto node
-test_job:
-  stage: test
+# ==========================================
+# 3. DEPLOY STAGE (VERCEL)
+# ==========================================
+deploy_preview:
+  stage: deploy
   image: node:20
   script:
-    - npm install
-    - npm test || echo "Aún no hay tests configurados o fallaron, pero permitimos continuar para el escaneo de seguridad"
-  allow_failure: true
+    - npm install -g vercel
+    - vercel pull --yes --environment=preview --token=$VERCEL_TOKEN
+    - vercel build --token=$VERCEL_TOKEN
+    - URL=$(vercel deploy --prebuilt --token=$VERCEL_TOKEN)
+    - echo "DYNAMIC_ENVIRONMENT_URL=$URL" >> deploy.env
+    - echo "Deployed Preview to $URL"
+  artifacts:
+    reports:
+      dotenv: deploy.env
+  environment:
+    name: preview/$CI_COMMIT_REF_NAME
+    url: $DYNAMIC_ENVIRONMENT_URL
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+deploy_production:
+  stage: deploy
+  image: node:20
+  script:
+    - npm install -g vercel
+    - vercel pull --yes --environment=production --token=$VERCEL_TOKEN
+    - vercel build --prod --token=$VERCEL_TOKEN
+    - vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN > prod-url.txt
+    - echo "Deployed Production to $(cat prod-url.txt)"
+  environment:
+    name: production
+    url: "https://jorgeaguirreflores.com"
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

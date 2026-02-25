@@ -189,24 +189,32 @@ def _log_emq_sync(event_name: str, payload: Dict[str, Any], client_id: Optional[
         else:
             logger.info("📊 [EMQ] %s: %s/10 (%s)", event_name, score, level)
 
-        # 🚀 Persist for Dashboard
+        # Return metrics to be persisted by the async caller
         payload_size = len(json.dumps(payload))
         has_pii = any(k in user_data for k in ["em", "ph", "fn", "ln"])
+        return score, payload_size, has_pii
 
-        repo = get_event_repository()
-        import asyncio
-        asyncio.create_task(
-            repo.save_emq_score(client_id, event_name, score, payload_size, has_pii)
-        )
-        return score
     except (TypeError, ValueError, json.JSONDecodeError, AttributeError) as e:
         logger.warning("⚠️ EMQ Calc Error: %s", str(e))
-        return 0.0
+        return 0.0, 0, False
 
 
 async def _log_emq(event_name: str, payload: Dict[str, Any], client_id: Optional[str] = None):
     """Calculates, logs, and persists Event Match Quality Score (Async Wrapper)."""
-    return await asyncio.to_thread(_log_emq_sync, event_name, payload, client_id)
+    score, payload_size, has_pii = await asyncio.to_thread(_log_emq_sync, event_name, payload, client_id)
+    
+    # 🚀 Persist for Dashboard asynchronously in the main event loop
+    try:
+        from app.infrastructure.persistence.repositories.event_repository import get_event_repository
+        repo = get_event_repository()
+        asyncio.create_task(
+            repo.save_emq_score(client_id, event_name, score, payload_size, has_pii)
+        )
+    except Exception as e:
+        logger.warning("⚠️ Failed to schedule EMQ score save: %s", str(e))
+        
+    return score
+
 
 
 def _build_payload(

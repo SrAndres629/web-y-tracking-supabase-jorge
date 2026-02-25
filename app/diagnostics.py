@@ -39,7 +39,7 @@ def check_environment() -> Dict[str, Any]:
     }
 
 
-def check_database() -> Dict[str, Any]:
+async def check_database() -> Dict[str, Any]:
     """Verify database connection using the db singleton."""
     status = {"status": "unknown", "backend": "none", "details": ""}
     try:
@@ -50,17 +50,21 @@ def check_database() -> Dict[str, Any]:
             return {"status": "failed", "details": "DATABASE_URL not set"}
 
         # Use the db singleton for health check
-        with db.connection() as conn:
+        async with db.connection() as conn:
             cur = conn.cursor()
+            
             if db.backend == "sqlite":
                 cur.execute("SELECT sqlite_version();")
+                row = cur.fetchone()
             else:
                 cur.execute("SELECT version();")
-            row = cur.fetchone()
+                row = cur.fetchone()
+                
             v = row[0] if row else "Unknown"
             status["status"] = "ok"
             status["backend"] = db.backend
             status["details"] = v
+
 
     except Exception as e:
         status["status"] = "error"
@@ -75,20 +79,21 @@ def check_redis() -> Dict[str, Any]:
     return redis_provider.health_check()
 
 
-def run_full_diagnostics() -> Dict[str, Any]:
+async def run_full_diagnostics() -> Dict[str, Any]:
     """Run all checks and return report."""
+    database_status = await check_database()
     return {
         "timestamp": os.getenv("VERCEL_DEPLOYMENT_ID", "local"),
         "environment": check_environment(),
-        "database": check_database(),
+        "database": database_status,
         "redis": check_redis(),
     }
 
 
-def log_startup_report():
+async def log_startup_report():
     """Print diagnostics to stdout for Vercel Logs."""
     try:
-        report = run_full_diagnostics()
+        report = await run_full_diagnostics()
         logger.info(f"🔍 [DIAGNOSTICS] REPORT: {report}")
     except Exception as e:
         logger.exception(f"⚠️ [DIAGNOSTICS] FAILED TO RUN: {e}")

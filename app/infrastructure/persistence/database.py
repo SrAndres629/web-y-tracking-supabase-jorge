@@ -97,9 +97,12 @@ class Database:
         import sqlite3
 
         db_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "database", "local.db"
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))),
+            "database",
+            "local.db",
         )
-        os.makedirs(os.path.dirname(db_path), exist_ok=True)
+        if not os.path.exists(os.path.dirname(db_path)):
+            os.makedirs(os.path.dirname(db_path), exist_ok=True)
 
         conn = sqlite3.connect(db_path)
         conn.execute("PRAGMA foreign_keys = ON")
@@ -137,14 +140,16 @@ class Database:
             )
             """,
             """
-            CREATE TABLE IF NOT EXISTS leads (
-                id SERIAL PRIMARY KEY,
+            CREATE TABLE IF NOT EXISTS crm_leads (
+                id TEXT PRIMARY KEY,
                 phone TEXT UNIQUE NOT NULL,
                 name TEXT,
                 email TEXT,
                 external_id TEXT,
                 fbclid TEXT,
+                meta_lead_id TEXT,
                 service_interest TEXT,
+                pain_point TEXT,
                 status TEXT DEFAULT 'new',
                 score FLOAT DEFAULT 0,
                 utm_source TEXT,
@@ -159,7 +164,15 @@ class Database:
                 event_name TEXT NOT NULL,
                 external_id TEXT,
                 source_url TEXT,
-                custom_data TEXT,
+                user_data_id TEXT,
+                custom_data JSONB,
+                emq_score FLOAT,
+                fbp TEXT,
+                fbc TEXT,
+                processed_at TIMESTAMP,
+                retry_count INTEGER DEFAULT 0,
+                payload_size INTEGER,
+                has_pii BOOLEAN,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
             """,
@@ -218,19 +231,27 @@ class Database:
 
                 conn = psycopg2.connect(url, sslmode="require")
                 cur = conn.cursor()
-                for q in queries:
-                    cur.execute(q)
-                conn.commit()
-                cur.close()
-                conn.close()
+                try:
+                    cur.execute("SELECT 1")
+                    result = cur.fetchone()
+                    if not result or result[0] != 1:
+                        raise ValueError("❌ Database SELECT 1 returned unexpected result")
+                    for q in queries:
+                        cur.execute(q)
+                    conn.commit()
+                finally:
+                    cur.close()
+                    conn.close()
             else:
                 import sqlite3
 
                 db_path = os.path.join(
-                    os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+                    os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))),
                     "database",
                     "local.db",
                 )
+                if not os.path.exists(os.path.dirname(db_path)):
+                    os.makedirs(os.path.dirname(db_path), exist_ok=True)
                 conn = sqlite3.connect(db_path)
                 for q in queries:
                     conn.execute(q)

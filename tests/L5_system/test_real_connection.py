@@ -60,11 +60,18 @@ def test_real_database_connection():
 
     # 3. Verify Table Existence (Readiness)
     try:
+        # Ensure tables exist
+        from app.database import init_tables
+        init_tables()
+        
         with get_db_connection() as conn:
             cur = conn.cursor()
-            cur.execute("SELECT count(*) FROM visitors")
-            count = cur.fetchone()[0]
-            print(f"   ✅ SCHEMA VERIFIED: 'visitors' table exists (Rows: {count})")
+            try:
+                cur.execute("SELECT count(*) FROM visitors")
+                count = cur.fetchone()[0]
+                print(f"   ✅ SCHEMA VERIFIED: 'visitors' table exists (Rows: {count})")
+            finally:
+                cur.close()
     except Exception as e:
         print(f"   ❌ SCHEMA ERROR: Could not query 'visitors' table. {e}")
         is_connected = False

@@ -120,3 +120,59 @@ def mock_lead_repository():
     repo = MagicMock()
     repo.save = AsyncMock(return_value=None)
     return repo
+
+
+@pytest.fixture(scope="session")
+def db_sqlite():
+    """
+    Standardized SQLite database for L3/L4 tests.
+    Ensures DDD Database instance is used instead of legacy shims.
+    """
+    from app.infrastructure.persistence.database import db
+    from app import settings
+    
+    # Force SQLite test path
+    original_backend = db._backend
+    db._backend = "sqlite"
+    
+    # Initialize schema
+    db.init_tables()
+    
+    yield db
+    
+    # Restore original state if needed
+    db._backend = original_backend
+
+
+@pytest.fixture(autouse=True)
+def clean_db(request, db_sqlite):
+    """
+    Clears tables before each test if the test is in L3 or L4.
+    Depends on db_sqlite to ensure initialization happens first.
+    """
+    path = str(request.node.fspath)
+    if "L3_modules" in path or "L4_integration" in path:
+        # Use the already initialized connection from db_sqlite if possible
+        # but for clean isolation, a direct connection is safer
+        import sqlite3
+        
+        # Consistent path resolution matching Database class
+        db_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 
+            "database", 
+            "local.db"
+        )
+        
+        conn = sqlite3.connect(db_path)
+        try:
+            cur = conn.cursor()
+            # Explicitly check for table existence before deleting
+            cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='crm_leads'")
+            if cur.fetchone():
+                cur.execute("DELETE FROM crm_leads")
+                cur.execute("DELETE FROM visitors")
+                cur.execute("DELETE FROM events")
+                conn.commit()
+        finally:
+            conn.close()
+    yield

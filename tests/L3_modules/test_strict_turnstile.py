@@ -31,11 +31,11 @@ def test_zero_tolerance_turnstile_missing(client):
     """
     payload = {
         "event_name": "Lead",
-        "event_time": 1234567890,
-        "event_id": "evt_123_hack",
-        "user_data": {"email": "bot@hack.com"},
-        "event_source_url": "https://hack.com",
-        "custom_data": {},  # ❌ NO TOKEN
+        "event_id": "test_missing_turnstile_123",
+        "external_id": "ext_123456789",  # >= 8 chars
+        "source_url": "https://hack.com",
+        # ❌ NO TURNSTILE_TOKEN
+        "custom_data": {"email": "bot@hack.com"},
     }
 
     # We mock validate_turnstile to return False just in case (though missing token should fail before)
@@ -71,11 +71,11 @@ def test_zero_tolerance_turnstile_invalid(mock_validate, client):
 
     payload = {
         "event_name": "Lead",
-        "event_time": 1234567890,
-        "event_id": "evt_123_hack_2",
-        "user_data": {"email": "bot@hack.com"},
-        "event_source_url": "https://hack.com",
-        "custom_data": {"turnstile_token": "INVALID_TOKEN_XYZ"},
+        "event_id": "test_invalid_turnstile_123",
+        "external_id": "ext_123456789",
+        "source_url": "https://hack.com",
+        "turnstile_token": "INVALID_TOKEN_XYZ",
+        "custom_data": {"email": "bot@hack.com"},
     }
 
     response = client.post("/track/event", json=payload)

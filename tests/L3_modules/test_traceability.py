@@ -70,12 +70,11 @@ def test_capi_traceability_chain(client):
     # Payload similar to what the frontend sends
     payload = {
         "event_name": "Lead",
-        "event_time": int(time.time()),
-        "event_id": test_event_id,
-        "user_data": {"phone": test_phone, "external_id": "user_123"},
-        "event_source_url": "https://jorgeflores.web/test",
-        "action_source": "website",
-        "custom_data": {"turnstile_token": "mock_valid_token"},
+        "event_id": "test_chain_event_123",
+        "external_id": "user_123_test_chain",
+        "source_url": "https://jorgeflores.web/test",
+        "turnstile_token": "mock_valid_token",
+        "custom_data": {"phone": test_phone},
     }
 
     # Mocking the dependencies to trace the data
