@@ -3,15 +3,13 @@
 # Jorge Aguirre Flores Web
 # =================================================================
 import hashlib
-import json
 import logging
 import os
 import random
-import re # Added for phone normalization
 import time
-from dataclasses import dataclass, field # Added for Elite classes
-from enum import Enum # Added for Elite classes
-from typing import Any, Dict, List, Optional # Added List
+from dataclasses import dataclass, field  # Added for Elite classes
+from enum import Enum  # Added for Elite classes
+from typing import Any, Dict, Optional  # Added List
 
 import httpx
 from tenacity import (
@@ -21,8 +19,11 @@ from tenacity import (
     wait_exponential,
 )
 
+from app.application.interfaces.tracker_port import TrackerPort
 from app.config import settings
 from app.database import save_emq_score
+from app.domain.models.events import TrackingEvent
+from app.domain.models.visitor import Visitor
 from app.domain.services.emq_monitor import emq_monitor
 from app.domain.validation.event_validator import event_validator
 
@@ -37,7 +38,9 @@ try:
         """Attempt to consume event ID using Redis."""
         return dedup_service.try_consume_event(event_id, event_name)
 
-    def cache_visitor_data(_external_id: str, _data: Dict[str, Any], _ttl_hours: int = 24) -> None:
+    def cache_visitor_data(
+        _external_id: str, _data: Dict[str, Any], _ttl_hours: int = 24
+    ) -> None:
         """Cache visitor data in Redis."""
         try:
             dedup_service.cache_visitor(_external_id, _data, ttl=_ttl_hours * 3600)
@@ -65,7 +68,9 @@ except ImportError as e:
         _memory_dedup[event_id] = time.time()
         return True
 
-    def cache_visitor_data(_external_id: str, _data: Dict[str, Any], _ttl_hours: int = 24) -> None:
+    def cache_visitor_data(
+        _external_id: str, _data: Dict[str, Any], _ttl_hours: int = 24
+    ) -> None:
         pass
 
     def get_cached_visitor(_external_id: str) -> Optional[Dict[str, Any]]:
@@ -124,7 +129,9 @@ def extract_fbclid_from_fbc(fbc_cookie: str) -> Optional[str]:
     return None
 
 
-def get_prioritized_fbclid(url_fbclid: Optional[str], cookie_fbc: Optional[str]) -> Optional[str]:
+def get_prioritized_fbclid(
+    url_fbclid: Optional[str], cookie_fbc: Optional[str]
+) -> Optional[str]:
     """
     Decides which fbclid to use.
     Priority: 1. URL Parameter (Fresh click) -> 2. Cookie (Persistent session)
@@ -172,36 +179,24 @@ def _log_emq(event_name: str, payload: Dict[str, Any], client_id: Optional[str] 
         return 0.0
 
 
-def _build_payload(
-    event_name: str,
-    event_source_url: str,
+def _build_user_data(
     client_ip: str,
     user_agent: str,
-    event_id: str,
+    external_id: Optional[str] = None,
+    fbc: Optional[str] = None,
     fbclid: Optional[str] = None,
     fbp: Optional[str] = None,
-    external_id: Optional[str] = None,
+    fb_browser_id: Optional[str] = None,
     phone: Optional[str] = None,
     email: Optional[str] = None,
-    custom_data: Optional[Dict[str, Any]] = None,
     country: Optional[str] = None,
     city: Optional[str] = None,
     state: Optional[str] = None,
     zip_code: Optional[str] = None,
     first_name: Optional[str] = None,
     last_name: Optional[str] = None,
-    fb_browser_id: Optional[str] = None,
-    access_token: Optional[str] = None,
-    fbc: Optional[str] = None,
 ) -> Dict[str, Any]:
-    """Constructs the JSON payload for Meta CAPI with Enhanced Matching"""
-
-    # 🔍 PRE-VALIDATION: Check raw inputs
-    warnings = event_validator.check_pre_hashing(email=email or "", phone=phone or "")
-    for warning in warnings:
-        logger.warning(f"⚠️ [VALIDATION] {warning}")
-
-    # User Data (Advanced Matching)
+    """Constructs the user data dictionary for Meta CAPI"""
     user_data = {
         "client_ip_address": client_ip,
         "client_user_agent": user_agent,
@@ -241,6 +236,56 @@ def _build_payload(
         user_data["fn"] = hash_data(first_name.lower())
     if last_name:
         user_data["ln"] = hash_data(last_name.lower())
+
+    return user_data
+
+
+def _build_payload(
+    event_name: str,
+    event_source_url: str,
+    client_ip: str,
+    user_agent: str,
+    event_id: str,
+    fbclid: Optional[str] = None,
+    fbp: Optional[str] = None,
+    external_id: Optional[str] = None,
+    phone: Optional[str] = None,
+    email: Optional[str] = None,
+    custom_data: Optional[Dict[str, Any]] = None,
+    country: Optional[str] = None,
+    city: Optional[str] = None,
+    state: Optional[str] = None,
+    zip_code: Optional[str] = None,
+    first_name: Optional[str] = None,
+    last_name: Optional[str] = None,
+    fb_browser_id: Optional[str] = None,
+    access_token: Optional[str] = None,
+    fbc: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Constructs the JSON payload for Meta CAPI with Enhanced Matching"""
+
+    # 🔍 PRE-VALIDATION: Check raw inputs
+    warnings = event_validator.check_pre_hashing(email=email or "", phone=phone or "")
+    for warning in warnings:
+        logger.warning(f"⚠️ [VALIDATION] {warning}")
+
+    user_data = _build_user_data(
+        client_ip=client_ip,
+        user_agent=user_agent,
+        external_id=external_id,
+        fbc=fbc,
+        fbclid=fbclid,
+        fbp=fbp,
+        fb_browser_id=fb_browser_id,
+        phone=phone,
+        email=email,
+        country=country,
+        city=city,
+        state=state,
+        zip_code=zip_code,
+        first_name=first_name,
+        last_name=last_name,
+    )
 
     event_data = {
         "event_name": event_name,
@@ -479,7 +524,9 @@ def track_lead(
         custom_data.update(
             {
                 "content_name": str(service_data.get("name", source)),
-                "content_ids": ([str(service_data.get("id"))] if service_data.get("id") else []),
+                "content_ids": (
+                    [str(service_data.get("id"))] if service_data.get("id") else []
+                ),
                 "content_category": str(service_data.get("intent", "lead")),
                 "trigger_location": source,
             }
@@ -576,7 +623,11 @@ def track_scroll_depth(
         "scroll_depth": depth_percent,
         "time_on_page": time_on_page_seconds,
         "engagement_level": (
-            "high" if depth_percent >= 75 else "medium" if depth_percent >= 50 else "low"
+            "high"
+            if depth_percent >= 75
+            else "medium"
+            if depth_percent >= 50
+            else "low"
         ),
     }
     return send_event(
@@ -589,6 +640,8 @@ def track_scroll_depth(
         external_id=external_id,
         custom_data=custom_data,
     )
+
+
 # =================================================================
 # ELITE INTERFACES (Merged from legacy meta_capi.py)
 # =================================================================
@@ -746,9 +799,6 @@ async def send_elite_event(
 # =================================================================
 # TRACKER ADAPTERS (Infrastructure → Domain Interface)
 # =================================================================
-from app.application.interfaces.tracker_port import TrackerPort
-from app.domain.models.events import TrackingEvent
-from app.domain.models.visitor import Visitor
 
 
 class MetaTracker(TrackerPort):
