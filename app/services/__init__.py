@@ -1,4 +1,3 @@
-# import hashlib
 import asyncio
 import json
 import logging
@@ -6,7 +5,6 @@ import os
 import time
 from typing import Any, Coroutine, Dict, List, Optional, cast
 
-# from functools import lru_cache
 import httpx
 from starlette.concurrency import run_in_threadpool
 from tenacity import (
@@ -23,7 +21,6 @@ from app.config import settings
 # Configure Logging
 logger = logging.getLogger("uvicorn.error")
 
-# from app.services.seo_engine import SEOEngine  # Imported but unused
 
 turnstile_warned = False
 
@@ -400,12 +397,6 @@ async def validate_turnstile(token: str) -> bool:
         logger.exception("Turnstile validation unexpected error")
         return True  # Fail safe
     return True  # Final fallback
-
-
-# @lru_cache(maxsize=128)
-# def _get_cached_hash(data: str) -> str:
-#     """Atomic Hash: Fast, efficient, and cached."""
-#     return hashlib.sha256(data.encode()).hexdigest()
 
 
 def normalize_pii(data: str, mode: str = "email") -> str:
