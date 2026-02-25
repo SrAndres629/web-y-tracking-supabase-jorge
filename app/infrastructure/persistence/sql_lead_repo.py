@@ -36,11 +36,10 @@ class SQLLeadRepository(LeadRepository):
     async def get_by_phone(self, phone: Phone) -> Optional[Lead]:
         try:
             with database.get_cursor() as cur:
-                cur.execute(queries.SELECT_LEAD_ID_BY_PHONE, (str(phone),))
+                cur.execute(queries.SELECT_LEAD_BY_PHONE, (str(phone),))
                 row = cur.fetchone()
                 if row:
-                    # TODO: Mejorar mapeo para obtener el objeto completo
-                    return await self.get_by_id(str(row[0]))
+                    return self._map_row_to_lead(row)
         except Exception as e:
             logger.exception(f"Error getting lead by phone: {e}")
         return None

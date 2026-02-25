@@ -253,6 +253,7 @@ SELECT_META_DATA_BY_REF = """
 """
 
 SELECT_LEAD_ID_BY_PHONE = "SELECT id FROM crm_leads WHERE whatsapp_phone = %s"
+SELECT_LEAD_BY_PHONE = "SELECT * FROM crm_leads WHERE whatsapp_phone = %s"
 
 UPDATE_LEAD_METADATA = """
     UPDATE crm_leads SET
