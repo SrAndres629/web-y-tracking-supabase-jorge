@@ -16,6 +16,7 @@ from app.config import settings
 # Attempt PostgreSQL Import
 try:
     import psycopg2
+    import psycopg2.pool
 
     HAS_POSTGRES = True
 except ImportError:
@@ -23,6 +24,9 @@ except ImportError:
 
     class _MockPsycopg2:
         class Error(Exception):
+            pass
+
+        class pool:
             pass
 
         def connect(self, *args: Any, **kwargs: Any) -> Any:
@@ -123,6 +127,21 @@ if settings.DATABASE_URL and HAS_POSTGRES:
         )
         # Logic to append query param could go here, but usually users fix ENV.
 
+# Connection Pool for Serverless
+_pool = None
+
+def _get_pool():
+    global _pool
+    if _pool is None and _backend == "postgres":
+        clean_url = _sanitize_postgres_dsn(settings.DATABASE_URL)
+        # minconn=1, maxconn=1 to persist a single connection across warm invocations
+        # without exhausting connections when scaling horizontally (lambda instances)
+        try:
+            _pool = psycopg2.pool.SimpleConnectionPool(1, 1, dsn=clean_url, connect_timeout=2, sslmode="require")
+        except Exception as e:
+            logger.error("Failed to create connection pool: %s", e)
+            raise
+    return _pool
 
 @contextmanager
 def get_db_connection() -> Generator[Any, None, None]:
@@ -132,7 +151,15 @@ def get_db_connection() -> Generator[Any, None, None]:
     """
     conn = None
     try:
-        conn = _establish_connection()
+        if _backend == "postgres":
+             pool_obj = _get_pool()
+             if pool_obj:
+                 conn = pool_obj.getconn()
+             else:
+                 conn = _establish_connection()
+        else:
+             conn = _establish_connection()
+
         yield conn
         if conn:
             conn.commit()
@@ -140,7 +167,17 @@ def get_db_connection() -> Generator[Any, None, None]:
         _handle_db_error(conn, e)
         raise
     finally:
-        _close_connection(conn)
+        if _backend == "postgres" and conn and _pool:
+             try:
+                 _pool.putconn(conn)
+             except Exception as e:
+                 logger.error("Error returning connection to pool: %s", e)
+                 try:
+                     conn.close()
+                 except Exception:
+                     pass
+        else:
+             _close_connection(conn)
 
 
 def _establish_connection() -> DBConnection:
@@ -294,13 +331,13 @@ def _create_core_tables(cf: Dict[str, str]) -> None:
             try:
                 cur = conn.cursor()
                 cur.execute("""
-                    DO $$ BEGIN
+                    DO 1804 BEGIN
                         IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'lead_status') THEN
                             CREATE TYPE lead_status AS ENUM (
                                 'new', 'contacted', 'qualified', 'converted', 'lost'
                             );
                         END IF;
-                    END $$;
+                    END 1804;
                 """)
                 conn.commit()
             except psycopg2.Error:
