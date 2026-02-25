@@ -16,6 +16,7 @@ from app.config import settings
 # Attempt PostgreSQL Import
 try:
     import psycopg2
+    import psycopg2.pool
 
     HAS_POSTGRES = True
 except ImportError:
@@ -95,6 +96,9 @@ DB_ERRORS: Tuple[Type[Exception], ...] = (  # type: ignore[assignment]
 
 logger = logging.getLogger(__name__)
 
+# Connection Pool (Postgres)
+_pool = None
+
 # _backend: 'postgres' vs 'sqlite'
 # NOTE: In Serverless (Vercel), we DO NOT use a global pool object.
 # Global pools are created per-lambda instance, leading to connection exhaustion.
@@ -124,6 +128,26 @@ if settings.DATABASE_URL and HAS_POSTGRES:
         # Logic to append query param could go here, but usually users fix ENV.
 
 
+
+def _get_postgres_pool():
+    global _pool
+    if _pool is None:
+        try:
+            clean_url = _sanitize_postgres_dsn(settings.DATABASE_URL)
+            # Create a threaded connection pool. minconn=1, maxconn=1 ensures we persist 1 connection
+            # but don't open more, suitable for serverless environment where instances are isolated.
+            _pool = psycopg2.pool.SimpleConnectionPool(
+                minconn=1,
+                maxconn=1,
+                dsn=clean_url,
+                connect_timeout=2,
+                sslmode="require"
+            )
+        except Exception as e:
+            logger.error(f"🔥 Failed to create connection pool: {e}")
+            raise
+    return _pool
+
 @contextmanager
 def get_db_connection() -> Generator[Any, None, None]:
     """
@@ -132,15 +156,35 @@ def get_db_connection() -> Generator[Any, None, None]:
     """
     conn = None
     try:
-        conn = _establish_connection()
+        if _backend == "postgres":
+            # Get connection from pool
+            pool = _get_postgres_pool()
+            conn = pool.getconn()
+        else:
+            # SQLite fallback
+            conn = _establish_connection()
+
         yield conn
+
         if conn:
             conn.commit()
     except Exception as e:
         _handle_db_error(conn, e)
         raise
     finally:
-        _close_connection(conn)
+        if _backend == "postgres" and conn:
+            # Return connection to pool instead of closing
+            try:
+                _get_postgres_pool().putconn(conn)
+            except Exception as e:
+                logger.error(f"Error returning connection to pool: {e}")
+                # If putconn fails, try to close it just in case
+                try:
+                    conn.close()
+                except Exception:
+                    pass
+        else:
+            _close_connection(conn)
 
 
 def _establish_connection() -> DBConnection:
