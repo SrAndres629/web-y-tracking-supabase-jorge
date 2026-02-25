@@ -27,6 +27,7 @@ class Database:
     def __init__(self, settings: Optional[Any] = None):
         self._settings = settings or get_settings()
         self._backend = self._detect_backend()
+        self._async_engine = None
 
     def _detect_backend(self) -> str:
         """Detecta qué backend usar."""
@@ -48,10 +49,66 @@ class Database:
     def backend(self) -> str:
         return self._backend
 
+    def get_async_engine(self):
+        """Lazy initialization of SQLAlchemy AsyncEngine."""
+        if self._async_engine:
+            return self._async_engine
+
+        from sqlalchemy.ext.asyncio import create_async_engine
+        from sqlalchemy.pool import NullPool
+
+        if self._backend == "postgres":
+            url = self._settings.db.url
+            # Replace scheme for asyncpg
+            if url.startswith("postgres://"):
+                url = url.replace("postgres://", "postgresql+asyncpg://", 1)
+            elif url.startswith("postgresql://"):
+                url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+
+            # Ensure proper SSL settings for Supabase/Production
+            connect_args = {}
+            if "sslmode" not in url and "?" not in url:
+                # Default to require if not specified, common for Supabase
+                connect_args = {"ssl": "require"}
+
+            self._async_engine = create_async_engine(
+                url,
+                poolclass=NullPool,  # Serverless optimization
+                connect_args=connect_args,
+                echo=False,
+            )
+        else:
+            # SQLite fallback
+            db_path = os.path.join(
+                os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+                "database",
+                "local.db",
+            )
+            os.makedirs(os.path.dirname(db_path), exist_ok=True)
+            url = f"sqlite+aiosqlite:///{db_path}"
+
+            self._async_engine = create_async_engine(
+                url,
+                connect_args={"check_same_thread": False},
+            )
+
+        return self._async_engine
+
+    @asynccontextmanager
+    async def async_connection(self) -> AsyncGenerator:
+        """
+        New async connection manager using SQLAlchemy.
+        Yields an AsyncConnection in a transaction (begin).
+        """
+        engine = self.get_async_engine()
+        async with engine.begin() as conn:
+            yield conn
+
     @asynccontextmanager
     async def connection(self) -> AsyncGenerator:
         """
-        Context manager para conexiones.
+        DEPRECATED: Use async_connection instead.
+        Context manager para conexiones legacy (psycopg2/sqlite3).
 
         Yields:
             Connection object (psycopg2 o sqlite3)
@@ -97,7 +154,9 @@ class Database:
         import sqlite3
 
         db_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "database", "local.db"
+            os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+            "database",
+            "local.db",
         )
         os.makedirs(os.path.dirname(db_path), exist_ok=True)
 
