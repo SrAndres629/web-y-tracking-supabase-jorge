@@ -2,6 +2,7 @@
 📊 Event Repository Implementation.
 
 PostgreSQL implementation para persistencia de eventos.
+Uses SQLAlchemy Core for async implementation and cross-db compatibility.
 """
 
 from __future__ import annotations
@@ -9,12 +10,16 @@ from __future__ import annotations
 import json
 import logging
 from datetime import datetime
-from typing import List, Optional
+from typing import Any, List, Optional
+
+from sqlalchemy import and_, desc, func, insert, select
+from sqlalchemy.exc import IntegrityError
 
 from app.domain.models.events import EventName, TrackingEvent
 from app.domain.models.values import EventId, ExternalId
 from app.domain.repositories.event_repo import EventRepository
 from app.infrastructure.persistence.database import db
+from app.infrastructure.persistence.tables import events_table
 
 logger = logging.getLogger(__name__)
 
@@ -25,15 +30,31 @@ class PostgreSQLEventRepository(EventRepository):
     def __init__(self):
         self._db = db
 
-    def _row_to_entity(self, row: tuple) -> TrackingEvent:
+    def _row_to_entity(self, row: Any) -> TrackingEvent:
         """Convierte fila de DB a entidad."""
+        # Columns: id, event_id, event_name, external_id, event_time, source_url, custom_data
+        # Indices: 0,  1,        2,          3,           4,          5,          6
+
+        # Handle custom_data
+        custom_data_raw = row[6]
+        custom_data = {}
+        if custom_data_raw is not None:
+            if isinstance(custom_data_raw, str):
+                try:
+                    custom_data = json.loads(custom_data_raw)
+                except json.JSONDecodeError:
+                    custom_data = {}
+            elif isinstance(custom_data_raw, dict):
+                custom_data = custom_data_raw
+            # If it's already a dict (e.g. from JSON type), use it.
+
         return TrackingEvent.reconstruct(
             event_id=EventId(row[1]),
             event_name=EventName(row[2]),
             external_id=ExternalId(row[3]),
             timestamp=row[4] if isinstance(row[4], datetime) else datetime.utcnow(),
             source_url=row[5],
-            custom_data=json.loads(row[6]) if row[6] else {},
+            custom_data=custom_data,
         )
 
     async def save(self, event: TrackingEvent) -> None:
@@ -42,43 +63,41 @@ class PostgreSQLEventRepository(EventRepository):
             logger.debug(f"Event already exists: {event.event_id}")
             return
 
-        async with self._db.connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                """
-                INSERT INTO events (
-                    event_id, event_name, external_id, event_time,
-                    source_url, custom_data, utm_source, utm_medium, utm_campaign
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                ON CONFLICT (event_id) DO NOTHING
-                """,
-                (
-                    event.event_id.value,
-                    event.event_name.value,
-                    event.external_id.value,
-                    event.timestamp,
-                    event.source_url,
-                    json.dumps(event.custom_data),
-                    event.utm.source,
-                    event.utm.medium,
-                    event.utm.campaign,
-                ),
-            )
+        stmt = insert(events_table).values(
+            event_id=event.event_id.value,
+            event_name=event.event_name.value,
+            external_id=event.external_id.value,
+            event_time=event.timestamp,
+            source_url=event.source_url,
+            custom_data=event.custom_data,
+            utm_source=event.utm.source,
+            utm_medium=event.utm.medium,
+            utm_campaign=event.utm.campaign,
+        )
+
+        try:
+            async with self._db.async_connection() as conn:
+                await conn.execute(stmt)
+        except IntegrityError:
+            logger.debug(f"Event collision (race condition): {event.event_id}")
+            # Ignore duplicate
+            pass
 
     async def get_by_id(self, event_id: EventId) -> Optional[TrackingEvent]:
         """Busca evento por ID."""
-        async with self._db.connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                """
-                SELECT id, event_id, event_name, external_id, event_time,
-                       source_url, custom_data
-                FROM events
-                WHERE event_id = %s
-                """,
-                (event_id.value,),
-            )
-            row = cursor.fetchone()
+        stmt = select(
+            events_table.c.id,
+            events_table.c.event_id,
+            events_table.c.event_name,
+            events_table.c.external_id,
+            events_table.c.event_time,
+            events_table.c.source_url,
+            events_table.c.custom_data,
+        ).where(events_table.c.event_id == event_id.value)
+
+        async with self._db.async_connection() as conn:
+            result = await conn.execute(stmt)
+            row = result.fetchone()
             return self._row_to_entity(row) if row else None
 
     async def list_by_visitor(
@@ -87,20 +106,24 @@ class PostgreSQLEventRepository(EventRepository):
         limit: int = 100,
     ) -> List[TrackingEvent]:
         """Lista eventos de un visitante."""
-        async with self._db.connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                """
-                SELECT id, event_id, event_name, external_id, event_time,
-                       source_url, custom_data
-                FROM events
-                WHERE external_id = %s
-                ORDER BY event_time DESC
-                LIMIT %s
-                """,
-                (external_id.value, limit),
+        stmt = (
+            select(
+                events_table.c.id,
+                events_table.c.event_id,
+                events_table.c.event_name,
+                events_table.c.external_id,
+                events_table.c.event_time,
+                events_table.c.source_url,
+                events_table.c.custom_data,
             )
-            rows = cursor.fetchall()
+            .where(events_table.c.external_id == external_id.value)
+            .order_by(desc(events_table.c.event_time))
+            .limit(limit)
+        )
+
+        async with self._db.async_connection() as conn:
+            result = await conn.execute(stmt)
+            rows = result.fetchall()
             return [self._row_to_entity(row) for row in rows]
 
     async def list_by_visitor_and_type(
@@ -110,20 +133,29 @@ class PostgreSQLEventRepository(EventRepository):
         limit: int = 50,
     ) -> List[TrackingEvent]:
         """Lista eventos de un tipo específico."""
-        async with self._db.connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                """
-                SELECT id, event_id, event_name, external_id, event_time,
-                       source_url, custom_data
-                FROM events
-                WHERE external_id = %s AND event_name = %s
-                ORDER BY event_time DESC
-                LIMIT %s
-                """,
-                (external_id.value, event_name.value, limit),
+        stmt = (
+            select(
+                events_table.c.id,
+                events_table.c.event_id,
+                events_table.c.event_name,
+                events_table.c.external_id,
+                events_table.c.event_time,
+                events_table.c.source_url,
+                events_table.c.custom_data,
             )
-            rows = cursor.fetchall()
+            .where(
+                and_(
+                    events_table.c.external_id == external_id.value,
+                    events_table.c.event_name == event_name.value,
+                )
+            )
+            .order_by(desc(events_table.c.event_time))
+            .limit(limit)
+        )
+
+        async with self._db.async_connection() as conn:
+            result = await conn.execute(stmt)
+            rows = result.fetchall()
             return [self._row_to_entity(row) for row in rows]
 
     async def list_by_date_range(
@@ -134,52 +166,43 @@ class PostgreSQLEventRepository(EventRepository):
         limit: int = 1000,
     ) -> List[TrackingEvent]:
         """Lista eventos en rango de fechas."""
-        async with self._db.connection() as conn:
-            cursor = conn.cursor()
-            if event_name:
-                cursor.execute(
-                    """
-                    SELECT id, event_id, event_name, external_id, event_time,
-                           source_url, custom_data
-                    FROM events
-                    WHERE event_time BETWEEN %s AND %s AND event_name = %s
-                    ORDER BY event_time DESC
-                    LIMIT %s
-                    """,
-                    (start, end, event_name.value, limit),
-                )
-            else:
-                cursor.execute(
-                    """
-                    SELECT id, event_id, event_name, external_id, event_time,
-                           source_url, custom_data
-                    FROM events
-                    WHERE event_time BETWEEN %s AND %s
-                    ORDER BY event_time DESC
-                    LIMIT %s
-                    """,
-                    (start, end, limit),
-                )
-            rows = cursor.fetchall()
+        stmt = select(
+            events_table.c.id,
+            events_table.c.event_id,
+            events_table.c.event_name,
+            events_table.c.external_id,
+            events_table.c.event_time,
+            events_table.c.source_url,
+            events_table.c.custom_data,
+        ).where(events_table.c.event_time.between(start, end))
+
+        if event_name:
+            stmt = stmt.where(events_table.c.event_name == event_name.value)
+
+        stmt = stmt.order_by(desc(events_table.c.event_time)).limit(limit)
+
+        async with self._db.async_connection() as conn:
+            result = await conn.execute(stmt)
+            rows = result.fetchall()
             return [self._row_to_entity(row) for row in rows]
 
     async def exists(self, event_id: EventId) -> bool:
         """Verifica si evento existe."""
-        async with self._db.connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT 1 FROM events WHERE event_id = %s LIMIT 1", (event_id.value,))
-            return cursor.fetchone() is not None
+        stmt = select(1).where(events_table.c.event_id == event_id.value).limit(1)
+
+        async with self._db.async_connection() as conn:
+            result = await conn.execute(stmt)
+            return result.fetchone() is not None
 
     async def count_by_visitor(self, external_id: ExternalId) -> int:
         """Cuenta eventos de un visitante."""
-        async with self._db.connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                "SELECT COUNT(*) FROM events WHERE external_id = %s",
-                (external_id.value,),
-            )
-            row = cursor.fetchone()
-            return row[0] if row else 0
+        stmt = select(func.count()).where(
+            events_table.c.external_id == external_id.value
+        )
+
+        async with self._db.async_connection() as conn:
+            result = await conn.execute(stmt)
+            return result.scalar() or 0
 
     async def count_by_type_and_date(
         self,
@@ -187,15 +210,13 @@ class PostgreSQLEventRepository(EventRepository):
         date: datetime,
     ) -> int:
         """Cuenta eventos de un tipo en fecha específica."""
-        async with self._db.connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                """
-                SELECT COUNT(*) FROM events
-                WHERE event_name = %s
-                AND DATE(event_time) = DATE(%s)
-                """,
-                (event_name.value, date),
+        stmt = select(func.count()).where(
+            and_(
+                events_table.c.event_name == event_name.value,
+                func.date(events_table.c.event_time) == func.date(date),
             )
-            row = cursor.fetchone()
-            return row[0] if row else 0
+        )
+
+        async with self._db.async_connection() as conn:
+            result = await conn.execute(stmt)
+            return result.scalar() or 0
