@@ -77,6 +77,42 @@ class RetryConfig:
     on_retry: Optional[Callable[[Exception, int], None]] = None
 
 
+class RetryManager:
+    """
+    Manages retry logic state and delay calculation.
+    """
+
+    def __init__(self, config: RetryConfig, func_name: str):
+        self.config = config
+        self.func_name = func_name
+        self.attempt = 1
+
+    def should_retry(self, exception: Exception) -> bool:
+        """Determines if we should retry based on exception type and attempt count."""
+        if not isinstance(exception, self.config.exceptions):
+            return False
+        if self.attempt >= self.config.max_attempts:
+            return False
+        return True
+
+    def get_delay_and_log(self, exception: Exception) -> float:
+        """Calculates delay, logs warning, and increments attempt counter."""
+        delay = min(
+            self.config.base_delay * (self.config.exponential_base ** (self.attempt - 1)),
+            self.config.max_delay,
+        )
+        logger.warning(
+            "🔄 Retry %d/%d for %s: %s. Waiting %.1fs...",
+            self.attempt,
+            self.config.max_attempts,
+            self.func_name,
+            str(exception),
+            delay,
+        )
+        self.attempt += 1
+        return delay
+
+
 def retry(
     max_attempts: int = 3,
     base_delay: float = 1.0,
@@ -91,65 +127,36 @@ def retry(
         ... async def call_external_api() -> dict: ...
     """
     config = RetryConfig(
-        max_attempts=max_attempts, base_delay=base_delay, max_delay=max_delay, exceptions=exceptions
+        max_attempts=max_attempts,
+        base_delay=base_delay,
+        max_delay=max_delay,
+        exceptions=exceptions,
     )
 
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
         @functools.wraps(func)
         async def async_wrapper(*args: Any, **kwargs: Any) -> T:
-            last_exception: Optional[Exception] = None
-
-            for attempt in range(1, config.max_attempts + 1):
+            manager = RetryManager(config, func.__name__)
+            while True:
                 try:
                     return await cast(Awaitable[T], func(*args, **kwargs))
-                except config.exceptions as e:
-                    last_exception = e
-                    if attempt == config.max_attempts:
-                        break
-
-                    delay = min(
-                        config.base_delay * (config.exponential_base ** (attempt - 1)),
-                        config.max_delay,
-                    )
-                    logger.warning(
-                        "🔄 Retry %d/%d for %s: %s. Waiting %.1fs...",
-                        attempt,
-                        config.max_attempts,
-                        func.__name__,
-                        str(e),
-                        delay,
-                    )
+                except Exception as e:
+                    if not manager.should_retry(e):
+                        raise
+                    delay = manager.get_delay_and_log(e)
                     await asyncio.sleep(delay)
-
-            raise last_exception or Exception("Retry failed")
 
         @functools.wraps(func)
         def sync_wrapper(*args: Any, **kwargs: Any) -> T:
-            last_exception: Optional[Exception] = None
-
-            for attempt in range(1, config.max_attempts + 1):
+            manager = RetryManager(config, func.__name__)
+            while True:
                 try:
                     return func(*args, **kwargs)
-                except config.exceptions as e:
-                    last_exception = e
-                    if attempt == config.max_attempts:
-                        break
-
-                    delay = min(
-                        config.base_delay * (config.exponential_base ** (attempt - 1)),
-                        config.max_delay,
-                    )
-                    logger.warning(
-                        "🔄 Retry %d/%d for %s: %s. Waiting %.1fs...",
-                        attempt,
-                        config.max_attempts,
-                        func.__name__,
-                        str(e),
-                        delay,
-                    )
+                except Exception as e:
+                    if not manager.should_retry(e):
+                        raise
+                    delay = manager.get_delay_and_log(e)
                     time.sleep(delay)
-
-            raise last_exception or Exception("Retry failed")
 
         if asyncio.iscoroutinefunction(func):
             return cast(Callable[..., T], async_wrapper)
