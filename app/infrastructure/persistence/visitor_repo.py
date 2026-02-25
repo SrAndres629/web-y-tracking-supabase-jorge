@@ -6,6 +6,7 @@ PostgreSQL implementation con SQLite fallback.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from datetime import datetime
 from typing import List, Optional
@@ -57,37 +58,43 @@ class PostgreSQLVisitorRepository(VisitorRepository):
     async def get_by_external_id(self, external_id: ExternalId) -> Optional[Visitor]:
         """Busca visitante por external_id."""
         async with self._db.connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                """
-                SELECT id, external_id, fbclid, fbp, ip_address, user_agent,
-                       source, utm_source, utm_medium, utm_campaign,
-                       country, city, created_at, last_seen, visit_count
-                FROM visitors
-                WHERE external_id = %s
-                """,
-                (external_id.value,),
-            )
-            row = cursor.fetchone()
+            def _query():
+                with conn.cursor() as cursor:
+                    cursor.execute(
+                        """
+                        SELECT id, external_id, fbclid, fbp, ip_address, user_agent,
+                               source, utm_source, utm_medium, utm_campaign,
+                               country, city, created_at, last_seen, visit_count
+                        FROM visitors
+                        WHERE external_id = %s
+                        """,
+                        (external_id.value,),
+                    )
+                    return cursor.fetchone()
+
+            row = await asyncio.to_thread(_query)
             return self._row_to_entity(row) if row else None
 
     async def get_by_fbclid(self, fbclid: str) -> Optional[Visitor]:
         """Busca visitante por fbclid."""
         async with self._db.connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                """
-                SELECT id, external_id, fbclid, fbp, ip_address, user_agent,
-                       source, utm_source, utm_medium, utm_campaign,
-                       country, city, created_at, last_seen, visit_count
-                FROM visitors
-                WHERE fbclid = %s
-                ORDER BY last_seen DESC
-                LIMIT 1
-                """,
-                (fbclid,),
-            )
-            row = cursor.fetchone()
+            def _query():
+                with conn.cursor() as cursor:
+                    cursor.execute(
+                        """
+                        SELECT id, external_id, fbclid, fbp, ip_address, user_agent,
+                               source, utm_source, utm_medium, utm_campaign,
+                               country, city, created_at, last_seen, visit_count
+                        FROM visitors
+                        WHERE fbclid = %s
+                        ORDER BY last_seen DESC
+                        LIMIT 1
+                        """,
+                        (fbclid,),
+                    )
+                    return cursor.fetchone()
+
+            row = await asyncio.to_thread(_query)
             return self._row_to_entity(row) if row else None
 
     async def save(self, visitor: Visitor) -> None:
@@ -103,90 +110,104 @@ class PostgreSQLVisitorRepository(VisitorRepository):
             raise DuplicateVisitorError(f"Visitor {visitor.external_id} already exists")
 
         async with self._db.connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                """
-                INSERT INTO visitors (
-                    external_id, fbclid, fbp, ip_address, user_agent,
-                    source, utm_source, utm_medium, utm_campaign,
-                    country, city, created_at, last_seen, visit_count
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                """,
-                (
-                    visitor.external_id.value,
-                    visitor.fbclid,
-                    visitor.fbp,
-                    visitor.ip_address,
-                    visitor.user_agent,
-                    visitor.source.value,
-                    visitor.utm.source,
-                    visitor.utm.medium,
-                    visitor.utm.campaign,
-                    visitor.geo.country,
-                    visitor.geo.city,
-                    visitor.created_at,
-                    visitor.last_seen,
-                    visitor.visit_count,
-                ),
-            )
+            def _query():
+                with conn.cursor() as cursor:
+                    cursor.execute(
+                        """
+                        INSERT INTO visitors (
+                            external_id, fbclid, fbp, ip_address, user_agent,
+                            source, utm_source, utm_medium, utm_campaign,
+                            country, city, created_at, last_seen, visit_count
+                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        """,
+                        (
+                            visitor.external_id.value,
+                            visitor.fbclid,
+                            visitor.fbp,
+                            visitor.ip_address,
+                            visitor.user_agent,
+                            visitor.source.value,
+                            visitor.utm.source,
+                            visitor.utm.medium,
+                            visitor.utm.campaign,
+                            visitor.geo.country,
+                            visitor.geo.city,
+                            visitor.created_at,
+                            visitor.last_seen,
+                            visitor.visit_count,
+                        ),
+                    )
+            await asyncio.to_thread(_query)
 
     async def update(self, visitor: Visitor) -> None:
         """Actualiza visitante existente."""
         async with self._db.connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                """
-                UPDATE visitors SET
-                    fbclid = %s,
-                    fbp = %s,
-                    last_seen = %s,
-                    visit_count = %s,
-                    country = %s,
-                    city = %s
-                WHERE external_id = %s
-                """,
-                (
-                    visitor.fbclid,
-                    visitor.fbp,
-                    visitor.last_seen,
-                    visitor.visit_count,
-                    visitor.geo.country,
-                    visitor.geo.city,
-                    visitor.external_id.value,
-                ),
-            )
+            def _query():
+                with conn.cursor() as cursor:
+                    cursor.execute(
+                        """
+                        UPDATE visitors SET
+                            fbclid = %s,
+                            fbp = %s,
+                            last_seen = %s,
+                            visit_count = %s,
+                            country = %s,
+                            city = %s
+                        WHERE external_id = %s
+                        """,
+                        (
+                            visitor.fbclid,
+                            visitor.fbp,
+                            visitor.last_seen,
+                            visitor.visit_count,
+                            visitor.geo.country,
+                            visitor.geo.city,
+                            visitor.external_id.value,
+                        ),
+                    )
+            await asyncio.to_thread(_query)
 
     async def list_recent(self, limit: int = 50, offset: int = 0) -> List[Visitor]:
         """Lista visitantes recientes."""
         async with self._db.connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                """
-                SELECT id, external_id, fbclid, fbp, ip_address, user_agent,
-                       source, utm_source, utm_medium, utm_campaign,
-                       country, city, created_at, last_seen, visit_count
-                FROM visitors
-                ORDER BY last_seen DESC
-                LIMIT %s OFFSET %s
-                """,
-                (limit, offset),
-            )
-            rows = cursor.fetchall()
+            def _query():
+                with conn.cursor() as cursor:
+                    cursor.execute(
+                        """
+                        SELECT id, external_id, fbclid, fbp, ip_address, user_agent,
+                               source, utm_source, utm_medium, utm_campaign,
+                               country, city, created_at, last_seen, visit_count
+                        FROM visitors
+                        ORDER BY last_seen DESC
+                        LIMIT %s OFFSET %s
+                        """,
+                        (limit, offset),
+                    )
+                    return cursor.fetchall()
+
+            rows = await asyncio.to_thread(_query)
             return [self._row_to_entity(row) for row in rows]
 
     async def count(self) -> int:
         """Cuenta total de visitantes."""
         async with self._db.connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT COUNT(*) FROM visitors")
-            row = cursor.fetchone()
+            def _query():
+                with conn.cursor() as cursor:
+                    cursor.execute("SELECT COUNT(*) FROM visitors")
+                    return cursor.fetchone()
+
+            row = await asyncio.to_thread(_query)
             return row[0] if row else 0
 
     async def exists(self, external_id: ExternalId) -> bool:
         """Verifica si existe."""
         async with self._db.connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                "SELECT 1 FROM visitors WHERE external_id = %s LIMIT 1", (external_id.value,)
-            )
-            return cursor.fetchone() is not None
+            def _query():
+                with conn.cursor() as cursor:
+                    cursor.execute(
+                        "SELECT 1 FROM visitors WHERE external_id = %s LIMIT 1", (external_id.value,)
+                    )
+                    return cursor.fetchone()
+
+            row = await asyncio.to_thread(_query)
+            return row is not None
