@@ -6,9 +6,10 @@ from app.application.commands.admin.confirm_sale_command import ConfirmSaleComma
 from app.application.queries.admin.get_all_visitors_query import GetAllVisitorsQuery
 from app.application.queries.admin.get_signal_audit_query import GetSignalAuditQuery
 from app.config import settings
+from app.core.urls import urls
 from app.interfaces.api.dependencies import get_legacy_facade
 
-router = APIRouter(prefix="/admin", tags=["Admin"])
+router = APIRouter(prefix=urls.ADMIN.PREFIX, tags=["Admin"])
 templates = Jinja2Templates(directory=settings.TEMPLATES_DIRS)
 legacy = get_legacy_facade()
 
@@ -18,7 +19,7 @@ def verify_admin_key(key: str) -> bool:
     return key == settings.ADMIN_KEY
 
 
-@router.get("/dashboard", response_class=HTMLResponse)
+@router.get(urls.ADMIN.DASHBOARD, response_class=HTMLResponse)
 async def admin_dashboard(request: Request, key: str = ""):
     """
     Panel de administración protegido por clave
@@ -41,7 +42,7 @@ async def admin_dashboard(request: Request, key: str = ""):
     )
 
 
-@router.get("/stats")
+@router.get(urls.ADMIN.STATS)
 async def admin_stats(key: str = ""):
     """Devuelve JSON con estadísticas para monitoreo externo"""
     if not verify_admin_key(key):
@@ -52,7 +53,7 @@ async def admin_stats(key: str = ""):
     return {"total_visitors": len(visitors), "status": "active", "database": "connected"}
 
 
-@router.post("/confirm/{visitor_id}")
+@router.post(urls.ADMIN.CONFIRM_SALE)
 async def confirm_sale(
     visitor_id: int, background_tasks: BackgroundTasks, request: Request, key: str = ""
 ):
@@ -92,7 +93,7 @@ async def confirm_sale(
     )
 
 
-@router.get("/signals")
+@router.get(urls.ADMIN.SIGNALS)
 async def audit_signals(key: str = ""):
     """
     AUDITORÍA DE SEÑALES (Silicon Valley Signal Quality)

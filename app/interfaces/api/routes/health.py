@@ -10,20 +10,21 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse, PlainTextResponse
 
 from app.config import settings
+from app.core.urls import urls
 from app.interfaces.api.dependencies import get_legacy_facade
 
 router = APIRouter(tags=["Health"])
 legacy = get_legacy_facade()
 
 
-@router.head("/health")
+@router.head(urls.HEALTH.HEALTH)
 async def head_health_check():
     """HEAD check for UptimeRobot"""
     return JSONResponse({"status": "healthy"})
 
 
-@router.get("/health")
-@router.get("/healthcheck")
+@router.get(urls.HEALTH.HEALTH)
+@router.get(urls.HEALTH.HEALTH_CHECK)
 async def health_check(request: Request):
     """
     Health check completo con verificación de base de datos
@@ -63,7 +64,7 @@ async def health_check(request: Request):
     )
 
 
-@router.get("/health/diagnostics")
+@router.get(urls.HEALTH.DIAGNOSTICS)
 async def health_diagnostics_full(request: Request):
     """
     Reporte de diagnóstico completo (sistema, DB, Redis, env)
@@ -74,7 +75,7 @@ async def health_diagnostics_full(request: Request):
     return JSONResponse(report)
 
 
-@router.get("/health/config")
+@router.get(urls.HEALTH.CONFIG)
 async def health_config_contract():
     """Expose integration contract status for ops automation."""
     return JSONResponse(
@@ -87,7 +88,7 @@ async def health_config_contract():
     )
 
 
-@router.get("/health/assets")
+@router.get(urls.HEALTH.ASSETS)
 async def health_assets():
     """
     Verifica que los assets críticos existan en runtime serverless.
@@ -118,7 +119,7 @@ async def health_assets():
     )
 
 
-@router.get("/ping", response_class=PlainTextResponse)
+@router.get(urls.HEALTH.PING, response_class=PlainTextResponse)
 async def ping():
     """Ping simple para monitoreo básico"""
     return "pong"
@@ -152,7 +153,7 @@ def _prewarm_probe_payload(request: Request) -> dict:
     }
 
 
-@router.get("/__prewarm_debug")
+@router.get(urls.HEALTH.PREWARM_DEBUG)
 async def prewarm_debug(request: Request):
     """
     Endpoint de diagnóstico forense para prewarm.
@@ -171,7 +172,7 @@ async def prewarm_debug(request: Request):
     )
 
 
-@router.get("/health/prewarm")
+@router.get(urls.HEALTH.PREWARM)
 async def prewarm_health(request: Request):
     """Health-style prewarm diagnostic endpoint."""
     header_key = request.headers.get("x-prewarm-debug")

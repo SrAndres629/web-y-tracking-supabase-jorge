@@ -13,6 +13,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 from app.config import settings
+from app.core.urls import urls
 from app.interfaces.api.dependencies import get_legacy_facade
 from app.services import get_contact_config, get_services_config
 from app.services.seo_engine import SEOEngine
@@ -117,13 +118,13 @@ async def bg_send_pageview(
 # =================================================================
 
 
-@router.head("/", response_class=HTMLResponse)
+@router.head(urls.PAGES.HOME, response_class=HTMLResponse)
 async def head_root() -> Response:
     """HEAD response for UptimeRobot (no tracking)"""
     return Response(status_code=200)
 
 
-@router.get("/", response_class=HTMLResponse)
+@router.get(urls.PAGES.HOME, response_class=HTMLResponse)
 async def read_root(
     request: Request,
     background_tasks: BackgroundTasks,
@@ -147,7 +148,7 @@ async def read_root(
     # 4. SEO Engine (Silicon Valley Research Standard)
     # Page metadata
     seo_meta: Dict[str, Any] = SEOEngine.get_page_metadata(
-        "/",
+        urls.PAGES.HOME,
         {
             "title": ("Jorge Aguirre Flores | Experto en Microblading y Estética Avanzada"),
             "description": (
@@ -160,7 +161,7 @@ async def read_root(
     # Schemas
     schemas = [
         SEOEngine.get_global_schema(),
-        SEOEngine.get_breadcrumb_schema([{"name": "Inicio", "path": "/"}]),
+        SEOEngine.get_breadcrumb_schema([{"name": "Inicio", "path": urls.PAGES.HOME}]),
     ]
 
     # 5. Background Tasks & Cookies
@@ -195,7 +196,7 @@ async def read_root(
     return response
 
 
-@router.get("/tracking-motor", response_class=HTMLResponse)
+@router.get(urls.PAGES.TRACKING_MOTOR, response_class=HTMLResponse)
 async def read_tracking_motor(
     request: Request,
     background_tasks: BackgroundTasks,
@@ -215,7 +216,7 @@ async def read_tracking_motor(
 
     # 4. SEO Engine
     seo_meta: Dict[str, Any] = SEOEngine.get_page_metadata(
-        "/tracking-motor",
+        urls.PAGES.TRACKING_MOTOR,
         {
             "title": "Anti-Gravity Tracking Core | Meta CAPI Atomic Motor",
             "description": (
@@ -229,8 +230,8 @@ async def read_tracking_motor(
         SEOEngine.get_global_schema(),
         SEOEngine.get_breadcrumb_schema(
             [
-                {"name": "Inicio", "path": "/"},
-                {"name": "Tracking Motor", "path": "/tracking-motor"},
+                {"name": "Inicio", "path": urls.PAGES.HOME},
+                {"name": "Tracking Motor", "path": urls.PAGES.TRACKING_MOTOR},
             ]
         ),
     ]
@@ -261,7 +262,7 @@ async def read_tracking_motor(
     return response
 
 
-@router.get("/microblading", response_class=HTMLResponse)
+@router.get(urls.PAGES.MICROBLADING, response_class=HTMLResponse)
 async def read_microblading(
     request: Request,
     background_tasks: BackgroundTasks,
@@ -274,7 +275,7 @@ async def read_microblading(
     )
 
 
-@router.get("/cejas", response_class=HTMLResponse)
+@router.get(urls.PAGES.BROWS, response_class=HTMLResponse)
 async def read_brows(
     request: Request,
     background_tasks: BackgroundTasks,
@@ -285,7 +286,7 @@ async def read_brows(
     return await _render_service_page(request, background_tasks, "brows", fbp_cookie, fbc_cookie)
 
 
-@router.get("/ojos", response_class=HTMLResponse)
+@router.get(urls.PAGES.EYES, response_class=HTMLResponse)
 async def read_eyes(
     request: Request,
     background_tasks: BackgroundTasks,
@@ -296,7 +297,7 @@ async def read_eyes(
     return await _render_service_page(request, background_tasks, "eyeliner", fbp_cookie, fbc_cookie)
 
 
-@router.get("/labios", response_class=HTMLResponse)
+@router.get(urls.PAGES.LIPS, response_class=HTMLResponse)
 async def read_lips(
     request: Request,
     background_tasks: BackgroundTasks,
@@ -343,7 +344,7 @@ async def _render_service_page(
         SEOEngine.get_service_schema(service),
         SEOEngine.get_breadcrumb_schema(
             [
-                {"name": "Inicio", "path": "/"},
+                {"name": "Inicio", "path": urls.PAGES.HOME},
                 {"name": service["title"], "path": f"/{service_id}"},
             ]
         ),
@@ -369,11 +370,11 @@ async def _render_service_page(
     return response
 
 
-@router.get("/onboarding", response_class=HTMLResponse)
+@router.get(urls.PAGES.ONBOARDING, response_class=HTMLResponse)
 async def read_onboarding(request: Request) -> Response:
     """CLIENT ONBOARDING PAGE - Self-service credential generation."""
     seo_meta: Dict[str, Any] = SEOEngine.get_page_metadata(
-        "/onboarding",
+        urls.PAGES.ONBOARDING,
         {
             "title": "Onboarding | Atomic Tracking Motor",
             "description": ("Configura tu motor de tracking y genera tu API Key en 5 minutos."),
@@ -394,7 +395,7 @@ async def read_onboarding(request: Request) -> Response:
     )
 
 
-@router.get("/privacidad", response_class=HTMLResponse)
+@router.get(urls.PAGES.PRIVACY, response_class=HTMLResponse)
 async def read_privacy(request: Request) -> Response:
     """Privacy Policy Page."""
     return templates.TemplateResponse(
@@ -409,13 +410,13 @@ async def read_privacy(request: Request) -> Response:
     )
 
 
-@router.get("/privacy", response_class=HTMLResponse)
+@router.get(urls.PAGES.PRIVACY_EN, response_class=HTMLResponse)
 async def read_privacy_en(request: Request) -> Response:
     """Privacy Policy Page (English Alias)."""
     return await read_privacy(request)
 
 
-@router.get("/terminos", response_class=HTMLResponse)
+@router.get(urls.PAGES.TERMS, response_class=HTMLResponse)
 async def read_terms(request: Request) -> Response:
     """Terms & Conditions Page."""
     return templates.TemplateResponse(
@@ -430,13 +431,13 @@ async def read_terms(request: Request) -> Response:
     )
 
 
-@router.get("/terms", response_class=HTMLResponse)
+@router.get(urls.PAGES.TERMS_EN, response_class=HTMLResponse)
 async def read_terms_en(request: Request) -> Response:
     """Terms & Conditions Page (English Alias)."""
     return await read_terms(request)
 
 
-@router.get("/cookies", response_class=HTMLResponse)
+@router.get(urls.PAGES.COOKIES, response_class=HTMLResponse)
 async def read_cookies(request: Request) -> Response:
     """Cookies Policy Page."""
     return templates.TemplateResponse(
