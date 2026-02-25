@@ -16,10 +16,12 @@ from app.config import settings
 # Attempt PostgreSQL Import
 try:
     import psycopg2
+    from psycopg2 import pool as pg_pool
 
     HAS_POSTGRES = True
 except ImportError:
     HAS_POSTGRES = False
+    pg_pool = None  # type: ignore[assignment]
 
     class _MockPsycopg2:
         class Error(Exception):
@@ -96,9 +98,11 @@ DB_ERRORS: Tuple[Type[Exception], ...] = (  # type: ignore[assignment]
 logger = logging.getLogger(__name__)
 
 # _backend: 'postgres' vs 'sqlite'
-# NOTE: In Serverless (Vercel), we DO NOT use a global pool object.
-# Global pools are created per-lambda instance, leading to connection exhaustion.
+# NOTE: In Serverless (Vercel), using a small pool (size 1) persisting across warm invocations
+# drastically reduces SSL handshake latency without causing connection exhaustion.
 _backend = "sqlite"
+_pg_pool: Optional[Any] = None
+
 BACKEND = _backend
 if settings.DATABASE_URL and HAS_POSTGRES:
     # 🛡️ SILICON VALLEY PROTOCOL: Deterministic Guard against STUB DSNs
@@ -127,7 +131,7 @@ if settings.DATABASE_URL and HAS_POSTGRES:
 @contextmanager
 def get_db_connection() -> Generator[Any, None, None]:
     """
-    Creates a SINGLE connection per request.
+    Creates a SINGLE connection per request (pooled for Postgres).
     Silicon Valley Protocol: 0-Latency failover & strict pool hygiene.
     """
     conn = None
@@ -140,15 +144,39 @@ def get_db_connection() -> Generator[Any, None, None]:
         _handle_db_error(conn, e)
         raise
     finally:
-        _close_connection(conn)
+        if _backend == "postgres" and _pg_pool and conn:
+            try:
+                # If connection is closed or in error state, discard it
+                if getattr(conn, "closed", 0) > 0:
+                     _pg_pool.putconn(conn, close=True)
+                else:
+                     _pg_pool.putconn(conn)
+            except Exception as pool_err:
+                logger.error("Error returning connection to pool: %s", pool_err)
+                _close_connection(conn)
+        else:
+            _close_connection(conn)
 
 
 def _establish_connection() -> DBConnection:
+    global _pg_pool
     if _backend == "postgres":
-        # 🛡️ Normalize malformed DSNs and strip problematic params before psycopg2 connect.
-        clean_url = _sanitize_postgres_dsn(settings.DATABASE_URL)
+        if _pg_pool is None:
+            # 🛡️ Normalize malformed DSNs and strip problematic params before psycopg2 connect.
+            clean_url = _sanitize_postgres_dsn(settings.DATABASE_URL)
 
-        return psycopg2.connect(clean_url, connect_timeout=2, sslmode="require")
+            try:
+                # Create a pool with minconn=1, maxconn=settings.db.pool_size
+                _pg_pool = pg_pool.SimpleConnectionPool(
+                    1, settings.db.pool_size, dsn=clean_url, connect_timeout=2, sslmode="require"
+                )
+            except Exception as e:
+                logger.error("Failed to create connection pool: %s", e)
+                # Fallback to direct connection if pool fails? Or re-raise?
+                # Re-raising is safer to avoid silent failures masking issues
+                raise
+
+        return _pg_pool.getconn()
 
     db_dir = os.path.dirname(os.path.abspath(__file__))
     db_path = os.path.join(os.path.dirname(db_dir), "database", "local_fallback.db")
