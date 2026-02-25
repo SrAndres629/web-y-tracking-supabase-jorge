@@ -9,7 +9,7 @@ import json
 import logging
 from typing import Optional
 
-from upstash_redis import Redis
+from upstash_redis import AsyncRedis, Redis
 
 from app.config import settings
 
@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 class DeduplicationService:
     def __init__(self):
         self._redis: Optional[Redis] = None
+        self._redis_async: Optional[AsyncRedis] = None
         self._init_redis()
 
     def _init_redis(self):
@@ -29,7 +30,11 @@ class DeduplicationService:
                     url=settings.UPSTASH_REDIS_REST_URL,
                     token=settings.UPSTASH_REDIS_REST_TOKEN,
                 )
-                logger.info("✅ DeduplicationService: Redis connected.")
+                self._redis_async = AsyncRedis(
+                    url=settings.UPSTASH_REDIS_REST_URL,
+                    token=settings.UPSTASH_REDIS_REST_TOKEN,
+                )
+                logger.info("✅ DeduplicationService: Redis connected (Sync + Async).")
             else:
                 logger.warning(
                     "⚠️ DeduplicationService: Redis credentials missing. Falling back to memory (NOT PROD READY)."
@@ -104,6 +109,70 @@ class DeduplicationService:
                 return json.loads(data)
         except Exception as e:
             logger.exception(f"⚠️ Redis Error in get_visitor: {e}")
+            return None
+        return None
+
+    async def try_consume_event_async(
+        self, event_id: str, event_name: str = "event", ttl: int = 86400
+    ) -> bool:
+        """
+        Attempt to consume (process) an event ID asynchronously.
+        Returns:
+            True: Event is NEW (lock acquired).
+            False: Event is DUPLICATE (already processed).
+        """
+        if not event_id:
+            return True  # No ID, assume new (or invalid, but handled elsewhere)
+
+        key = f"evt:{event_id}"
+
+        if self._redis_async:
+            try:
+                import time
+
+                val = str(int(time.time()))
+
+                # If set returns True/OK, it was set (New). If None, it existed (Duplicate).
+                # Note: upstash-redis implementation dependent.
+                result = await self._redis_async.set(key, val, ex=ttl, nx=True)
+
+                if result:
+                    return True  # New
+                else:
+                    logger.info(f"🛑 Duplicate detected: {key}")
+                    return False  # Duplicate
+
+            except Exception as e:
+                logger.exception(f"⚠️ Async Redis Error in is_duplicate: {e}")
+                return True  # Fallback: process it to avoid data loss
+        else:
+            # Fallback to in-memory (handled in cache.py but duplication here for safety?)
+            # Ideally we shouldn't reach here in PROD.
+            return True
+
+    async def cache_visitor_async(self, external_id: str, data: dict, ttl: int = 86400):
+        """Cache resolved visitor data for subsequent requests asynchronously."""
+        if not self._redis_async or not external_id:
+            return
+
+        key = f"vis:{external_id}"
+        try:
+            await self._redis_async.set(key, json.dumps(data), ex=ttl)
+        except Exception as e:
+            logger.exception(f"⚠️ Async Redis Error in cache_visitor: {e}")
+
+    async def get_visitor_async(self, external_id: str) -> Optional[dict]:
+        """Get cached visitor data asynchronously."""
+        if not self._redis_async or not external_id:
+            return None
+
+        key = f"vis:{external_id}"
+        try:
+            data = await self._redis_async.get(key)
+            if data:
+                return json.loads(data)
+        except Exception as e:
+            logger.exception(f"⚠️ Async Redis Error in get_visitor: {e}")
             return None
         return None
 

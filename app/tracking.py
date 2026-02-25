@@ -51,6 +51,24 @@ try:
         except AttributeError:
             return None
 
+    async def try_consume_event_async(event_id: str, event_name: str = "event") -> bool:
+        """Attempt to consume event ID using Redis (Async)."""
+        return await dedup_service.try_consume_event_async(event_id, event_name)
+
+    async def cache_visitor_data_async(_external_id: str, _data: Dict[str, Any], _ttl_hours: int = 24) -> None:
+        """Cache visitor data in Redis (Async)."""
+        try:
+            await dedup_service.cache_visitor_async(_external_id, _data, ttl=_ttl_hours * 3600)
+        except AttributeError:
+            pass
+
+    async def get_cached_visitor_async(_external_id: str) -> Optional[Dict[str, Any]]:
+        """Get cached visitor data from Redis (Async)."""
+        try:
+            return await dedup_service.get_visitor_async(_external_id)
+        except AttributeError:
+            return None
+
     CACHE_ENABLED = True
 except ImportError as e:
     logger.warning("⚠️ Deduplication Service Import Error: %s", str(e))
@@ -69,6 +87,15 @@ except ImportError as e:
         pass
 
     def get_cached_visitor(_external_id: str) -> Optional[Dict[str, Any]]:
+        return None
+
+    async def try_consume_event_async(event_id: str, event_name: str = "event") -> bool:
+        return try_consume_event(event_id, event_name)
+
+    async def cache_visitor_data_async(_external_id: str, _data: Dict[str, Any], _ttl_hours: int = 24) -> None:
+        pass
+
+    async def get_cached_visitor_async(_external_id: str) -> Optional[Dict[str, Any]]:
         return None
 
 
@@ -383,7 +410,7 @@ async def send_event_async(
 ) -> bool:
     """Asynchronous Sender (For FastAPI Routes)"""
 
-    if not try_consume_event(event_id, event_name):
+    if not await try_consume_event_async(event_id, event_name):
         logger.info("🔄 [DEDUP ASYNC] Skipped duplicate %s", event_name)
         return True
 
@@ -634,10 +661,10 @@ class EliteMetaCAPIService:
     def __init__(self):
         self.sandbox_mode = settings.META_SANDBOX_MODE
 
-    def _deduplicate(self, event_id: str, event_name: str) -> bool:
+    async def _deduplicate_async(self, event_id: str, event_name: str) -> bool:
         try:
-            # We use the existing try_consume_event from this module
-            return try_consume_event(event_id, event_name)
+            # We use the existing try_consume_event_async from this module
+            return await try_consume_event_async(event_id, event_name)
         except Exception:
             return True
 
@@ -655,7 +682,7 @@ class EliteMetaCAPIService:
         **kwargs: Any,
     ) -> Dict[str, Any]:
         """Send event via Elite high-performance engine."""
-        if not self._deduplicate(event_id, event_name):
+        if not await self._deduplicate_async(event_id, event_name):
             return {"status": "duplicate", "event_id": event_id}
 
         if self.sandbox_mode or settings.META_SANDBOX_MODE:
