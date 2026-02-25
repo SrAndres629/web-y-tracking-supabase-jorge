@@ -18,6 +18,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from app.config import settings
+from app.core.urls import urls
 from app.interfaces.api.dependencies import get_legacy_facade
 from app.limiter import limiter
 from app.models import InteractionCreate, InteractionResponse, LeadCreate, TrackResponse
@@ -165,7 +166,7 @@ class TrackingEvent(BaseModel):
     action_source: str = "website"
 
 
-@router.post("/track/event")
+@router.post(urls.TRACKING.EVENT)
 @limiter.limit("60/minute")
 async def track_event(
     event: TrackingEvent,
@@ -317,7 +318,7 @@ def _queue_external_hubs(bt, event, ctx):
 # =================================================================
 
 
-@router.post("/track/lead", response_model=TrackResponse)
+@router.post(urls.TRACKING.LEAD, response_model=TrackResponse)
 async def track_lead_context(request: LeadCreate):
     """
     Endpoint for n8n/webhook.
@@ -345,7 +346,7 @@ async def track_lead_context(request: LeadCreate):
         raise HTTPException(status_code=500, detail="Database Error creating Lead") from err
 
 
-@router.post("/track/interaction", response_model=InteractionResponse)
+@router.post(urls.TRACKING.INTERACTION, response_model=InteractionResponse)
 async def track_interaction(request: InteractionCreate):
     """
     Endpoint for logging messages (User/AI).
@@ -383,7 +384,7 @@ class QStashPayload(BaseModel):
     utm_data: Optional[dict] = {}
 
 
-@router.post("/hooks/process-event")
+@router.post(urls.TRACKING.HOOKS_PROCESS)
 async def process_qstash_event(payload: QStashPayload):
     """
     Webhook Receiver for QStash.
@@ -424,13 +425,13 @@ async def process_qstash_event(payload: QStashPayload):
         raise HTTPException(status_code=500, detail="Internal processing error") from err
 
 
-@router.get("/track/health")
+@router.get(urls.TRACKING.HEALTH)
 async def tracking_health():
     """Health check del sistema de tracking."""
     return {"status": "ok", "service": "tracking"}
 
 
-@router.post("/onboarding")
+@router.post(urls.TRACKING.ONBOARDING)
 async def client_onboarding(
     data: Dict[str, Any], request: Request, background_tasks: BackgroundTasks
 ):
