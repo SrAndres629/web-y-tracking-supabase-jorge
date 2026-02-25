@@ -5,6 +5,7 @@ Implementación con SQL nativo para crm_leads.
 """
 
 import logging
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from app import database
@@ -14,6 +15,28 @@ from app.domain.models.values import Email, ExternalId, Phone
 from app.domain.repositories.lead_repo import LeadRepository
 
 logger = logging.getLogger(__name__)
+
+# Explicit column selection to ensure mapping stability
+LEAD_FIELDS = [
+    "id",
+    "whatsapp_phone",
+    "full_name",
+    "email",
+    "meta_lead_id",
+    "fb_click_id",
+    "fb_browser_id",
+    "status",
+    "lead_score",
+    "pain_point",
+    "service_interest",
+    "utm_source",
+    "utm_campaign",
+    "created_at",
+    "updated_at",
+    "conversion_sent_to_meta"
+]
+
+SELECT_LEAD_SQL = f"SELECT {', '.join(LEAD_FIELDS)} FROM crm_leads"
 
 
 class SQLLeadRepository(LeadRepository):
@@ -25,7 +48,8 @@ class SQLLeadRepository(LeadRepository):
     async def get_by_id(self, lead_id: str) -> Optional[Lead]:
         try:
             with database.get_cursor() as cur:
-                cur.execute("SELECT * FROM crm_leads WHERE id = %s", (lead_id,))
+                query = f"{SELECT_LEAD_SQL} WHERE id = %s"
+                cur.execute(query, (lead_id,))
                 row = cur.fetchone()
                 if row:
                     return self._map_row_to_lead(row)
@@ -36,11 +60,11 @@ class SQLLeadRepository(LeadRepository):
     async def get_by_phone(self, phone: Phone) -> Optional[Lead]:
         try:
             with database.get_cursor() as cur:
-                cur.execute(queries.SELECT_LEAD_ID_BY_PHONE, (str(phone),))
+                query = f"{SELECT_LEAD_SQL} WHERE whatsapp_phone = %s"
+                cur.execute(query, (str(phone),))
                 row = cur.fetchone()
                 if row:
-                    # TODO: Mejorar mapeo para obtener el objeto completo
-                    return await self.get_by_id(str(row[0]))
+                    return self._map_row_to_lead(row)
         except Exception as e:
             logger.exception(f"Error getting lead by phone: {e}")
         return None
@@ -48,7 +72,8 @@ class SQLLeadRepository(LeadRepository):
     async def get_by_external_id(self, external_id: ExternalId) -> Optional[Lead]:
         try:
             with database.get_cursor() as cur:
-                cur.execute("SELECT * FROM crm_leads WHERE fb_browser_id = %s", (str(external_id),))
+                query = f"{SELECT_LEAD_SQL} WHERE fb_browser_id = %s"
+                cur.execute(query, (str(external_id),))
                 row = cur.fetchone()
                 if row:
                     return self._map_row_to_lead(row)
@@ -103,22 +128,26 @@ class SQLLeadRepository(LeadRepository):
         return await self.get_by_phone(phone) is not None
 
     def _map_row_to_lead(self, row) -> Lead:
-        # Mapeo básico asumiendo orden de columnas de sql_queries.py
-        # ID, whatsapp_phone, full_name, email, meta_lead_id, profile_pic_url, fb_click_id, fb_browser_id, utm_data...
-        # Esto es fragil, preferible usar dict cursor
+        # Mapped based on LEAD_FIELDS order
         return Lead(
             id=str(row[0]),
             phone=Phone.parse(row[1]).unwrap(),
             name=row[2],
             email=(Email.parse(row[3]).unwrap() if row[3] and Email.parse(row[3]).is_ok else None),
             meta_lead_id=row[4],
-            fbclid=row[6],
+            fbclid=row[5],
             external_id=(
-                ExternalId.from_string(row[7]).unwrap()
-                if row[7] and ExternalId.from_string(row[7]).is_ok
+                ExternalId.from_string(row[6]).unwrap()
+                if row[6] and ExternalId.from_string(row[6]).is_ok
                 else None
             ),
-            status=LeadStatus(row[13] if len(row) > 13 else "new"),
-            score=row[14] if len(row) > 14 else 50,
-            service_interest=row[16] if len(row) > 16 else None,
+            status=LeadStatus(row[7]) if row[7] else LeadStatus.NEW,
+            score=row[8] if row[8] is not None else 50,
+            pain_point=row[9],
+            service_interest=row[10],
+            utm_source=row[11],
+            utm_campaign=row[12],
+            created_at=row[13] if row[13] else datetime.now(timezone.utc),
+            updated_at=row[14] if row[14] else datetime.now(timezone.utc),
+            sent_to_meta=bool(row[15]) if len(row) > 15 else False,
         )
