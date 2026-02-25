@@ -1,0 +1,1 @@
+Implemented connection pooling for Postgres in serverless environment using psycopg2.pool.SimpleConnectionPool with minconn=1, maxconn=1. This persists a single connection across warm invocations while avoiding exhaustion when scaling out.
