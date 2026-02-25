@@ -1,3 +1,4 @@
+import importlib.util
 import os
 from unittest.mock import AsyncMock, MagicMock
 
@@ -69,25 +70,32 @@ def block_external_calls(request):
     # Block Meta CAPI & Facebook SDK
     with pytest.MonkeyPatch.context() as m:
         # 1. Block SDK Init (Prevents OAuthException)
-        m.setattr("facebook_business.api.FacebookAdsApi.init", MagicMock())
+        if importlib.util.find_spec("facebook_business"):
+            m.setattr("facebook_business.api.FacebookAdsApi.init", MagicMock())
 
         # 2. Block Modern Tracker (app.infrastructure.external.meta_capi.tracker.MetaTracker)
-        # Note: We must mock the class method or the instance method depending on how it's used.
-        # Since it's instantiated, we mock the class -> instance -> track method if possible,
-        # but safely we can mock the module level class.
-        m.setattr(
-            "app.infrastructure.external.meta_capi.tracker.MetaTracker.track",
-            AsyncMock(return_value=True),
-        )
-        m.setattr(
-            "app.infrastructure.external.meta_capi.tracker.MetaTracker.health_check",
-            AsyncMock(return_value=True),
-        )
+        # Handle if the module is not importable (e.g. dependencies missing)
+        try:
+            m.setattr(
+                "app.infrastructure.external.meta_capi.tracker.MetaTracker.track",
+                AsyncMock(return_value=True),
+            )
+            m.setattr(
+                "app.infrastructure.external.meta_capi.tracker.MetaTracker.health_check",
+                AsyncMock(return_value=True),
+            )
+        except (ImportError, AttributeError):
+             # Module might not exist or class might not exist
+             pass
+
 
         # 3. Block Legacy Network Calls (app.tracking used by EliteMetaCAPIService)
         # We mock the LOW LEVEL sender functions so the Service logic (dedup, etc.) still runs!
-        m.setattr("app.tracking.send_event_async", AsyncMock(return_value=True))
-        m.setattr("app.tracking.send_event", MagicMock(return_value=True))
+        try:
+            m.setattr("app.tracking.send_event_async", AsyncMock(return_value=True))
+            m.setattr("app.tracking.send_event", MagicMock(return_value=True))
+        except (ImportError, AttributeError):
+             pass
 
         yield
 
