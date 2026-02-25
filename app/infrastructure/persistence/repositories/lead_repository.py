@@ -47,7 +47,7 @@ class LeadRepository(ILeadRepository):
         try:
             async with db.connection() as conn:
                 cur = conn.cursor()
-                cur.execute(query, (phone.value,))
+                cur.execute(query, (str(phone),))
                 row = cur.fetchone()
                 return self._map_row_to_lead(row, cur) if row else None
         except Exception as e:
@@ -99,9 +99,9 @@ class LeadRepository(ILeadRepository):
         
         params = (
             lead.id,
-            lead.phone.value,
+            str(lead.phone),
             lead.name,
-            lead.email.value if lead.email else None,
+            str(lead.email) if lead.email else None,
             lead.fbclid,
             lead.external_id,
             lead.meta_lead_id,

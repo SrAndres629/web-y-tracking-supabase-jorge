@@ -55,6 +55,37 @@ redis_cache = RedisCache()
 
 REDIS_ENABLED = bool(settings.UPSTASH_REDIS_REST_URL and settings.UPSTASH_REDIS_REST_TOKEN)
 
+# ── Backwards-compatible dedup API (used by tests) ──────────────
+# When REDIS_ENABLED is False (or patched in tests), fallback to in-memory.
+_memory_cache: Dict[str, float] = {}
+
+
+def deduplicate_event(event_id: str, event_name: str = "event", ttl: int = 86400) -> bool:
+    """
+    Returns True if the event is NEW (first seen), False if duplicate.
+
+    Uses Redis when available, in-memory dict otherwise.
+    """
+    cache_key = f"evt:{event_id}"
+
+    if REDIS_ENABLED:
+        redis = redis_provider.sync_client
+        if redis:
+            try:
+                result = redis.set(cache_key, str(int(time.time())), ex=ttl, nx=True)
+                return result is not None
+            except Exception as e:
+                logger.warning(f"Redis dedup error: {e}")
+                # Fall through to memory
+
+    # In-memory fallback
+    now = time.time()
+    if cache_key in _memory_cache:
+        if now - _memory_cache[cache_key] < ttl:
+            return False  # Duplicate
+    _memory_cache[cache_key] = now
+    return True  # New event
+
 
 def redis_health_check() -> Dict[str, Any]:
     """Check if Redis is configured and reachable."""

@@ -26,7 +26,7 @@
             "src": "api/index.py",
             "use": "@vercel/python",
             "config": {
-                "includeFiles": "{app,static}/**"
+                "includeFiles": "{app,api/templates,static}/**"
             }
         }
     ],

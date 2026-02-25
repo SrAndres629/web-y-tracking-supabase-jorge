@@ -1,7 +1,7 @@
 import pytest
 import asyncio
 from app import database
-from app.infrastructure.persistence.sql_lead_repo import SQLLeadRepository
+from app.infrastructure.persistence.repositories.lead_repository import LeadRepository as SQLLeadRepository
 from app.domain.models.lead import Lead, LeadStatus
 from app.domain.models.values import Phone, Email, ExternalId
 

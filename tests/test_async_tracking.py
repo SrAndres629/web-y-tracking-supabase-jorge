@@ -41,8 +41,9 @@ async def test_send_event_async_non_blocking():
         mock_response.status_code = 200
         mock_client.post.return_value = mock_response
 
-        # Patch dependencies
-        with patch("app.infrastructure.persistence.deduplication_service.dedup_service._async_redis", mock_async_redis), \
+        # Patch dependencies — redis_provider properties can't be directly patched,
+        # so we mock at the consumer level
+        with patch("app.infrastructure.cache.redis_provider.RedisProvider.sync_client", new_callable=lambda: property(lambda self: mock_async_redis)), \
              patch("app.tracking.save_emq_score", side_effect=blocking_save), \
              patch("app.tracking.async_client", mock_client):
             

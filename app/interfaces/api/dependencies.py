@@ -134,3 +134,25 @@ def get_create_visitor_handler() -> CreateVisitorHandler:
 
 
 # Handlers and other factories remain as is.
+
+
+class _LegacyFacade:
+    """Thin wrapper providing backwards-compatible API for health checks."""
+
+    @staticmethod
+    def check_connection() -> bool:
+        try:
+            from app.database import check_connection
+            return check_connection()
+        except Exception:
+            return False
+
+    @staticmethod
+    def generate_external_id(ip: str, user_agent: str) -> str:
+        from app.core.validators import generate_external_id
+        return generate_external_id(ip, user_agent)
+
+
+def get_legacy_facade() -> _LegacyFacade:
+    """Provee facade legacy para health checks."""
+    return _LegacyFacade()
