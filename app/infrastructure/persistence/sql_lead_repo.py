@@ -5,7 +5,8 @@ Implementación con SQL nativo para crm_leads.
 """
 
 import logging
-from typing import List, Optional
+from datetime import datetime
+from typing import Any, List, Optional
 
 from app import database
 from app import sql_queries as queries
@@ -25,7 +26,7 @@ class SQLLeadRepository(LeadRepository):
     async def get_by_id(self, lead_id: str) -> Optional[Lead]:
         try:
             with database.get_cursor() as cur:
-                cur.execute("SELECT * FROM crm_leads WHERE id = %s", (lead_id,))
+                cur.execute(queries.SELECT_LEAD_BY_ID, (lead_id,))
                 row = cur.fetchone()
                 if row:
                     return self._map_row_to_lead(row)
@@ -36,11 +37,10 @@ class SQLLeadRepository(LeadRepository):
     async def get_by_phone(self, phone: Phone) -> Optional[Lead]:
         try:
             with database.get_cursor() as cur:
-                cur.execute(queries.SELECT_LEAD_ID_BY_PHONE, (str(phone),))
+                cur.execute(queries.SELECT_LEAD_BY_PHONE, (str(phone),))
                 row = cur.fetchone()
                 if row:
-                    # TODO: Mejorar mapeo para obtener el objeto completo
-                    return await self.get_by_id(str(row[0]))
+                    return self._map_row_to_lead(row)
         except Exception as e:
             logger.exception(f"Error getting lead by phone: {e}")
         return None
@@ -48,7 +48,12 @@ class SQLLeadRepository(LeadRepository):
     async def get_by_external_id(self, external_id: ExternalId) -> Optional[Lead]:
         try:
             with database.get_cursor() as cur:
-                cur.execute("SELECT * FROM crm_leads WHERE fb_browser_id = %s", (str(external_id),))
+                # Note: This query still uses SELECT * so it might fail if we don't update it too.
+                # However, for now we leave it as is or update it to use SELECT_LEAD_COLS but filtering by fb_browser_id?
+                # The original query was SELECT * FROM crm_leads WHERE fb_browser_id = %s
+                # We should update it to maintain consistency.
+                query = f"SELECT {queries.SELECT_LEAD_COLS} FROM crm_leads WHERE fb_browser_id = %s"
+                cur.execute(query, (str(external_id),))
                 row = cur.fetchone()
                 if row:
                     return self._map_row_to_lead(row)
@@ -103,9 +108,13 @@ class SQLLeadRepository(LeadRepository):
         return await self.get_by_phone(phone) is not None
 
     def _map_row_to_lead(self, row) -> Lead:
-        # Mapeo básico asumiendo orden de columnas de sql_queries.py
-        # ID, whatsapp_phone, full_name, email, meta_lead_id, profile_pic_url, fb_click_id, fb_browser_id, utm_data...
-        # Esto es fragil, preferible usar dict cursor
+        # Based on SELECT_LEAD_COLS in sql_queries.py:
+        # 0: id, 1: whatsapp_phone, 2: full_name, 3: email, 4: meta_lead_id,
+        # 5: profile_pic_url, 6: fb_click_id, 7: fb_browser_id,
+        # 8-12: utm_*, 13: web_visit_count, 14: sent_to_meta,
+        # 15: status, 16: lead_score, 17: pain_point, 18: service_interest,
+        # 19: created_at, 20: updated_at
+
         return Lead(
             id=str(row[0]),
             phone=Phone.parse(row[1]).unwrap(),
@@ -118,7 +127,24 @@ class SQLLeadRepository(LeadRepository):
                 if row[7] and ExternalId.from_string(row[7]).is_ok
                 else None
             ),
-            status=LeadStatus(row[13] if len(row) > 13 else "new"),
-            score=row[14] if len(row) > 14 else 50,
-            service_interest=row[16] if len(row) > 16 else None,
+            utm_source=row[8],
+            utm_campaign=row[10],
+            sent_to_meta=bool(row[14]) if row[14] is not None else False,
+            status=LeadStatus(row[15]) if row[15] else LeadStatus.NEW,
+            score=row[16] if row[16] is not None else 50,
+            pain_point=row[17],
+            service_interest=row[18],
+            created_at=self._parse_datetime(row[19]) if len(row) > 19 else datetime.now(),
+            updated_at=self._parse_datetime(row[20]) if len(row) > 20 else datetime.now(),
         )
+
+    def _parse_datetime(self, val: Any) -> datetime:
+        if isinstance(val, datetime):
+            return val
+        if isinstance(val, str):
+            try:
+                # Handle ISO format (with T or space)
+                return datetime.fromisoformat(val.replace(" ", "T"))
+            except ValueError:
+                pass
+        return datetime.now()
