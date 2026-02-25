@@ -8,3 +8,9 @@
     @apply px-6 py-3 bg-luxury-gold text-luxury-black font-semibold rounded-lg hover:bg-luxury-gold-light transition-all duration-300;
   }
 }
+
+@layer utilities {
+  .clip-path-slider-init {
+    clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);
+  }
+}
