@@ -4,6 +4,7 @@
     "description": "Build system for Jorge Aguirre Flores Web (Silicon Valley Architecture)",
     "main": "index.js",
     "scripts": {
+        "dev": "python main.py",
         "build:css": "tailwindcss -i ./static/src/input.css -o ./static/dist/css/app.min.css --minify",
         "watch:css": "tailwindcss -i ./static/src/input.css -o ./static/dist/css/app.min.css --watch",
         "audit:css": "tailwindcss -i ./static/src/input.css -o ./static/dist/css/app.audit.css"
