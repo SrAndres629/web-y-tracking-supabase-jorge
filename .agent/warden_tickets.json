@@ -1,0 +1,83 @@
+[
+  {
+    "timestamp": "2026-02-25T15:41:48.174541",
+    "jurisdiction": "root",
+    "file": "patch_db.py",
+    "violation": "Unknown clutter in root directory.",
+    "action_taken": "Moved to quarantine",
+    "ai_action_required": true,
+    "ai_message": "La ra\u00edz es sagrada. Archivo puesto en cuarentena, anal\u00edzalo."
+  },
+  {
+    "timestamp": "2026-02-25T15:41:58.841745",
+    "jurisdiction": "root",
+    "file": "patch_db.py",
+    "violation": "Unknown clutter in root directory.",
+    "action_taken": "Moved to quarantine",
+    "ai_action_required": true,
+    "ai_message": "La ra\u00edz es sagrada. Archivo puesto en cuarentena, anal\u00edzalo."
+  },
+  {
+    "timestamp": "2026-02-25T15:41:59.346213",
+    "jurisdiction": "root",
+    "file": "patch_db.py",
+    "violation": "Unknown clutter in root directory.",
+    "action_taken": "Moved to quarantine",
+    "ai_action_required": true,
+    "ai_message": "La ra\u00edz es sagrada. Archivo puesto en cuarentena, anal\u00edzalo."
+  },
+  {
+    "timestamp": "2026-02-25T15:42:47.721071",
+    "jurisdiction": "root",
+    "file": "patch_db2.py",
+    "violation": "Unknown clutter in root directory.",
+    "action_taken": "Moved to quarantine",
+    "ai_action_required": true,
+    "ai_message": "La ra\u00edz es sagrada. Archivo puesto en cuarentena, anal\u00edzalo."
+  },
+  {
+    "timestamp": "2026-02-25T15:42:59.890905",
+    "jurisdiction": "root",
+    "file": "safe_patch.py",
+    "violation": "Unknown clutter in root directory.",
+    "action_taken": "Moved to quarantine",
+    "ai_action_required": true,
+    "ai_message": "La ra\u00edz es sagrada. Archivo puesto en cuarentena, anal\u00edzalo."
+  },
+  {
+    "timestamp": "2026-02-25T15:43:00.394405",
+    "jurisdiction": "root",
+    "file": "safe_patch.py",
+    "violation": "Unknown clutter in root directory.",
+    "action_taken": "Moved to quarantine",
+    "ai_action_required": true,
+    "ai_message": "La ra\u00edz es sagrada. Archivo puesto en cuarentena, anal\u00edzalo."
+  },
+  {
+    "timestamp": "2026-02-25T22:05:11.049151",
+    "jurisdiction": "root",
+    "file": "test_mock.py",
+    "violation": "Experimental script found in root.",
+    "action_taken": "Moved to scripts/experimental/",
+    "ai_action_required": true,
+    "ai_message": "Verifica si este script debe eliminarse o ser promovido."
+  },
+  {
+    "timestamp": "2026-02-25T22:05:35.905060",
+    "jurisdiction": "root",
+    "file": "test_mock.py",
+    "violation": "Experimental script found in root.",
+    "action_taken": "Moved to scripts/experimental/",
+    "ai_action_required": true,
+    "ai_message": "Verifica si este script debe eliminarse o ser promovido."
+  },
+  {
+    "timestamp": "2026-02-25T22:05:36.410089",
+    "jurisdiction": "root",
+    "file": "test_mock.py",
+    "violation": "Experimental script found in root.",
+    "action_taken": "Moved to scripts/experimental/",
+    "ai_action_required": true,
+    "ai_message": "Verifica si este script debe eliminarse o ser promovido."
+  }
+]

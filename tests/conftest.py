@@ -62,8 +62,8 @@ def block_external_calls(request):
     Refined to handle both Legacy and Modern Meta implementations.
     """
     path = str(request.node.fspath)
-    if "L5_system" in path or "L6_omni" in path:
-        yield  # Allow external calls for System/Omni tests
+    if "L5_system" in path or "L6_omni" in path or "test_enterprise_resilience.py" in path:
+        yield  # Allow external calls for these tests (resilience uses internal robust mocks)
         return
 
     # Block Meta CAPI & Facebook SDK

@@ -1,8 +1,18 @@
 from fastapi import APIRouter, Request, Response
+from fastapi.responses import FileResponse
+import os
 
+from app.infrastructure.config.settings import settings
 from app.application.queries.seo.get_page_seo_data_query import GetPageSEODataQuery
 
 router = APIRouter()
+
+
+@router.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    """Serves the favicon.ico by pointing to the luxury_logo.svg."""
+    favicon_path = os.path.join(settings.STATIC_DIR, "assets/images/branding/luxury_logo.svg")
+    return FileResponse(favicon_path, media_type="image/x-icon")
 
 
 @router.get("/sitemap.xml", response_class=Response, summary="XML Sitemap")

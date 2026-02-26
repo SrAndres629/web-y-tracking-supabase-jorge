@@ -188,7 +188,10 @@ async def track_event(
     if not await _validate_human(event, ctx_data):
         return JSONResponse(
             status_code=200,
-            content={"status": "filtered", "message": "Signal filtered by Zero-Tolerance Policy"},
+            content={
+                "status": "filtered",
+                "message": "Signal filtered by Zero-Tolerance Policy",
+            },
         )
 
     context = TrackingContext(
@@ -286,7 +289,8 @@ async def _dispatch_to_capi(bt, event, ctx, client=None):
         "fbp": ctx["fbp"],
         "phone": ctx["phone"],
         "email": ctx["email"],
-        "first_name": event.custom_data.get("first_name") or event.custom_data.get("fn"),
+        "first_name": event.custom_data.get("first_name")
+        or event.custom_data.get("fn"),
         "last_name": event.custom_data.get("last_name") or event.custom_data.get("ln"),
         "city": event.custom_data.get("city") or event.custom_data.get("ct"),
         "state": event.custom_data.get("state") or event.custom_data.get("st"),
@@ -351,7 +355,9 @@ async def track_lead_context(
 
     except Exception as err:
         logger.exception("❌ Error in /track/lead: %s", err)
-        raise HTTPException(status_code=500, detail="Database Error creating Lead") from err
+        raise HTTPException(
+            status_code=500, detail="Database Error creating Lead"
+        ) from err
 
 
 @router.post("/track/interaction", response_model=InteractionResponse)
@@ -412,7 +418,11 @@ async def process_qstash_event(payload: QStashPayload):
             external_id=payload.external_id,
             fbclid=(
                 payload.fbc.split(".")[3]
-                if (payload.fbc and "fb.1." in payload.fbc and len(payload.fbc.split(".")) >= 4)
+                if (
+                    payload.fbc
+                    and "fb.1." in payload.fbc
+                    and len(payload.fbc.split(".")) >= 4
+                )
                 else None
             ),
             fbp=payload.fbp,
@@ -430,7 +440,28 @@ async def process_qstash_event(payload: QStashPayload):
         return {"status": "processed", "source": "qstash"}
     except Exception as err:
         logger.exception("❌ Error processing QStash event: %s", err)
-        raise HTTPException(status_code=500, detail="Internal processing error") from err
+        raise HTTPException(
+            status_code=500, detail="Internal processing error"
+        ) from err
+
+
+@router.post("/hooks/relay-outbox")
+@router.get("/hooks/relay-outbox")
+async def process_outbox_relay():
+    """
+    Relay Worker endpoint for QStash CRON.
+    Reads pending Outbox events and safely dispatches them.
+    Supports GET (manual browser trigger) and POST (QStash trigger).
+    """
+    logger.info("⏱️ Running Outbox Relay Worker...")
+    try:
+        from app.services.outbox_relay import OutboxRelay
+
+        processed = await OutboxRelay.process_pending_events(batch_size=15)
+        return {"status": "success", "processed_events": processed}
+    except Exception as err:
+        logger.exception("❌ Error in Outbox Relay Worker: %s", err)
+        raise HTTPException(status_code=500, detail="Relay worker failed") from err
 
 
 @router.get("/track/health")

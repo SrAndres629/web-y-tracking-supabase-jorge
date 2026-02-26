@@ -16,9 +16,9 @@ from tenacity import (
     wait_exponential,
 )
 
-from app.infrastructure.persistence.database import db
 from app.cache import redis_cache
 from app.infrastructure.config.settings import settings
+from app.infrastructure.persistence.database import db
 
 # Configure Logging
 logger = logging.getLogger("uvicorn.error")
@@ -184,7 +184,9 @@ class ContentManager:
             if current_time - last_fetch > cls.STALE_THRESHOLD:
                 logger.info("🔄 [SWR] RAM stale for '%s'. Triggering refresh...", key)
                 if not audit_mode:
-                    coro = cast(Coroutine[Any, Any, Any], cls._refresh_in_background(key))
+                    coro = cast(
+                        Coroutine[Any, Any, Any], cls._refresh_in_background(key)
+                    )
                     asyncio.create_task(coro)
             return cls._ram_cache[key]
 
@@ -195,7 +197,9 @@ class ContentManager:
                 cls._ram_cache[key] = cached
                 cls._cache_times[key] = current_time
                 if not audit_mode:
-                    coro = cast(Coroutine[Any, Any, Any], cls._refresh_in_background(key))
+                    coro = cast(
+                        Coroutine[Any, Any, Any], cls._refresh_in_background(key)
+                    )
                     asyncio.create_task(coro)
                 return cached
         except (ConnectionError, RuntimeError) as e:
@@ -220,7 +224,9 @@ class ContentManager:
                     cls._ram_cache[key] = content
                     cls._cache_times[key] = time.time()
                     try:
-                        await redis_cache.set_json(f"content:{key}", content, expire=cls.CACHE_TTL)
+                        await redis_cache.set_json(
+                            f"content:{key}", content, expire=cls.CACHE_TTL
+                        )
                         logger.debug(
                             "✅ [SWR] Cache updated for '%s' (%dms)",
                             key,
@@ -247,7 +253,9 @@ class ContentManager:
         return None
 
     @classmethod
-    def _validate_services_list(cls, content: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def _validate_services_list(
+        cls, content: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
         """Deep validation for the services configuration list"""
         valid_items: List[Dict[str, Any]] = []
         fallback_cfg = cast(List[Dict[str, Any]], cls._FALLBACKS["services_config"])
@@ -284,27 +292,31 @@ class ContentManager:
     def _fetch_from_db(cls, key: str) -> Optional[Any]:
         """Synchronous DB fetch (Used for cold starts or refresh)"""
         try:
-            import sqlite3
             import os
-            
+            import sqlite3
+
             # Use standardized path for sync fallback
             db_path = os.path.join(
-                os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+                os.path.dirname(
+                    os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                ),
                 "database",
-                "local.db"
+                "local.db",
             )
-            
+
             if not os.path.exists(db_path):
                 return None
-                
+
             conn = sqlite3.connect(db_path)
             try:
                 cur = conn.cursor()
                 # Check for table existence first
-                cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='site_content'")
+                cur.execute(
+                    "SELECT name FROM sqlite_master WHERE type='table' AND name='site_content'"
+                )
                 if not cur.fetchone():
                     return None
-                    
+
                 cur.execute("SELECT value FROM site_content WHERE key = ?", (key,))
                 row = cur.fetchone()
                 if row and row[0]:
@@ -371,22 +383,39 @@ async def publish_to_qstash(event_data: Dict[str, Any]) -> bool:
         logger.warning("⚠️ QStash Token missing!")
         return False
     url = f"{settings.vercel_url}/hooks/process-event"
-    qstash_base = getattr(settings.external, "qstash_url", None) or "https://qstash.upstash.io"
+    qstash_base = (
+        getattr(settings.external, "qstash_url", None) or "https://qstash.upstash.io"
+    )
     headers = {
         "Authorization": f"Bearer {settings.QSTASH_TOKEN}",
         "Content-Type": "application/json",
         "Upstash-Retries": "3",
     }
     try:
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                f"{qstash_base}/v2/publish/{url}",
-                headers=headers,
-                json=event_data,
-                timeout=5.0,
+        from app.infrastructure.external.circuit_breaker import (
+            CircuitBreakerOpenException,
+            DistributedCircuitBreaker,
+        )
+
+        breaker = DistributedCircuitBreaker("qstash", failure_threshold=3)
+
+        try:
+            async with breaker.execute():
+                async with httpx.AsyncClient() as client:
+                    response = await client.post(
+                        f"{qstash_base}/v2/publish/{url}",
+                        headers=headers,
+                        json=event_data,
+                        timeout=5.0,
+                    )
+                    response.raise_for_status()
+                    return True
+        except CircuitBreakerOpenException:
+            logger.warning(
+                "🛑 QStash circuit is OPEN. Failing fast to protect event loop."
             )
-            response.raise_for_status()
-            return True
+            return False
+
     except (httpx.HTTPStatusError, httpx.RequestError):
         logger.exception("❌ QStash specific error")
         return False

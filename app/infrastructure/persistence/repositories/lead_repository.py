@@ -27,7 +27,7 @@ class LeadRepository(ILeadRepository):
         query = "SELECT * FROM crm_leads WHERE id = %s"
         if db.backend == "sqlite":
             query = query.replace("%s", "?")
-        
+
         try:
             async with db.connection() as conn:
                 cur = conn.cursor()
@@ -43,7 +43,7 @@ class LeadRepository(ILeadRepository):
         query = "SELECT * FROM crm_leads WHERE phone = %s"
         if db.backend == "sqlite":
             query = query.replace("%s", "?")
-        
+
         try:
             async with db.connection() as conn:
                 cur = conn.cursor()
@@ -59,7 +59,7 @@ class LeadRepository(ILeadRepository):
         query = "SELECT * FROM crm_leads WHERE external_id = %s"
         if db.backend == "sqlite":
             query = query.replace("%s", "?")
-        
+
         try:
             async with db.connection() as conn:
                 cur = conn.cursor()
@@ -97,7 +97,7 @@ class LeadRepository(ILeadRepository):
                     utm_source, utm_campaign, created_at, updated_at
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """
-        
+
         params = (
             lead.id,
             str(lead.phone),
@@ -112,18 +112,54 @@ class LeadRepository(ILeadRepository):
             lead.pain_point,
             lead.utm_source,
             lead.utm_campaign,
-            lead.created_at.isoformat() if hasattr(lead.created_at, "isoformat") else str(lead.created_at),
-            lead.updated_at.isoformat() if hasattr(lead.updated_at, "isoformat") else str(lead.updated_at),
+            lead.created_at.isoformat()
+            if hasattr(lead.created_at, "isoformat")
+            else str(lead.created_at),
+            lead.updated_at.isoformat()
+            if hasattr(lead.updated_at, "isoformat")
+            else str(lead.updated_at),
         )
         if db.backend == "postgres":
             params = params[:-1]
+
+        # 📨 Outbox Pattern: Ensure event delivery via unified transaction
+        import json
+        import uuid
+
+        outbox_id = str(uuid.uuid4())
+        outbox_payload = json.dumps(
+            {
+                "id": lead.id,
+                "phone": str(lead.phone),
+                "email": str(lead.email) if lead.email else None,
+                "status": lead.status.value,
+                "score": lead.score,
+                "event_name": "Lead",  # Mapped to CAPI/Zaraz
+            }
+        )
+
+        if db.backend == "postgres":
+            outbox_query = """
+                INSERT INTO outbox_events (
+                    id, aggregate_type, aggregate_id, event_type, payload
+                ) VALUES (%s, %s, %s, %s, %s)
+            """
+        else:
+            outbox_query = """
+                INSERT INTO outbox_events (
+                    id, aggregate_type, aggregate_id, event_type, payload
+                ) VALUES (?, ?, ?, ?, ?)
+            """
+
+        outbox_params = (outbox_id, "Lead", lead.id, "LEAD_SAVED", outbox_payload)
 
         try:
             async with db.connection() as conn:
                 cur = conn.cursor()
                 cur.execute(query, params)
+                cur.execute(outbox_query, outbox_params)
         except Exception as e:
-            logger.error(f"❌ Error saving lead: {e}")
+            logger.error(f"❌ Error saving lead (Transaction Rolled Back): {e}")
 
     async def create(self, lead: Lead) -> None:
         await self.save(lead)
@@ -131,7 +167,9 @@ class LeadRepository(ILeadRepository):
     async def update(self, lead: Lead) -> None:
         await self.save(lead)
 
-    async def list_by_status(self, status: LeadStatus, limit: int = 50, offset: int = 0) -> List[Lead]:
+    async def list_by_status(
+        self, status: LeadStatus, limit: int = 50, offset: int = 0
+    ) -> List[Lead]:
         return []
 
     async def list_hot_leads(self, _min_score: int = 70, limit: int = 50) -> List[Lead]:
@@ -151,7 +189,7 @@ class LeadRepository(ILeadRepository):
         """Mapea fila de DB a modelo de dominio de forma robusta."""
         cols = [col[0] for col in cur.description]
         data = dict(zip(cols, row, strict=False))
-        
+
         return Lead(
             id=data["id"],
             phone=Phone.parse(data["phone"]).unwrap() if data["phone"] else None,
@@ -159,12 +197,14 @@ class LeadRepository(ILeadRepository):
             email=Email.parse(data["email"]).unwrap() if data["email"] else None,
             meta_lead_id=data.get("meta_lead_id"),
             fbclid=data.get("fbclid"),
-            external_id=ExternalId.from_string(data["external_id"]).unwrap() if data.get("external_id") else None,
+            external_id=ExternalId.from_string(data["external_id"]).unwrap()
+            if data.get("external_id")
+            else None,
             utm_source=data.get("utm_source"),
             status=LeadStatus(data.get("status", "new")),
             score=data.get("score", 50),
             service_interest=data.get("service_interest"),
             pain_point=data.get("pain_point"),
             created_at=data.get("created_at"),
-            updated_at=data.get("updated_at")
+            updated_at=data.get("updated_at"),
         )

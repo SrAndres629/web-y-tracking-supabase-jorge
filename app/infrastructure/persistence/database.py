@@ -97,7 +97,9 @@ class Database:
         import sqlite3
 
         db_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))),
+            os.path.dirname(
+                os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+            ),
             "database",
             "local.db",
         )
@@ -210,13 +212,29 @@ class Database:
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
             """,
+            """
+            CREATE TABLE IF NOT EXISTS outbox_events (
+                id TEXT PRIMARY KEY,
+                aggregate_type TEXT NOT NULL,
+                aggregate_id TEXT NOT NULL,
+                event_type TEXT NOT NULL,
+                payload JSONB NOT NULL,
+                status TEXT DEFAULT 'pending',
+                error_msg TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                processed_at TIMESTAMP
+            )
+            """,
         ]
 
         if self._backend == "sqlite":
             # Adjust PostgreSQL syntax to SQLite
             queries = [
                 q.replace("SERIAL PRIMARY KEY", "INTEGER PRIMARY KEY AUTOINCREMENT")
-                .replace("TIMESTAMP DEFAULT CURRENT_TIMESTAMP", "DATETIME DEFAULT CURRENT_TIMESTAMP")
+                .replace(
+                    "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+                    "DATETIME DEFAULT CURRENT_TIMESTAMP",
+                )
                 .replace("ON CONFLICT", "-- ON CONFLICT")  # Simple fix for init
                 for q in queries
             ]
@@ -235,7 +253,9 @@ class Database:
                     cur.execute("SELECT 1")
                     result = cur.fetchone()
                     if not result or result[0] != 1:
-                        raise ValueError("❌ Database SELECT 1 returned unexpected result")
+                        raise ValueError(
+                            "❌ Database SELECT 1 returned unexpected result"
+                        )
                     for q in queries:
                         cur.execute(q)
                     conn.commit()
@@ -246,7 +266,9 @@ class Database:
                 import sqlite3
 
                 db_path = os.path.join(
-                    os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))),
+                    os.path.dirname(
+                        os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+                    ),
                     "database",
                     "local.db",
                 )

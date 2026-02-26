@@ -29,7 +29,9 @@ class MetaTracker(TrackerPort):
     def __init__(self, http_client: Optional[httpx.AsyncClient] = None):
         self._settings = get_settings()
         self._client = http_client
-        self._enabled = self._settings.meta.is_configured and not self._settings.meta.sandbox_mode
+        self._enabled = (
+            self._settings.meta.is_configured and not self._settings.meta.sandbox_mode
+        )
 
     @property
     def name(self) -> str:
@@ -55,19 +57,36 @@ class MetaTracker(TrackerPort):
             return True
 
         try:
+            from app.infrastructure.external.circuit_breaker import (
+                CircuitBreakerOpenException,
+                DistributedCircuitBreaker,
+            )
+
+            breaker = DistributedCircuitBreaker("meta_capi", failure_threshold=3)
+
             payload = self._build_payload(event, visitor)
 
-            response = await self._http_client.post(
-                self._settings.meta.api_url,
-                json=payload,
-                params={"access_token": self._settings.meta.access_token},
-            )
+            try:
+                async with breaker.execute():
+                    response = await self._http_client.post(
+                        self._settings.meta.api_url,
+                        json=payload,
+                        params={"access_token": self._settings.meta.access_token},
+                    )
+                    response.raise_for_status()
+            except CircuitBreakerOpenException:
+                logger.warning(
+                    "🛑 Meta CAPI circuit is OPEN. Failing fast to protect event loop."
+                )
+                return False
 
             if response.status_code == 200:
                 logger.info(f"✅ Meta CAPI: {event.event_name.value} sent")
                 return True
             else:
-                logger.warning(f"⚠️ Meta CAPI failed: {response.status_code} - {response.text}")
+                logger.warning(
+                    f"⚠️ Meta CAPI failed: {response.status_code} - {response.text}"
+                )
                 return False
 
         except Exception as e:

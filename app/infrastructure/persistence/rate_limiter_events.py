@@ -73,11 +73,14 @@ class EventRateLimiter:
             window_seconds=3600,  # Max 3 checkouts por hora
             cooldown_seconds=300,
         ),
-        "default": RateLimitConfig(max_events=5, window_seconds=300, cooldown_seconds=10),
+        "default": RateLimitConfig(
+            max_events=5, window_seconds=300, cooldown_seconds=10
+        ),
     }
 
     def __init__(self, redis_client=None):
         from app.infrastructure.cache.redis_provider import redis_provider
+
         self.redis = redis_client or redis_provider.sync_client
         self.memory_cache: Dict[str, Dict[str, Any]] = {}  # Fallback si no hay Redis
         self.blocked_ips: Dict[str, float] = {}  # IPs temporalmente bloqueadas
@@ -117,7 +120,9 @@ class EventRateLimiter:
             # Bloquear IP si excede mucho (posible bot)
             if current_count >= config.max_events * 2 and client_ip:
                 self._block_ip(client_ip)
-                logger.warning(f"🚫 IP {client_ip} blocked for event flooding ({event_type})")
+                logger.warning(
+                    f"🚫 IP {client_ip} blocked for event flooding ({event_type})"
+                )
 
             return (
                 False,
@@ -132,7 +137,10 @@ class EventRateLimiter:
             elapsed = time.time() - last_time
             if elapsed < config.cooldown_seconds:
                 remaining = config.cooldown_seconds - elapsed
-                return False, f"Cooldown active: wait {remaining:.0f}s before next {event_type}"
+                return (
+                    False,
+                    f"Cooldown active: wait {remaining:.0f}s before next {event_type}",
+                )
 
         # Incrementar contador y actualizar timestamp
         self._increment_count(rate_key, config.window_seconds)
@@ -155,7 +163,9 @@ class EventRateLimiter:
             now = time.time()
             # Limpiar entradas viejas
             expired_keys = [
-                key for key in self.memory_cache if self.memory_cache[key].get("expires", 0) < now
+                key
+                for key in self.memory_cache
+                if self.memory_cache[key].get("expires", 0) < now
             ]
             for key in expired_keys:
                 self.memory_cache.pop(key, None)
@@ -200,9 +210,9 @@ class EventRateLimiter:
                     "expires": time.time() + window,
                 }
             else:
-                assert entry is not None
-                current_count: int = int(entry.get("count", 0))
-                entry["count"] = current_count + 1
+                if entry is not None:
+                    current_count: int = int(entry.get("count", 0))
+                    entry["count"] = current_count + 1
 
     def _get_timestamp(self, key: str) -> Optional[float]:
         """Obtiene timestamp del último evento"""
@@ -218,7 +228,10 @@ class EventRateLimiter:
         if self.redis:
             self.redis.setex(key, 3600, str(time.time()))  # TTL 1 hora
         else:
-            self.memory_cache[key] = {"timestamp": time.time(), "expires": time.time() + 3600}
+            self.memory_cache[key] = {
+                "timestamp": time.time(),
+                "expires": time.time() + 3600,
+            }
 
     def _is_ip_blocked(self, ip: str) -> bool:
         """Verifica si IP está bloqueada"""
@@ -247,7 +260,9 @@ class EventRateLimiter:
 
         if user_id:
             user_events = {
-                k: v for k, v in self.memory_cache.items() if k.startswith(f"rate_limit:{user_id}:")
+                k: v
+                for k, v in self.memory_cache.items()
+                if k.startswith(f"rate_limit:{user_id}:")
             }
             stats["user_events"] = len(user_events)
 
@@ -258,7 +273,8 @@ class EventRateLimiter:
         keys_to_remove = [
             k
             for k in self.memory_cache.keys()
-            if k.startswith(f"rate_limit:{user_id}:") or k.startswith(f"last_event:{user_id}:")
+            if k.startswith(f"rate_limit:{user_id}:")
+            or k.startswith(f"last_event:{user_id}:")
         ]
 
         for key in keys_to_remove:

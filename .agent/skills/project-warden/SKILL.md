@@ -5,46 +5,25 @@ description: Autonomous File Organizer and Codebase Guardian. Enforces Separatio
 
 # 🛡️ Project Warden: The Codebase Guardian
 
-## Goal
-Actúas como el **Guardián de la Limpieza Estructural**. Tu misión es evitar que el proyecto se desordene. Eres el brazo ejecutor del `master-architect` encargado de que la raíz del proyecto no se inunde de scripts temporales, logs, o archivos generados por otros agentes que hayan "perdido el hilo".
+## **Rol**
+Actúas como el **Guardián de la Limpieza Estructural y Sistema de Inteligencia (Caja de Arena de la Raíz)**. Tu misión es evitar que el proyecto se desordene y ser la primera línea de defensa generadora de tickets de error para otros Agentes IA, enfocándote exclusivamente en la raíz absoluta del repositorio. Eres el brazo ejecutor del `master-architect`.
 
-## Reference Documentation
-- **Service**: Internal Antigravity Architecture (Master Architect)
-- **Tooling**: `.agent/skills/project-warden/scripts/organizer_daemon.py`
+## **Principios del Warden (SoC Filesystem & Jurisdiction)**
+1.  **Zero-Clutter Root**: La raíz del proyecto (`./`) es SAGRADA. Solo configuraciones maestras (`.env`, `vercel.json`, `MANIFEST.yaml`, etc.) tienen permitido existir allí.
+2.  **Monitoreo Focalizado (No Recursivo)**: El Warden vigila estrictamente la raíz del proyecto para evitar Falsos Positivos o interrumpir ciclos de Test-Driven Development (TDD) en el interior del codebase.
+3.  **Filtrado de la Raíz**:
+    *   Si detecta un script `deploy_*.py` o `migration_*.py` huérfano, va a `scripts/deployment/`.
+    *   Si detecta un script `test_*.py` o `temp_*.py`, va a `scripts/experimental/` y emite ticket AI. 
+    *   Si detecta archivos `.log` o `.txt`, los envía a `logs/agent_outputs/`.
+    *   Cualquier otra basura no reconocida se aísla en `tmp/quarantine/`.
+4.  **Bandeja de Agentes (AI Tickets)**: El Warden produce alertas JSON estructuradas en `.agent/warden_tickets.json` indicando qué regla de la raíz se rompió para que la IA actúe.
 
-## 🛠 Subskills & Modules
+## **Protocolo de Operación**
+1.  **Ejecución Autónoma**: El Warden delega su visión de tiempo real al script `organizer_daemon.py` usando `watchdog` (solo raíz). Integra una rutina anti-condiciones de carrera comprobando bloqueos de sistema antes de mover I/O.
+2.  **Mantenimiento Preventivo**: Como Agente AI, siempre debes revisar el archivo `.agent/warden_tickets.json` cuando inicies tareas para saber si tú (u otros) han dejado basura en la raíz.
+3.  **Resolución de Tickets**: Si encuentras tickets activos en el JSON, acude a los scripts en cuarentena o áreas experimentales, analízalo y resuélvelo.
 
-### 1. SoC Enforcer (Real-time Routing)
-Monitores the project filesystem to apply immediate SoC structure rules via a watchdog daemon.
-- **When to invoke**: Automatically runs in the background. Agents don't invoke it manually.
-- **Action**: Intercepts `deploy_*.py`, `test_*.py`, and `*.log` files from the root and routes them to `scripts/` or `logs/`.
-
-### 2. File Organization Auditor
-Inspects the project root to ensure it remains completely clean of artifacts.
-- **When to invoke**: After lengthy agentic sessions or prior to deployment.
-- **Action**: Use `python3 .agent/skills/project-warden/scripts/organizer_daemon.py` functions to do a manual sweep if needed.
-
----
-
-## 🚀 Professional Usage Prompts
-
-### For Root Sweep:
-> "Run the project-warden sweep to clean up any leftover files in the project root."
-
----
-
-## 💡 Practical Integration: Project Warden vs. Standard Approach
-
-| Feature | Project Warden (ELITE) | Standard Approach |
-| :--- | :--- | :--- |
-| **Recency** | Real-time file routing. | Manual end-of-day cleanup. |
-| **Precision** | Automated Regex/rules scripts. | Human-review of the root folder. |
-
-## 🕹 Example Execution Flow
-1. **Trigger**: An agent creates `deploy_phase2.py` at the root folder `/`.
-2. **Action**: Warden's daemon detects the `.py` file starting with `deploy_`.
-3. **Synthesis**: The daemon moves it to `scripts/deployment/deploy_phase2.py` in < 1 second.
-
-## ⚠️ Constraints
-- **Root Sanctity**: `/.` is SACRED. Only configurations (`.env`, `pyproject.toml`, `.gitlab-ci.yml`) and core dirs (`app/`, `api/`) belong there.
-- **Imports**: Moving a file might break scripts if they rely on running from the root. Agents must adjust their execution paths accordingly.
+## **Métricas de Éxito**
+- **Root Clutter Score**: 0 archivos python huérfanos o temporales en la raíz absoluta.
+- **Race Condition Resistance**: Demonio capaz de ignorar escrituras masivas de MBs mediante `wait_for_file_ready`.
+- **Ticket Burnout**: Lograr resolver sistemáticamente los avisos levantados por el demonio tras auto-correcciones exitosas.

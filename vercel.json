@@ -33,7 +33,11 @@
     "rewrites": [
         {
             "source": "/favicon.ico",
-            "destination": "/static/assets/images/branding/luxury_logo.svg"
+            "destination": "/api/index.py"
+        },
+        {
+            "source": "/static/favicon.ico",
+            "destination": "/api/index.py"
         },
         {
             "source": "/static/images/(.*)",

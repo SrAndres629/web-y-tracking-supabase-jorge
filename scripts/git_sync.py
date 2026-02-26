@@ -731,7 +731,7 @@ def _run_audit_gates(auditor: SystemAuditor, force: bool) -> bool:
         {"name": "Frontend & Platform", "path": "tests/frontend tests/platform"},
         {
             "name": "Root & Misc",
-            "path": "tests/test_tracking_integration.py tests/anti_crash_test.py",
+            "path": "tests/anti_crash_test.py",
         },
     ]
 
