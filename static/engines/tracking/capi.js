@@ -50,15 +50,19 @@ export const CAPI = {
 
     return {
       event_name: eventName,
-      event_time: Math.floor(Date.now() / 1000),
       event_id: eventData.event_id || `${eventName.toLowerCase()}_${Date.now()}`,
-      event_source_url: window.location.href,
-      action_source: "website",
-      user_data: {
-        external_id: IdentityManager.externalId,
-        fbc: IdentityManager.fbc,
-        fbp: IdentityManager.fbp,
-        // ✅ BUG-005: Enrich if available in eventData or Identity
+      external_id: IdentityManager.externalId,
+      source_url: window.location.href,
+      fbclid: IdentityManager.fbc,
+      fbp: IdentityManager.fbp,
+      turnstile_token: eventData.turnstile_token || window.turnstileToken || null,
+      utm_source: utms.utm_source || null,
+      utm_medium: utms.utm_medium || null,
+      utm_campaign: utms.utm_campaign || null,
+      utm_term: utms.utm_term || null,
+      utm_content: utms.utm_content || null,
+      custom_data: {
+        ...(eventData.custom_data || {}),
         em: eventData.em,
         ph: eventData.ph,
         fn: eventData.fn,
@@ -67,14 +71,8 @@ export const CAPI = {
         st: eventData.st,
         zp: eventData.zp,
         country: eventData.country,
-        client_user_agent: navigator.userAgent
-      },
-      custom_data: {
-        ...utms,
-        ...(eventData.custom_data || {}),
-        browser_context: UTMManager.detectBrowserContext(),
-        // ✅ BUG-008: Turnstile Token consistency
-        turnstile_token: eventData.turnstile_token || window.turnstileToken || null
+        client_user_agent: navigator.userAgent,
+        browser_context: UTMManager.detectBrowserContext()
       }
     };
   },
