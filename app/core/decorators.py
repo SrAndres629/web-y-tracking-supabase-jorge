@@ -77,6 +77,31 @@ class RetryConfig:
     on_retry: Optional[Callable[[Exception, int], None]] = None
 
 
+def _calculate_retry_delay(
+    attempt: int,
+    config: RetryConfig,
+    func_name: str,
+    exception: Exception,
+) -> float:
+    """Calculates delay for the next retry attempt, logging the error."""
+    if attempt >= config.max_attempts:
+        raise exception
+
+    delay = min(
+        config.base_delay * (config.exponential_base ** (attempt - 1)),
+        config.max_delay,
+    )
+    logger.warning(
+        "🔄 Retry %d/%d for %s: %s. Waiting %.1fs...",
+        attempt,
+        config.max_attempts,
+        func_name,
+        str(exception),
+        delay,
+    )
+    return delay
+
+
 def retry(
     max_attempts: int = 3,
     base_delay: float = 1.0,
@@ -97,59 +122,25 @@ def retry(
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
         @functools.wraps(func)
         async def async_wrapper(*args: Any, **kwargs: Any) -> T:
-            last_exception: Optional[Exception] = None
-
-            for attempt in range(1, config.max_attempts + 1):
+            attempt = 1
+            while True:
                 try:
                     return await cast(Awaitable[T], func(*args, **kwargs))
                 except config.exceptions as e:
-                    last_exception = e
-                    if attempt == config.max_attempts:
-                        break
-
-                    delay = min(
-                        config.base_delay * (config.exponential_base ** (attempt - 1)),
-                        config.max_delay,
-                    )
-                    logger.warning(
-                        "🔄 Retry %d/%d for %s: %s. Waiting %.1fs...",
-                        attempt,
-                        config.max_attempts,
-                        func.__name__,
-                        str(e),
-                        delay,
-                    )
+                    delay = _calculate_retry_delay(attempt, config, func.__name__, e)
                     await asyncio.sleep(delay)
-
-            raise last_exception or Exception("Retry failed")
+                    attempt += 1
 
         @functools.wraps(func)
         def sync_wrapper(*args: Any, **kwargs: Any) -> T:
-            last_exception: Optional[Exception] = None
-
-            for attempt in range(1, config.max_attempts + 1):
+            attempt = 1
+            while True:
                 try:
                     return func(*args, **kwargs)
                 except config.exceptions as e:
-                    last_exception = e
-                    if attempt == config.max_attempts:
-                        break
-
-                    delay = min(
-                        config.base_delay * (config.exponential_base ** (attempt - 1)),
-                        config.max_delay,
-                    )
-                    logger.warning(
-                        "🔄 Retry %d/%d for %s: %s. Waiting %.1fs...",
-                        attempt,
-                        config.max_attempts,
-                        func.__name__,
-                        str(e),
-                        delay,
-                    )
+                    delay = _calculate_retry_delay(attempt, config, func.__name__, e)
                     time.sleep(delay)
-
-            raise last_exception or Exception("Retry failed")
+                    attempt += 1
 
         if asyncio.iscoroutinefunction(func):
             return cast(Callable[..., T], async_wrapper)
