@@ -15,7 +15,7 @@ export const TrackingConfig = {
   
   // Endpoints
   endpoints: {
-    track: '/track/event',
+    track: '/api/v1/telemetry',
     identity: '/api/identity/google'
   },
   

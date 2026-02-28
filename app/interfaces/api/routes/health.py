@@ -99,7 +99,7 @@ async def health_assets():
 
     required = [
         static_root / "dist" / "css" / "app.min.css",
-        static_root / "engines" / "tracking" / "index.js",
+        static_root / "engines" / "metrics" / "index.js",
         static_root / "assets" / "images" / "branding" / "luxury_logo.svg",
     ]
     status = {

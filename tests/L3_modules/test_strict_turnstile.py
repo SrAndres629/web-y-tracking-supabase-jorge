@@ -41,7 +41,7 @@ def test_zero_tolerance_turnstile_missing(client):
     # We mock validate_turnstile to return False just in case (though missing token should fail before)
     # Actually, logic in tracking_routes.py _validate_human checks custom_data.get("turnstile_token")
 
-    response = client.post("/track/event", json=payload)
+    response = client.post("/api/v1/telemetry", json=payload)
 
     # Trace deleted for architecture compliance
     # assert response.status_code == 200 # Logic check later
@@ -78,7 +78,7 @@ def test_zero_tolerance_turnstile_invalid(mock_validate, client):
         "custom_data": {"email": "bot@hack.com"},
     }
 
-    response = client.post("/track/event", json=payload)
+    response = client.post("/api/v1/telemetry", json=payload)
 
     json_resp = response.json()
     assert json_resp["status"] != "queued", (

@@ -50,10 +50,10 @@ def test_tracking_flow_simulated(client):
         },
     }
     # Send to actual endpoint
-    response = client.post("/track/event", json=payload)
+    response = client.post("/api/v1/telemetry", json=payload)
 
     if response.status_code == 404:
-        pytest.skip("Endpoint /track/event not mounted in main app for this test environment")
+        pytest.skip("Endpoint /api/v1/telemetry not mounted in main app for this test environment")
 
     assert response.status_code in [200, 202]
     data = response.json()

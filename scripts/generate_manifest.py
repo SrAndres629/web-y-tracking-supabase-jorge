@@ -190,11 +190,12 @@ def dict_to_yaml(d: Any, indent: int = 0) -> str:
     
     if isinstance(d, dict):
         for key, value in d.items():
+            formatted_key = _yaml_value(key)
             if isinstance(value, (dict, list)):
-                lines.append(f"{prefix}{key}:")
+                lines.append(f"{prefix}{formatted_key}:")
                 lines.append(dict_to_yaml(value, indent + 1))
             else:
-                lines.append(f"{prefix}{key}: {_yaml_value(value)}")
+                lines.append(f"{prefix}{formatted_key}: {_yaml_value(value)}")
     elif isinstance(d, list):
         for item in d:
             if isinstance(item, dict):

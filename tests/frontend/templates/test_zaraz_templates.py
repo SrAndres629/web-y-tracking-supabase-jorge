@@ -14,7 +14,7 @@ PROJECT_ROOT = Path(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 )
 TEMPLATES_DIR = PROJECT_ROOT / "api" / "templates"
-TRACKING_DIR = PROJECT_ROOT / "static" / "engines" / "tracking"
+TRACKING_DIR = PROJECT_ROOT / "static" / "engines" / "metrics"
 
 # Patterns that indicate tracking conflicts
 BANNED_PATTERNS = {
@@ -158,13 +158,13 @@ class TestTrackingJsZaraz:
         assert path.exists(), "pixel-bridge.js not found"
         return _read_file(path)
 
-    def _get_tracking_engine(self):
+    def _get_metrics_engine(self):
         path = TRACKING_DIR / "index.js"
-        assert path.exists(), "tracking engine not found"
+        assert path.exists(), "metrics engine not found"
         return _read_file(path)
 
     def test_zaraz_track_bridge_exists(self):
-        """tracking.js must check for zaraz.track before falling back to fbq."""
+        """metrics must check for zaraz.track before falling back to fbq."""
         content = self._get_pixel_bridge()
         assert "zaraz" in content and "window.zaraz.track" in content, (
             "tracking.js does not reference zaraz.track() — missing Zaraz bridge"
@@ -172,7 +172,7 @@ class TestTrackingJsZaraz:
 
     def test_no_duplicate_pageview_pixel(self):
         """tracking.js must NOT fire PageView via safeFbq/fbq (Zaraz handles this)."""
-        content = self._get_tracking_engine()
+        content = self._get_metrics_engine()
         # Pixel-side PageView should not be sent explicitly
         has_duplicate = re.search(r"PixelBridge\.track\s*\(\s*['\"]PageView['\"]", content)
         assert not has_duplicate, (
@@ -181,7 +181,7 @@ class TestTrackingJsZaraz:
 
     def test_capi_pageview_exists(self):
         """tracking.js should still send PageView to CAPI for server-side dedup."""
-        content = self._get_tracking_engine()
+        content = self._get_metrics_engine()
         assert "CAPI.track('PageView'" in content or 'CAPI.track("PageView"' in content, (
             "tracking.js missing CAPI PageView event — needed for server-side deduplication"
         )

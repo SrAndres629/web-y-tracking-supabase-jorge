@@ -166,7 +166,7 @@ def bg_send_webhook(payload):
 from fastapi import Depends
 
 
-@router.post("/track/event")
+@router.post("/api/v1/telemetry")
 @limiter.limit("60/minute")
 async def track_event(
     event: TrackingEvent,

@@ -10,7 +10,7 @@
 import { IdentityManager } from './identity.js';
 import { UTMManager } from './utm.js';
 import { PixelBridge } from './pixel-bridge.js';
-import { CAPI } from './capi.js';
+import { CAPI } from './ui-observer.js';
 import { TrackingObservers } from './observers.js';
 import { ConversionHandler, handleConversion } from './conversion.js';
 import { UUID } from '../core/uuid.js';

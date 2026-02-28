@@ -10,9 +10,10 @@ async def test_static_css_and_js_are_served_with_valid_types():
     Prevents regressions where production serves plain HTML without styles/scripts.
     """
     transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://testserver") as client:
+    async with AsyncClient(transport=transport, base_url="https://jorgeaguirreflores.com") as client:
+        # Request valid critical assets
         css = await client.get("/static/dist/css/app.min.css")
-        js = await client.get("/static/engines/tracking/index.js")
+        js = await client.get("/static/engines/metrics/index.js")
 
     assert css.status_code == 200, f"Missing CSS asset: {css.status_code}"
     assert "text/css" in (css.headers.get("content-type", "")), css.headers.get("content-type")

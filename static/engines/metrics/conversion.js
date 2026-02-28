@@ -5,7 +5,7 @@
 
 import { TrackingConfig } from './config.js';
 import { PixelBridge } from './pixel-bridge.js';
-import { CAPI } from './capi.js';
+import { CAPI } from './ui-observer.js';
 import { IdentityManager } from './identity.js';
 
 export const ConversionHandler = {

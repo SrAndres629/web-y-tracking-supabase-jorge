@@ -463,8 +463,8 @@
 
   <!-- Global Scripts (Atomic Architecture v4.0 - ES Modules) -->
   <!-- ✅ ES Modules para siempre tener código actualizado -->
-  <script type="module" id="scroll-init">
-    import { TrackingEngine } from "/static/engines/tracking/index.js?v={{ system_version }}";
+  <script type="module" id="scroll-init" nonce="{{ request.state.nonce }}">
+    import { TrackingEngine } from "/static/engines/metrics/index.js?v={{ system_version }}";
     import { SliderManager } from "/static/engines/ui/slider-manager.js?v={{ system_version }}";
     import { AOSReplacement } from "/static/engines/motion/aos-replacement.js?v={{ system_version }}";
     import { LenisSetup } from "/static/engines/motion/lenis-setup.js?v={{ system_version }}";

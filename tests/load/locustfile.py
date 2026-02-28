@@ -30,7 +30,7 @@ class WebsiteUser(HttpUser):
             "user_data": self.user_data,
             "custom_data": {"load_test": True},
         }
-        self.client.post("/track/event", json=payload)
+        self.client.post("/api/v1/telemetry", json=payload)
 
     @task(1)
     def lead_submission(self):
@@ -44,4 +44,4 @@ class WebsiteUser(HttpUser):
             "user_data": self.user_data,
             "custom_data": {"load_test": True, "value": 100.0, "currency": "BOB"},
         }
-        self.client.post("/track/event", json=payload)
+        self.client.post("/api/v1/telemetry", json=payload)
