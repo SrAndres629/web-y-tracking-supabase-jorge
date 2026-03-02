@@ -217,36 +217,24 @@ async def _log_emq(event_name: str, payload: Dict[str, Any], client_id: Optional
 
 
 
-def _build_payload(
-    event_name: str,
-    event_source_url: str,
+def _build_user_data(
     client_ip: str,
     user_agent: str,
-    event_id: str,
+    external_id: Optional[str] = None,
+    fbc: Optional[str] = None,
     fbclid: Optional[str] = None,
     fbp: Optional[str] = None,
-    external_id: Optional[str] = None,
+    fb_browser_id: Optional[str] = None,
     phone: Optional[str] = None,
     email: Optional[str] = None,
-    custom_data: Optional[Dict[str, Any]] = None,
     country: Optional[str] = None,
     city: Optional[str] = None,
     state: Optional[str] = None,
     zip_code: Optional[str] = None,
     first_name: Optional[str] = None,
     last_name: Optional[str] = None,
-    fb_browser_id: Optional[str] = None,
-    access_token: Optional[str] = None,
-    fbc: Optional[str] = None,
 ) -> Dict[str, Any]:
-    """Constructs the JSON payload for Meta CAPI with Enhanced Matching"""
-
-    # 🔍 PRE-VALIDATION: Check raw inputs
-    warnings = event_validator.check_pre_hashing(email=email or "", phone=phone or "")
-    for warning in warnings:
-        logger.warning(f"⚠️ [VALIDATION] {warning}")
-
-    # User Data (Advanced Matching)
+    """Helper to build user data dictionary with hashing and normalization."""
     user_data = {
         "client_ip_address": client_ip,
         "client_user_agent": user_agent,
@@ -286,6 +274,57 @@ def _build_payload(
         user_data["fn"] = hash_data(first_name.lower())
     if last_name:
         user_data["ln"] = hash_data(last_name.lower())
+
+    return user_data
+
+
+def _build_payload(
+    event_name: str,
+    event_source_url: str,
+    client_ip: str,
+    user_agent: str,
+    event_id: str,
+    fbclid: Optional[str] = None,
+    fbp: Optional[str] = None,
+    external_id: Optional[str] = None,
+    phone: Optional[str] = None,
+    email: Optional[str] = None,
+    custom_data: Optional[Dict[str, Any]] = None,
+    country: Optional[str] = None,
+    city: Optional[str] = None,
+    state: Optional[str] = None,
+    zip_code: Optional[str] = None,
+    first_name: Optional[str] = None,
+    last_name: Optional[str] = None,
+    fb_browser_id: Optional[str] = None,
+    access_token: Optional[str] = None,
+    fbc: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Constructs the JSON payload for Meta CAPI with Enhanced Matching"""
+
+    # 🔍 PRE-VALIDATION: Check raw inputs
+    warnings = event_validator.check_pre_hashing(email=email or "", phone=phone or "")
+    for warning in warnings:
+        logger.warning(f"⚠️ [VALIDATION] {warning}")
+
+    # User Data (Advanced Matching)
+    user_data = _build_user_data(
+        client_ip=client_ip,
+        user_agent=user_agent,
+        external_id=external_id,
+        fbc=fbc,
+        fbclid=fbclid,
+        fbp=fbp,
+        fb_browser_id=fb_browser_id,
+        phone=phone,
+        email=email,
+        country=country,
+        city=city,
+        state=state,
+        zip_code=zip_code,
+        first_name=first_name,
+        last_name=last_name,
+    )
 
     event_data = {
         "event_name": event_name,
