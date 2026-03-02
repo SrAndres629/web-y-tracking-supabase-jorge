@@ -77,6 +77,26 @@ class RetryConfig:
     on_retry: Optional[Callable[[Exception, int], None]] = None
 
 
+def _calculate_retry_delay(attempt: int, config: RetryConfig) -> float:
+    return min(
+        config.base_delay * (config.exponential_base ** (attempt - 1)),
+        config.max_delay,
+    )
+
+
+def _log_retry_attempt(
+    attempt: int, config: RetryConfig, func_name: str, error: Exception, delay: float
+) -> None:
+    logger.warning(
+        "🔄 Retry %d/%d for %s: %s. Waiting %.1fs...",
+        attempt,
+        config.max_attempts,
+        func_name,
+        str(error),
+        delay,
+    )
+
+
 def retry(
     max_attempts: int = 3,
     base_delay: float = 1.0,
@@ -107,18 +127,8 @@ def retry(
                     if attempt == config.max_attempts:
                         break
 
-                    delay = min(
-                        config.base_delay * (config.exponential_base ** (attempt - 1)),
-                        config.max_delay,
-                    )
-                    logger.warning(
-                        "🔄 Retry %d/%d for %s: %s. Waiting %.1fs...",
-                        attempt,
-                        config.max_attempts,
-                        func.__name__,
-                        str(e),
-                        delay,
-                    )
+                    delay = _calculate_retry_delay(attempt, config)
+                    _log_retry_attempt(attempt, config, func.__name__, e, delay)
                     await asyncio.sleep(delay)
 
             raise last_exception or Exception("Retry failed")
@@ -135,18 +145,8 @@ def retry(
                     if attempt == config.max_attempts:
                         break
 
-                    delay = min(
-                        config.base_delay * (config.exponential_base ** (attempt - 1)),
-                        config.max_delay,
-                    )
-                    logger.warning(
-                        "🔄 Retry %d/%d for %s: %s. Waiting %.1fs...",
-                        attempt,
-                        config.max_attempts,
-                        func.__name__,
-                        str(e),
-                        delay,
-                    )
+                    delay = _calculate_retry_delay(attempt, config)
+                    _log_retry_attempt(attempt, config, func.__name__, e, delay)
                     time.sleep(delay)
 
             raise last_exception or Exception("Retry failed")
