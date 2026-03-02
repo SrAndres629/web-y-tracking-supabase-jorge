@@ -32,6 +32,7 @@ from app.interfaces.api.schemas import (
 )
 from app.limiter import limiter
 from app.services import normalize_pii, publish_to_qstash, validate_turnstile
+from app.services.security import verify_qstash_signature
 
 # Logger
 logger = logging.getLogger("BackgroundWorker")
@@ -399,11 +400,29 @@ class QStashPayload(BaseModel):
 
 
 @router.post("/hooks/process-event")
-async def process_qstash_event(payload: QStashPayload):
+async def process_qstash_event(request: Request):
     """
     Webhook Receiver for QStash.
     This runs in a FRESH Vercel invocation (Full CPU Time).
     """
+    # 1. Verify Signature (Raw Body required)
+    body_bytes = await request.body()
+    signature = request.headers.get("Upstash-Signature")
+
+    if not signature:
+        logger.warning("⚠️ Missing Upstash-Signature header")
+        raise HTTPException(status_code=401, detail="Missing signature")
+
+    # verify_qstash_signature raises HTTPException(401) on failure
+    verify_qstash_signature(signature, body_bytes, str(request.url))
+
+    # 2. Parse Payload
+    try:
+        payload = QStashPayload.model_validate_json(body_bytes)
+    except Exception as e:
+        logger.error(f"❌ Invalid QStash payload: {e}")
+        raise HTTPException(status_code=422, detail="Invalid payload")
+
     logger.info(f"📨 Received QStash Webhook: {payload.event_name}")
 
     # We call the synchronous bg_send_meta_event directly here

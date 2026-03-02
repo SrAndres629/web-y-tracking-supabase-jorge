@@ -251,6 +251,8 @@ class ExternalServicesSettings(BaseSettings):
     # QStash
     qstash_token: Optional[str] = Field(default=None)
     qstash_url: Optional[str] = Field(default=None)
+    qstash_current_signing_key: Optional[str] = Field(default=None)
+    qstash_next_signing_key: Optional[str] = Field(default=None)
 
     # Google
     google_api_key: Optional[str] = Field(default=None)
@@ -312,6 +314,8 @@ class Settings(BaseSettings):
     META_API_VERSION: str = Field(default="v21.0", validation_alias="META_API_VERSION")
     META_SANDBOX_MODE: bool = Field(default=False, validation_alias="META_SANDBOX_MODE")
     QSTASH_TOKEN: Optional[str] = Field(default=None, validation_alias="QSTASH_TOKEN")
+    QSTASH_CURRENT_SIGNING_KEY: Optional[str] = Field(default=None, validation_alias="QSTASH_CURRENT_SIGNING_KEY")
+    QSTASH_NEXT_SIGNING_KEY: Optional[str] = Field(default=None, validation_alias="QSTASH_NEXT_SIGNING_KEY")
     TEST_EVENT_CODE: Optional[str] = Field(default=None, validation_alias="TEST_EVENT_CODE")
     GOOGLE_API_KEY: Optional[str] = Field(default=None, validation_alias="GOOGLE_API_KEY")
     CLOUDFLARE_ACCOUNT_ID: Optional[str] = Field(default=None, validation_alias="CLOUDFLARE_ACCOUNT_ID")
@@ -371,6 +375,10 @@ class Settings(BaseSettings):
             self.meta.sandbox_mode = self.META_SANDBOX_MODE
         if self.QSTASH_TOKEN:
             self.external.qstash_token = self.QSTASH_TOKEN
+        if self.QSTASH_CURRENT_SIGNING_KEY:
+            self.external.qstash_current_signing_key = self.QSTASH_CURRENT_SIGNING_KEY
+        if self.QSTASH_NEXT_SIGNING_KEY:
+            self.external.qstash_next_signing_key = self.QSTASH_NEXT_SIGNING_KEY
         if self.GOOGLE_API_KEY:
             self.external.google_api_key = self.GOOGLE_API_KEY
         return self
