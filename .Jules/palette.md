@@ -1,0 +1,3 @@
+## 2024-05-24 - Icon-only Buttons Accessibility
+**Learning:** Found multiple instances where icon-only buttons (like social links, mobile menu triggers, and WhatsApp floaters) were missing critical ARIA attributes. A screen reader would just announce "link" or read unhelpful CSS class names instead of describing the action.
+**Action:** When adding icon-only interactive elements, always ensure the parent `<button>` or `<a>` tag has an `aria-label` describing the action, and the inner icon element (e.g., `<i class="fa...">` or `<span>&times;</span>`) has `aria-hidden="true"`.
