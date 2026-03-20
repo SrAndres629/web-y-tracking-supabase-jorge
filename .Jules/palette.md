@@ -1,0 +1,3 @@
+## 2024-03-20 - Semantic Icon Buttons with ARIA Labels
+**Learning:** Icon-only interactive elements (such as hamburger menus, close buttons, social media links, or WhatsApp buttons) need explicit `aria-label` attributes for screen readers. Furthermore, the inner decorative elements like `<i class="fas fa-bars"></i>` or `&times;` can cause screen reader clutter if left exposed, creating redundant or confusing audio output.
+**Action:** When creating icon-only buttons or links, ensure the parent `<button>` or `<a>` tag has a descriptive `aria-label`, and always add `aria-hidden="true"` to the internal child `<i>` or `<span>` containing the icon/character to explicitly hide the visual representation from assistive technologies.
