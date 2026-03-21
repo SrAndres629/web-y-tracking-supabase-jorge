@@ -1,0 +1,3 @@
+## 2025-03-05 - Add ARIA labels to icon-only buttons
+**Learning:** Icon-only elements require an `aria-label` attribute on the parent tag and `aria-hidden="true"` on the inner icon to be fully accessible to screen readers, especially across components like the mobile menu close button and social media links.
+**Action:** Consistently ensure that all new and existing icon-only buttons or links in UI components receive these attributes.
