@@ -1,0 +1,3 @@
+## 2024-05-18 - Missing ARIA attributes on Icon-only elements
+**Learning:** Found a recurring pattern of icon-only links and buttons (like social media links in the footer, WhatsApp buttons, and mobile menu toggles/close buttons) missing `aria-label` attributes on the parent element, and missing `aria-hidden="true"` on the inner `<i>` or `<span>` icon elements. This makes these interactive elements confusing or invisible to screen readers.
+**Action:** When adding or reviewing icon-only elements in this design system, always ensure the parent `<a>` or `<button>` has a descriptive `aria-label`, and the inner decorative icon (e.g., `<i class="fab..."></i>` or `&times;`) has `aria-hidden="true"`.
