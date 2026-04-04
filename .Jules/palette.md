@@ -1,0 +1,3 @@
+## 2025-04-04 - Accessible Social Links & Navigation Menus
+**Learning:** Found pattern where icon-only links (e.g. social media icons in footers) lack `aria-label`s, making them invisible to screen readers. Furthermore, interactive components like hamburger menus often lack proper `aria-label`s and `focus` styling, disrupting keyboard navigation.
+**Action:** Consistently added `aria-label` attributes to social links (`aria-label="Facebook"`, etc.) and ensured mobile menu open/close buttons have explicit `aria-label` and `focus:ring` states for keyboard navigability. Applied similar focus rings to primary CTA buttons.
