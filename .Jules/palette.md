@@ -1,0 +1,3 @@
+## 2025-02-12 - Focus States & ARIA on Tailwind Icon Buttons
+**Learning:** Found that generic Tailwind UI components (like mobile menu close buttons and footer social links) often lack explicit screen-reader contexts (`aria-label`) and visible keyboard focus states by default. Relying solely on `hover` states degrades accessibility for keyboard navigators, and unhidden `&times;` or FontAwesome icons create noise for screen readers.
+**Action:** Always verify that interactive components (buttons/links) that consist only of an icon have both an `aria-label` attribute and a `focus:outline-none focus:ring-2` (plus brand ring color) applied, and ensure the decorative icon itself uses `aria-hidden="true"`.
