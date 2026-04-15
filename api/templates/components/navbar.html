@@ -40,7 +40,7 @@
             </button>
 
             <!-- Mobile Menu Button -->
-            <button id="mobileMenuBtn" class="md:hidden text-luxury-gold text-2xl focus:outline-none" aria-label="Menu">
+            <button id="mobileMenuBtn" class="md:hidden text-luxury-gold text-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37] rounded" aria-label="Menu">
                 <i class="fas fa-bars"></i>
             </button>
         </div>
@@ -49,9 +49,10 @@
     <!-- Mobile Menu Overlay -->
     <div id="mobileMenu"
         class="fixed inset-0 bg-luxury-black/98 backdrop-blur-xl z-[60] hidden flex-col items-center justify-center space-y-8 touch-none">
-        <button class="absolute top-6 right-6 text-white/50 hover:text-white text-4xl"
+        <button class="absolute top-6 right-6 text-white/50 hover:text-white text-4xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37] rounded"
+            aria-label="Cerrar menú"
             onclick="document.getElementById('mobileMenuBtn').style.display='block'; document.getElementById('mobileMenu').classList.add('hidden'); document.body.style.overflow='';">
-            &times;
+            <span aria-hidden="true">&times;</span>
         </button>
         <a href="#galeria" class="text-2xl font-serif text-white hover:text-luxury-gold transition-colors">Galería</a>
         <a href="#servicios"
