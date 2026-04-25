@@ -1,0 +1,3 @@
+## 2024-03-14 - Keyboard Accessibility on Interactive Elements
+**Learning:** Icon-only interactive elements in templates (e.g., social links, mobile menu controls) frequently lack proper focus states and ARIA labeling. Using standard `focus` utility classes can create intrusive visual indicators for mouse users.
+**Action:** Always prefer Tailwind's `focus-visible` modifiers (e.g., `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-luxury-gold`) to ensure keyboard navigability while preserving the clean visual aesthetic for pointer interactions. Accompany this with appropriate `aria-label`s and `aria-hidden="true"` on the purely visual child icons.
