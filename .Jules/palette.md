@@ -1,0 +1,4 @@
+
+## 2024-05-18 - Icon-Only Button Accessibility
+**Learning:** Social media icons in the footer and similar visual-only interactive elements lacked semantic context for screen readers and visible focus indicators for keyboard navigation. We needed to ensure screen readers announce the link purpose and keyboard users can see what element has focus, while keeping styling consistent.
+**Action:** Always add explicit `aria-label` attributes to the interactive wrapper (e.g., `<a>` or `<button>`) for icon-only elements. Add `aria-hidden="true"` to the purely visual child icons (e.g., FontAwesome `<i>`) to prevent redundant or confusing screen reader announcements. Utilize Tailwind's `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-luxury-gold` consistently on interactive elements to provide a visible, brand-aligned focus state during keyboard navigation without affecting mouse clicks.
